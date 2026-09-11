@@ -219,6 +219,7 @@ class Caller:
         buffer: DelayBuffer,
         state_summary: str,
         triggers: list[Trigger],
+        lookahead_until: float | None = None,
     ) -> CallerLine | None:
         """Look at the cursor and the near future, and decide whether to speak.
 
@@ -232,7 +233,7 @@ class Caller:
             self.last_reason = "no frames at the cursor"
             self.suppressed["no_frames"] += 1
             return None
-        lookahead = buffer.lookahead(self.config.frames_lookahead)
+        lookahead = buffer.lookahead(self.config.frames_lookahead, lookahead_until)
         blocks = caller_blocks(cursor, lookahead, state_summary, self.gate.recent, triggers)
 
         try:

@@ -148,6 +148,7 @@ class Runtime:
         self._pending: list[Trigger] = []
         self._board_changes: list[BoardChange] = []
         self._roars: list[float] = []
+        self._cuts: list[float] = []
         self._last_spoken_video_ts: float | None = None
         self._last_analyst_ts: float = 0.0
         self._recent_event: tuple[Event, float] | None = None
@@ -245,7 +246,11 @@ class Runtime:
             self.buffer.append(frame)
             self.stats.frames += 1
             self._apply_due_board_changes()
-            if self.cut.feed(frame) is not None:
+            if (cut := self.cut.feed(frame)) is not None:
+                # Kept with its timestamp: a cut is both a reason to consider
+                # speaking and the edge of what counts as "next" for the
+                # caller, and only the second of those needs to know when.
+                self._cuts.append(cut.ts)
                 self._fire(Trigger.CAMERA_CUT)
         # The source ran out: a clip ended, or the stream died. Either way the
         # match is over as far as this process is concerned.
@@ -407,7 +412,12 @@ class Runtime:
     async def _call(self, triggers: list[Trigger]) -> None:
         cursor = self.cursor_ts
         self.stats.caller_calls += 1
-        line = await self.caller.call(self.buffer, self.state_tracker.summary(), triggers)
+        line = await self.caller.call(
+            self.buffer,
+            self.state_tracker.summary(),
+            triggers,
+            lookahead_until=self._next_cut_after(cursor),
+        )
         if line is None:
             self._publish(Topic.ERROR, cursor, where="caller", detail=self.caller.last_reason)
             return
@@ -447,6 +457,17 @@ class Runtime:
             self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
+
+    def _next_cut_after(self, cursor: float) -> float | None:
+        """Where the near future stops being the same passage of play.
+
+        A broadcast cuts away every few seconds, and everything past the cut
+        belongs to a different picture: a replay, the bench, a face in the
+        crowd. Those frames are not what happens next, so the caller does not
+        get to see them as though they were.
+        """
+        ahead = [ts for ts in self._cuts if ts > cursor]
+        return min(ahead) if ahead else None
 
     def _board_changed_near(self, cursor: float) -> bool:
         """Did the scoreboard move around the moment being called?

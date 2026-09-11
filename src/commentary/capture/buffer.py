@@ -141,17 +141,29 @@ class DelayBuffer:
             return []
         return self._sample(cursor, count, spacing_s)
 
-    def lookahead(self, count: int = 2) -> list[Frame]:
+    def lookahead(self, count: int = 2, until_ts: float | None = None) -> list[Frame]:
         """Frames between the cursor and the live edge, oldest first.
 
         This is the future the caller gets to see before it commits to a line:
         the shot it is describing has already gone in, or has not.
+
+        ``until_ts`` cuts the window short, and exists because the future is
+        only the future of *this* passage of play. Broadcasts cut away
+        constantly — to a replay, to the bench, to a face in the crowd — and a
+        frame from the far side of a cut is not what happens next, it is a
+        different picture entirely. Handing those to the caller while telling
+        it they are the near future invites exactly the confident, wrong line
+        the lookahead was added to prevent. When the window closes to nothing
+        the caller simply gets none, which it is told how to handle.
         """
         cursor, live = self.cursor_ts, self.live_ts
         if cursor is None or live is None or self.delay_s <= 0 or count <= 0:
             return []
-        step = self.delay_s / count
-        return self._sample(live, count, step)
+        end = live if until_ts is None else min(live, until_ts)
+        if end <= cursor:
+            return []
+        step = (end - cursor) / count
+        return self._sample(end, count, step)
 
     def drop_before(self, ts: float) -> None:
         """Discard frames older than ``ts``. Used when the stream stalls."""

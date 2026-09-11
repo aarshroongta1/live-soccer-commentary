@@ -47,6 +47,27 @@ def test_lookahead_is_strictly_after_the_cursor():
     assert ahead[-1].ts == pytest.approx(buf.live_ts, abs=1 / 15)
 
 
+def test_lookahead_stops_at_a_cut():
+    """Past a cut it is a different picture, not what happens next.
+
+    Broadcasts cut away every few seconds. Handing the caller frames from the
+    far side of one while calling them the near future invites exactly the
+    confident wrong line the lookahead exists to prevent.
+    """
+    buf = DelayBuffer(fps=15, delay_s=4.0)
+    fill(buf, 15, 10)
+    cursor = buf.cursor_ts
+    assert cursor is not None
+
+    cut_at = cursor + 1.5
+    ahead = buf.lookahead(count=2, until_ts=cut_at)
+    assert ahead, "there is still a second and a half of the same play to see"
+    assert all(cursor < f.ts <= cut_at + 1 / 15 for f in ahead)
+
+    # A cut on top of the cursor leaves nothing legitimate to show.
+    assert buf.lookahead(count=2, until_ts=cursor) == []
+
+
 def test_zero_delay_means_no_lookahead():
     buf = DelayBuffer(fps=15, delay_s=0.0)
     fill(buf, 15, 5)

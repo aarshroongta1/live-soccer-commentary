@@ -167,8 +167,13 @@ class StatelessCaller(Caller):
         buffer: DelayBuffer,
         state_summary: str,
         triggers: list[Trigger],
+        lookahead_until: float | None = None,
     ) -> CallerLine | None:
-        return await super().call(buffer, "", [])
+        # The cut guard is withheld too. worldcupvoice has no scene detection,
+        # so its lookahead runs straight across a cut into whatever the
+        # broadcaster went to next — which is part of what makes it the
+        # baseline rather than the system.
+        return await super().call(buffer, "", [], lookahead_until=None)
 
 
 class CallerOnlyDirector(Director):
