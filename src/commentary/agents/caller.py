@@ -163,10 +163,6 @@ class RepetitionGate:
         if text:
             self._recent.append(text)
 
-    def reset(self) -> None:
-        """Half time, or a new match. Nothing said yet."""
-        self._recent.clear()
-
 
 class Caller:
     """Frames in, one short sentence out — or, more often, nothing.

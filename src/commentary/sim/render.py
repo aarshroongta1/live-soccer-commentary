@@ -27,8 +27,6 @@ from commentary.schemas import Event, KnowledgePack, Player, Scene, Side
 from commentary.sim.match import PITCH_L, PITCH_W, SimState
 
 #: The pitch drawn flat into a wide virtual plane, before the camera crops it.
-VIEW_W = 2400.0
-VIEW_H = 1000.0
 _FAR_Y = 120.0
 _NEAR_Y = 940.0
 _VIEW_CORNERS: tuple[tuple[float, float], ...] = (

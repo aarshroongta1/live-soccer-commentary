@@ -27,16 +27,15 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import time
-from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any
 
 from commentary.agents.analyst import Analyst
 from commentary.agents.caller import Caller
 from commentary.bus import Bus, Topic
 from commentary.capture.audio import CutDetector, RoarDetector, WhistleDetector
-from commentary.capture.buffer import AudioChunk, AudioRing, DelayBuffer, Frame
+from commentary.capture.buffer import AudioRing, DelayBuffer, Frame
 from commentary.config import SETTINGS, Settings
 from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate
@@ -62,12 +61,6 @@ from commentary.voice.speaker import LogSpeaker, Speaker
 #: whole point: the window the gate will accept a board change in must not
 #: grow when we choose to wait longer.
 GOAL_GRAPHIC_LAG_S = 5.0
-
-
-class AudioSource(Protocol):
-    """A frame source that also carries sound. Not every source does."""
-
-    def audio(self) -> AsyncIterator[AudioChunk]: ...
 
 
 @dataclass

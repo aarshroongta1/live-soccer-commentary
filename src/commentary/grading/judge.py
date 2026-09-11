@@ -489,10 +489,6 @@ class PairwiseReport:
         return self.wins / self.n if self.n else 0.0
 
     @property
-    def loss_rate(self) -> float:
-        return self.losses / self.n if self.n else 0.0
-
-    @property
     def disagreement_rate(self) -> float:
         return self.disagreements / self.n if self.n else 0.0
 

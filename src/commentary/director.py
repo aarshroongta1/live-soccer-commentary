@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from commentary.bus import Bus, Topic
 from commentary.config import DirectorConfig
 from commentary.schemas import Beat, Event, Voice
-from commentary.voice.speaker import LogSpeaker, Speaker, Utterance
+from commentary.voice.speaker import LogSpeaker, Speaker
 
 _ids = itertools.count(1)
 
@@ -177,17 +177,6 @@ class Director:
     def pending(self) -> int:
         return len(self._queue)
 
-    def silence_for(self, now: float | None = None) -> float:
-        """How long nothing has been said, which is what builds speak pressure."""
-        if self.busy:
-            return 0.0
-        return (now or time.monotonic()) - self.last_spoken_ts
-
     def _publish(self, topic: Topic, beat: Beat, **extra: object) -> None:
         if self.bus is not None:
             self.bus.publish(topic, beat.video_ts, beat, **extra)
-
-
-def last_utterance(speaker: Speaker) -> Utterance | None:
-    said = getattr(speaker, "said", None)
-    return said[-1] if said else None

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from typing import TypeVar
 
 from pydantic import BaseModel
@@ -101,26 +101,3 @@ class ScriptedBackend:
 
     def calls_tagged(self, tag: str) -> list[Call]:
         return [c for c in self.calls if c.tag == tag]
-
-
-@dataclass
-class FlakyBackend:
-    """Wraps a backend and fails a fraction of calls, to exercise the loops."""
-
-    inner: ScriptedBackend
-    fail_every: int = 5
-    _n: int = 0
-
-    @property
-    def total(self) -> Usage:
-        return self.inner.total
-
-    async def parse(self, **kwargs: object) -> Parsed[BaseModel]:
-        self._n += 1
-        if self.fail_every and self._n % self.fail_every == 0:
-            raise LLMError("flaky backend: injected failure")
-        return await self.inner.parse(**kwargs)  # type: ignore[arg-type]
-
-
-def with_cost(usage: Usage, cost: float) -> Usage:
-    return replace(usage, cost_usd=cost)

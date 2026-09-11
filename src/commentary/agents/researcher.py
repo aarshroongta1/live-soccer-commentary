@@ -50,20 +50,8 @@ from commentary.schemas import KnowledgePack, Player, Side, TeamSheet
 #: Anthropic's server-side web search tool. The model issues the searches and
 #: the results never pass through this process, which is why the researcher can
 #: reach the open web without this repository growing an HTTP client.
-#:
-#: ``web_search_20260209`` is the current version and the one Opus 5 supports;
-#: ``web_search_20250305`` is the older basic variant, kept below because a
-#: model that rejects the new type needs it and the version string is the only
-#: thing that differs.
 WEB_SEARCH_TOOL: dict[str, Any] = {
     "type": "web_search_20260209",
-    "name": "web_search",
-    "max_uses": 8,
-}
-
-#: The older tool version, for a model that does not take the one above.
-BASIC_WEB_SEARCH_TOOL: dict[str, Any] = {
-    "type": "web_search_20250305",
     "name": "web_search",
     "max_uses": 8,
 }
@@ -229,8 +217,8 @@ class Researcher:
         #: a failed pack. This is the one agent where generosity is free.
         self.max_tokens = max_tokens
         self.effort = effort
-        #: Override to pin :data:`BASIC_WEB_SEARCH_TOOL`, to add a domain
-        #: filter, or set to ``None`` to research with no search at all.
+        #: Override to add a domain filter, or set to ``None`` to research
+        #: with no search at all.
         self.search_tool: dict[str, Any] | None = (
             WEB_SEARCH_TOOL if search_tool is None else search_tool
         )
