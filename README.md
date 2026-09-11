@@ -73,21 +73,42 @@ uv run python -m commentary sim --out /tmp/match.mp4     # watch it
 uv run python -m commentary run --source sim --error-rate 0.35 --seconds 35
 ```
 
-A representative run, with the stand-in model lying on a third of its calls:
+The oracle models two different failures, because they behave differently.
+Hallucination — an invented name, a scoreline that contradicts the board, a goal
+that never happened — happens at a fixed rate whatever the buffer depth. Getting
+an outcome wrong is different: when the lookahead does not reach far enough to
+show how a move ended, the oracle has to guess, and guesses wrong. That second
+one is the failure the delay buffer exists to prevent, and it is the only reason
+the delay curve below means anything.
 
-| lines | factual err | recall | gate rej | lag p50/p95 s | silence | repeat |
-|---:|---:|---:|---:|---:|---:|---:|
-| 4 | 0.0% | 100% | 50.0% | 8.0 / 8.0 | 70% | 0.0% |
+## Ablations
 
+```bash
+uv run python -m commentary.grading.baselines --duration 300 --seconds 40 \
+    --error-rate 0.3 --speed 1
 ```
-judged 7  passed 4 (2 trimmed)  rejected 3
-  scoreline_mismatch           2
-  unconfirmed_goal             1
-  name_read_not_on_roster      1
-```
 
-Every injected error kind was caught by name, nothing false reached a voice, and
-the lag is exactly the buffer depth because the stand-in model answers instantly.
+Every variant against the same seeded match, with the stand-in model lying on
+30% of calls:
+
+| run | lines | factual err | gate rej | lag p50/p95 s | silence |
+|---|---:|---:|---:|---:|---:|
+| worldcupvoice | 7 | 42.9% | 0.0% | 0.0 / 0.0 | 50% |
+| **full** | 6 | **0.0%** | 0.0% | 8.0 / 8.0 | 56% |
+| no-delay | 9 | 11.1% | 33.3% | 0.0 / 0.0 | 25% |
+| no-gate | 7 | 28.6% | 0.0% | 8.0 / 8.0 | 50% |
+| single-voice | 6 | 0.0% | 33.3% | 8.0 / 8.0 | 64% |
+
+Factual error rate against buffer depth, which is the headline chart:
+
+| delay | 0 s | 2 s | 4 s | 8 s |
+|---|---:|---:|---:|---:|
+| factual error | 11.1% | 12.5% | 0.0% | 0.0% |
+
+Read those numbers for what they are: a stand-in model on generated video, not a
+vision model on a real broadcast. What they establish is that the pipeline, the
+gate and the measurement all work, and that the ablations are wired up correctly
+enough to be run against the real thing the moment there is footage and a key.
 
 ## Commands
 
