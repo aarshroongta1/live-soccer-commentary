@@ -16,8 +16,7 @@ match state it can read off the screen, a fact gate, and a second voice with
 a director. worldcupvoice is baseline one in the eval; every change is
 measured against it.
 
-Research: `docs/research/`. Earlier plans in `docs/` (v2 CV-heavy 14-week,
-v3, v4 feed-confirmed).
+Research: `docs/research/`.
 
 ---
 
