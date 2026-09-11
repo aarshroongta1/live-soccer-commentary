@@ -94,36 +94,45 @@ see resolve:
 
 | run | lines | factual err | recall | gate rej | lag p50/p95 s | silence |
 |---|---:|---:|---:|---:|---:|---:|
-| worldcupvoice | 18 | 55.6% | 94% | 0.0% | 0.0 / 0.0 | 65% |
-| **full** | 24 | **4.2%** | 100% | 52.3% | 8.0 / 8.0 | 56% |
-| no-gate | 28 | 67.9% | 100% | 0.0% | 8.0 / 8.0 | 45% |
-| no-delay | 23 | 8.7% | 100% | 65.0% | 0.0 / 0.0 | 60% |
-| single-voice | 22 | 9.1% | 100% | 60.0% | 8.0 / 8.0 | 64% |
+| worldcupvoice | 24 | 87.5% | 95% | 0.0% | 0.0 / 0.0 | 64% |
+| **full** | 31 | **6.5%** | 100% | 54.8% | 8.0 / 8.0 | 57% |
+| no-gate | 39 | 71.8% | 100% | 0.0% | 8.0 / 8.0 | 39% |
+| no-delay | 30 | 3.3% | 100% | 65.4% | 0.0 / 0.0 | 61% |
+| single-voice | 33 | 0.0% | 100% | 43.1% | 8.0 / 8.0 | 61% |
 
-The fact gate is the result. Switching it off takes factual error rate from 4.2%
-to 67.9% — the caller proposes plenty of nonsense either way, and the gate is
+The fact gate is the result. Switching it off takes factual error rate from 6.5%
+to 71.8% — the caller proposes plenty of nonsense either way, and the gate is
 the only thing standing between that and a voice. The reproduced worldcupvoice
-loop sits at 55.6%, which is roughly what an ungated caller does.
+loop sits at 87.5%, which is what an ungated caller with no state and no roster
+does: 11 invented names, 7 goals that never happened, 3 wrong scorelines.
 
-The delay is a different story, and it is worth being straight about:
+### The delay
 
 | delay | 0 s | 2 s | 4 s | 8 s |
 |---|---:|---:|---:|---:|
-| factual error | 4.3% | 0.0% | 0.0% | 8.7% |
-| gate rejections | 61.5% | 52.2% | 56.2% | 50.0% |
+| factual error | 6.2% | 5.7% | 3.1% | 6.1% |
+| phantom goals reaching air | 0 | 0 | 0 | 0 |
+| `unconfirmed_goal` rejections | 25 | 21 | 24 | 21 |
 
-**No delay effect is visible here.** At 23-26 lines per variant a single error
-moves the number by four points, so everything in that top row is noise around
-the same value. The one real signal is in the second row: deeper buffers need
-*fewer* gate rejections for the same outcome, which is what you would expect if
-the lookahead stops some errors being made rather than caught — but that is a
-trend across four noisy points, not a finding.
+**No delay effect is visible in the error rate.** At ~32 lines per variant a
+single error moves the number three points, so that top row is noise around one
+value.
 
-This is a limit of the simulator, not a verdict on the design. The stand-in
-model's outcome guessing is a modelling assumption about how a vision model
-fails, and the delay experiment is really a test of that assumption. It needs a
-real vision model on real footage to mean anything, which is exactly what the
-sweep is built and waiting to do.
+The other two rows are there because they used to say something alarming. The
+gate originally accepted a board change anywhere in `[cursor - 2, cursor +
+delay_s]`, so the confirmation window *widened with the buffer*: choosing to
+wait longer also made the gate accept a scoreboard change further from the
+moment being called. Phantom goals reaching air ran 1, 1, 4, 6 as the buffer
+deepened, and `unconfirmed_goal` rejections fell 33, 32, 25, 14. The delay was
+buying the caller information and paying for it by loosening the check. With
+the window fixed to a constant — how long a score bug lags a goal is a fact
+about television, not about our buffer — both rows go flat and no phantom goal
+survives at any depth.
+
+That is the honest state of it: the delay does not show a measurable benefit
+here, but the thing that was actively hiding one is gone. Whether a benefit
+exists at all is a question about how a real vision model fails, and the
+simulator's answer to that is an assumption, not a measurement.
 
 Read all of it for what it is: a stand-in model on generated video. What these
 establish is that the pipeline, the gate and the measurement work, and that the
