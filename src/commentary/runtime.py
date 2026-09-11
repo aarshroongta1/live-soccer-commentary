@@ -1,0 +1,406 @@
+"""The match loop: everything wired together, running against a clock.
+
+Five things happen at once. Frames and sound pour into the ring buffers at
+the live edge. The board reader glances at the score bug every couple of
+seconds. The speak predictor ticks, and when it says so the caller looks at
+the cursor and the near future and fills in a form. The fact gate judges that
+form. The director decides who says what, and cuts someone off when a goal
+goes in.
+
+One subtlety governs the whole file. The board reader reads at the LIVE edge,
+because that is how the system can know a goal went in before the narration
+cursor has reached it. But a board change is not applied to match state until
+the cursor passes the moment it happened, so the commentary can never
+announce something the viewer has not seen yet. The early read is used only
+as evidence: when the caller claims a goal, the gate asks whether the board
+changed anywhere in the lookahead window, which is exactly the question a
+human commentator answers by glancing up at the graphic.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import contextlib
+import time
+from collections.abc import AsyncIterator
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Protocol
+
+from commentary.agents.caller import Caller
+from commentary.bus import Bus, Topic
+from commentary.capture.audio import CutDetector, RoarDetector, WhistleDetector
+from commentary.capture.buffer import AudioChunk, AudioRing, DelayBuffer, Frame
+from commentary.config import SETTINGS, Settings
+from commentary.director import Director, next_beat_id
+from commentary.gate import FactGate
+from commentary.llm.base import LLMBackend, Usage
+from commentary.perception.board import BoardChange, BoardReader, BoardTracker
+from commentary.predictor import SpeakPredictor
+from commentary.schemas import (
+    Beat,
+    CallerLine,
+    Event,
+    KnowledgePack,
+    MatchState,
+    Trigger,
+    Voice,
+)
+from commentary.state import MatchStateTracker
+from commentary.tools import MatchTools
+from commentary.trace import RunTrace
+from commentary.voice.speaker import LogSpeaker, Speaker
+
+
+class AudioSource(Protocol):
+    """A frame source that also carries sound. Not every source does."""
+
+    def audio(self) -> AsyncIterator[AudioChunk]: ...
+
+
+@dataclass
+class RuntimeStats:
+    frames: int = 0
+    audio_chunks: int = 0
+    board_reads: int = 0
+    caller_calls: int = 0
+    ticks: int = 0
+    gated_out: int = 0
+    spoken: int = 0
+    cost_stopped: bool = False
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "frames": self.frames,
+            "audio_chunks": self.audio_chunks,
+            "board_reads": self.board_reads,
+            "caller_calls": self.caller_calls,
+            "ticks": self.ticks,
+            "gated_out": self.gated_out,
+            "spoken": self.spoken,
+            "cost_stopped": self.cost_stopped,
+        }
+
+
+@dataclass
+class Runtime:
+    """One match, from first frame to final whistle."""
+
+    source: Any
+    backend: LLMBackend
+    pack: KnowledgePack | None = None
+    settings: Settings = SETTINGS
+    speaker: Speaker = field(default_factory=LogSpeaker)
+    trace: RunTrace | None = None
+    home: str = "Home"
+    away: str = "Away"
+
+    bus: Bus = field(default_factory=Bus)
+    stats: RuntimeStats = field(default_factory=RuntimeStats)
+
+    def __post_init__(self) -> None:
+        cap = self.settings.capture
+        if self.pack is not None:
+            self.home, self.away = self.pack.home.name, self.pack.away.name
+
+        self.buffer = DelayBuffer(cap.fps, cap.delay_s, cap.history_s)
+        self.audio_ring = AudioRing()
+
+        self.board_reader = BoardReader(self.backend, config=self.settings.board)
+        self.board_tracker = BoardTracker(self.settings.board)
+        self.state_tracker = (
+            MatchStateTracker.from_pack(self.pack)
+            if self.pack is not None
+            else MatchStateTracker(home=self.home, away=self.away)
+        )
+        self.caller = Caller(self.backend, config=self.settings.caller, pack=self.pack)
+        self.gate = FactGate(self.settings.gate)
+        self.predictor = SpeakPredictor(self.settings.predictor, self.settings.caller)
+        self.director = Director(speaker=self.speaker, cfg=self.settings.director, bus=self.bus)
+
+        self.whistle = WhistleDetector(self.settings.predictor)
+        self.roar = RoarDetector(self.settings.predictor)
+        self.cut = CutDetector(self.settings.predictor)
+
+        self._pending: list[Trigger] = []
+        self._board_changes: list[BoardChange] = []
+        self._last_spoken_video_ts: float | None = None
+        self._stop = asyncio.Event()
+
+    # -- what the web layer is allowed to see ----------------------------
+
+    @property
+    def state(self) -> MatchState:
+        return self.state_tracker.state
+
+    @property
+    def usage(self) -> Usage:
+        return self.backend.total
+
+    @property
+    def tools(self) -> MatchTools:
+        return MatchTools(state=self.state, pack=self.pack)
+
+    def status(self) -> dict[str, Any]:
+        stats = self.gate.stats
+        return {
+            **self.stats.as_dict(),
+            **self.director.stats.as_dict(),
+            "buffered_frames": len(self.buffer),
+            "cursor_ts": self.buffer.cursor_ts,
+            "live_ts": self.buffer.live_ts,
+            "gate": {
+                "judged": stats.judged,
+                "passed": stats.passed,
+                "trimmed": stats.trimmed,
+                "rejected": stats.rejected,
+                "by_reason": dict(stats.by_reason),
+            },
+        }
+
+    # -- the loops -------------------------------------------------------
+
+    async def run(self, seconds: float | None = None) -> RuntimeStats:
+        async with self.source:
+            # The recorder subscribes before anything can publish, so the
+            # trace starts at the first frame rather than the first race.
+            recorder = asyncio.create_task(self._record(), name="trace")
+            await asyncio.sleep(0)
+            tasks = [
+                recorder,
+                asyncio.create_task(self._ingest_frames(), name="frames"),
+                asyncio.create_task(self._read_board(), name="board"),
+                asyncio.create_task(self._tick(), name="tick"),
+                asyncio.create_task(self.director.run(), name="director"),
+            ]
+            if hasattr(self.source, "audio"):
+                tasks.append(asyncio.create_task(self._ingest_audio(), name="audio"))
+            if seconds is not None:
+                tasks.append(asyncio.create_task(self._deadline(seconds), name="deadline"))
+
+            try:
+                await self._stop.wait()
+            finally:
+                # Let whatever is mid-sentence finish, then close the books
+                # while the recorder is still listening, so the final tallies
+                # land in the trace rather than after it.
+                with contextlib.suppress(TimeoutError):
+                    await asyncio.wait_for(self.director.drain(timeout=2.0), timeout=2.5)
+                self._publish(Topic.STATUS, self.live_ts, **self.status())
+                self._publish(
+                    Topic.COST, self.live_ts, total_usd=round(self.backend.total.cost_usd, 4)
+                )
+                await asyncio.sleep(0)
+                self.director.stop()
+                for task in tasks:
+                    task.cancel()
+                for task in tasks:
+                    with contextlib.suppress(asyncio.CancelledError):
+                        await task
+        return self.stats
+
+    async def _deadline(self, seconds: float) -> None:
+        await asyncio.sleep(seconds)
+        self.stop()
+
+    def stop(self) -> None:
+        self._stop.set()
+
+    @property
+    def live_ts(self) -> float:
+        return self.buffer.live_ts or 0.0
+
+    @property
+    def cursor_ts(self) -> float:
+        return self.buffer.cursor_ts or 0.0
+
+    async def _ingest_frames(self) -> None:
+        async for frame in self.source.frames():
+            self.buffer.append(frame)
+            self.stats.frames += 1
+            self._apply_due_board_changes()
+            if self.cut.feed(frame) is not None:
+                self._fire(Trigger.CAMERA_CUT)
+        # The source ran out: a clip ended, or the stream died. Either way the
+        # match is over as far as this process is concerned.
+        self.stop()
+
+    async def _ingest_audio(self) -> None:
+        async for chunk in self.source.audio():
+            self.audio_ring.append(chunk)
+            self.stats.audio_chunks += 1
+            if self.whistle.feed(chunk) is not None:
+                self._fire(Trigger.WHISTLE)
+            if self.roar.feed(chunk) is not None:
+                self._fire(Trigger.ROAR)
+
+    async def _read_board(self) -> None:
+        """Glance at the score bug, at the live edge, on a fixed interval."""
+        while True:
+            await asyncio.sleep(self.settings.board.interval_s)
+            frame = self._live_frame()
+            if frame is None:
+                continue
+            try:
+                read = await self.board_reader.read(frame)
+            except Exception as exc:  # a missed glance is not a dead match
+                self._publish(Topic.ERROR, frame.ts, where="board", detail=str(exc))
+                continue
+            self.stats.board_reads += 1
+            self._publish(Topic.BOARD, frame.ts, read)
+            change = self.board_tracker.update(read, frame.ts)
+            if change is not None:
+                self._board_changes.append(change)
+                self._fire(Trigger.BOARD_CHANGE)
+            self._note_replay()
+
+    def _live_frame(self) -> Frame | None:
+        live = self.buffer.live_ts
+        return self.buffer.nearest(live) if live is not None else None
+
+    def _note_replay(self) -> None:
+        if self.board_tracker.in_replay != self.state.in_replay:
+            self.state_tracker.apply_board(self.board_tracker)
+            self._publish(Topic.STATE, self.cursor_ts, self.state)
+
+    def _apply_due_board_changes(self) -> None:
+        """Let the state catch up to the cursor, never to the live edge.
+
+        This is what keeps the system from announcing a goal the viewer has
+        not been shown. The evidence arrives early; the belief arrives on time.
+        """
+        cursor = self.buffer.cursor_ts
+        if cursor is None:
+            return
+        due = [c for c in self._board_changes if c.ts <= cursor]
+        if not due:
+            return
+        self._board_changes = [c for c in self._board_changes if c.ts > cursor]
+        self.state_tracker.apply_board(self.board_tracker)
+        self._publish(Topic.STATE, cursor, self.state)
+
+    # -- deciding to speak -----------------------------------------------
+
+    async def _tick(self) -> None:
+        interval = self.settings.predictor.tick_s
+        while True:
+            await asyncio.sleep(interval)
+            self.stats.ticks += 1
+            if not self.buffer.ready:
+                continue
+            triggers = self._drain_triggers()
+            if not triggers:
+                triggers = [Trigger.SCHEDULED]
+            decision = self.predictor.decide(
+                now_ts=self.cursor_ts,
+                triggers=triggers,
+                last_spoken_ts=self._last_spoken_video_ts,
+            )
+            self._publish(Topic.TRIGGER, self.cursor_ts, decision)
+            if not decision.should_call:
+                continue
+            if self._over_budget():
+                continue
+            await self._call(decision.triggers)
+
+    def _over_budget(self) -> bool:
+        spent = self.backend.total.cost_usd
+        if spent < self.settings.cost.max_usd_per_match:
+            return False
+        if not self.stats.cost_stopped:
+            self.stats.cost_stopped = True
+            self._publish(Topic.STATUS, self.cursor_ts, reason="cost_cap", spent_usd=spent)
+        return True
+
+    async def _call(self, triggers: list[Trigger]) -> None:
+        cursor = self.cursor_ts
+        self.stats.caller_calls += 1
+        line = await self.caller.call(self.buffer, self.state_tracker.summary(), triggers)
+        if line is None:
+            self._publish(Topic.ERROR, cursor, where="caller", detail=self.caller.last_reason)
+            return
+
+        self._publish(Topic.CALLER, cursor, line)
+        self.state_tracker.apply_caller(line, cursor)
+        if not line.speak or not line.line.strip():
+            return
+
+        verdict = self.gate.judge(
+            line,
+            self.state,
+            self.pack,
+            board_changed=self._board_changed_near(cursor),
+            lookahead_celebration=self._celebration_ahead(line),
+        )
+        self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
+        if not verdict.passed:
+            self.stats.gated_out += 1
+            return
+
+        self.caller.gate.accept(verdict.line)
+        beat = Beat(
+            id=next_beat_id(),
+            voice=Voice.CALLER,
+            text=verdict.line,
+            video_ts=cursor,
+            created_ts=time.monotonic(),
+            event=line.event,
+            triggers=triggers,
+            preemptable=line.event not in (Event.GOAL, Event.PENALTY),
+        )
+        self.director.submit(beat)
+        self._last_spoken_video_ts = cursor
+        self.stats.spoken += 1
+        self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
+
+    def _board_changed_near(self, cursor: float) -> bool:
+        """Did the scoreboard move anywhere in the window we can see ahead to?
+
+        A goal shows on the graphic a beat after the ball crosses the line, so
+        the change we are looking for sits between the cursor and the live
+        edge. That is precisely the window the delay buys us.
+        """
+        window = self.settings.capture.delay_s
+        recent = [c for c in self._board_changes if c.is_goal]
+        return any(cursor - 2.0 <= c.ts <= cursor + window for c in recent)
+
+    def _celebration_ahead(self, line: CallerLine) -> bool:
+        """The caller saw the future frames; trust it only about celebration."""
+        return line.event is Event.GOAL and line.confidence >= 0.8
+
+    # -- plumbing --------------------------------------------------------
+
+    def _fire(self, trigger: Trigger) -> None:
+        """Park a trigger until the next tick reads them all at once.
+
+        Triggers arrive on the frame and audio loops, which run far faster
+        than the system can speak. Collecting them and letting the tick decide
+        is what keeps a burst of three cuts and a roar from becoming four
+        separate attempts to say something.
+        """
+        self._pending.append(trigger)
+
+    def _drain_triggers(self) -> list[Trigger]:
+        drained = list(dict.fromkeys(self._pending))
+        self._pending.clear()
+        return drained
+
+    def _publish(self, topic: Topic, ts: float, value: Any = None, **extra: Any) -> None:
+        self.bus.publish(topic, ts, value, **extra)
+
+    async def _record(self) -> None:
+        """Write everything on the bus to the trace.
+
+        The trace subscribes rather than being written to directly, because
+        the director publishes on its own — a line that was spoken, or cut off
+        mid-word, is the director's news, not the runtime's. Anything written
+        on a second path is a thing the eval would silently never see.
+        """
+        if self.trace is None:
+            return
+        async for message in self.bus.subscribe():
+            self.trace.write(message)
+
+
+def trace_path(root: Path, name: str) -> Path:
+    return root / f"{name}-{time.strftime('%Y%m%d-%H%M%S')}.jsonl"
