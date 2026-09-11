@@ -99,12 +99,10 @@ class SpokenLine:
     """
 
     video_ts: float
-    created_ts: float
     voice: str
     text: str
     live_ts: float = 0.0
     event: str = "none"
-    completed: bool = True
 
     @property
     def words(self) -> int:
@@ -137,7 +135,6 @@ def load_run(path: Path) -> Run:
         run.lines.append(
             SpokenLine(
                 video_ts=float(row.get("ts", 0.0)),
-                created_ts=float(row.get("created_ts", row.get("ts", 0.0))),
                 live_ts=float(row.get("live_ts", 0.0)),
                 voice=str(row.get("voice", "caller")),
                 # "spoken" is what came out of the voice; a preempted line's

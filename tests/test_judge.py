@@ -51,7 +51,7 @@ def run_of(*lines: tuple[float, str]) -> Run:
     return Run(
         run_id="scripted",
         lines=[
-            SpokenLine(video_ts=ts, created_ts=ts, voice="caller", text=text) for ts, text in lines
+            SpokenLine(video_ts=ts, voice="caller", text=text) for ts, text in lines
         ],
     )
 
