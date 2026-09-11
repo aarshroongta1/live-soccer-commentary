@@ -344,6 +344,7 @@ class Runtime:
             text=verdict.line,
             video_ts=cursor,
             created_ts=time.monotonic(),
+            live_ts=self.live_ts,
             event=line.event,
             triggers=triggers,
             preemptable=line.event not in (Event.GOAL, Event.PENALTY),

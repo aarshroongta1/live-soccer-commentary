@@ -72,16 +72,17 @@ def tokens(text: str) -> set[str]:
 class SpokenLine:
     """One line that actually reached a voice, with both clocks kept.
 
-    ``video_ts`` is the instant in the match the line is about; ``created_ts``
-    is when the system produced it. Every latency number is the gap between
-    them, and conflating the two is how a system with an eight second buffer
-    can look instant and be useless.
+    ``video_ts`` is the instant in the match the line is about; ``live_ts`` is
+    where the live edge had reached by the time the line existed. Lag is the
+    gap between them, and both are on the video clock — an earlier version
+    measured against wall time and reported a lag of eight days.
     """
 
     video_ts: float
     created_ts: float
     voice: str
     text: str
+    live_ts: float = 0.0
     event: str = "none"
     completed: bool = True
 
@@ -119,6 +120,7 @@ def load_run(path: Path) -> Run:
             SpokenLine(
                 video_ts=float(row.get("ts", 0.0)),
                 created_ts=float(row.get("created_ts", row.get("ts", 0.0))),
+                live_ts=float(row.get("live_ts", 0.0)),
                 voice=str(row.get("voice", "caller")),
                 text=str(row.get("spoken") or row.get("text") or ""),
                 event=str(row.get("event", "none")),
@@ -155,8 +157,15 @@ class Lag:
 
 
 def lag(run: Run) -> Lag:
-    """Buffer depth plus generation time: how late a line is against the pitch."""
-    gaps = sorted(max(0.0, line.created_ts - line.video_ts) for line in run.lines)
+    """Buffer depth plus generation time: how late a line is against the pitch.
+
+    Lines written before the trace carried a live edge are skipped rather than
+    counted as zero, so an old trace reports a smaller ``n`` instead of a
+    flattering number.
+    """
+    gaps = sorted(
+        max(0.0, line.live_ts - line.video_ts) for line in run.lines if line.live_ts > 0.0
+    )
     if not gaps:
         return Lag(0.0, 0.0, 0)
     return Lag(

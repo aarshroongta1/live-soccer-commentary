@@ -142,6 +142,11 @@ class Beat(BaseModel):
     text: str
     video_ts: float
     created_ts: float
+    #: Where the live edge was when this was produced, on the same clock as
+    #: ``video_ts``. Lag is the gap between the two: buffer depth plus however
+    #: long the model took. ``created_ts`` is wall time and cannot answer that,
+    #: because the two clocks do not share an origin.
+    live_ts: float = 0.0
     event: Event = Event.NONE
     urgency: float = 0.0
     triggers: list[Trigger] = Field(default_factory=list)

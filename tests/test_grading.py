@@ -48,11 +48,18 @@ def write_trace(tmp_path: Path, rows: list[tuple[Topic, float, dict[str, object]
     return path
 
 
-def spoken(ts: float, text: str, created: float | None = None) -> tuple[Topic, float, dict]:
+def spoken(ts: float, text: str, live: float | None = None) -> tuple[Topic, float, dict]:
+    """One spoken line. ``live`` is where the live edge had reached by then."""
     return (
         Topic.SPOKEN,
         ts,
-        {"voice": "caller", "text": text, "spoken": text, "created_ts": created or ts + 8.4},
+        {
+            "voice": "caller",
+            "text": text,
+            "spoken": text,
+            "created_ts": ts,
+            "live_ts": live if live is not None else ts + 8.4,
+        },
     )
 
 
@@ -119,10 +126,19 @@ def test_a_wrong_scoreline_is_caught(tmp_path: Path, truth, pack) -> None:
 def test_lag_is_measured_between_the_pitch_and_the_line(tmp_path: Path, truth, pack) -> None:
     path = write_trace(
         tmp_path,
-        [spoken(30.0, "one", created=38.0), spoken(60.0, "two", created=69.0)],
+        [spoken(30.0, "one", live=38.0), spoken(60.0, "two", live=69.0)],
     )
     run = metrics.load_run(path)
     assert metrics.lag(run).p50 == pytest.approx(8.5)
+
+
+def test_a_trace_with_no_live_edge_reports_no_lag_rather_than_zero(tmp_path: Path) -> None:
+    path = write_trace(
+        tmp_path,
+        [(Topic.SPOKEN, 30.0, {"voice": "caller", "text": "old trace", "spoken": "old trace"})],
+    )
+    measured = metrics.lag(metrics.load_run(path))
+    assert measured.n == 0 and measured.p50 == 0.0
 
 
 def test_near_duplicate_lines_count_as_repetition(tmp_path: Path) -> None:
