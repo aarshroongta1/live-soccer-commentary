@@ -1,0 +1,59 @@
+[project]
+name = "commentary"
+version = "0.1.0"
+description = "Real-time two-voice AI soccer commentary from a screen-captured broadcast"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.69",
+    "pydantic>=2.9",
+    "numpy>=2.1",
+    "opencv-python-headless>=4.10",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+audio = ["librosa>=0.10", "soundfile>=0.12"]
+eval = ["mlx-whisper>=0.4; sys_platform == 'darwin'", "httpx>=0.27"]
+trace = ["langfuse>=2.53"]
+voice = ["elevenlabs>=1.9"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.13",
+    "pre-commit>=4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/commentary"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["commentary"]
+mypy_path = "src"
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["cv2.*", "librosa.*", "mlx_whisper.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

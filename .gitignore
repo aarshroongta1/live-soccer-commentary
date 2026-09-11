@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Env / secrets
+.env
+.env.local
+
+# Captured media and run artifacts — never commit broadcast footage
+recordings/
+clips/
+runs/
+out/
+*.mp4
+*.mkv
+*.wav
+*.jpg
+*.png
+!docs/**/*.png
+
+# Node / Next.js (web/ arrives later)
+node_modules/
+.next/
+
+# macOS
+.DS_Store
