@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# web — the watch page
 
-## Getting Started
+The delayed broadcast, the commentary as it goes to air, and the decisions
+behind every line the system did and did not say.
 
-First, run the development server:
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+It expects the Python runtime on `http://127.0.0.1:8000`. From the repo root:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+uv run python -m commentary run --serve --seconds 300
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+That runs the simulated match against the oracle backend, so it needs no API
+key and no broadcast on screen. Point somewhere else with
+`COMMENTARY_API_ORIGIN=http://host:port npm run dev`.
 
-## Learn More
+**With no backend at all:** open <http://localhost:3000/?mock=1>, or use the
+`LIVE / FIXTURE` toggle in the header (shown in dev, and in any build when
+`?mock=1` is present). That replays `mock/events.ts` — one realistic minute
+covering a build-up, a shot, a save whose line the fact gate rejects, a
+deliberate silence, and a goal that cuts the analyst off mid-sentence. It runs
+through the same parser as the live stream, so it is also the layout fixture.
 
-To learn more about Next.js, take a look at the following resources:
+If the runtime is not up, the status strip says so and keeps retrying with
+backoff. It never shows a calm empty page that looks like a quiet match.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## What the agent panel is showing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Audio only carries what the system said. Almost everything interesting about a
+commentary system is in what it *didn't* say, and why — so the right-hand
+column puts that on screen next to the picture. **Fact gate** lists the lines
+that were blocked before they reached a voice, struck through, each with its
+reason tags: a name that is on neither team sheet, a scoreline that disagrees
+with the board. **Preempted** shows lines the director killed — the part of a
+sentence that escaped before a goal took the microphone, with the rest struck
+through, plus beats that aged out unspoken. **Speak predictor** shows which
+triggers fired and how urgent they were, so a stretch of silence reads as a
+decision rather than a hang. **Caller form** shows the structured object behind
+the sentence — scene, event, confidence, the names it could actually read —
+because a confident wrong call and a hedged right one look identical once
+they are spoken. **Board reader** and **ledger** show where the score came from
+and what the match has cost, with lag from the beat's live edge.
 
-## Deploy on Vercel
+## Layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+app/
+  layout.tsx           fonts, metadata
+  page.tsx             renders <Watch />
+  api/stream/route.ts  SSE passthrough, uncompressed  ┐ see lib/proxy.ts
+  api/video/route.ts   MJPEG passthrough              ┘
+components/            Watch, VideoStage, Scoreboard, Feed, AgentPanel, ui
+lib/
+  events.ts            the SSE contract as a discriminated union + parser
+  store.ts             bounded state: transcript, rejections, cuts, counts
+  useEventStream.ts    one EventSource for the page, batched, backoff reconnect
+mock/events.ts         the fixture
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`useEventStream` is the only thing that opens a stream; every panel reads the
+store it returns. Messages are folded in on a 100ms tick rather than per
+message, and the arrays are capped (400 transcript lines, 60 per panel) — a 90
+minute match emits more than a tab should hold.
+
+`/api/state` and `/healthz` are proxied by a `rewrites()` entry in
+`next.config.ts`. The two streaming endpoints are route handlers instead: a
+rewritten response gets gzipped for the browser, and a gzipped
+`text/event-stream` buffers in the encoder and never arrives. `curl` saw
+events, the page saw an open connection and silence.
+
+## Checks
+
+```bash
+npx tsc --noEmit
+npx eslint .
+npm run build
+```

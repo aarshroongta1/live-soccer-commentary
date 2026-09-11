@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
 
+from commentary.agents.analyst import Analyst
 from commentary.agents.caller import Caller
 from commentary.bus import Bus, Topic
 from commentary.capture.audio import CutDetector, RoarDetector, WhistleDetector
@@ -43,6 +44,7 @@ from commentary.schemas import (
     Event,
     KnowledgePack,
     MatchState,
+    SpeakDecision,
     Trigger,
     Voice,
 )
@@ -64,6 +66,7 @@ class RuntimeStats:
     audio_chunks: int = 0
     board_reads: int = 0
     caller_calls: int = 0
+    analyst_calls: int = 0
     ticks: int = 0
     gated_out: int = 0
     spoken: int = 0
@@ -75,6 +78,7 @@ class RuntimeStats:
             "audio_chunks": self.audio_chunks,
             "board_reads": self.board_reads,
             "caller_calls": self.caller_calls,
+            "analyst_calls": self.analyst_calls,
             "ticks": self.ticks,
             "gated_out": self.gated_out,
             "spoken": self.spoken,
@@ -94,6 +98,9 @@ class Runtime:
     trace: RunTrace | None = None
     home: str = "Home"
     away: str = "Away"
+    #: The second voice. Off by one flag, because "single voice" is one of the
+    #: ablations the results table has to report.
+    with_analyst: bool = True
 
     bus: Bus = field(default_factory=Bus)
     stats: RuntimeStats = field(default_factory=RuntimeStats)
@@ -114,6 +121,12 @@ class Runtime:
             else MatchStateTracker(home=self.home, away=self.away)
         )
         self.caller = Caller(self.backend, config=self.settings.caller, pack=self.pack)
+        self.analyst = Analyst(
+            self.backend,
+            config=self.settings.analyst,
+            tools=MatchTools(state=self.state_tracker.state, pack=self.pack),
+            pack=self.pack,
+        )
         self.gate = FactGate(self.settings.gate)
         self.predictor = SpeakPredictor(self.settings.predictor, self.settings.caller)
         self.director = Director(speaker=self.speaker, cfg=self.settings.director, bus=self.bus)
@@ -125,6 +138,8 @@ class Runtime:
         self._pending: list[Trigger] = []
         self._board_changes: list[BoardChange] = []
         self._last_spoken_video_ts: float | None = None
+        self._last_analyst_ts: float = 0.0
+        self._recent_event: tuple[Event, float] | None = None
         self._stop = asyncio.Event()
 
     # -- what the web layer is allowed to see ----------------------------
@@ -297,11 +312,73 @@ class Runtime:
                 last_spoken_ts=self._last_spoken_video_ts,
             )
             self._publish(Topic.TRIGGER, self.cursor_ts, decision)
-            if not decision.should_call:
-                continue
             if self._over_budget():
                 continue
-            await self._call(decision.triggers)
+
+            # A lull belongs to the analyst, and it has to be offered one
+            # first. The predictor's job is to never let the broadcast go
+            # mute, so left alone it will always send the caller to fill a
+            # silence — and the analyst, which by design only speaks into
+            # silences, would never once get a turn.
+            if self._is_a_lull(decision) and await self._maybe_analyst():
+                continue
+            if decision.should_call:
+                await self._call(decision.triggers)
+
+    def _is_a_lull(self, decision: SpeakDecision) -> bool:
+        """Nothing has happened; the only reason to speak is that nobody has."""
+        real = set(decision.triggers) - {Trigger.SCHEDULED, Trigger.SILENCE_PRESSURE}
+        return not real
+
+    async def _maybe_analyst(self) -> bool:
+        """Offer the analyst a turn. Returns whether it took one."""
+        if not self.with_analyst:
+            return False
+        cursor = self.cursor_ts
+        silence = (
+            float("inf")
+            if self._last_spoken_video_ts is None
+            else cursor - self._last_spoken_video_ts
+        )
+        allowed, reason = self.analyst.should_speak(
+            silence_s=silence,
+            last_analyst_ts=self._last_analyst_ts,
+            now_ts=cursor,
+            last_event=self._recent_event_within(6.0),
+        )
+        if not allowed:
+            return False
+
+        line = await self.analyst.call(self.buffer, self.state_tracker.summary(), reason)
+        if line is None:
+            self._publish(Topic.ERROR, cursor, where="analyst", detail=self.analyst.last_reason)
+            return False
+        self._publish(Topic.ANALYST, cursor, line)
+        if not line.speak or not line.line.strip():
+            return False
+
+        self.director.submit(
+            Beat(
+                id=next_beat_id("a"),
+                voice=Voice.ANALYST,
+                text=line.line,
+                video_ts=cursor,
+                created_ts=time.monotonic(),
+                live_ts=self.live_ts,
+                preemptable=True,
+            )
+        )
+        self._last_analyst_ts = cursor
+        self._last_spoken_video_ts = cursor
+        self.stats.analyst_calls += 1
+        return True
+
+    def _recent_event_within(self, seconds: float) -> Event | None:
+        """Whatever just happened, while it is still 'just'."""
+        if self._recent_event is None:
+            return None
+        event, ts = self._recent_event
+        return event if self.cursor_ts - ts <= seconds else None
 
     def _over_budget(self) -> bool:
         spent = self.backend.total.cost_usd
@@ -351,6 +428,8 @@ class Runtime:
         )
         self.director.submit(beat)
         self._last_spoken_video_ts = cursor
+        if line.event is not Event.NONE:
+            self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
 

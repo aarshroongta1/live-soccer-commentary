@@ -23,19 +23,18 @@ below reaches the installed package, not this file.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import os
 import time
 from collections.abc import AsyncIterator, Callable
-from typing import Any, TypeVar
+from typing import Any
 
 from commentary.schemas import Beat, Voice
 from commentary.voice.playback import AudioSink, NullSink, default_sink
 from commentary.voice.speaker import WORDS_PER_SECOND, Utterance
 
 log = logging.getLogger(__name__)
-
-_T = TypeVar("_T")
 
 #: Flash is the real-time model: roughly 75 ms to first byte against turbo's
 #: ~250 ms. Turbo v2.5 does sound a shade better and is a one-word change via
@@ -179,6 +178,9 @@ class ElevenLabsSpeaker:
         preemption is allowed to take — the network between chunks, and the
         player's pipe once it has as much audio as it can hold.
 
+        A stream that breaks halfway is handled here rather than thrown, so
+        that a line which was half heard is still reported as half heard.
+
         Returns when audio first went out (or None if none did) and whether the
         stream finished of its own accord.
         """
@@ -193,12 +195,20 @@ class ElevenLabsSpeaker:
                     chunk = chunk_task.result()
                 except StopAsyncIteration:
                     return audio_started, True
+                except Exception as exc:
+                    log.warning("ElevenLabs stream broke (%s): %s", type(exc).__name__, exc)
+                    return audio_started, False
                 if not chunk:
                     continue
                 if audio_started is None:
                     audio_started = time.monotonic()
                 write_task = asyncio.ensure_future(sink.write(chunk))
                 if not await _race(write_task, waiting):
+                    return audio_started, False
+                try:
+                    write_task.result()
+                except Exception as exc:
+                    log.warning("audio output failed (%s): %s", type(exc).__name__, exc)
                     return audio_started, False
             return audio_started, False
         finally:
@@ -273,7 +283,7 @@ class ElevenLabsSpeaker:
             await http.aclose()
 
 
-async def _race(task: asyncio.Task[_T], cancel: asyncio.Future[bool]) -> bool:
+async def _race[T](task: asyncio.Task[T], cancel: asyncio.Future[Any]) -> bool:
     """Wait for ``task``, abandoning it if ``cancel`` resolves first.
 
     True if the task won. If it lost it is cancelled and its result — or its
@@ -285,10 +295,8 @@ async def _race(task: asyncio.Task[_T], cancel: asyncio.Future[bool]) -> bool:
     if task in done:
         return True
     task.cancel()
-    try:
+    with contextlib.suppress(asyncio.CancelledError, Exception):
         await task
-    except (asyncio.CancelledError, Exception):
-        pass
     return False
 
 
@@ -296,10 +304,8 @@ async def _aclose(stream: AsyncIterator[bytes]) -> None:
     closer = getattr(stream, "aclose", None)
     if closer is None:
         return
-    try:
+    with contextlib.suppress(asyncio.CancelledError, Exception):
         await closer()
-    except (asyncio.CancelledError, Exception):
-        pass
 
 
 def speaker_from_env(**kwargs: Any) -> ElevenLabsSpeaker | None:

@@ -111,6 +111,12 @@ def freeze(pack: KnowledgePack) -> KnowledgePack:
     ``sheet.starters`` wholesale, not by an append, and the reassignment is
     exactly what is now impossible.
 
+    One sharp edge, since it is invisible: Pydantic's ``__eq__`` compares
+    classes, so ``freeze(pack) != pack`` even though every field matches.
+    Compare ``model_dump()`` if two packs ever need comparing. Nothing at
+    runtime does, and serialising a frozen pack is unaffected — it writes and
+    reloads as an ordinary :class:`KnowledgePack`.
+
     Calling this twice is harmless — it rebuilds an equal, equally frozen pack.
     """
     fields = dict(pack)

@@ -257,7 +257,7 @@ function Ledger({
           <div className="flex flex-col gap-1 border-t border-line pt-2">
             {cost.perAgent.map((agent) => (
               <Field key={agent.agent} label={label(agent.agent)}>
-                <span className="tnum font-mono">{usd(agent.usd)}</span>
+                <span className="tnum font-mono">{usd(agent.usd, 3)}</span>
               </Field>
             ))}
           </div>

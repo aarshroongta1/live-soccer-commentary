@@ -99,10 +99,11 @@ claim. It is not how good the line sounds.
 
 THE LINE
 
-At most {max_words} words. One sentence, two at the most — you have more room
-than the caller and you should not use all of it every time. Spoken English:
-the way someone talks in a gantry, not the way someone writes on a page. No
-preamble, no label, no quotation marks, no "in this frame", no sign-off.
+At most {max_words} words, and one sentence, two at the most. You have more
+room than the caller does and you should not use all of it every time. Spoken
+English: the way someone talks in a gantry, not the way someone writes on a
+page. No preamble, no label, no quotation marks, no "in this frame", no
+sign-off.
 
   Good: Third time they have gone down that left side in ten minutes, and the
         full-back has had no help all half.
@@ -232,6 +233,8 @@ def _render_value(value: Any, indent: str) -> str:
         parts = [f"{indent}{k}: {_scalar(v)}" for k, v in value.items() if v not in (None, "")]
         return "\n".join(parts)
     if isinstance(value, list | tuple):
+        if len(value) == 1:
+            return _scalar(value[0])
         return "\n".join(f"{indent}- {_scalar(v)}" for v in value)
     return _scalar(value)
 

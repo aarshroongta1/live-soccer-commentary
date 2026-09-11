@@ -17,10 +17,13 @@ export function percent(value: number): string {
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
 }
 
-/** Spend is shown to the cent once it matters, and to the tenth of a cent before. */
-export function usd(value: number): string {
+/**
+ * The headline total is read to the cent; the per-agent column is read to the
+ * tenth of a cent, at one fixed precision so the figures line up as a column.
+ */
+export function usd(value: number, digits = 2): string {
   if (!Number.isFinite(value)) return "—";
-  return value >= 1 ? `$${value.toFixed(2)}` : `$${value.toFixed(3)}`;
+  return `$${value.toFixed(digits)}`;
 }
 
 export function secondsAgo(from: number, now: number): string {
