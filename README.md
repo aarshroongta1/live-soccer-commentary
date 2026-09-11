@@ -141,6 +141,22 @@ reason, lag p50/p95, silence ratio, repetition, and cost. The ablations —
 worldcupvoice's loop reproduced, no delay, no fact gate, single voice — run from
 one command, and the headline chart is factual error rate against delay depth.
 
+Factuality is judged twice, and the two are reported separately because they
+catch different things. A deterministic checker finds the three failures that
+are checkable outright: a name on no roster, a stated score that contradicts the
+board, a goal with no goal behind it. A model judge (`grading/judge.py`) finds
+what that cannot — a line that is fluent, on-roster, correctly-scored, and
+describes something that did not happen. There is also a blind pairwise
+comparison against the human commentator's own words for the same ten seconds,
+run in both orderings, counting a win only where the two agree: a judge that
+flips when you swap the order is reporting its own noise, not a preference.
+
+The feed adapter (`grading/feed.py`) reads a saved play-by-play file — never a
+live fetch — and aligns its match clock to video time using the board reader's
+own clock readings, reporting the residual so a bad alignment is visible instead
+of quietly making every recall number wrong. Transcripts come from local Whisper
+with the roster as the prompt, so it spells the players right.
+
 ## Development
 
 ```bash
