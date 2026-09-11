@@ -472,12 +472,18 @@ async def run_variant(
         )
         await runtime.run(seconds=seconds)
 
-    # Grade against the stretch of match this variant actually watched. A run
+    # Grade against the stretch of match this variant actually called. A run
     # cut off after forty-five seconds is not answerable for the goals in the
     # four minutes it never saw a frame of, and scoring it against the whole
     # fixture drags every variant's recall down by the same large amount —
     # which looks like a finding and is an artefact of the run length.
-    watched = runtime.live_ts
+    #
+    # The window ends at the narration cursor rather than at the live edge.
+    # The cursor is how far the commentary got; the last ``delay_s`` seconds
+    # were ingested but never called, by construction. Charging a variant for
+    # those would take marks off in direct proportion to its buffer depth,
+    # which is the single thing the delay sweep is trying to measure.
+    watched = max(0.0, runtime.cursor_ts)
     truth = [event for event in sim.ground_truth if event.video_ts <= watched]
 
     # The truth and the notes handed to the grader are the sim's own, never the
@@ -556,9 +562,49 @@ def sweep_table(cards: Sequence[Scorecard]) -> str:
     return "\n".join([SWEEP_HEADER, *rows]) if rows else ""
 
 
+#: Two runs whose windows differ by less than this watched the same match for
+#: reporting purposes. Wall-clock scheduling alone moves the end of a run by a
+#: second or two, and reporting that as a difference would be noise.
+SPAN_TOLERANCE_S = 5.0
+
+#: Travels with the table, because the table will be pasted somewhere without
+#: it otherwise.
+CAVEAT = (
+    "_These are simulator numbers against a stand-in oracle, not a vision model on "
+    "real footage. They compare variants against each other; they do not measure "
+    "how well the system calls a football match._"
+)
+
+
+def coverage(cards: Sequence[Scorecard]) -> str:
+    """How much of the match each variant watched, in one line.
+
+    Recall and silence ratio are fractions of this window and of nothing else,
+    so the window has to be printed beside them. When the windows differ the
+    line says so instead of quietly implying the columns are comparable.
+    """
+    spans = [card.watched_s for card in cards]
+    if not spans:
+        return ""
+    if max(spans) - min(spans) <= SPAN_TOLERANCE_S:
+        return (
+            f"Each variant called the first {max(spans):.0f}s of the match. Recall and "
+            "silence are fractions of that window, not of the whole fixture."
+        )
+    listing = ", ".join(f"{card.name} {card.watched_s:.0f}s" for card in cards)
+    return (
+        "Variants called different stretches of the match, so their recall and silence "
+        f"figures are not directly comparable: {listing}."
+    )
+
+
 def render(cards: Sequence[Scorecard]) -> str:
     """The results section: the comparison, the breakdowns, then the sweep."""
-    parts: list[str] = ["## Results", "", report.table(list(cards)), ""]
+    parts: list[str] = ["## Results", "", CAVEAT, ""]
+    window = coverage(cards)
+    if window:
+        parts.extend([window, ""])
+    parts.extend([report.table(list(cards)), ""])
     for card in cards:
         parts.extend([report.detail(card), ""])
     sweep = sweep_table(cards)

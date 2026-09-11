@@ -231,6 +231,37 @@ async def test_worldcupvoice_calls_on_a_metronome_and_the_full_system_does_not(
 
 
 @pytest.mark.asyncio
+async def test_a_variant_is_graded_only_on_the_match_it_called(tmp_path: Path) -> None:
+    """A run stopped early owes nothing for the football it never saw.
+
+    The wall-clock deadline cuts this run off a long way into a long match, so
+    most of the fixture is out of scope. Scoring against the whole script would
+    count corners from minutes the run was never shown a frame of, and every
+    variant's recall would be dragged down by the same large amount — which
+    reads as a finding and is an artefact of how long the run was given.
+    """
+    sim = MatchSim(seed=5, duration_s=240.0)
+    card = await run_variant(full(fast()), sim, seconds=4.0, out_dir=tmp_path, speed=8.0)
+
+    assert 0.0 < card.watched_s < sim.duration_s, (
+        f"the run should have been cut off partway: watched {card.watched_s:.1f}s "
+        f"of {sim.duration_s:.0f}s"
+    )
+    in_window = [e for e in sim.ground_truth if e.video_ts <= card.watched_s]
+    assert len(in_window) < len(sim.ground_truth), "the whole match fitted in the window"
+
+    scored = sum(need for _got, need in card.recall_by_event.values())
+    assert scored == len(in_window), (
+        f"recall was scored against {scored} events but only {len(in_window)} "
+        "happened inside the window the run called"
+    )
+
+    rendered = render([card])
+    assert "simulator numbers" in rendered.lower()
+    assert f"{card.watched_s:.0f}s" in rendered
+
+
+@pytest.mark.asyncio
 async def test_the_delay_sweep_produces_one_card_per_depth(tmp_path: Path) -> None:
     variants = delay_sweep(fast())
     cards = await run_suite(
