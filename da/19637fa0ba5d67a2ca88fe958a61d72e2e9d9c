@@ -1,0 +1,81 @@
+.env.example
+  s_78c2bc713ecd27::t_17268ea674df9c 1-13
+.github/workflows/ci.yml
+  s_78c2bc713ecd27::t_f64508408b3e9e 1-21
+.gitignore
+  s_78c2bc713ecd27::t_c712af5aef7f61 1-31
+.pre-commit-config.yaml
+  s_78c2bc713ecd27::t_e638f60924cea1 1-15
+.python-version
+  s_78c2bc713ecd27::t_96bf199e1487a4 1
+README.md
+  s_78c2bc713ecd27::t_afe2f6702a2fa4 1-56
+docs/PLAN-v2-full.md
+  s_71f6526ab57118::t_1228e8fcfa42c3 1-619
+docs/PLAN-v3-superseded.md
+  s_71f6526ab57118::t_03637837435a5a 1-492
+docs/PLAN-v4-superseded.md
+  s_71f6526ab57118::t_6054e0d35503e4 1-248
+docs/research/research-commentary.md
+  s_de922be0ba5773::t_3c1aa70453af0d 1-264
+docs/research/research-cv.md
+  s_de922be0ba5773::t_b0f6bab6753aae 1-520
+docs/research/research-realtime.md
+  s_de922be0ba5773::t_a45f48eef4ce30 1-308
+pyproject.toml
+  s_78c2bc713ecd27::t_27b674e1e7c0c5 1-59
+scripts/list_devices.sh
+  s_78c2bc713ecd27::t_6850d8f0c7068a 1-4
+src/commentary/__init__.py
+  s_78c2bc713ecd27::t_10b0587a7a377a 1-3
+src/commentary/__main__.py
+  s_78c2bc713ecd27::t_c3a08e8b86e297 1-41
+src/commentary/capture/__init__.py
+  s_78c2bc713ecd27::t_db0fd8e424215c 1-6
+src/commentary/capture/buffer.py
+  s_78c2bc713ecd27::t_e764447f030f48 1-114
+src/commentary/capture/screen.py
+  s_78c2bc713ecd27::t_481201e299ca70 1-80
+src/commentary/config.py
+  s_78c2bc713ecd27::t_3b06b283c30506 1-38
+src/commentary/schemas.py
+  s_78c2bc713ecd27::t_8c1cfb2088f798 1-85
+tests/test_buffer.py
+  s_78c2bc713ecd27::t_ff829c981e663f 1-65
+tests/test_schemas.py
+  s_78c2bc713ecd27::t_7c1e66544f951e 1-22
+uv.lock
+  s_78c2bc713ecd27::t_1c5762c0dd03a9 1-2467
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "da19637fa0ba5d67a2ca88fe958a61d72e2e9d9c",
+  "prompts": {},
+  "sessions": {
+    "s_71f6526ab57118": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a5a22f47-32c2-4c5e-94c0-c5ac130ad2a8",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_78c2bc713ecd27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8bc07b82-1ef4-4b0c-9949-60b30221beb7",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_de922be0ba5773": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39c76659-f752-4a73-ad9c-94315b400011",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
