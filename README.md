@@ -94,31 +94,36 @@ see resolve:
 
 | run | lines | factual err | recall | gate rej | lag p50/p95 s | silence |
 |---|---:|---:|---:|---:|---:|---:|
-| worldcupvoice | 18 | 55.6% | 94% | 0.0% | 0.0 / 0.0 | 66% |
-| **full** | 24 | **12.5%** | 100% | 53.2% | 8.0 / 8.0 | 59% |
-| no-gate | 29 | 69.0% | 100% | 0.0% | 8.0 / 8.0 | 38% |
-| no-delay | 24 | 4.2% | 100% | 63.8% | 0.0 / 0.0 | 60% |
-| single-voice | 24 | 0.0% | 100% | 52.0% | 8.0 / 8.0 | 62% |
+| worldcupvoice | 18 | 55.6% | 94% | 0.0% | 0.0 / 0.0 | 65% |
+| **full** | 24 | **4.2%** | 100% | 52.3% | 8.0 / 8.0 | 56% |
+| no-gate | 28 | 67.9% | 100% | 0.0% | 8.0 / 8.0 | 45% |
+| no-delay | 23 | 8.7% | 100% | 65.0% | 0.0 / 0.0 | 60% |
+| single-voice | 22 | 9.1% | 100% | 60.0% | 8.0 / 8.0 | 64% |
 
-The fact gate is the whole story: switching it off takes factual error rate from
-12.5% to 69.0%, and the reproduced worldcupvoice loop sits at 55.6%.
+The fact gate is the result. Switching it off takes factual error rate from 4.2%
+to 67.9% — the caller proposes plenty of nonsense either way, and the gate is
+the only thing standing between that and a voice. The reproduced worldcupvoice
+loop sits at 55.6%, which is roughly what an ungated caller does.
 
-The delay does not show a benefit, and that is worth stating rather than
-burying:
+The delay is a different story, and it is worth being straight about:
 
 | delay | 0 s | 2 s | 4 s | 8 s |
 |---|---:|---:|---:|---:|
-| factual error | 9.1% | 8.7% | 7.1% | 13.0% |
-| gate rejections | 70.7% | 62.5% | 44.7% | 56.5% |
+| factual error | 4.3% | 0.0% | 0.0% | 8.7% |
+| gate rejections | 61.5% | 52.2% | 56.2% | 50.0% |
 
-Read the second row before concluding the buffer is useless. At zero delay the
-gate is rejecting 70.7% of what the caller proposes; at four seconds it rejects
-44.7% for a similar surviving error rate. In this simulation the delay and the
-gate are substitutes — the lookahead stops errors being *made*, the gate stops
-them being *spoken*, and with the gate in place the buffer mostly buys back
-things the gate would otherwise have thrown away. Whether that holds for a real
-vision model on real footage is exactly the open question, and it is the one
-the sweep exists to answer once there is a key and a clip.
+**No delay effect is visible here.** At 23-26 lines per variant a single error
+moves the number by four points, so everything in that top row is noise around
+the same value. The one real signal is in the second row: deeper buffers need
+*fewer* gate rejections for the same outcome, which is what you would expect if
+the lookahead stops some errors being made rather than caught — but that is a
+trend across four noisy points, not a finding.
+
+This is a limit of the simulator, not a verdict on the design. The stand-in
+model's outcome guessing is a modelling assumption about how a vision model
+fails, and the delay experiment is really a test of that assumption. It needs a
+real vision model on real footage to mean anything, which is exactly what the
+sweep is built and waiting to do.
 
 Read all of it for what it is: a stand-in model on generated video. What these
 establish is that the pipeline, the gate and the measurement work, and that the
