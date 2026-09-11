@@ -1,8 +1,9 @@
 """The commands. Five of them, and the one that matters is ``run``.
 
-    uv run python -m commentary capture 10       # day one: frames reach Python
-    uv run python -m commentary sim              # watch the fake broadcast
-    uv run python -m commentary run --serve      # call a match, in a browser
+    uv run python -m commentary capture 10           # day one: frames reach Python
+    uv run python -m commentary sim                  # watch the fake broadcast
+    uv run python -m commentary research Arsenal PSG # pre-match notes, once
+    uv run python -m commentary run --serve          # call a match, in a browser
     uv run python -m commentary grade runs/*.jsonl
 """
 
@@ -16,10 +17,10 @@ from pathlib import Path
 
 from commentary.capture import DelayBuffer, FileCapture, ScreenCapture
 from commentary.config import SETTINGS, Settings
-from commentary.llm.base import LLMBackend
+from commentary.llm.base import LLMBackend, LLMError
 from commentary.runtime import Runtime, trace_path
 from commentary.trace import RunTrace
-from commentary.voice import LogSpeaker
+from commentary.voice import LogSpeaker, Speaker
 
 # -- capture ------------------------------------------------------------
 
@@ -121,11 +122,19 @@ def _backend(args: argparse.Namespace, sim: object | None) -> LLMBackend:
     return default_backend()
 
 
-def _speaker(args: argparse.Namespace):  # type: ignore[no-untyped-def]
-    if args.voice == "elevenlabs":
-        from commentary.voice.elevenlabs import ElevenLabsSpeaker
+def _speaker(args: argparse.Namespace) -> Speaker:
+    """A real voice if asked for and possible, otherwise the printed one.
 
-        return ElevenLabsSpeaker()
+    Falling back rather than failing is deliberate: discovering at kickoff
+    that a key has expired should cost the sound, not the match.
+    """
+    if args.voice == "elevenlabs":
+        from commentary.voice import speaker_from_env
+
+        spoken = speaker_from_env()
+        if spoken is not None:
+            return spoken
+        print("no ELEVENLABS_API_KEY: falling back to the printed voice")
     return LogSpeaker(echo=True)
 
 
@@ -210,6 +219,35 @@ async def _serve(runtime: Runtime, port: int) -> None:
 # -- serve --------------------------------------------------------------
 
 
+async def cmd_research(args: argparse.Namespace) -> int:
+    """Write the pre-match notes, once, before anybody is waiting.
+
+    This is the only command that reaches the outside world, and it is meant
+    to be run well before kickoff — a pack costs a real model call, and a
+    live match is not the time to discover the squad numbers are wrong.
+    """
+    from commentary.agents.researcher import Researcher, pack_path, save_pack
+    from commentary.llm import default_backend
+
+    backend = default_backend()
+    researcher = Researcher(backend)
+    pack = await researcher.research(
+        args.home, args.away, competition=args.competition, when=args.when
+    )
+    path = Path(args.out) if args.out else pack_path(args.home, args.away)
+    save_pack(pack, path)
+
+    searched = "with web search" if getattr(researcher, "used_search", False) else "from memory"
+    print(f"{pack.home.name} v {pack.away.name} — researched {searched}")
+    for sheet in (pack.home, pack.away):
+        numbered = sum(1 for p in sheet.squad if p.number is not None)
+        print(f"  {sheet.name}: {len(sheet.squad)} players, {numbered} with shirt numbers")
+    print(f"  {len(pack.storylines)} storylines")
+    print(f"wrote {path}")
+    print(f"cost ${backend.total.cost_usd:.3f}")
+    return 0
+
+
 async def cmd_grade(args: argparse.Namespace) -> int:
     """Score one or more traces. Needs a pack and a ground truth to grade against."""
     from commentary.grading import metrics
@@ -231,7 +269,11 @@ async def cmd_grade(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="commentary", description=__doc__)
+    parser = argparse.ArgumentParser(
+        prog="commentary",
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     cap = sub.add_parser("capture", help="stream the screen into Python and print stats")
@@ -261,6 +303,14 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--out", default="runs")
     run.set_defaults(func=cmd_run)
 
+    res = sub.add_parser("research", help="write the pre-match notes (needs a key)")
+    res.add_argument("home")
+    res.add_argument("away")
+    res.add_argument("--competition", default="")
+    res.add_argument("--when", default="")
+    res.add_argument("--out", help="where to write the pack; defaults under packs/")
+    res.set_defaults(func=cmd_research)
+
     grade = sub.add_parser("grade", help="print metrics for saved traces")
     grade.add_argument("traces", nargs="+")
     grade.set_defaults(func=cmd_grade)
@@ -276,6 +326,11 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("\nstopped", file=sys.stderr)
         return 130
+    except LLMError as exc:
+        # A missing key is a thing to fix, not a thing to debug. The message
+        # already says what to do, so a traceback only buries it.
+        print(str(exc), file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

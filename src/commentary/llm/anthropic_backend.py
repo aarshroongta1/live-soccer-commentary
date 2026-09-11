@@ -62,6 +62,13 @@ class AnthropicBackend:
         )
         self._total = Usage()
         self._lock = asyncio.Lock()
+        #: Merged into every request, for the one agent that needs something
+        #: this protocol does not carry. The researcher sets ``tools`` here to
+        #: turn on web search before kickoff; widening ``parse`` instead would
+        #: put a tools parameter on the caller and the board reader, where it
+        #: means nothing. It cannot override the output format or the model —
+        #: those are set after the merge, deliberately.
+        self.extra_params: dict[str, Any] = {}
 
     @property
     def total(self) -> Usage:
@@ -81,6 +88,7 @@ class AnthropicBackend:
     ) -> Parsed[T]:
         started = time.monotonic()
         params: dict[str, Any] = {
+            **self.extra_params,
             "model": model,
             "max_tokens": max_tokens,
             "system": [text_block(system, cache=cache_system)],
