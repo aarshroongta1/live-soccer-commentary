@@ -13,8 +13,13 @@ cursor has reached it. But a board change is not applied to match state until
 the cursor passes the moment it happened, so the commentary can never
 announce something the viewer has not seen yet. The early read is used only
 as evidence: when the caller claims a goal, the gate asks whether the board
-changed anywhere in the lookahead window, which is exactly the question a
-human commentator answers by glancing up at the graphic.
+moved around that moment, which is exactly the question a human commentator
+answers by glancing up at the graphic.
+
+"Around that moment" is a fixed window, not the buffer depth. Tying it to
+the buffer made the gate more permissive the longer we chose to wait, which
+is a strange thing for a safety check to do and undid most of what the delay
+was for.
 """
 
 from __future__ import annotations
@@ -51,6 +56,12 @@ from commentary.state import MatchStateTracker
 from commentary.tools import MatchTools
 from commentary.trace import RunTrace
 from commentary.voice.speaker import LogSpeaker, Speaker
+
+#: How long after the ball crosses the line a broadcaster's score bug
+#: catches up. A property of television, not of our buffer, which is the
+#: whole point: the window the gate will accept a board change in must not
+#: grow when we choose to wait longer.
+GOAL_GRAPHIC_LAG_S = 5.0
 
 
 class AudioSource(Protocol):
@@ -438,13 +449,24 @@ class Runtime:
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
 
     def _board_changed_near(self, cursor: float) -> bool:
-        """Did the scoreboard move anywhere in the window we can see ahead to?
+        """Did the scoreboard move around the moment being called?
 
         A goal shows on the graphic a beat after the ball crosses the line, so
-        the change we are looking for sits between the cursor and the live
-        edge. That is precisely the window the delay buys us.
+        the change sits slightly ahead of the cursor, and seeing it early is
+        what the delay buys. But the window is a fact about broadcast
+        graphics, not about our buffer: it must not widen just because we
+        chose to wait longer.
+
+        The first version used ``delay_s`` as the window, and so made the gate
+        more permissive the deeper the buffer got — at eight seconds it would
+        accept a board change eight seconds after the cursor as proof of a
+        goal being called now, which is often a different passage of play
+        entirely. Measured across the sweep, phantom goals reaching air went
+        1, 1, 4, 6 as the buffer deepened. The delay was buying the caller
+        information and paying for it by loosening the gate, which is most of
+        why the delay chart showed nothing.
         """
-        window = self.settings.capture.delay_s
+        window = min(GOAL_GRAPHIC_LAG_S, self.settings.capture.delay_s)
         recent = [c for c in self._board_changes if c.is_goal]
         return any(cursor - 2.0 <= c.ts <= cursor + window for c in recent)
 

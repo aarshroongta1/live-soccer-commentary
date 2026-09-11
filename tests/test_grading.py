@@ -116,6 +116,30 @@ def test_a_goal_claimed_where_none_happened_is_caught(tmp_path: Path, truth, pac
     assert "phantom_goal" in kinds
 
 
+@pytest.mark.parametrize(
+    "line",
+    [
+        "and that is a goal for Arsenal",
+        "It is in! Saka has scored",
+        "Saka finds the net",
+        "Saka makes it two",
+    ],
+)
+def test_a_phantom_goal_is_caught_however_it_is_phrased(
+    tmp_path: Path, truth, pack, line: str
+) -> None:
+    """A checker that knows three phrasings is measuring its own vocabulary.
+
+    The original list was "goal", "scores", "it's in", which missed "It is
+    in! ... has scored" — the exact phrasing in use — so phantom goals were
+    counted nowhere and every error rate was understated.
+    """
+    path = write_trace(tmp_path, [spoken(150.0, line)])
+    run = metrics.load_run(path)
+    kinds = {e.kind for e in metrics.factual_errors(run, truth, pack)}
+    assert "phantom_goal" in kinds, f"not detected as a goal claim: {line!r}"
+
+
 def test_a_wrong_scoreline_is_caught(tmp_path: Path, truth, pack) -> None:
     path = write_trace(tmp_path, [spoken(90.0, "Arsenal lead 3-0 here")])
     run = metrics.load_run(path)

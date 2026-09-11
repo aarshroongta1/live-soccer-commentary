@@ -43,6 +43,25 @@ _OPENER_TEXT = (
 )
 OPENERS = frozenset(_OPENER_TEXT.split(" "))
 
+#: Ways a line can claim a goal. The first version listed "goal", "scores"
+#: and "it's in", and therefore missed "It is in! ... has scored" entirely —
+#: so phantom goals in that phrasing were counted nowhere and every factual
+#: error rate was understated. A commentator has many ways to say it and a
+#: checker that only knows three is measuring its own vocabulary.
+GOAL_CLAIMS: tuple[str, ...] = (
+    "goal",
+    "scores",
+    "scored",
+    "it's in",
+    "it is in",
+    "finds the net",
+    "back of the net",
+    "makes it",
+    "puts them ahead",
+    "levels it",
+    "equaliser",
+)
+
 _SUFFIXES = ("ing", "edly", "ed", "es", "s")
 
 
@@ -313,7 +332,7 @@ def factual_errors(
                     )
                 )
 
-        claims_goal = any(phrase in lowered for phrase in ("goal", "scores", "it's in"))
+        claims_goal = any(phrase in lowered for phrase in GOAL_CLAIMS)
         if claims_goal and not any(abs(line.video_ts - g) <= goal_window_s for g in goals):
             errors.append(FactualError(line.video_ts, "phantom_goal", "no goal nearby", line.text))
 

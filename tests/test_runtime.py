@@ -154,6 +154,38 @@ async def test_a_confident_caller_is_not_evidence_of_a_celebration(tmp_path: Pat
 
 
 @pytest.mark.asyncio
+async def test_the_goal_confirmation_window_does_not_widen_with_the_buffer(
+    tmp_path: Path,
+) -> None:
+    """How long a score bug lags a goal is a fact about television.
+
+    An earlier version used the buffer depth as the window, so choosing to
+    wait longer also made the gate accept a board change further from the
+    moment being called. Across the sweep that showed up as phantom goals
+    reaching air 1, 1, 4, 6 as the buffer deepened: the delay bought the
+    caller information and paid for it by loosening the gate.
+    """
+    from commentary.perception.board import BoardChange
+    from commentary.runtime import GOAL_GRAPHIC_LAG_S
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    assert runtime.settings.capture.delay_s > GOAL_GRAPHIC_LAG_S, "test needs a deep buffer"
+
+    def board_change_at(ts: float) -> BoardChange:
+        return BoardChange(
+            ts=ts, home_score=1, away_score=0, clock=None, period=1, previous=(0, 0)
+        )
+
+    runtime._board_changes = [board_change_at(10.0 + GOAL_GRAPHIC_LAG_S - 1.0)]
+    assert runtime._board_changed_near(10.0) is True
+
+    # Inside the buffer but far past when a graphic could plausibly be
+    # reporting this moment: that is a different passage of play.
+    runtime._board_changes = [board_change_at(10.0 + GOAL_GRAPHIC_LAG_S + 2.0)]
+    assert runtime._board_changed_near(10.0) is False
+
+
+@pytest.mark.asyncio
 async def test_a_goal_is_never_announced_before_the_board_confirms_it(tmp_path: Path) -> None:
     _runtime, sim, path = await run_sim(tmp_path, seconds=5.0, delay_s=4.0)
     run = metrics.load_run(path)
