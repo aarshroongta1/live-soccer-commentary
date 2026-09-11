@@ -8,9 +8,11 @@ a loader that reads a file somebody saved after the match cannot leak into a
 live run, however badly the rest of the code is wired. A scraper could.
 
 Two jobs. The first is reading a saved play-by-play into
-:class:`~commentary.schemas.GroundTruthEvent`. The shape this project writes
-is small and documented below; ESPN's own export is accepted too where doing
-so costs a line, because that is what people actually have on disk.
+:class:`~commentary.schemas.GroundTruthEvent`. One shape is read, the one
+this project writes, and it is documented on :func:`load_feed`. A feed that
+arrives in somebody else's shape is converted to ours before it gets here,
+where the conversion is visible, rather than inside a loader whose tolerance
+would have to be trusted.
 
 The second is alignment, which is the part that quietly ruins evals. The feed
 counts in match time and a trace counts in video time, and the only bridge
@@ -23,54 +25,33 @@ move it, and the residual is reported next to the answer.
 from __future__ import annotations
 
 import json
-import re
 import statistics
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from commentary import state
 from commentary.schemas import Event, GroundTruthEvent, Side
 
-#: ``37``, ``37'``, ``37:12``, ``45+2``, ``45'+2'``, ``90 + 4:30``.
-CLOCK = re.compile(
-    r"^\s*(\d{1,3})(?::(\d{1,2}))?\s*'?"
-    r"(?:\s*\+\s*(\d{1,3})(?::(\d{1,2}))?\s*'?)?\s*$"
-)
-
-#: Rows whose type is one of these are dropped without complaint. They are
-#: restarts and bookkeeping, not things a commentator is graded on missing.
-IGNORED = frozenset(
-    {"goal kick", "kick off", "kickoff", "half time", "full time", "end of match", "delay"}
-)
-
-#: Matched in order against the lowercased type text, first hit wins. Order is
-#: load-bearing: "Goalkeeper Save" and "Goal Kick" both contain "goal", so the
-#: narrower phrases have to be tried before the broad ones.
-EVENT_WORDS: tuple[tuple[str, Event], ...] = (
-    ("own goal", Event.GOAL),
-    ("penalty - scored", Event.GOAL),
-    ("penalty scored", Event.GOAL),
-    ("penalty - missed", Event.PENALTY),
-    ("penalty - saved", Event.PENALTY),
-    ("save", Event.SAVE),
-    ("goal", Event.GOAL),
-    ("penalty", Event.PENALTY),
-    ("yellow card", Event.CARD),
-    ("red card", Event.CARD),
-    ("booking", Event.CARD),
-    ("card", Event.CARD),
-    ("substitution", Event.SUBSTITUTION),
-    ("sub ", Event.SUBSTITUTION),
-    ("corner", Event.CORNER),
-    ("offside", Event.OFFSIDE),
-    ("free kick", Event.FREE_KICK),
-    ("freekick", Event.FREE_KICK),
-    ("throw", Event.THROW_IN),
-    ("foul", Event.FOUL),
-    ("shot", Event.SHOT),
-    ("attempt", Event.SHOT),
-    ("header", Event.SHOT),
-)
+#: The vocabulary a row's ``type`` may use: our own event names, plus the two
+#: card colours, because a saved feed writes those rather than "card".
+#: Anything else is counted in :attr:`Feed.skipped` rather than guessed at.
+EVENT_WORDS: dict[str, Event] = {
+    "goal": Event.GOAL,
+    "own goal": Event.GOAL,
+    "shot": Event.SHOT,
+    "save": Event.SAVE,
+    "corner": Event.CORNER,
+    "free kick": Event.FREE_KICK,
+    "penalty": Event.PENALTY,
+    "foul": Event.FOUL,
+    "offside": Event.OFFSIDE,
+    "throw in": Event.THROW_IN,
+    "card": Event.CARD,
+    "yellow card": Event.CARD,
+    "red card": Event.CARD,
+    "substitution": Event.SUBSTITUTION,
+}
 
 
 class FeedError(ValueError):
@@ -123,33 +104,29 @@ class Feed:
 
 
 def parse_clock(text: str | None) -> Clock | None:
-    """A printed match clock to seconds played. ``None`` if it is not one."""
+    """A printed match clock to seconds played. ``None`` if it is not one.
+
+    The reading itself is :func:`commentary.state.parse_clock`, the same one
+    the board reader's clock goes through at runtime — a feed and a board
+    print the clock the same way, and two parsers would be two chances to
+    disagree about what "45+2" means. What is added here is the half, which
+    the seconds alone cannot give.
+    """
     if not text:
         return None
-    match = CLOCK.match(str(text))
-    if match is None:
+    cleaned = str(text)
+    seconds = state.parse_clock(cleaned)
+    period = state.period_for_clock(cleaned)
+    if seconds is None or period is None:
         return None
-    minutes, seconds, added, added_seconds = match.groups()
-    base = int(minutes)
-    total = base * 60 + int(seconds or 0)
-    if added is not None:
-        total += int(added) * 60 + int(added_seconds or 0)
-    stoppage = added is not None
-    period = 1 if base < 45 or (base == 45 and stoppage) else 2
-    return Clock(seconds=float(total), period=period, text=str(text).strip())
+    return Clock(seconds=seconds, period=period, text=cleaned.strip())
 
 
 def parse_event(text: str | None) -> Event | None:
     """A feed's word for what happened to one of ours. ``None`` means drop it."""
     if not text:
         return None
-    lowered = " ".join(str(text).lower().split())
-    if lowered in IGNORED:
-        return None
-    for needle, event in EVENT_WORDS:
-        if needle in lowered:
-            return event
-    return None
+    return EVENT_WORDS.get(" ".join(str(text).lower().split()))
 
 
 # -- reading a saved file ----------------------------------------------
@@ -160,7 +137,8 @@ def load_feed(path: Path) -> Feed:
 
     The shape this project writes is::
 
-        {"events": [{"clock": "37:12", "type": "goal", "team": "home",
+        {"home_team": "Arsenal", "away_team": "Real Madrid",
+         "events": [{"clock": "37:12", "type": "goal", "team": "home",
                      "player": "Bukayo Saka", "home_score": 1,
                      "away_score": 0, "text": "..."}]}
 
@@ -168,6 +146,7 @@ def load_feed(path: Path) -> Feed:
     filled in where it can be: scores run forward from the goals if the file
     does not carry them, and an absent team leaves the side unknown rather
     than guessing, because a guessed side is worse than no side at all.
+    ``team`` may be "home"/"away" or either of the two team names.
     """
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
@@ -180,43 +159,43 @@ def load_feed(path: Path) -> Feed:
 
 def parse_feed(document: Any) -> Feed:
     """The body of :func:`load_feed`, for a document already in memory."""
-    rows, context = _rows_and_context(document)
+    if not isinstance(document, dict):
+        raise FeedError("feed must be a JSON object with an 'events' list")
+    rows = document.get("events")
+    if not isinstance(rows, list):
+        raise FeedError("feed has no 'events' list")
+    sides = _sides(document)
+
     feed = Feed()
     home = away = 0
-
     for row in rows:
-        if not isinstance(row, dict):
-            continue
-        clock = parse_clock(
-            _scalar(_first(row, "clock", "time", "minute", "displayClock"), "displayValue", "value")
-        )
-        raw_type = _scalar(_first(row, "type", "event", "kind", "play_type"), "text", "name")
+        raw_type = row.get("type")
         event = parse_event(raw_type)
+        clock = parse_clock(row.get("clock"))
         if clock is None or event is None:
             label = " ".join(str(raw_type or "no type").lower().split())
             feed.skipped[label] = feed.skipped.get(label, 0) + 1
             continue
 
-        side = _side(row, context)
-        said_home = _int(_first(row, "home_score", "homeScore"))
-        said_away = _int(_first(row, "away_score", "awayScore"))
-        if said_home is None or said_away is None:
-            if event is Event.GOAL and side is Side.HOME:
-                home += 1
-            elif event is Event.GOAL and side is Side.AWAY:
-                away += 1
-        else:
+        side = _side(row.get("team"), sides)
+        said_home, said_away = row.get("home_score"), row.get("away_score")
+        if isinstance(said_home, int) and isinstance(said_away, int):
             home, away = said_home, said_away
+        elif event is Event.GOAL and side is Side.HOME:
+            home += 1
+        elif event is Event.GOAL and side is Side.AWAY:
+            away += 1
 
+        player = str(row.get("player") or "").strip()
         feed.events.append(
             FeedEvent(
                 clock=clock,
                 event=event,
                 side=side,
-                player=_player(row),
+                player=player or None,
                 home_score=home,
                 away_score=away,
-                text=str(_first(row, "text", "shortText", "description") or ""),
+                text=str(row.get("text") or ""),
             )
         )
 
@@ -224,87 +203,23 @@ def parse_feed(document: Any) -> Feed:
     return feed
 
 
-def _rows_and_context(document: Any) -> tuple[list[Any], dict[str, str]]:
-    """The event rows, and whatever the file says about which team is which."""
-    if isinstance(document, list):
-        return document, {}
-    if not isinstance(document, dict):
-        raise FeedError("feed must be a JSON object or a list of events")
-
-    rows = _first(document, "events", "plays", "commentary", "items")
-    if not isinstance(rows, list):
-        raise FeedError("feed has no 'events' list")
-
-    context: dict[str, str] = {}
-    for key, side in (("home", "home"), ("away", "away")):
-        named = _first(document, f"{key}_team", f"{key}Team", key)
-        if isinstance(named, str):
-            context[named.strip().lower()] = side
-        elif isinstance(named, dict):
-            for label in ("id", "name", "displayName", "abbreviation", "short"):
-                value = named.get(label)
-                if value:
-                    context[str(value).strip().lower()] = side
-        ident = _first(document, f"{key}_id", f"{key}TeamId")
-        if ident:
-            context[str(ident).strip().lower()] = side
-    return rows, context
+def _sides(document: dict[str, Any]) -> dict[str, Side]:
+    """Team name to side, so a row may name the team instead of saying "home"."""
+    named: dict[str, Side] = {}
+    for key, side in (("home_team", Side.HOME), ("away_team", Side.AWAY)):
+        value = document.get(key)
+        if isinstance(value, str) and value.strip():
+            named[value.strip().lower()] = side
+    return named
 
 
-def _side(row: dict[str, Any], context: dict[str, str]) -> Side:
-    raw = _first(row, "team", "side", "homeAway")
-    if isinstance(raw, dict):
-        raw = _first(raw, "homeAway", "id", "abbreviation", "displayName", "name")
+def _side(raw: Any, named: dict[str, Side]) -> Side:
     if raw is None:
         return Side.UNKNOWN
     token = str(raw).strip().lower()
     if token in ("home", "away"):
         return Side(token)
-    resolved = context.get(token)
-    return Side(resolved) if resolved else Side.UNKNOWN
-
-
-def _player(row: dict[str, Any]) -> str | None:
-    raw = _first(row, "player", "athlete", "scorer", "participants")
-    if isinstance(raw, list):
-        raw = raw[0] if raw else None
-    if isinstance(raw, dict):
-        raw = _first(raw, "displayName", "fullName", "name", "athlete")
-    if isinstance(raw, dict):
-        raw = _first(raw, "displayName", "fullName", "name")
-    if raw is None:
-        return None
-    name = str(raw).strip()
-    return name or None
-
-
-def _scalar(value: Any, *keys: str) -> str | None:
-    """Unwrap the little objects ESPN wraps its scalars in.
-
-    A clock arrives as ``{"displayValue": "37'"}`` and a type as
-    ``{"text": "Goal - Header"}`` often enough that stringifying the dict
-    and hoping is not good enough — it would turn "Goal Kick" into a goal.
-    """
-    if isinstance(value, dict):
-        value = _first(value, *keys)
-    if value is None:
-        return None
-    return str(value)
-
-
-def _first(row: dict[str, Any], *keys: str) -> Any:
-    for key in keys:
-        value = row.get(key)
-        if value is not None and value != "":
-            return value
-    return None
-
-
-def _int(value: Any) -> int | None:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
+    return named.get(token, Side.UNKNOWN)
 
 
 # -- putting the feed on the video clock -------------------------------

@@ -78,34 +78,31 @@ def test_first_half_stoppage_stays_in_the_first_half() -> None:
 
 @pytest.mark.parametrize(
     ("text", "seconds"),
-    [("37", 2220.0), ("37'", 2220.0), ("37:12", 2232.0), ("90 + 4:30", 5670.0), ("45'+2'", 2820.0)],
+    [
+        ("37", 2220.0),
+        ("37'", 2220.0),
+        ("37:12", 2232.0),
+        ("90 + 4:30", 5670.0),
+        ("45+2:13", 2833.0),
+    ],
 )
 def test_the_clock_shapes_feeds_actually_print(text: str, seconds: float) -> None:
     clock = feedmod.parse_clock(text)
     assert clock is not None and clock.seconds == pytest.approx(seconds)
 
 
-def test_an_espn_shaped_export_is_read_too(tmp_path: Path) -> None:
-    espn = {
-        "home": {"id": "359", "displayName": "Arsenal"},
-        "away": {"id": "86", "displayName": "Real Madrid"},
-        "plays": [
+def test_a_row_may_name_the_team_instead_of_the_side(tmp_path: Path) -> None:
+    loaded = feedmod.load_feed(
+        write(
+            tmp_path,
             {
-                "clock": {"displayValue": "37'"},
-                "type": {"text": "Goal - Header"},
-                "team": {"id": "359"},
-                "participants": [{"athlete": {"displayName": "Bukayo Saka"}}],
-                "homeScore": 1,
-                "awayScore": 0,
+                "home_team": "Arsenal",
+                "away_team": "Real Madrid",
+                "events": [{"clock": "37:12", "type": "goal", "team": "Arsenal"}],
             },
-            {"clock": {"displayValue": "52'"}, "type": {"text": "Goal Kick"}, "team": {"id": "86"}},
-        ],
-    }
-    loaded = feedmod.load_feed(write(tmp_path, espn))
-    assert len(loaded.events) == 1
-    assert loaded.events[0].event is Event.GOAL
+        )
+    )
     assert loaded.events[0].side is Side.HOME
-    assert loaded.events[0].player == "Bukayo Saka"
 
 
 def test_scores_run_forward_when_the_file_does_not_carry_them(tmp_path: Path) -> None:
