@@ -142,7 +142,7 @@ ablations are wired correctly enough to run against the real thing.
 
 | Command | What it does |
 |---|---|
-| `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice elevenlabs` adds sound. |
+| `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice elevenlabs` adds sound and needs a key. |
 | `sim` | Describe the synthetic match, or `--out x.mp4` to render it. |
 | `capture [seconds]` | Prove frames reach Python. The day-one gate. |
 | `grade runs/*.jsonl` | Metrics for saved runs. |
@@ -179,16 +179,17 @@ comparison against the human commentator's own words for the same ten seconds,
 run in both orderings, counting a win only where the two agree: a judge that
 flips when you swap the order is reporting its own noise, not a preference.
 
-The feed adapter (`grading/feed.py`) reads a saved play-by-play file — never a
-live fetch — and aligns its match clock to video time using the board reader's
-own clock readings, reporting the residual so a bad alignment is visible instead
-of quietly making every recall number wrong. Transcripts come from local Whisper
+The feed adapter (`grading/feed.py`) reads a saved play-by-play file in this
+project's own shape — never a live fetch, and never somebody else's export
+without a visible conversion first — and aligns its match clock to video time
+using the board reader's own clock readings, reporting the residual so a bad
+alignment is visible instead of quietly making every recall number wrong. Transcripts come from local Whisper
 with the roster as the prompt, so it spells the players right.
 
 ## Development
 
 ```bash
-uv run pytest        # 213 tests, no network, no key
+uv run pytest        # 333 tests, no network, no key
 uv run ruff check .  # lint
 uv run mypy          # strict
 uv run pre-commit install

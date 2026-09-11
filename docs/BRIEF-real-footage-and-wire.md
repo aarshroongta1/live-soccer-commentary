@@ -150,12 +150,15 @@ nothing fetches.
 class Event(StrEnum):   # add
     PASS = "pass"
     CARRY = "carry"
+    INTERCEPTION = "interception"
+    CLEARANCE = "clearance"
+    TACKLE = "tackle"
 
 class WireEvent(BaseModel):
     event: Event
     side: Side
     player: str | None = None
-    recipient: str | None = None      # passes
+    recipient: str | None = None      # pass recipient; fouled player; sub off
     detail: str = ""                  # "yellow", "red", "own goal"
     home_score: int = 0
     away_score: int = 0
@@ -182,18 +185,37 @@ class Incident(BaseModel):            # goals, cards, subs
 
 ### B2. `commentary/statsbomb.py`
 
-`read(path, home, away) -> list[WireEvent]`. StatsBomb rows: `type.name`,
-`minute`, `second`, `period`, `duration`, `team.name`, `player.name`. Keep:
-`Pass` (recipient from `pass.recipient.name`; skip if none), `Carry`, `Shot`
-(`shot.outcome.name == "Goal"` is a GOAL, else SHOT), `Own Goal Against`
-(GOAL for the other side), cards from `foul_committed.card.name` /
-`bad_behaviour.card.name` (CARD, detail lower-cased), `Substitution` (player
-= `substitution.replacement.name`). Drop everything else. Player names: use
-the short form StatsBomb gives in the lineups file when present
-(`player_nickname`), so "Lionel Andrés Messi Cuccittini" is "Lionel Messi";
-`read` takes the lineups path too. Scores run forward. `clock_s = minute *
-60 + second`. Team name to side by the two names passed in. Hand-written
-fixture of ~12 rows for the test.
+`read(events_path, lineups_path, home, away) -> list[WireEvent]`. The wire
+carries every StatsBomb event that names a player, because the commentary
+has to say who fouled whom, who the card is for and who was offside, not
+only who has the ball. StatsBomb rows: `type.name`, `minute`, `second`,
+`period`, `duration`, `team.name`, `player.name`, `related_events`. Map:
+
+| StatsBomb | `event` | `player` | `recipient` | `detail` |
+|---|---|---|---|---|
+| Pass (with `pass.recipient`) | PASS | passer | recipient | |
+| Pass with `pass.outcome.name == "Pass Offside"` | OFFSIDE | passer | recipient (the one offside) | |
+| Carry | CARRY | player | | |
+| Shot, `shot.outcome.name == "Goal"` | GOAL | shooter | | `shot.type.name` if "Penalty" |
+| Shot, other outcome | SHOT | shooter | | outcome name, lower |
+| Own Goal Against | GOAL (other side) | | | "own goal" |
+| Goal Keeper with `goalkeeper.type.name` containing "Save" | SAVE | keeper | | |
+| Foul Committed | FOUL | fouler | fouled (the `Foul Won` row in `related_events`) | card colour if `foul_committed.card`, lower |
+| Foul Committed with a card, or Bad Behaviour with `bad_behaviour.card` | also emit CARD | player | | "yellow" / "red" / "second yellow" |
+| Offside | OFFSIDE | player | | |
+| Interception, Clearance, Block | INTERCEPTION / CLEARANCE / CLEARANCE | player | | |
+| Duel with `duel.type.name == "Tackle"` | TACKLE | player | | outcome name, lower |
+| Substitution | SUBSTITUTION | `substitution.replacement.name` (on) | player (off) | |
+
+Drop everything else (Ball Receipt, Pressure, Dribble, Ball Recovery,
+Dispossessed, Miscontrol, Shield, 50/50, Injury Stoppage, Tactical Shift,
+Half Start/End, Starting XI, Player Off/On, Error, Referee Ball-Drop,
+Dribbled Past). Player names: the lineups file's `player_nickname` when
+present, else `player_name`, so "Lionel Andrés Messi Cuccittini" is "Lionel
+Messi". Scores run forward. `clock_s = minute * 60 + second`. Team name to
+side by the two names passed in. Fixture of ~15 hand-written rows covering
+a pass, an offside pass, a foul with its foul-won pair and a yellow, a
+save, a goal, a sub.
 
 ### B3. `Wire` and `ReplayWire`
 
@@ -245,17 +267,26 @@ trace individually and are visible in `state` rows.
   for the same side within 15 s.
 - CARD, SUBSTITUTION: `Incident(source="wire")`; a sub with a number in the
   pack calls `registry.believe(number, name, ts, side=side)`.
+- FOUL, OFFSIDE, SAVE, TACKLE, INTERCEPTION, CLEARANCE: append to a new
+  `state.named: list[NamedEvent]` (event, side, player, recipient, detail,
+  video_ts), kept to the last 6. Also append the event to `last_events`.
 
 `summary()` adds, after the scoreline: `on the ball: Mac Allister (ARG),
-from Otamendi` when `ball` is set and fresh (under 6 s old at the cursor),
-and one line each for goals, cards, subs. Nothing else changes.
+from Otamendi` when `ball` is set and fresh (under 6 s old at the cursor);
+then `just now:` with the named events of the last 20 s, newest last, one
+per line in the form `foul by Rabiot (FRA) on Messi` / `yellow card Rabiot
+(FRA)` / `offside Giroud (FRA)` / `save Martínez (ARG)`; then one line each
+for goals, cards, subs so far. Nothing else changes.
 
 ### B6. Prompt
 
 `CALLER_RULES` "Names" paragraph (on top of A7): add that MATCH STATE may
-carry "on the ball" and "from" from a statistician; those names may be used
-as given, and are the only names allowed without a legible number or
-graphic. Change "no data feed, no statistician" at the top to say the
+carry "on the ball", "from" and a "just now" list from a statistician; those
+names may be used as given, for exactly the thing the statistician says
+they did, and are the only names allowed without a legible number or
+graphic. A foul in the picture with "foul by Rabiot on Messi" in the state
+is called with both names; a foul with nothing in the state is called by
+kit and role. Change "no data feed, no statistician" at the top to say the
 statistician may be present and, when they are, speaks only through MATCH
 STATE. Byte-stable: the rule text does not depend on whether a wire is set;
 the state line simply appears or does not.
@@ -285,9 +316,8 @@ the state line simply appears or does not.
   the note says so.
 - `metrics.names(run, wire_events, window_s=3.0) -> Names(lines_with_name,
   names, correct)`: for each spoken line, every capitalised roster surname
-  in it counts as a name; it is correct if that player is the passer,
-  recipient, carrier or shooter of a wire event within `window_s` of the
-  line's `video_ts`. `Scorecard.name_rate` (lines with a name / lines) and
+  in it counts as a name; it is correct if that player is the `player` or
+  `recipient` of any wire event within `window_s` of the line's `video_ts`. `Scorecard.name_rate` (lines with a name / lines) and
   `Scorecard.name_precision` (correct / names). Two new columns in the main
   table; this is the number that answers "does it name players and is it
   right". `metrics.corrections(run) -> int` in `report.detail`.
@@ -305,7 +335,9 @@ table.
 
 - `tests/test_statsbomb.py`: the fixture reads to the expected events;
   nickname used; own goal credited to the other side; a pass with no
-  recipient is dropped.
+  recipient is dropped; a foul carries the fouled player from its related
+  Foul Won row and emits a CARD alongside when carded; an offside pass
+  names the recipient as the one offside; a sub carries on and off.
 - `tests/test_wire.py`: `due` releases once, in order; the two-clock rule at
   `latency_s` below, equal to and above `delay_s`; median offset survives
   one misread; possession moves to the recipient after `duration_s`.
