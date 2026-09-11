@@ -15,9 +15,32 @@ from typing import Any
 
 from pydantic import BaseModel
 
+#: Validation keywords the structured-outputs subset rejects outright — a
+#: schema carrying any of them is a 400, e.g. ``For 'number' type, properties
+#: maximum, minimum are not supported`` for ``confidence: float = Field(ge=0,
+#: le=1)``. They are dropped from what we send, not from the models: the
+#: backend validates the response with ``model_validate`` (see
+#: ``anthropic_backend.parse``), so the bounds are still enforced, just on our
+#: side of the wire.
+_UNSUPPORTED = frozenset(
+    {
+        "minimum",
+        "maximum",
+        "exclusiveMinimum",
+        "exclusiveMaximum",
+        "multipleOf",
+        "minLength",
+        "maxLength",
+        "pattern",
+        "minItems",
+        "maxItems",
+        "uniqueItems",
+    }
+)
+
 
 def strict_schema(model: type[BaseModel]) -> dict[str, Any]:
-    """The JSON Schema for ``model``, closed and fully required."""
+    """The JSON Schema for ``model``, closed, fully required, no constraints."""
     schema = model.model_json_schema()
     _tighten(schema)
     for definition in schema.get("$defs", {}).values():
@@ -32,6 +55,9 @@ def _tighten(node: Any) -> None:
         return
     if not isinstance(node, dict):
         return
+
+    for key in _UNSUPPORTED & node.keys():
+        del node[key]
 
     if node.get("type") == "object" and "properties" in node:
         properties = node["properties"]
