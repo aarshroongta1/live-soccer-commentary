@@ -1,0 +1,151 @@
+"""Where frames come from.
+
+The rest of the system never asks. A screen capture, a video file, and the
+simulator all present the same thing: an async iterator of timestamped frames
+with a wall-clock pace. That is what lets the whole pipeline run tonight
+against generated video and against a real broadcast tomorrow, unchanged.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import subprocess
+from collections.abc import AsyncIterator
+from pathlib import Path
+from typing import Protocol
+
+import numpy as np
+
+from commentary.capture.buffer import Frame, now
+from commentary.config import CAPTURE, CaptureConfig
+
+
+class FrameSource(Protocol):
+    """An async context manager yielding frames in real time."""
+
+    async def __aenter__(self) -> FrameSource: ...
+
+    async def __aexit__(self, *exc: object) -> None: ...
+
+    def frames(self) -> AsyncIterator[Frame]: ...
+
+
+class FFmpegSource:
+    """Frames out of any ffmpeg input, decoded to raw BGR on stdout."""
+
+    def __init__(self, args: list[str], cfg: CaptureConfig = CAPTURE, *, realtime: bool = True):
+        self.cfg = cfg
+        self._args = args
+        self._realtime = realtime
+        self._proc: asyncio.subprocess.Process | None = None
+
+    @property
+    def frame_bytes(self) -> int:
+        return self.cfg.width * self.cfg.height * 3
+
+    def _command(self) -> list[str]:
+        return [
+            "ffmpeg",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            *self._args,
+            "-vf",
+            f"scale={self.cfg.width}:{self.cfg.height}",
+            "-f",
+            "rawvideo",
+            "-pix_fmt",
+            "bgr24",
+            "-",
+        ]
+
+    async def __aenter__(self) -> FFmpegSource:
+        self._proc = await asyncio.create_subprocess_exec(
+            *self._command(),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            limit=self.frame_bytes * 4,
+        )
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        if self._proc is not None and self._proc.returncode is None:
+            self._proc.terminate()
+            await self._proc.wait()
+        self._proc = None
+
+    async def frames(self) -> AsyncIterator[Frame]:
+        if self._proc is None or self._proc.stdout is None:
+            raise RuntimeError("use the source as an async context manager")
+        start = now()
+        index = 0
+        while True:
+            try:
+                raw = await self._proc.stdout.readexactly(self.frame_bytes)
+            except asyncio.IncompleteReadError:
+                return
+            image = np.frombuffer(raw, dtype=np.uint8).reshape(self.cfg.height, self.cfg.width, 3)
+            ts = index / self.cfg.fps
+            index += 1
+            if self._realtime:
+                # A file decodes far faster than it plays. Pace it, so the
+                # delay buffer and the rate caps mean the same thing they will
+                # mean against a live screen.
+                behind = ts - (now() - start)
+                if behind > 0:
+                    await asyncio.sleep(behind)
+            yield Frame(ts=ts, image=image)
+
+
+class ScreenCapture(FFmpegSource):
+    """Whatever is on screen: a broadcast, a browser tab, a highlight reel."""
+
+    def __init__(self, cfg: CaptureConfig = CAPTURE) -> None:
+        super().__init__(
+            [
+                "-f",
+                "avfoundation",
+                "-capture_cursor",
+                "0",
+                "-framerate",
+                str(cfg.fps),
+                "-i",
+                cfg.device,
+            ],
+            cfg,
+            realtime=False,  # the screen already runs at wall-clock speed
+        )
+
+    async def frames(self) -> AsyncIterator[Frame]:
+        # A live capture stamps frames by arrival, not by index: dropped frames
+        # must show up as a gap, not as drift.
+        if self._proc is None or self._proc.stdout is None:
+            raise RuntimeError("use the source as an async context manager")
+        start = now()
+        while True:
+            try:
+                raw = await self._proc.stdout.readexactly(self.frame_bytes)
+            except asyncio.IncompleteReadError:
+                return
+            image = np.frombuffer(raw, dtype=np.uint8).reshape(self.cfg.height, self.cfg.width, 3)
+            yield Frame(ts=now() - start, image=image)
+
+
+class FileCapture(FFmpegSource):
+    """A recorded match, played at its real speed.
+
+    This is the development loop: the same clip, repeatedly, so prompt and
+    threshold changes are comparable between runs.
+    """
+
+    def __init__(
+        self,
+        path: str | Path,
+        cfg: CaptureConfig = CAPTURE,
+        *,
+        start_s: float = 0.0,
+        realtime: bool = True,
+    ) -> None:
+        args = ["-ss", str(start_s), "-re"] if realtime else ["-ss", str(start_s)]
+        super().__init__([*args, "-i", str(path), "-r", str(cfg.fps)], cfg, realtime=realtime)
+        self.path = Path(path)
