@@ -472,10 +472,20 @@ async def run_variant(
         )
         await runtime.run(seconds=seconds)
 
+    # Grade against the stretch of match this variant actually watched. A run
+    # cut off after forty-five seconds is not answerable for the goals in the
+    # four minutes it never saw a frame of, and scoring it against the whole
+    # fixture drags every variant's recall down by the same large amount —
+    # which looks like a finding and is an artefact of the run length.
+    watched = runtime.live_ts
+    truth = [event for event in sim.ground_truth if event.video_ts <= watched]
+
     # The truth and the notes handed to the grader are the sim's own, never the
     # variant's: worldcupvoice runs without a roster but is still judged
     # against one, exactly as it would be against a real match.
-    return report.score(variant.name, path, sim.ground_truth, sim.knowledge_pack)
+    card = report.score(variant.name, path, truth, sim.knowledge_pack, duration_s=watched)
+    card.watched_s = watched
+    return card
 
 
 async def run_suite(
@@ -613,13 +623,19 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def suite_for(args: argparse.Namespace) -> list[Variant]:
-    variants = standard_variants()
-    if not args.no_sweep:
-        variants += delay_sweep()
+    """Which variants to run. ``--only`` picks from everything this module knows.
+
+    Naming a sweep depth under ``--only`` selects it whether or not
+    ``--no-sweep`` was passed, because asking for a variant by name is a
+    clearer statement of intent than a flag about the default set.
+    """
+    catalogue = [*standard_variants(), *delay_sweep()]
     if args.only:
         wanted = set(args.only)
-        variants = [v for v in variants if v.name in wanted]
-    return variants
+        return [v for v in catalogue if v.name in wanted]
+    if args.no_sweep:
+        return standard_variants()
+    return catalogue
 
 
 def provenance(args: argparse.Namespace, variants: Sequence[Variant]) -> str:

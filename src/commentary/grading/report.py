@@ -32,6 +32,9 @@ class Scorecard:
     repetition_rate: float = 0.0
     preempted: int = 0
     cost_usd: float = 0.0
+    #: Seconds of match this run actually saw. Recall and silence mean
+    #: nothing without it, because both are fractions of exactly this.
+    watched_s: float = 0.0
 
     def row(self) -> str:
         return (
@@ -103,4 +106,6 @@ def detail(card: Scorecard) -> str:
             f"{k} {got}/{need}" for k, (got, need) in sorted(card.recall_by_event.items())
         ))
     lines.append(f"Lines cut off mid-sentence: {card.preempted}")
+    if card.watched_s:
+        lines.append(f"Match watched: {card.watched_s:.0f}s")
     return "\n".join(lines)
