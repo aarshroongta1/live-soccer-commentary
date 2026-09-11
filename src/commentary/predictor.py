@@ -33,14 +33,9 @@ class SpeakPredictor:
         self,
         cfg: PredictorConfig = SETTINGS.predictor,
         caller: CallerConfig = SETTINGS.caller,
-        *,
-        min_urgency: float = 0.0,
     ) -> None:
         self.cfg = cfg
         self.caller = caller
-        #: Floor on urgency before a trigger is worth a line at all. Zero means
-        #: any trigger will do; the eval sweeps it when tuning silence ratio.
-        self.min_urgency = min_urgency
         self.ticks = 0
         self.calls = 0
         self.last_decision: SpeakDecision | None = None
@@ -48,14 +43,9 @@ class SpeakPredictor:
     def _weight(self, trigger: Trigger) -> float:
         return float(self.cfg.urgency_by_trigger.get(trigger.value, 0.0))
 
-    def _pressure(self, silence_s: float, salience: float) -> float:
-        """0 to 1, how badly the silence itself now wants a line.
-
-        A big call earns a beat afterwards — the crowd is doing the talking and
-        stepping on it is the classic amateur tell — so salience delays the
-        point where pressure starts building. It never delays the hard force.
-        """
-        start = self.cfg.silence_pressure_after_s * (1.0 + max(0.0, min(1.0, salience)))
+    def _pressure(self, silence_s: float) -> float:
+        """0 to 1, how badly the silence itself now wants a line."""
+        start = self.cfg.silence_pressure_after_s
         forces = self.cfg.silence_forces_at_s
         if silence_s >= forces:
             return 1.0
@@ -68,7 +58,6 @@ class SpeakPredictor:
         now_ts: float,
         triggers: Sequence[Trigger],
         last_spoken_ts: float | None,
-        last_line_salience: float = 0.0,
     ) -> SpeakDecision:
         """One tick's verdict, with a reason a human reading a trace can act on."""
         self.ticks += 1
@@ -81,7 +70,7 @@ class SpeakPredictor:
         best = max(fired, key=self._weight, default=None)
         base = self._weight(best) if best is not None else 0.0
 
-        pressure = self._pressure(silence_s, last_line_salience)
+        pressure = self._pressure(silence_s)
         if pressure > 0.0 and Trigger.SILENCE_PRESSURE not in fired:
             fired.append(Trigger.SILENCE_PRESSURE)
         # Pressure lifts whatever the triggers already asked for towards 1.0,
@@ -133,15 +122,6 @@ class SpeakPredictor:
                     triggers=fired,
                     urgency=urgency,
                     reason=f"no trigger, {since}",
-                )
-            )
-        if urgency < self.min_urgency:
-            return self._record(
-                SpeakDecision(
-                    should_call=False,
-                    triggers=fired,
-                    urgency=urgency,
-                    reason=f"below floor: {winner} {urgency:.2f} < {self.min_urgency:.2f}, {since}",
                 )
             )
         return self._record(

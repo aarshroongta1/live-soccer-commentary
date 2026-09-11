@@ -20,7 +20,6 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from commentary.schemas import (
-    BoardRead,
     CallerLine,
     Event,
     KnowledgePack,
@@ -274,19 +273,14 @@ class MatchStateTracker:
         registry.seed(pack, kickoff_ts)
         return cls(pack.home.name, pack.away.name, registry=registry)
 
-    def apply_board(self, source: BoardRead | ConfirmedBoard) -> None:
+    def apply_board(self, source: ConfirmedBoard) -> None:
         """Take the score, clock and replay flag from the board. Only from the board.
 
-        A raw :class:`BoardRead` is trusted as given, which is fine in a test
-        and wrong in a match: pass the tracker, so that three reads have had to
-        agree before anything here moves.
+        Takes the confirmed tracker rather than a single :class:`BoardRead`,
+        so three reads have had to agree before anything here moves.
         """
-        if isinstance(source, BoardRead):
-            home_score, away_score = source.home_score, source.away_score
-            clock, in_replay = source.clock, not source.bug_visible
-        else:
-            home_score, away_score = source.home_score, source.away_score
-            clock, in_replay = source.clock, source.in_replay
+        home_score, away_score = source.home_score, source.away_score
+        clock, in_replay = source.clock, source.in_replay
 
         if home_score is not None:
             self.state.home_score = home_score

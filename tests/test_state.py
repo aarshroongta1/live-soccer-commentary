@@ -3,7 +3,6 @@ from dataclasses import dataclass
 import pytest
 
 from commentary.schemas import (
-    BoardRead,
     CallerLine,
     Event,
     KnowledgePack,
@@ -132,13 +131,6 @@ def test_the_replay_flag_comes_from_the_board():
 
     tracker.apply_board(StubBoard(home_score=0, away_score=0, clock="10:04"))
     assert not tracker.state.in_replay
-
-
-def test_a_raw_board_read_without_a_bug_is_a_replay():
-    tracker = MatchStateTracker("Arsenal", "Chelsea")
-    tracker.apply_board(BoardRead(bug_visible=False, confidence=0.9))
-    assert tracker.state.in_replay
-    assert tracker.state.clock is None
 
 
 def test_replays_do_not_add_events_or_possession():

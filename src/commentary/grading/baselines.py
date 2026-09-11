@@ -127,7 +127,6 @@ class FixedCadence(SpeakPredictor):
         now_ts: float,
         triggers: Sequence[Trigger],
         last_spoken_ts: float | None,
-        last_line_salience: float = 0.0,
     ) -> SpeakDecision:
         """Due every ``cadence_s`` of video time, and never for any other reason.
 

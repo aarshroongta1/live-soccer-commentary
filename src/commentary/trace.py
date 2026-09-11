@@ -74,6 +74,5 @@ def read_trace(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def rows_of(rows: list[dict[str, Any]], topic: Topic | str) -> list[dict[str, Any]]:
-    name = topic.value if isinstance(topic, Topic) else topic
-    return [r for r in rows if r.get("topic") == name]
+def rows_of(rows: list[dict[str, Any]], topic: str) -> list[dict[str, Any]]:
+    return [r for r in rows if r.get("topic") == topic]

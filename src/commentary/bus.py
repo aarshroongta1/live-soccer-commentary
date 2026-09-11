@@ -51,15 +51,6 @@ class Message:
         return f"event: {self.topic.value}\ndata: {self.to_json()}\n\n"
 
 
-def as_payload(value: Any) -> dict[str, Any]:
-    """Whatever an agent produced, flattened into something JSON-safe."""
-    if isinstance(value, BaseModel):
-        return value.model_dump(mode="json")
-    if isinstance(value, dict):
-        return value
-    return {"value": value}
-
-
 @dataclass
 class Bus:
     """Fan-out with back-pressure that never reaches the publisher."""
@@ -68,8 +59,10 @@ class Bus:
     _subscribers: list[asyncio.Queue[Message]] = field(default_factory=list)
     dropped: int = 0
 
-    def publish(self, topic: Topic, ts: float, value: Any = None, **extra: Any) -> Message:
-        payload = {**as_payload(value), **extra} if value is not None else dict(extra)
+    def publish(
+        self, topic: Topic, ts: float, value: BaseModel | None = None, **extra: Any
+    ) -> Message:
+        payload = dict(extra) if value is None else {**value.model_dump(mode="json"), **extra}
         message = Message(topic=topic, ts=ts, payload=payload)
         for queue in self._subscribers:
             try:

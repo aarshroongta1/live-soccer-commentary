@@ -70,21 +70,6 @@ def test_pressure_lifts_a_weak_trigger_as_the_silence_runs_on():
     assert late.urgency > early.urgency
 
 
-def test_a_salient_last_line_earns_a_beat_of_quiet():
-    predictor = SpeakPredictor()
-    after_nothing = predictor.decide(109.0, [Trigger.WHISTLE], 100.0, last_line_salience=0.0)
-    after_a_goal = predictor.decide(109.0, [Trigger.WHISTLE], 100.0, last_line_salience=1.0)
-    assert after_a_goal.urgency < after_nothing.urgency
-    assert Trigger.SILENCE_PRESSURE not in after_a_goal.triggers
-
-
-def test_an_urgency_floor_can_buy_more_silence():
-    predictor = SpeakPredictor(min_urgency=0.5)
-    decision = predictor.decide(106.0, [Trigger.CAMERA_CUT], last_spoken_ts=100.0)
-    assert not decision.should_call
-    assert decision.reason.startswith("below floor")
-
-
 def test_a_trigger_trace_replays_identically():
     trace = [
         (100.0, [Trigger.WHISTLE]),

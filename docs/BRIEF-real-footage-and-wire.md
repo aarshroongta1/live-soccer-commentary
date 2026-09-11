@@ -105,6 +105,24 @@ true, fix it in the smallest way that makes the summary say "score bug not
 visible" rather than "replay" after the bug has been gone longer than any
 replay lasts (a constant, say 30 s). Report the finding either way.
 
+### A7. The caller looks for numbers before it settles for a role
+
+`prompts/caller.py` `CALLER_RULES`, the "Names" paragraph. Today it says say
+a name only if legible, then gives a *bad* example of naming. Rewrite that
+paragraph so the model is told to look before it gives up: on every call,
+inspect the shirt number of the ball carrier, the player it is passed to,
+the shooter and the keeper; if a number is readable and the kit matches a
+team sheet, use that player's surname; if not, use the role and the kit
+("the left-back in white"). Keep "a wrong name is the worst thing you can
+do" and keep `names_read` as the record of what was legible. Replace the
+"Odegaard picks out Havertz" bad example with one that shows the right
+thing: a name used *with* the number that justified it in `names_read`.
+The gate and the roster check do not change. This is the one thing
+worldcupvoice's prompt does better than ours, and it is a prompt edit, not
+a design change. Also make sure `_pack_section` prints every player as
+`#<number> <surname> (<position>)` on one line per player and the kit
+colours for both sides, since that is what the instruction refers to.
+
 ---
 
 ## Part B: the wire
