@@ -112,8 +112,8 @@ class Analyst:
     def __init__(
         self,
         backend: LLMBackend,
+        tools: MatchTools,
         config: AnalystConfig | None = None,
-        tools: MatchTools | None = None,
         pack: KnowledgePack | None = None,
         *,
         model: str = ANALYST_MODEL,
@@ -190,7 +190,7 @@ class Analyst:
         """Seconds between the frames it is shown: the window, spread thin."""
         return self.config.window_s / max(1, self.config.frames - 1)
 
-    def gather(self, state: MatchState) -> dict[str, Any]:
+    def gather(self) -> dict[str, Any]:
         """Pick the few facts that bear on this moment. Never all of them.
 
         The match facts — score, recent events, who has the ball — are always
@@ -211,8 +211,7 @@ class Analyst:
         ``team_sheet`` is deliberately never gathered: both squads are already
         in the cached system prefix, and paying for them twice buys nothing.
         """
-        if self.tools is None:
-            return {}
+        state = self.tools.state
         facts: dict[str, Any] = {"scoreline": self.tools.scoreline()}
         events = self.tools.recent_events(RECENT_EVENTS)
         if events:
@@ -248,7 +247,7 @@ class Analyst:
         in there is a name the system has earned. Where several are in play,
         the one on the ball-side is the one the aside is likely to be about.
         """
-        if self.tools is None or not state.on_pitch:
+        if not state.on_pitch:
             return None
         found: dict[str, Any] | None = None
         for name in state.on_pitch.values():
@@ -318,7 +317,7 @@ class Analyst:
             self.suppressed["no_frames"] += 1
             return None
 
-        facts = self.gather(self.tools.state) if self.tools is not None else {}
+        facts = self.gather()
         blocks = analyst_blocks(frames, state_summary, facts, self.on_air, reason)
 
         try:

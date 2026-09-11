@@ -370,3 +370,15 @@ same paragraph under section 6, and section 1's "Nothing else." becomes
 Commits; the A6 finding and the test that shows it; the ablation table re-run
 with the `wire-10s` row (same command as the README table); anything done
 differently from this brief and why.
+
+---
+
+## Addendum: caller model and latency
+
+The caller runs on `claude-opus-5` (`.env`), Haiku stays on the board
+reader. Opus 5 thinks by default; the caller has to answer inside the delay
+window, so `Caller.call` must pass `effort="low"` to the backend (the
+backend already forwards it; check `caller.py` passes it and add it if
+not). Keep the 8 s timeout. Do not disable thinking (it makes the model put
+tool calls in visible text on Opus 5); low effort is the lever. The
+analyst keeps whatever it has; it is not on the clock.

@@ -81,7 +81,7 @@ def analyst_with(
         backend.queue("analyst", list(lines))
     knowledge = pack()
     tools = MatchTools(state=match_state or state(), pack=knowledge)
-    return Analyst(backend, config, tools, knowledge), backend
+    return Analyst(backend, tools, config, knowledge), backend
 
 
 def aside(
@@ -127,7 +127,7 @@ def test_the_system_prompt_forbids_doing_the_callers_job():
 def test_gather_reaches_for_the_notes_when_the_match_is_quiet():
     analyst, _ = analyst_with(match_state=state(last_events=[Event.BUILD_UP]))
 
-    facts = analyst.gather(analyst.tools.state)  # type: ignore[union-attr]
+    facts = analyst.gather()
 
     assert facts["storylines"] == ["Arsenal have not beaten Chelsea at home in four attempts"]
     assert facts["form"] == {"ARS": "WWDLW", "CHE": "LDLWL"}
@@ -145,7 +145,7 @@ def test_gather_looks_up_the_player_on_the_side_with_the_ball():
         )
     )
 
-    facts = analyst.gather(analyst.tools.state)  # type: ignore[union-attr]
+    facts = analyst.gather()
 
     assert facts["player"]["name"] == "Cole Palmer"
     assert facts["player"]["side"] == "away"
@@ -159,8 +159,8 @@ def test_gather_does_not_hand_over_every_tool_on_every_call():
         match_state=state(last_events=[Event.CORNER], on_pitch={"7": "Bukayo Saka"})
     )
 
-    quiet_facts = set(quiet.gather(quiet.tools.state))  # type: ignore[union-attr]
-    busy_facts = set(busy.gather(busy.tools.state))  # type: ignore[union-attr]
+    quiet_facts = set(quiet.gather())
+    busy_facts = set(busy.gather())
 
     everything = {"storylines", "form", "key_matchups", "player", "team_sheet"}
     assert not everything <= quiet_facts
@@ -173,16 +173,11 @@ def test_gather_does_not_hand_over_every_tool_on_every_call():
 def test_gather_after_a_goal_frames_it_with_the_season_not_the_preamble():
     analyst, _ = analyst_with(match_state=state(last_events=[Event.SHOT, Event.GOAL]))
 
-    facts = analyst.gather(analyst.tools.state)  # type: ignore[union-attr]
+    facts = analyst.gather()
 
     assert facts["form"] == {"ARS": "WWDLW", "CHE": "LDLWL"}
     assert "storylines" not in facts
     assert "key_matchups" not in facts
-
-
-def test_gather_with_no_tools_looks_up_nothing():
-    analyst = Analyst(ScriptedBackend(), CONFIG)
-    assert analyst.gather(state()) == {}
 
 
 # -- eligibility --------------------------------------------------------
@@ -388,7 +383,7 @@ async def test_a_failed_model_call_is_a_missed_aside_not_a_crash():
 
     backend = ScriptedBackend()
     backend.register("analyst", explode)
-    analyst = Analyst(backend, CONFIG, MatchTools(state=state(), pack=pack()), pack())
+    analyst = Analyst(backend, MatchTools(state=state(), pack=pack()), CONFIG, pack())
 
     result = await analyst.call(buffer_with(), "0-0", "a lull")
 
