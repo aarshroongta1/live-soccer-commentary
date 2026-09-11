@@ -18,7 +18,7 @@ from collections.abc import AsyncIterator, Sequence
 import pytest
 
 from commentary.schemas import Beat, Voice
-from commentary.voice import ElevenLabsSpeaker
+from commentary.voice import ElevenLabsSpeaker, VoiceUnavailable
 from commentary.voice.playback import FFplaySink, NullSink
 
 
@@ -193,19 +193,12 @@ async def test_a_stream_that_never_opens_does_not_take_the_match_down() -> None:
     assert utterance.spoken == ""
 
 
-@pytest.mark.asyncio
-async def test_no_key_is_a_silent_speaker_rather_than_a_crash(
+def test_no_key_refuses_to_build_a_speaker_that_could_never_speak(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
-    spk = ElevenLabsSpeaker()  # constructing must not raise
-
-    assert not spk.available
-    utterance = await spk.say(beat("nobody is listening"), asyncio.Event())
-
-    assert not utterance.completed
-    assert utterance.spoken == ""
-    await spk.aclose()
+    with pytest.raises(VoiceUnavailable, match="ELEVENLABS_API_KEY"):
+        ElevenLabsSpeaker()
 
 
 @pytest.mark.asyncio
@@ -274,7 +267,7 @@ def test_importing_the_voice_package_does_not_need_elevenlabs() -> None:
         "import sys; sys.modules['elevenlabs'] = None; "
         "import commentary.voice; "
         "from commentary.voice import ElevenLabsSpeaker; "
-        "assert ElevenLabsSpeaker(api_key='') is not None; print('ok')"
+        "assert ElevenLabsSpeaker(api_key='a-key') is not None; print('ok')"
     )
     result = subprocess.run(
         [sys.executable, "-c", code], capture_output=True, text=True, timeout=60

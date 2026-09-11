@@ -206,13 +206,16 @@ class FFplaySink:
 
 
 def default_sink(output_format: str = "mp3_22050_32") -> AudioSink:
-    """The best sink this machine can offer.
+    """Where a real voice plays. Requires ffplay, and says so if it is missing.
 
-    A missing ffplay is a quiet demo, not a dead one, so it degrades to
-    :class:`NullSink` with a line in the log rather than raising on the first
-    goal of the match.
+    Degrading to :class:`NullSink` here would mean asking for sound and
+    getting a silent match with one line in the log, which is a thing to
+    discover at kickoff. Anyone who wants the silent path can ask for the
+    printed voice instead.
     """
     if shutil.which("ffplay") is None:
-        log.warning("ffplay not on PATH; commentary will be logged but not heard")
-        return NullSink()
+        raise RuntimeError(
+            "ffplay is not on PATH, so the voice cannot be heard. "
+            "Install ffmpeg, or run with --voice log."
+        )
     return FFplaySink(output_format=output_format)

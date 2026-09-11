@@ -20,7 +20,7 @@ from commentary.config import SETTINGS, Settings
 from commentary.llm.base import LLMBackend, LLMError
 from commentary.runtime import Runtime, trace_path
 from commentary.trace import RunTrace
-from commentary.voice import LogSpeaker, Speaker
+from commentary.voice import LogSpeaker, Speaker, VoiceUnavailable
 
 # -- capture ------------------------------------------------------------
 
@@ -123,18 +123,11 @@ def _backend(args: argparse.Namespace, sim: object | None) -> LLMBackend:
 
 
 def _speaker(args: argparse.Namespace) -> Speaker:
-    """A real voice if asked for and possible, otherwise the printed one.
-
-    Falling back rather than failing is deliberate: discovering at kickoff
-    that a key has expired should cost the sound, not the match.
-    """
+    """The voice that was asked for, or an error saying why there isn't one."""
     if args.voice == "elevenlabs":
-        from commentary.voice import speaker_from_env
+        from commentary.voice import ElevenLabsSpeaker
 
-        spoken = speaker_from_env()
-        if spoken is not None:
-            return spoken
-        print("no ELEVENLABS_API_KEY: falling back to the printed voice")
+        return ElevenLabsSpeaker()
     return LogSpeaker(echo=True)
 
 
@@ -326,7 +319,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("\nstopped", file=sys.stderr)
         return 130
-    except LLMError as exc:
+    except (LLMError, VoiceUnavailable) as exc:
         # A missing key is a thing to fix, not a thing to debug. The message
         # already says what to do, so a traceback only buries it.
         print(str(exc), file=sys.stderr)

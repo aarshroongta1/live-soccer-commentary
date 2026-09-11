@@ -10,8 +10,10 @@ killed rather than asked politely.
 
 Everything else here follows from that. The model is the fast one, not the
 pretty one. The audio goes to a subprocess because a subprocess can be killed.
-Failures return a cut-off :class:`Utterance` instead of raising, because a
-match that goes quiet is a disappointment and a match that stops is a bug.
+A line that fails mid-flight returns a cut-off :class:`Utterance` instead of
+raising, because a match that goes quiet is a disappointment and a match that
+stops is a bug. A speaker with no key, on the other hand, cannot ever say
+anything, so it refuses to be built rather than going silently mute.
 
 The ``elevenlabs`` package is an optional extra and is imported inside the
 function that needs it, so importing ``commentary.voice`` works on a machine
@@ -71,6 +73,10 @@ StreamFactory = Callable[[str, str], AsyncIterator[bytes]]
 SinkFactory = Callable[[], AudioSink]
 
 
+class VoiceUnavailable(RuntimeError):
+    """There is no key, so this speaker could never make a sound."""
+
+
 class ElevenLabsSpeaker:
     """A two-voice ElevenLabs speaker that can be cut off mid-word.
 
@@ -98,6 +104,10 @@ class ElevenLabsSpeaker:
         timeout_s: float = REQUEST_TIMEOUT_S,
     ) -> None:
         self.api_key = api_key if api_key is not None else os.getenv("ELEVENLABS_API_KEY", "")
+        if not self.api_key and stream is None:
+            raise VoiceUnavailable(
+                "no ELEVENLABS_API_KEY: set one in .env, or run with --voice log"
+            )
         self.caller_voice = caller_voice or os.getenv("ELEVENLABS_CALLER_VOICE") or CALLER_VOICE
         self.analyst_voice = analyst_voice or os.getenv("ELEVENLABS_ANALYST_VOICE") or ANALYST_VOICE
         self.model_id = model_id
@@ -109,17 +119,6 @@ class ElevenLabsSpeaker:
         self._sink = sink if sink is not None else lambda: default_sink(self.output_format)
         self._client: Any | None = None
         self._http: Any | None = None
-        self._warned = False
-
-    @property
-    def available(self) -> bool:
-        """Whether this speaker will actually produce anything.
-
-        False means every :meth:`say` is a silent no-op, which is worth knowing
-        at wiring time: the caller can put a :class:`LogSpeaker` in instead and
-        at least see the commentary go past.
-        """
-        return self._stream is not None or bool(self.api_key)
 
     def voice_id(self, voice: Voice) -> str:
         return self.analyst_voice if voice is Voice.ANALYST else self.caller_voice
@@ -135,12 +134,6 @@ class ElevenLabsSpeaker:
         caller start on top of the analyst's last three words.
         """
         started = time.monotonic()
-        if not self.available:
-            if not self._warned:
-                log.warning("ELEVENLABS_API_KEY is not set; the commentary will be silent")
-                self._warned = True
-            return self._record(beat, spoken="", started=started, completed=False)
-
         sink = self._sink()
         audio_started: float | None = None
         completed = False
@@ -308,16 +301,6 @@ async def _aclose(stream: AsyncIterator[bytes]) -> None:
         await closer()
 
 
-def speaker_from_env(**kwargs: Any) -> ElevenLabsSpeaker | None:
-    """An ElevenLabs speaker if there is a key for one, otherwise nothing.
-
-    Exists so the caller can write ``speaker_from_env() or LogSpeaker()`` and
-    have the no-key case be obviously a fallback rather than a silent one.
-    """
-    speaker = ElevenLabsSpeaker(**kwargs)
-    return speaker if speaker.available else None
-
-
 __all__ = [
     "ANALYST_VOICE",
     "CALLER_VOICE",
@@ -328,5 +311,5 @@ __all__ = [
     "NullSink",
     "SinkFactory",
     "StreamFactory",
-    "speaker_from_env",
+    "VoiceUnavailable",
 ]

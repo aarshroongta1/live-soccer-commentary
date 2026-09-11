@@ -46,8 +46,8 @@ class Speaker(Protocol):
 class LogSpeaker:
     """Speech without audio: paces a line at a human rate and can be cut.
 
-    This is what the whole pipeline runs against in tests and in any run
-    without an ElevenLabs key. Because it consumes wall-clock time at the same
+    This is what the whole pipeline runs against in tests and in any run that
+    does not ask for sound. Because it consumes wall-clock time at the same
     rate a real voice does, the director's gaps, queue depth, and preemption
     behave exactly as they will with sound.
     """
