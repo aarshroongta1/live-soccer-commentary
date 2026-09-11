@@ -1,0 +1,22 @@
+docs/BRIEF-real-footage-and-wire.md
+  s_071588aa9615d3::t_6c79f360806bd5 153-155,161,188-218,270-272,275-279,284-289,319-320,338-340
+README.md
+  s_071588aa9615d3::t_aa037abb2c4a58 145,182-183,192
+  s_071588aa9615d3::t_60d1bf42288630 184-186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a98109a0022345c14177141f4672bb74043bd9d7",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
