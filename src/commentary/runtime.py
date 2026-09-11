@@ -460,10 +460,16 @@ class Runtime:
         had happened.
 
         A sustained roar is independent: it comes off the audio, which the
-        caller never sees. It is not proof on its own — crowds roar at near
-        misses too — which is why it only ever corroborates, and why the
-        board changing remains the other and better way to confirm a goal.
+        caller never sees. But it is weak evidence, because crowds roar at
+        near misses too, and a run with this as a free-standing second route
+        to a goal let a phantom one through on exactly that. So the roar only
+        counts when the board cannot be read at all — a replay, a graphic
+        over the bug, a broadcaster who has hidden it. When the board is
+        legible it is the only thing that confirms a goal, because it is the
+        only source that is actually about the score.
         """
+        if not self.board_tracker.in_replay and self.board_tracker.home_score is not None:
+            return False
         window = self.settings.capture.delay_s
         return any(cursor - 1.0 <= ts <= cursor + window for ts in self._roars)
 

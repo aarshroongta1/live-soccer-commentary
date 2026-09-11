@@ -137,8 +137,18 @@ async def test_a_confident_caller_is_not_evidence_of_a_celebration(tmp_path: Pat
     runtime._roars.clear()
     assert runtime._celebration_ahead(10.0) is False
 
-    # A roar inside the lookahead window does corroborate; one long past does not.
+    # A roar only stands in for the board when the board cannot be read.
+    # While the bug is legible the board is the only thing that confirms a
+    # goal, because a crowd roars at near misses too — and one did, letting a
+    # phantom goal through when the roar was a free-standing second route.
     runtime._roars.append(12.0)
+    tracker = runtime.board_tracker
+    tracker._confirmed = (1, 0, 1)
+    tracker._absent_run = 0
+    assert runtime._celebration_ahead(10.0) is False, "the board was readable; it should decide"
+
+    # Bug gone for long enough to read as a replay: now the crowd is all we have.
+    tracker._absent_run = tracker.replay_reads
     assert runtime._celebration_ahead(10.0) is True
     assert runtime._celebration_ahead(100.0) is False
 
