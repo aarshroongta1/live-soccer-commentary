@@ -68,6 +68,19 @@ store it returns. Messages are folded in on a 100ms tick rather than per
 message, and the arrays are capped (400 transcript lines, 60 per panel) — a 90
 minute match emits more than a tab should hold.
 
+`?mock=1` is read on the server, in `app/page.tsx`, not after hydration: the
+HTML that comes back is already in fixture mode, so the browser never requests
+the MJPEG from a runtime that is not running. In fixture mode the page opens no
+connection of any kind.
+
+`allowedDevOrigins` in `next.config.ts` is load-bearing, not decoration. Next
+serves its dev bundle only to `localhost` by default, so opening the dev server
+on `127.0.0.1` blocks every chunk and the page arrives as server HTML that
+never hydrates — a dead toggle and a frozen status strip, with nothing in the
+browser console to say why. The only sign is a warning in the `next dev`
+output. Both loopback spellings are allowed there now; add any other host you
+serve from.
+
 `/api/state` and `/healthz` are proxied by a `rewrites()` entry in
 `next.config.ts`. The two streaming endpoints are route handlers instead: a
 rewritten response gets gzipped for the browser, and a gzipped

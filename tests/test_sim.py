@@ -581,6 +581,6 @@ async def test_hallucination_does_not_move_with_the_delay():
                 output_format=CallerLine,
                 tag="caller",
             )
+        assert all(kind in ERROR_KINDS for _, kind in oracle.injected)
         counts.append(len(oracle.injected))
-    assert counts[0] == counts[1]
-    assert all(kind in ERROR_KINDS for _, kind in oracle.injected)
+    assert counts[0] == counts[1] > 0

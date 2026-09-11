@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from types import SimpleNamespace
+
 import pytest
 
 from commentary.grading.judge import (
+    BatchAsker,
     Choice,
     FactVerdict,
+    JudgeError,
     JudgeReport,
     PairVerdict,
     Verdict,
@@ -28,9 +33,7 @@ def pack() -> KnowledgePack:
         home=TeamSheet(
             name="Arsenal", short="ARS", starters=[Player(name="Bukayo Saka", number=7)]
         ),
-        away=TeamSheet(
-            name="Real Madrid", short="RMA", starters=[Player(name="Jude Bellingham")]
-        ),
+        away=TeamSheet(name="Real Madrid", short="RMA", starters=[Player(name="Jude Bellingham")]),
     )
 
 
@@ -90,9 +93,7 @@ async def test_a_line_the_judge_calls_false_is_an_error(pack, truth) -> None:
     assert report.false_lines[0].text == "Bellingham puts Madrid in front"
 
 
-async def test_the_rate_counts_every_line_judged_not_just_the_checkable_ones(
-    pack, truth
-) -> None:
+async def test_the_rate_counts_every_line_judged_not_just_the_checkable_ones(pack, truth) -> None:
     """Unsupported lines stay in the denominator and out of the numerator.
 
     Dropping them would let a system that only ever says "what a game" score
@@ -250,3 +251,80 @@ async def test_the_report_keeps_the_two_error_rates_apart(pack, truth) -> None:
 
 def test_an_empty_report_renders_without_numbers_it_does_not_have() -> None:
     assert JudgeReport(name="nothing").markdown().startswith("### nothing — judged")
+
+
+# -- the batch path, against a stub client -----------------------------
+
+
+class FakeBatches:
+    """Just enough of ``client.messages.batches`` to exercise the shape.
+
+    Results come back shuffled on purpose: the API returns them in whatever
+    order they finished, and keying by position instead of ``custom_id``
+    would attach every verdict to the wrong line while looking fine.
+    """
+
+    def __init__(self, answers: dict[str, str]) -> None:
+        self.answers = answers
+        self.sent: list[dict] = []
+
+    async def create(self, *, requests: list[dict]) -> SimpleNamespace:
+        self.sent = requests
+        return SimpleNamespace(id="msgbatch_1")
+
+    async def retrieve(self, batch_id: str) -> SimpleNamespace:
+        return SimpleNamespace(id=batch_id, processing_status="ended")
+
+    async def results(self, batch_id: str) -> AsyncIterator[SimpleNamespace]:
+        async def rows() -> AsyncIterator[SimpleNamespace]:
+            for custom_id, body in reversed(list(self.answers.items())):
+                yield SimpleNamespace(
+                    custom_id=custom_id,
+                    result=SimpleNamespace(
+                        type="succeeded",
+                        message=SimpleNamespace(
+                            stop_reason="end_turn",
+                            content=[SimpleNamespace(type="text", text=body)],
+                        ),
+                    ),
+                )
+
+        return rows()
+
+
+async def test_the_batch_asker_keys_results_by_custom_id(pack, truth) -> None:
+    answers = {
+        "fact-0000": '{"verdict": "true", "reason": "the feed has it", "event_ref": "goal"}',
+        "fact-0001": '{"verdict": "false", "reason": "no such goal", "event_ref": null}',
+    }
+    batches = FakeBatches(answers)
+    client = SimpleNamespace(messages=SimpleNamespace(batches=batches))
+    run = run_of((60.0, "Saka makes it one"), (90.0, "and a second for Saka"))
+
+    report = await judge_factuality(
+        run, truth, pack, ScriptedBackend(), asker=BatchAsker(client=client)
+    )
+
+    assert [j.verdict for j in report.judged] == [Verdict.TRUE, Verdict.FALSE]
+    assert [r["custom_id"] for r in batches.sent] == ["fact-0000", "fact-0001"]
+    params = batches.sent[0]["params"]
+    assert params["output_config"]["format"]["type"] == "json_schema"
+    assert params["output_config"]["format"]["schema"]["additionalProperties"] is False
+
+
+async def test_a_failed_batch_entry_is_raised_not_swallowed(pack, truth) -> None:
+    batches = FakeBatches({"fact-0000": "{}"})
+
+    async def errored(batch_id: str) -> AsyncIterator[SimpleNamespace]:
+        async def rows() -> AsyncIterator[SimpleNamespace]:
+            yield SimpleNamespace(custom_id="fact-0000", result=SimpleNamespace(type="expired"))
+
+        return rows()
+
+    batches.results = errored  # type: ignore[method-assign]
+    client = SimpleNamespace(messages=SimpleNamespace(batches=batches))
+
+    with pytest.raises(JudgeError, match="expired"):
+        await judge_factuality(
+            run_of((60.0, "one")), truth, pack, ScriptedBackend(), asker=BatchAsker(client=client)
+        )

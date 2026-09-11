@@ -141,19 +141,19 @@ def transcribe(
 
 
 def save(transcript: Transcript, path: Path) -> None:
-    """Write a transcript as JSON::
+    """Write a transcript out, so ninety minutes is transcribed once.
 
-    {"source": "...", "model": "...", "language": "en",
-     "segments": [{"start": 12.4, "end": 15.1, "text": "..."}]}
+    The shape is::
+
+        {"source": "half1.wav", "model": "...", "language": "en",
+         "segments": [{"start": 12.4, "end": 15.1, "text": "..."}]}
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     document = {
         "source": transcript.source,
         "model": transcript.model,
         "language": transcript.language,
-        "segments": [
-            {"start": s.start, "end": s.end, "text": s.text} for s in transcript.segments
-        ],
+        "segments": [{"start": s.start, "end": s.end, "text": s.text} for s in transcript.segments],
     }
     path.write_text(json.dumps(document, ensure_ascii=False, indent=1), encoding="utf-8")
 
