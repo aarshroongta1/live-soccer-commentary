@@ -32,14 +32,40 @@ _STOPWORD_TEXT = (
 )
 STOPWORDS = frozenset(_STOPWORD_TEXT.split(" "))
 
+#: Words that commonly open a commentary sentence and are not people.
+#: Without these, every "Brilliant save" reads as an unknown surname, because
+#: the one place a capital letter carries no information is after a full stop.
+_OPENER_TEXT = (
+    "brilliant great good lovely superb poor well terrible what here there oh yes no "
+    "still again almost nearly surely away back first second half time full free corner "
+    "goal penalty offside saved blocked cleared straight short long high wide just "
+    "another one two three four five never always plenty nothing everything both"
+)
+OPENERS = frozenset(_OPENER_TEXT.split(" "))
+
+_SUFFIXES = ("ing", "edly", "ed", "es", "s")
+
 
 def normalise(text: str) -> str:
     folded = unicodedata.normalize("NFKD", text.lower())
     return "".join(c for c in folded if not unicodedata.combining(c))
 
 
+def stem(word: str) -> str:
+    """Crude suffix stripping, so push and pushing count as the same word.
+
+    Repetition in commentary is almost never verbatim. It is the same thought
+    in a slightly different tense, which is exactly what an unstemmed token
+    comparison sails past.
+    """
+    for suffix in _SUFFIXES:
+        if len(word) > len(suffix) + 2 and word.endswith(suffix):
+            return word[: -len(suffix)]
+    return word
+
+
 def tokens(text: str) -> set[str]:
-    return {w for w in WORD.findall(normalise(text)) if w not in STOPWORDS}
+    return {stem(w) for w in WORD.findall(normalise(text)) if w not in STOPWORDS}
 
 
 @dataclass
@@ -260,7 +286,7 @@ def factual_errors(
             candidate = normalise(word)
             if candidate in known or candidate in STOPWORDS:
                 continue
-            if _is_team_word(candidate, pack) or _is_sentence_start(line.text, word):
+            if _is_team_word(candidate, pack) or _is_ordinary_opener(line.text, word):
                 continue
             errors.append(FactualError(line.video_ts, "name_off_roster", word, line.text))
 
@@ -293,8 +319,15 @@ def _is_team_word(candidate: str, pack: KnowledgePack) -> bool:
     return False
 
 
-def _is_sentence_start(text: str, word: str) -> bool:
-    return text.strip().startswith(word)
+def _is_ordinary_opener(text: str, word: str) -> bool:
+    """A capital at the start of a sentence may be grammar rather than a name.
+
+    This is a heuristic and it is biased towards flagging: a name the system
+    invented and then put first in the sentence is the error that matters
+    most, so anything not recognisably an ordinary opener is treated as a
+    name claim. The model judge is what settles the genuinely ambiguous ones.
+    """
+    return text.strip().startswith(word) and normalise(word) in OPENERS
 
 
 # -- the gate -----------------------------------------------------------
