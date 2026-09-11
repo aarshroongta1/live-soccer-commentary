@@ -1,0 +1,39 @@
+src/commentary/capture/source.py
+  s_94df9e875c1f44::t_1d4fa664053fa6 1-151
+src/commentary/config.py
+  s_94df9e875c1f44::t_c609d2d17090a8 1-6,11,17-22,35,44-168
+src/commentary/llm/base.py
+  s_94df9e875c1f44::t_b0011716f4da66 1-125
+src/commentary/llm/fake.py
+  s_94df9e875c1f44::t_43201dfc9bad34 1-126
+src/commentary/llm/pricing.py
+  s_94df9e875c1f44::t_aa0a7b0bcd79f2 1-30
+src/commentary/schemas.py
+  s_94df9e875c1f44::t_1f8026b4d1c987 1-6,45-54,73,84-208,217,221-224,226-228,231-239
+src/commentary/llm/__init__.py
+  s_94df9e875c1f44::t_23981f84a0c561 1-52
+src/commentary/capture/__init__.py
+  s_94df9e875c1f44::t_052c3082ba1832 1,3-4,6-14
+src/commentary/llm/anthropic_backend.py
+  s_94df9e875c1f44::t_e1f55edeeea8be 122
+  s_94df9e875c1f44::t_3bb1eb6a399134 1-12,14-121,123-125
+  s_94df9e875c1f44::t_29536538170f46 13
+src/commentary/llm/schema.py
+  s_94df9e875c1f44::t_a7a2ee0eaadf12 1-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0616afc0f178cf93ff2ef81ca73f1436805f486d",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
