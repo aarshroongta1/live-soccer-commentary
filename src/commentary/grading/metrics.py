@@ -141,7 +141,11 @@ def load_run(path: Path) -> Run:
                 created_ts=float(row.get("created_ts", row.get("ts", 0.0))),
                 live_ts=float(row.get("live_ts", 0.0)),
                 voice=str(row.get("voice", "caller")),
-                text=str(row.get("spoken") or row.get("text") or ""),
+                # "spoken" is what came out of the voice; a preempted line's
+                # "text" is what it would have been. The director writes
+                # "spoken" on every spoken row, so there is nothing to fall
+                # back to and nothing that should.
+                text=str(row.get("spoken", "")),
                 event=str(row.get("event", "none")),
             )
         )
