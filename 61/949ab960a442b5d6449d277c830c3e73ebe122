@@ -1,0 +1,29 @@
+src/commentary/__main__.py
+  s_94df9e875c1f44::t_a2d9af4afd35b3 125-130,132,134-137
+  s_94df9e875c1f44::t_f05b606bc86341 20
+  s_94df9e875c1f44::t_2e54838bdeb592 3-6
+  s_94df9e875c1f44::t_f991640681b6fc 329-333
+  s_94df9e875c1f44::t_c4a26062e7ad96 23
+  s_94df9e875c1f44::t_4239f29795e552 272-276
+  s_94df9e875c1f44::t_cf3e639662c197 306-313
+  s_94df9e875c1f44::t_51a3f47d2823d6 222-250
+src/commentary/llm/anthropic_backend.py
+  s_94df9e875c1f44::t_72bae193541ca2 65-71
+  s_94df9e875c1f44::t_6aa4c93048e779 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "61949ab960a442b5d6449d277c830c3e73ebe122",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
