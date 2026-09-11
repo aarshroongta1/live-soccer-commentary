@@ -23,6 +23,55 @@ class Frame:
     image: np.ndarray
 
 
+@dataclass(frozen=True)
+class AudioChunk:
+    """A slice of broadcast sound, mono float32 in [-1, 1].
+
+    Sound is the one input that resolves faster than the picture: a whistle is
+    unambiguous within a tenth of a second, while the frame it belongs to still
+    looks like twenty-two people running. The chunks are short so a trigger can
+    fire before the caller's next tick.
+    """
+
+    ts: float
+    samples: np.ndarray
+    sample_rate: int
+
+    @property
+    def duration_s(self) -> float:
+        return len(self.samples) / self.sample_rate
+
+    @property
+    def rms(self) -> float:
+        if self.samples.size == 0:
+            return 0.0
+        return float(np.sqrt(np.mean(np.square(self.samples, dtype=np.float64))))
+
+
+class AudioRing:
+    """The last few seconds of sound, addressed by time like the frame buffer."""
+
+    def __init__(self, seconds: float = 20.0, chunk_s: float = 0.1) -> None:
+        self.seconds = seconds
+        self._chunks: deque[AudioChunk] = deque(maxlen=max(1, int(seconds / chunk_s)))
+
+    def __len__(self) -> int:
+        return len(self._chunks)
+
+    def append(self, chunk: AudioChunk) -> None:
+        self._chunks.append(chunk)
+
+    @property
+    def latest(self) -> AudioChunk | None:
+        return self._chunks[-1] if self._chunks else None
+
+    def since(self, ts: float) -> list[AudioChunk]:
+        return [c for c in self._chunks if c.ts >= ts]
+
+    def window(self, end_ts: float, seconds: float) -> list[AudioChunk]:
+        return [c for c in self._chunks if end_ts - seconds <= c.ts <= end_ts]
+
+
 class DelayBuffer:
     """Fixed-capacity frame store addressed by time rather than by index."""
 
