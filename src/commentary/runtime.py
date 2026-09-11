@@ -40,7 +40,6 @@ from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.predictor import SpeakPredictor
 from commentary.schemas import (
     Beat,
-    CallerLine,
     Event,
     KnowledgePack,
     MatchState,
@@ -137,6 +136,7 @@ class Runtime:
 
         self._pending: list[Trigger] = []
         self._board_changes: list[BoardChange] = []
+        self._roars: list[float] = []
         self._last_spoken_video_ts: float | None = None
         self._last_analyst_ts: float = 0.0
         self._recent_event: tuple[Event, float] | None = None
@@ -246,7 +246,11 @@ class Runtime:
             self.stats.audio_chunks += 1
             if self.whistle.feed(chunk) is not None:
                 self._fire(Trigger.WHISTLE)
-            if self.roar.feed(chunk) is not None:
+            if (roar := self.roar.feed(chunk)) is not None:
+                # Kept with its timestamp, not just as a trigger: the fact
+                # gate needs to know WHEN the crowd went up, to decide
+                # whether it corroborates a goal claimed at the cursor.
+                self._roars.append(roar.ts)
                 self._fire(Trigger.ROAR)
 
     async def _read_board(self) -> None:
@@ -407,7 +411,7 @@ class Runtime:
             self.state,
             self.pack,
             board_changed=self._board_changed_near(cursor),
-            lookahead_celebration=self._celebration_ahead(line),
+            lookahead_celebration=self._celebration_ahead(cursor),
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:
@@ -444,9 +448,24 @@ class Runtime:
         recent = [c for c in self._board_changes if c.is_goal]
         return any(cursor - 2.0 <= c.ts <= cursor + window for c in recent)
 
-    def _celebration_ahead(self, line: CallerLine) -> bool:
-        """The caller saw the future frames; trust it only about celebration."""
-        return line.event is Event.GOAL and line.confidence >= 0.8
+    def _celebration_ahead(self, cursor: float) -> bool:
+        """Is there a crowd celebration between the cursor and the live edge?
+
+        Evidence has to come from something other than the model that is
+        making the claim. The first version of this asked the caller how
+        confident it felt and let anything above 0.8 through, which is not a
+        second source at all — it is the same source with a number attached,
+        and a confidently wrong model is precisely the failure the gate
+        exists to stop. It let a goal be announced at a moment when no goal
+        had happened.
+
+        A sustained roar is independent: it comes off the audio, which the
+        caller never sees. It is not proof on its own — crowds roar at near
+        misses too — which is why it only ever corroborates, and why the
+        board changing remains the other and better way to confirm a goal.
+        """
+        window = self.settings.capture.delay_s
+        return any(cursor - 1.0 <= ts <= cursor + window for ts in self._roars)
 
     # -- plumbing --------------------------------------------------------
 

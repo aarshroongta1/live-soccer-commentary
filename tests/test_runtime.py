@@ -124,6 +124,26 @@ async def test_nothing_is_spoken_while_a_replay_is_on_screen(tmp_path: Path) -> 
 
 
 @pytest.mark.asyncio
+async def test_a_confident_caller_is_not_evidence_of_a_celebration(tmp_path: Path) -> None:
+    """Corroboration has to come from somewhere other than the claimant.
+
+    An earlier version asked the caller how confident it felt and treated
+    anything above 0.8 as a celebration seen in the lookahead. That is the
+    same source with a number attached, and it let a goal be announced at a
+    moment when no goal had happened.
+    """
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0)
+
+    runtime._roars.clear()
+    assert runtime._celebration_ahead(10.0) is False
+
+    # A roar inside the lookahead window does corroborate; one long past does not.
+    runtime._roars.append(12.0)
+    assert runtime._celebration_ahead(10.0) is True
+    assert runtime._celebration_ahead(100.0) is False
+
+
+@pytest.mark.asyncio
 async def test_a_goal_is_never_announced_before_the_board_confirms_it(tmp_path: Path) -> None:
     _runtime, sim, path = await run_sim(tmp_path, seconds=5.0, delay_s=4.0)
     run = metrics.load_run(path)
