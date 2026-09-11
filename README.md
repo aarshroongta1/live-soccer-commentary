@@ -84,31 +84,45 @@ the delay curve below means anything.
 ## Ablations
 
 ```bash
-uv run python -m commentary.grading.baselines --duration 300 --seconds 40 \
+uv run python -m commentary.grading.baselines --duration 600 --seconds 150 \
     --error-rate 0.3 --speed 1
 ```
 
-Every variant against the same seeded match, with the stand-in model lying on
-30% of calls:
+Every variant against the same seeded match, with the stand-in model
+hallucinating on 30% of calls and guessing wrong on 45% of outcomes it cannot
+see resolve:
 
-| run | lines | factual err | gate rej | lag p50/p95 s | silence |
-|---|---:|---:|---:|---:|---:|
-| worldcupvoice | 7 | 42.9% | 0.0% | 0.0 / 0.0 | 50% |
-| **full** | 6 | **0.0%** | 0.0% | 8.0 / 8.0 | 56% |
-| no-delay | 9 | 11.1% | 33.3% | 0.0 / 0.0 | 25% |
-| no-gate | 7 | 28.6% | 0.0% | 8.0 / 8.0 | 50% |
-| single-voice | 6 | 0.0% | 33.3% | 8.0 / 8.0 | 64% |
+| run | lines | factual err | recall | gate rej | lag p50/p95 s | silence |
+|---|---:|---:|---:|---:|---:|---:|
+| worldcupvoice | 18 | 55.6% | 94% | 0.0% | 0.0 / 0.0 | 66% |
+| **full** | 24 | **12.5%** | 100% | 53.2% | 8.0 / 8.0 | 59% |
+| no-gate | 29 | 69.0% | 100% | 0.0% | 8.0 / 8.0 | 38% |
+| no-delay | 24 | 4.2% | 100% | 63.8% | 0.0 / 0.0 | 60% |
+| single-voice | 24 | 0.0% | 100% | 52.0% | 8.0 / 8.0 | 62% |
 
-Factual error rate against buffer depth, which is the headline chart:
+The fact gate is the whole story: switching it off takes factual error rate from
+12.5% to 69.0%, and the reproduced worldcupvoice loop sits at 55.6%.
+
+The delay does not show a benefit, and that is worth stating rather than
+burying:
 
 | delay | 0 s | 2 s | 4 s | 8 s |
 |---|---:|---:|---:|---:|
-| factual error | 11.1% | 12.5% | 0.0% | 0.0% |
+| factual error | 9.1% | 8.7% | 7.1% | 13.0% |
+| gate rejections | 70.7% | 62.5% | 44.7% | 56.5% |
 
-Read those numbers for what they are: a stand-in model on generated video, not a
-vision model on a real broadcast. What they establish is that the pipeline, the
-gate and the measurement all work, and that the ablations are wired up correctly
-enough to be run against the real thing the moment there is footage and a key.
+Read the second row before concluding the buffer is useless. At zero delay the
+gate is rejecting 70.7% of what the caller proposes; at four seconds it rejects
+44.7% for a similar surviving error rate. In this simulation the delay and the
+gate are substitutes — the lookahead stops errors being *made*, the gate stops
+them being *spoken*, and with the gate in place the buffer mostly buys back
+things the gate would otherwise have thrown away. Whether that holds for a real
+vision model on real footage is exactly the open question, and it is the one
+the sweep exists to answer once there is a key and a clip.
+
+Read all of it for what it is: a stand-in model on generated video. What these
+establish is that the pipeline, the gate and the measurement work, and that the
+ablations are wired correctly enough to run against the real thing.
 
 ## Commands
 
