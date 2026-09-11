@@ -36,10 +36,6 @@ class CaptureConfig:
     #: Seconds of frames kept behind the cursor, for lookback in prompts.
     history_s: float = 6.0
 
-    @property
-    def buffer_frames(self) -> int:
-        return int((self.delay_s + self.history_s) * self.fps) + 1
-
 
 @dataclass(frozen=True)
 class BoardConfig:
@@ -163,6 +159,3 @@ class Settings:
 
 
 SETTINGS = Settings()
-
-# Kept as module-level names because day-1 code and the scripts import them.
-CAPTURE = SETTINGS.capture

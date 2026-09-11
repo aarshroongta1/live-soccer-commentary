@@ -17,7 +17,7 @@ from typing import Protocol
 import numpy as np
 
 from commentary.capture.buffer import Frame, now
-from commentary.config import CAPTURE, CaptureConfig
+from commentary.config import SETTINGS, CaptureConfig
 
 
 class FrameSource(Protocol):
@@ -33,7 +33,13 @@ class FrameSource(Protocol):
 class FFmpegSource:
     """Frames out of any ffmpeg input, decoded to raw BGR on stdout."""
 
-    def __init__(self, args: list[str], cfg: CaptureConfig = CAPTURE, *, realtime: bool = True):
+    def __init__(
+        self,
+        args: list[str],
+        cfg: CaptureConfig = SETTINGS.capture,
+        *,
+        realtime: bool = True,
+    ) -> None:
         self.cfg = cfg
         self._args = args
         self._realtime = realtime
@@ -100,7 +106,7 @@ class FFmpegSource:
 class ScreenCapture(FFmpegSource):
     """Whatever is on screen: a broadcast, a browser tab, a highlight reel."""
 
-    def __init__(self, cfg: CaptureConfig = CAPTURE) -> None:
+    def __init__(self, cfg: CaptureConfig = SETTINGS.capture) -> None:
         super().__init__(
             [
                 "-f",
@@ -141,7 +147,7 @@ class FileCapture(FFmpegSource):
     def __init__(
         self,
         path: str | Path,
-        cfg: CaptureConfig = CAPTURE,
+        cfg: CaptureConfig = SETTINGS.capture,
         *,
         start_s: float = 0.0,
         realtime: bool = True,

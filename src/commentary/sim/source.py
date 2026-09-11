@@ -16,7 +16,7 @@ import asyncio
 from collections.abc import AsyncIterator
 
 from commentary.capture.buffer import AudioChunk, Frame, now
-from commentary.config import CAPTURE, CaptureConfig
+from commentary.config import SETTINGS, CaptureConfig
 from commentary.schemas import KnowledgePack
 from commentary.sim.audio import MatchAudio
 from commentary.sim.match import MatchSim
@@ -35,7 +35,7 @@ class SimSource:
     def __init__(
         self,
         sim: MatchSim | None = None,
-        cfg: CaptureConfig = CAPTURE,
+        cfg: CaptureConfig = SETTINGS.capture,
         *,
         realtime: bool = False,
         sample_rate: int = 16000,

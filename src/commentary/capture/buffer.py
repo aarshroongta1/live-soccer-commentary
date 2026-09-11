@@ -65,12 +65,6 @@ class AudioRing:
     def latest(self) -> AudioChunk | None:
         return self._chunks[-1] if self._chunks else None
 
-    def since(self, ts: float) -> list[AudioChunk]:
-        return [c for c in self._chunks if c.ts >= ts]
-
-    def window(self, end_ts: float, seconds: float) -> list[AudioChunk]:
-        return [c for c in self._chunks if end_ts - seconds <= c.ts <= end_ts]
-
 
 class DelayBuffer:
     """Fixed-capacity frame store addressed by time rather than by index."""
@@ -164,11 +158,6 @@ class DelayBuffer:
             return []
         step = (end - cursor) / count
         return self._sample(end, count, step)
-
-    def drop_before(self, ts: float) -> None:
-        """Discard frames older than ``ts``. Used when the stream stalls."""
-        while self._frames and self._frames[0].ts < ts:
-            self._frames.popleft()
 
 
 def now() -> float:
