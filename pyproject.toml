@@ -19,6 +19,9 @@ audio = ["librosa>=0.10", "soundfile>=0.12"]
 eval = ["mlx-whisper>=0.4; sys_platform == 'darwin'", "httpx>=0.27"]
 trace = ["langfuse>=2.53"]
 voice = ["elevenlabs>=1.9"]
+tools = [
+    "mcp>=1.2",
+]
 
 [dependency-groups]
 dev = [
