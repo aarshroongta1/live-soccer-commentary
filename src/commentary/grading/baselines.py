@@ -33,13 +33,7 @@ from pathlib import Path
 
 from commentary.agents.caller import Caller
 from commentary.capture.buffer import AudioChunk, DelayBuffer, Frame, now
-from commentary.config import (
-    SETTINGS,
-    AnalystConfig,
-    CallerConfig,
-    PredictorConfig,
-    Settings,
-)
+from commentary.config import SETTINGS, CallerConfig, PredictorConfig, Settings
 from commentary.director import Director
 from commentary.gate import FactGate
 from commentary.grading import report
@@ -125,6 +119,7 @@ class FixedCadence(SpeakPredictor):
     ) -> None:
         super().__init__(cfg, caller)
         self.cadence_s = cadence_s
+        self.last_call_ts: float | None = None
 
     def decide(
         self,
@@ -133,9 +128,20 @@ class FixedCadence(SpeakPredictor):
         last_spoken_ts: float | None,
         last_line_salience: float = 0.0,
     ) -> SpeakDecision:
+        """Due every ``cadence_s`` of video time, and never for any other reason.
+
+        The timer runs off this object's own last attempt rather than off the
+        runtime's last spoken line. worldcupvoice narrates every four seconds;
+        when its sentence is dropped as a repeat it waits another four, it does
+        not try again on the next tick. Reading ``last_spoken_ts`` instead would
+        turn every suppressed line into a burst of retries, and the cadence
+        this baseline exists to reproduce would not be a cadence.
+        """
         self.ticks += 1
-        silence_s = float("inf") if last_spoken_ts is None else now_ts - last_spoken_ts
-        due = silence_s >= self.cadence_s
+        since = float("inf") if self.last_call_ts is None else now_ts - self.last_call_ts
+        due = since >= self.cadence_s
+        if due:
+            self.last_call_ts = now_ts
         return self._record(
             SpeakDecision(
                 should_call=due,
@@ -167,9 +173,11 @@ class StatelessCaller(Caller):
 class CallerOnlyDirector(Director):
     """One voice on the channel: a beat from anyone else is refused.
 
-    Suppressing the analyst at the director rather than at its source is what
-    makes this ablation survive however the second voice ends up being wired
-    in, since every voice reaches the speaker through here.
+    The switch that actually suppresses the analyst is the runtime's own
+    ``with_analyst``, which stops it being called at all and so keeps the
+    ablation's cost column honest. This is the backstop underneath it: every
+    voice reaches the speaker through the director, so with this in place the
+    single-voice claim is structural rather than a hope about configuration.
     """
 
     def submit(self, beat: Beat) -> bool:
@@ -254,15 +262,16 @@ class Variant:
     """One row of the results table: a name, a configuration, and the switches.
 
     Most of an ablation is expressible as ``Settings``, which is the point of
-    having them. The four booleans are the things settings cannot say, because
-    the full system has no configuration for being less than itself.
+    having them. The switches below are the rest: the things settings cannot
+    say, because the full system has no configuration for being less than
+    itself.
     """
 
     name: str
     settings: Settings = SETTINGS
     #: False replaces the fact gate with :class:`OpenGate`.
     fact_gate: bool = True
-    #: False drops every beat that is not the play-by-play voice.
+    #: False turns the second voice off and refuses its beats at the director.
     analyst: bool = True
     #: A number here replaces the speak predictor with a metronome.
     fixed_cadence_s: float | None = None
@@ -275,16 +284,6 @@ class Variant:
     @property
     def delay_s(self) -> float:
         return self.settings.capture.delay_s
-
-
-def _mute_analyst(cfg: AnalystConfig) -> AnalystConfig:
-    """Thresholds a lull can never reach, as a second lock on the analyst.
-
-    The director already refuses the beats. This makes the ablation cost
-    nothing as well as say nothing, so the single-voice row's cost column is
-    the cost of one voice rather than of two with one thrown away.
-    """
-    return replace(cfg, lull_s=1.0e9, min_gap_s=1.0e9)
 
 
 def with_delay(base: Settings, delay_s: float) -> Settings:
@@ -307,7 +306,6 @@ def worldcupvoice(base: Settings = SETTINGS) -> Variant:
             frames_lookahead=0,
             min_gap_s=WORLDCUPVOICE_CADENCE_S,
         ),
-        analyst=_mute_analyst(base.analyst),
     )
     return Variant(
         name="worldcupvoice",
@@ -345,7 +343,7 @@ def no_gate(base: Settings = SETTINGS) -> Variant:
 def single_voice(base: Settings = SETTINGS) -> Variant:
     return Variant(
         name="single-voice",
-        settings=replace(base, analyst=_mute_analyst(base.analyst)),
+        settings=base,
         analyst=False,
         note="full system with the analyst suppressed",
     )
@@ -462,6 +460,7 @@ async def run_variant(
             settings=variant.settings,
             speaker=speaker_for(speed),
             trace=trace,
+            with_analyst=variant.analyst,
             variant=variant,
         )
         await runtime.run(seconds=seconds)
@@ -618,8 +617,9 @@ def provenance(args: argparse.Namespace, variants: Sequence[Variant]) -> str:
             f"Simulator, seed {args.seed}, {args.duration:g}s of match, "
             f"oracle error rate {args.error_rate:g}.",
             f"Each variant run for up to {args.seconds:g}s of wall clock, {pacing}.",
-            f"Variants: {', '.join(v.name for v in variants)}.",
             f"Traces: {args.out}/<variant>.jsonl",
+            "",
+            *(f"- `{v.name}` — {v.note}" for v in variants),
         ]
     )
 
