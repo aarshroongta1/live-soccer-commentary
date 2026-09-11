@@ -27,7 +27,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -76,17 +76,7 @@ class RuntimeStats:
     cost_stopped: bool = False
 
     def as_dict(self) -> dict[str, Any]:
-        return {
-            "frames": self.frames,
-            "audio_chunks": self.audio_chunks,
-            "board_reads": self.board_reads,
-            "caller_calls": self.caller_calls,
-            "analyst_calls": self.analyst_calls,
-            "ticks": self.ticks,
-            "gated_out": self.gated_out,
-            "spoken": self.spoken,
-            "cost_stopped": self.cost_stopped,
-        }
+        return asdict(self)
 
 
 @dataclass

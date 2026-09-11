@@ -228,13 +228,6 @@ class SimState:
     def in_replay(self) -> bool:
         return self.scene is Scene.REPLAY
 
-    def dot(self, side: Side, number: int) -> Dot | None:
-        for d in self.players:
-            if d.side is side and d.number == number:
-                return d
-        return None
-
-
 #: Events that settle a move one way or the other. Everything else in the
 #: script is a restart, and nobody is holding their breath over a throw-in.
 DECIDING = frozenset({Event.GOAL, Event.SAVE, Event.PENALTY})

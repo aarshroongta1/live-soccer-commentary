@@ -18,7 +18,7 @@ import asyncio
 import contextlib
 import itertools
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 
 from commentary.bus import Bus, Topic
 from commentary.config import DirectorConfig
@@ -41,13 +41,7 @@ class DirectorStats:
     dropped_full: int = 0
 
     def as_dict(self) -> dict[str, int]:
-        return {
-            "queued": self.queued,
-            "spoken": self.spoken,
-            "preempted": self.preempted,
-            "dropped_stale": self.dropped_stale,
-            "dropped_full": self.dropped_full,
-        }
+        return asdict(self)
 
 
 @dataclass

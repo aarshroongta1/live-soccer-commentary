@@ -130,8 +130,11 @@ def caller_blocks(
     that the part of the message that changes fastest sits furthest from the
     cache breakpoint.
     """
+    # Everything is labelled relative to the cursor, which is "now". The
+    # caller does not call without frames at the cursor, so there is always
+    # one to be relative to.
+    origin = cursor_frames[-1].ts
     blocks: list[Block] = []
-    origin = _origin_ts(cursor_frames, lookahead_frames)
 
     blocks.append(
         text_block(
@@ -198,15 +201,6 @@ def _tail(
         "Call the moment shown in the first set of frames, or stay silent. "
         "Fill in the form."
     )
-
-
-def _origin_ts(cursor: Sequence[Frame], lookahead: Sequence[Frame]) -> float:
-    """The timestamp everything is labelled relative to: the cursor, i.e. now."""
-    if cursor:
-        return cursor[-1].ts
-    if lookahead:
-        return lookahead[0].ts
-    return 0.0
 
 
 def _pack_section(pack: KnowledgePack) -> str:

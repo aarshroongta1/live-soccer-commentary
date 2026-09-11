@@ -127,40 +127,75 @@ colours for both sides, since that is what the instruction refers to.
 
 ## Part B: the wire
 
-A play-by-play feed as a second source of state, as an ablation and a
-ceiling, off by default. `board.py`'s docstring says a commentator does not
-receive the score over a wire. This is the wire. Module: `commentary/wire.py`.
+**Decision (2026-09-11): the picture decides what to say, the feed decides
+who.** A vision model cannot name the player on the ball from a wide shot,
+and commentary that cannot say "Otamendi to Mac Allister" is not commentary.
+So a play-by-play feed becomes a runtime input, opt-in, carrying passes,
+carries and shots with player names, and match state tracks who is on the
+ball. The fact gate is unchanged: every name still has to be on the roster,
+and now the names it sees come from data.
+
+This rewrites rule 2 above: the default runtime (`--wire` absent) still uses
+no outside data, and that variant stays in the ablation table as "vision
+only". The full system is vision plus wire. README and PLAN say so plainly.
+
+Module: `commentary/wire.py`. One StatsBomb reader, `commentary/statsbomb.py`,
+used by both the wire and `grading/statsbomb.py` (so A4 becomes a thin
+conversion over it; do not write the parser twice). It reads a saved file;
+nothing fetches.
 
 ### B1. Types (`schemas.py`)
 
 ```python
+class Event(StrEnum):   # add
+    PASS = "pass"
+    CARRY = "carry"
+
 class WireEvent(BaseModel):
     event: Event
-    side: Side = Side.UNKNOWN
+    side: Side
     player: str | None = None
-    detail: str = ""            # "yellow", "red", "own goal"
+    recipient: str | None = None      # passes
+    detail: str = ""                  # "yellow", "red", "own goal"
     home_score: int = 0
     away_score: int = 0
-    video_ts: float | None = None   # known for sim truth
-    clock_s: float | None = None    # match clock, for a saved feed
-    period: int = 1
+    clock_s: float                    # match clock, seconds
+    period: int
+    duration_s: float = 0.0           # passes and carries
+    video_ts: float | None = None     # set for sim truth; resolved otherwise
 
-class Incident(BaseModel):      # goals, cards, subs only
+class Possession(BaseModel):          # who is on the ball, from the wire
+    player: str
+    side: Side
+    since_ts: float
+    from_player: str | None = None    # who passed it, when known
+
+class Incident(BaseModel):            # goals, cards, subs
     event: Event
     side: Side
     player: str | None
     video_ts: float
-    source: str                 # "board" | "wire"
+    source: str                       # "board" | "wire"
 ```
 
-`MatchState.incidents: list[Incident]`. `MatchStateTracker.summary()` prints
-them after the scoreline, one line each kind: `goals: Ashcombe 12' Owen
-Kasper` / `cards: Verity 34' yellow Nils Marek` / `subs: Ashcombe 61' Teo
-Felix`. Board-confirmed goals (`BoardChange.is_goal`, `scoring_side`) are
-recorded as `source="board"` incidents with no player. That is the
-vision-only state; the wire fills in names and adds what vision missed.
+`MatchState` gains `ball: Possession | None` and `incidents: list[Incident]`.
 
-### B2. `Wire` and `ReplayWire`
+### B2. `commentary/statsbomb.py`
+
+`read(path, home, away) -> list[WireEvent]`. StatsBomb rows: `type.name`,
+`minute`, `second`, `period`, `duration`, `team.name`, `player.name`. Keep:
+`Pass` (recipient from `pass.recipient.name`; skip if none), `Carry`, `Shot`
+(`shot.outcome.name == "Goal"` is a GOAL, else SHOT), `Own Goal Against`
+(GOAL for the other side), cards from `foul_committed.card.name` /
+`bad_behaviour.card.name` (CARD, detail lower-cased), `Substitution` (player
+= `substitution.replacement.name`). Drop everything else. Player names: use
+the short form StatsBomb gives in the lineups file when present
+(`player_nickname`), so "Lionel Andrés Messi Cuccittini" is "Lionel Messi";
+`read` takes the lineups path too. Scores run forward. `clock_s = minute *
+60 + second`. Team name to side by the two names passed in. Hand-written
+fixture of ~12 rows for the test.
+
+### B3. `Wire` and `ReplayWire`
 
 ```python
 class Wire(Protocol):
@@ -168,105 +203,133 @@ class Wire(Protocol):
     def due(self, live_ts: float) -> list[WireEvent]: ...
 ```
 
-`due` returns, once each, events with `video_ts + latency_s <= live_ts`.
-`ReplayWire(events, latency_s)` is the one implementation.
-`ReplayWire.from_truth(events: list[GroundTruthEvent], latency_s)`. A live
-polling wire is out of scope; one sentence in the docstring saying it would
-implement the same `due`.
+`due` returns, once each, events whose resolved `video_ts + latency_s <=
+live_ts`. `ReplayWire(events, latency_s)`. Events without `video_ts` are
+resolved by the sync before `due` can release them (below).
+`ReplayWire.from_truth(list[GroundTruthEvent], latency_s)` for the sim.
 
-### B3. `WireSync`
+### B4. `WireSync`
 
-Holds the wire, a queue of known events, and the latest clock fix.
-
-- `observe_clock(clock_s, period, video_ts)`: called from the board loop on
-  every readable read. Stores `offset[period] = video_ts - clock_s` from the
-  latest read. No fitting. Resolves `clock_s`-only events to `video_ts`.
+- `observe_clock(clock_s, period, video_ts)`: from the board loop on every
+  readable read. Keeps the last 10 `(video_ts - clock_s)` per period and
+  uses the median as that period's offset. Ten and median rather than one
+  read because passes are two seconds apart and the board reader misreads
+  a digit now and then; a single bad read must not rename every touch for
+  the next two seconds. Resolves `video_ts` on every event of that period.
 - `poll(live_ts)`: pulls `wire.due(live_ts)` into the queue.
-- `apply_due(cursor_ts, tracker) -> list[Correction]`: applies queued events
-  with resolved `video_ts <= cursor_ts`, in time order, via
-  `tracker.apply_wire(event, ts)`.
+- `apply_due(cursor_ts, tracker) -> list[Correction]`: applies queued
+  events with `video_ts <= cursor_ts`, in time order.
 
-The two-clock rule: an event is *known* when the live edge passes
-`video_ts + latency_s`; it is *applied* when the cursor passes `video_ts`.
-So a correction lands at cursor `>= video_ts + max(0, latency_s -
-delay_s)`. With `latency_s <= delay_s` the buffer absorbs the feed's latency
-and corrections are on time; at `delay_s = 0` they are `latency_s` late.
-Docstring and a direct test.
+The two-clock rule: an event is *known* when the live edge passes `video_ts
++ latency_s`; it is *applied* when the cursor passes `video_ts`. So a
+correction lands at cursor `>= video_ts + max(0, latency_s - delay_s)`.
+With `latency_s <= delay_s` the buffer absorbs the feed's latency and the
+carrier is right at the cursor; at `delay_s = 0` it is `latency_s` stale.
+This is the argument for the delay, stated in the docstring and tested.
 
-`Correction` (dataclass): `video_ts`, `what` (one short string, e.g.
-`"score 1-0 -> 1-1"`, `"card Verity Nils Marek"`), `event`. Emitted only
-when the wire changed state.
+`Correction` (dataclass): `video_ts`, `what` (one string: `"score 1-0 ->
+1-1"`, `"card France Rabiot"`), `event`. Emitted only when the wire changed
+something other than possession; possession changes are too frequent to
+trace individually and are visible in `state` rows.
 
-### B4. `MatchStateTracker.apply_wire(event, ts) -> str | None`
+### B5. `MatchStateTracker.apply_wire(event, ts) -> str | None`
 
-Sets the score from the event (the only path other than the board that may
-move it; docstring says it is the ablation path, off by default). Appends an
-`Incident(source="wire")` for goals, cards, subs; a board goal already
-recorded for the same side within 15 s gets the player name instead of a
-second incident. For a sub with a number in the pack:
-`registry.believe(number, name, ts, side=side)`. Returns the `what` string
-if anything changed, else `None`.
+- PASS: `ball = Possession(player=event.player, side, since_ts=ts)` at `ts`;
+  the recipient takes over at `ts + duration_s` (queue it as a second apply
+  inside the tracker, or have the sync split a pass into two applies; pick
+  the simpler). `from_player` is the passer.
+- CARRY: `ball` = player if not already.
+- SHOT: `ball` = shooter; append SHOT to `last_events`.
+- GOAL: set the score (the only path other than the board that may); an
+  `Incident(source="wire")`, or the player name onto an existing board goal
+  for the same side within 15 s.
+- CARD, SUBSTITUTION: `Incident(source="wire")`; a sub with a number in the
+  pack calls `registry.believe(number, name, ts, side=side)`.
 
-### B5. Runtime
+`summary()` adds, after the scoreline: `on the ball: Mac Allister (ARG),
+from Otamendi` when `ball` is set and fresh (under 6 s old at the cursor),
+and one line each for goals, cards, subs. Nothing else changes.
 
-- `Runtime.wire: Wire | None = None`; `__post_init__` builds
-  `self.wire_sync = WireSync(wire)` when set.
-- `_read_board`: after a readable read with a clock,
-  `wire_sync.observe_clock(...)`, then `wire_sync.poll(frame.ts)`.
-- `_ingest_frames`: beside `_apply_due_board_changes()`, `_apply_due_wire()`
-  publishes each `Correction` on new `Topic.CORRECTION` and then a
-  `Topic.STATE`.
-- Board goals become incidents in `_apply_due_board_changes`.
-- Gate: `FactGate.judge(..., wire_confirmed: bool = False)`; a goal passes
-  when `board_changed or lookahead_celebration or wire_confirmed`.
-  `_wire_confirms_goal(cursor)`: any known wire GOAL with `cursor -
-  GOAL_GRAPHIC_LAG_S <= video_ts <= cursor + 2.0`. Known means already
-  pulled by `poll`, never peeked. `OpenGate._judge` gets the same kwarg.
-- The scoreline check reads state, so a wire-corrected score is what a
-  stated score is checked against. Nothing to change; a comment.
+### B6. Prompt
 
-### B6. Ablation
+`CALLER_RULES` "Names" paragraph (on top of A7): add that MATCH STATE may
+carry "on the ball" and "from" from a statistician; those names may be used
+as given, and are the only names allowed without a legible number or
+graphic. Change "no data feed, no statistician" at the top to say the
+statistician may be present and, when they are, speaks only through MATCH
+STATE. Byte-stable: the rule text does not depend on whether a wire is set;
+the state line simply appears or does not.
 
-- `Variant.wire_latency_s: float | None = None`.
-- `wire(base)`: name `wire-10s`, `DEFAULT_WIRE_LATENCY_S = 10.0`, note "full
-  system plus a play-by-play feed at 10 s modelled latency: the ceiling".
-  Sixth row of `standard_variants`.
-- `run_variant`: when set, `wire=ReplayWire.from_truth(sim.ground_truth,
-  latency_s)` into `BaselineRuntime`. The runtime never sees the sim.
-- Grader: `metrics.corrections(run) -> int` from `correction` rows;
-  `Scorecard.corrections`; one line in `report.detail`.
+### B7. Runtime and gate
 
-### B7. CLI
+- `Runtime.wire: Wire | None = None`; `__post_init__` builds `WireSync`.
+- `_read_board`: after a readable read with a clock, `observe_clock`, then
+  `poll(frame.ts)`.
+- `_ingest_frames`: beside `_apply_due_board_changes()`, `_apply_due_wire()`;
+  each `Correction` on new `Topic.CORRECTION`, then a `Topic.STATE`.
+- Board goals become `Incident(source="board")` in `_apply_due_board_changes`.
+- Gate: `judge(..., wire_confirmed=False)`; a goal passes on `board_changed
+  or lookahead_celebration or wire_confirmed`. `_wire_confirms_goal(cursor)`:
+  a known wire GOAL with `cursor - GOAL_GRAPHIC_LAG_S <= video_ts <= cursor
+  + 2.0`. `OpenGate._judge` gets the kwarg. Names in the line are checked
+  against the roster exactly as now; `state.ball` names are roster names by
+  construction.
 
-`run --wire feed.json --wire-latency 10` for `--source file|screen`:
-`grading.feed.load_feed` lazily in `cmd_run`, `FeedEvent` to `WireEvent` on
-match clock, `ReplayWire` into the runtime. For `--source sim`,
-`--wire-latency N` builds it from `sim.ground_truth`. Print corrections in
-the post-run summary.
+### B8. Ablation and grading
 
-### B8. Tests
+- `Variant.wire_latency_s: float | None = None`. `wire(base)` is `wire-10s`,
+  `DEFAULT_WIRE_LATENCY_S = 10.0`, note "vision plus the play-by-play feed
+  at 10 s modelled latency". Sixth row of `standard_variants`. For the sim,
+  `ReplayWire.from_truth(sim.ground_truth, latency_s)`; the sim's truth has
+  no passes, so on the sim this row shows goals, cards and subs only, and
+  the note says so.
+- `metrics.names(run, wire_events, window_s=3.0) -> Names(lines_with_name,
+  names, correct)`: for each spoken line, every capitalised roster surname
+  in it counts as a name; it is correct if that player is the passer,
+  recipient, carrier or shooter of a wire event within `window_s` of the
+  line's `video_ts`. `Scorecard.name_rate` (lines with a name / lines) and
+  `Scorecard.name_precision` (correct / names). Two new columns in the main
+  table; this is the number that answers "does it name players and is it
+  right". `metrics.corrections(run) -> int` in `report.detail`.
 
+### B9. CLI
+
+`run --wire statsbomb-events.json --lineups statsbomb-lineups.json
+--wire-latency 10` for `--source file|screen`: `statsbomb.read` in
+`cmd_run`, `ReplayWire` into the runtime. Team names come from the pack.
+For `--source sim`, `--wire-latency N` alone builds it from the sim truth.
+Post-run summary prints corrections and, when a wire was given, the names
+table.
+
+### B10. Tests
+
+- `tests/test_statsbomb.py`: the fixture reads to the expected events;
+  nickname used; own goal credited to the other side; a pass with no
+  recipient is dropped.
 - `tests/test_wire.py`: `due` releases once, in order; the two-clock rule at
-  `latency_s` below, equal to and above `delay_s` (assert the cursor at
-  which the correction lands); clock-only events resolve after a clock fix
-  and not before; no correction when state already agrees; a sub updates
-  the registry.
+  `latency_s` below, equal to and above `delay_s`; median offset survives
+  one misread; possession moves to the recipient after `duration_s`.
 - `tests/test_state.py`: `apply_wire` moves the score; a wire goal names a
-  board goal instead of duplicating it; summary prints incidents and stays
-  short.
-- `tests/test_runtime.py`: with `wire=ReplayWire.from_truth(truth, 2.0)` and
-  `delay_s=4.0`, every goal in the watched window is an incident by the
-  end; `test_the_score_only_ever_comes_from_the_board` still passes for the
-  default runtime.
+  board goal instead of duplicating it; summary shows "on the ball" only
+  while fresh.
+- `tests/test_runtime.py`: with `wire=ReplayWire.from_truth(truth, 2.0)`
+  and `delay_s=4.0`, every goal in the watched window is an incident by
+  the end; `test_the_score_only_ever_comes_from_the_board` still passes for
+  the default runtime.
 - `tests/test_baselines.py`: `wire-10s` runs, writes `correction` rows, and
   at `error_rate=1.0` its `error_count` is `<=` `full`'s.
 - `tests/test_gate.py`: `wire_confirmed=True` passes a goal claim alone.
+- `tests/test_grading.py`: `names` scores a made-up trace against a
+  made-up wire: one right name, one wrong, one line without a name.
 
-### B9. Docs
+### B11. Docs
 
-README: a short "The wire" subsection under Ablations: the ceiling row, the
-two-clock rule, the default runtime never loads one. Update the test count.
-PLAN.md: one paragraph under section 6.
+README: rewrite the opening claim to "the picture decides what to say, the
+feed decides who"; the vision-only variant stays in the table as the
+ablation. A "The wire" subsection: the two-clock rule, why the delay should
+be at least the feed's latency, the name-precision columns. PLAN.md: the
+same paragraph under section 6, and section 1's "Nothing else." becomes
+"Nothing else, except the play-by-play feed when `--wire` is given."
 
 ---
 
