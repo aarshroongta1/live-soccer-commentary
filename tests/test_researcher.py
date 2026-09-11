@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 import pytest
 from pydantic import BaseModel, ValidationError
@@ -21,6 +21,7 @@ from pydantic import BaseModel, ValidationError
 from commentary.agents.researcher import (
     WEB_SEARCH_TOOL,
     Researcher,
+    _tools_enabled,
     freeze,
     is_frozen,
     load_pack,
@@ -30,7 +31,8 @@ from commentary.agents.researcher import (
 )
 from commentary.config import RESEARCHER_MODEL
 from commentary.gate import FactGate
-from commentary.llm.base import Block, Parsed
+from commentary.llm.anthropic_backend import AnthropicBackend
+from commentary.llm.base import Block, LLMError, Parsed
 from commentary.llm.fake import ScriptedBackend
 from commentary.prompts.researcher import researcher_blocks, researcher_system
 from commentary.schemas import (
@@ -359,3 +361,43 @@ async def test_a_backend_without_the_hook_researches_without_search():
 
     assert pack.home.name == "Arsenal"
     assert not researcher.used_search
+
+
+def test_the_hook_matches_the_real_backends_attribute():
+    """The one thing that silently breaks web search: a rename in ``llm/``.
+
+    The researcher looks ``extra_params`` up by name and degrades quietly when
+    it is not there, which is right at runtime and useless as a warning — a
+    renamed attribute would cost every future pack its live search without
+    failing anything. So the name is asserted against the real class here, with
+    a stub client so that constructing it touches no key and no network.
+    """
+    backend = AnthropicBackend(client=cast(Any, object()))
+    assert backend.extra_params == {}
+
+    with _tools_enabled(backend, [WEB_SEARCH_TOOL]) as attached:
+        assert attached
+        assert backend.extra_params["tools"] == [WEB_SEARCH_TOOL]
+    assert backend.extra_params == {}
+
+
+async def test_the_tool_is_detached_even_when_the_call_fails():
+    backend = BackendWithToolHook(ScriptedBackend())  # no handler: parse raises
+    researcher = Researcher(backend)
+
+    with pytest.raises(LLMError):
+        await researcher.research("Arsenal", "Chelsea")
+
+    assert backend.seen_tools == [[WEB_SEARCH_TOOL]]
+    assert backend.extra_params == {}
+
+
+async def test_a_pre_existing_tools_entry_is_put_back():
+    """Restore, not clear: the hook borrows the mapping, it does not own it."""
+    backend = BackendWithToolHook(backend_returning(a_pack()))
+    theirs = [{"type": "something_else", "name": "not_ours"}]
+    backend.extra_params["tools"] = theirs
+
+    await Researcher(backend).research("Arsenal", "Chelsea")
+
+    assert backend.extra_params["tools"] is theirs

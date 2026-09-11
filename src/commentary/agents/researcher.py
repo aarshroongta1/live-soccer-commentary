@@ -191,22 +191,27 @@ class Researcher:
     tuned for a caller that must answer inside four seconds, and if a pack ever
     times out the fix is a longer-lived backend, not a shorter prompt.
 
-    THE WEB SEARCH LIMITATION, WRITTEN DOWN RATHER THAN PAPERED OVER.
-    ``LLMBackend.parse`` takes no ``tools`` argument, and widening that
-    protocol for the one agent that needs it would put a tool parameter on the
-    caller, the board reader and the fact gate's model-free path, where it
-    means nothing. So the tool configuration lives here, on
-    :attr:`search_tool`, and reaches the request through one narrow hook: if
-    the backend exposes a mutable ``extra_params`` mapping that it merges into
-    the request, this agent sets ``tools`` in it for the duration of the call
-    and restores it afterwards. ``AnthropicBackend`` does not expose that hook
-    today. Until it does — a one-line ``params.update(self.extra_params)`` in
-    ``anthropic_backend.py``, which this agent does not own — a real run
-    researches from the model's own knowledge with no live search, which is
-    worse for squad numbers after a transfer window and fine for most else.
-    :attr:`used_search` records which of the two actually happened, so a pack
-    can be read knowing whether anything was looked up to build it. A
-    ``ScriptedBackend`` has no such hook either and is unaffected.
+    HOW WEB SEARCH GETS TURNED ON, GIVEN THE PROTOCOL DOES NOT CARRY IT.
+    ``LLMBackend.parse`` takes no ``tools`` argument, and widening the protocol
+    for the one agent that needs it would put a tool parameter on the caller,
+    the board reader and the fact gate's model-free path, where it means
+    nothing. So the tool configuration lives here, on :attr:`search_tool`,
+    where the agent that understands it can own it, and reaches the request
+    through one narrow hook: a backend may expose a mutable ``extra_params``
+    mapping that it merges into every request, and this agent sets ``tools``
+    in it for the duration of the call and restores it afterwards.
+
+    ``AnthropicBackend`` exposes that mapping, and merges it *first*, so the
+    hook can add a tool but cannot reach the model, the output format or the
+    caching — which is what keeps it narrow enough to be worth having. A
+    backend without the mapping, ``ScriptedBackend`` included, is unaffected
+    and simply researches with no search rather than failing.
+
+    :attr:`used_search` records which of the two actually happened on the last
+    call, so a pack can be read knowing whether anything was looked up to build
+    it — a pack built without search has the model's own knowledge of squad
+    numbers behind it, which is the part that goes stale after a transfer
+    window.
     """
 
     def __init__(
@@ -298,12 +303,16 @@ class Researcher:
 def _tools_enabled(backend: LLMBackend, tools: list[dict[str, Any]] | None) -> Iterator[bool]:
     """Attach server-side tools to one call if the backend has anywhere to put them.
 
-    The narrow escape hatch described on :class:`Researcher`. The duck-typed
-    contract is a single attribute: a mutable ``extra_params`` mapping that the
-    backend merges into its request. Setting it is scoped to the call and
-    always undone, because leaving a web search tool attached to a backend
-    shared with the caller would hand a live match an outside line — the one
-    thing this system is built not to have.
+    The narrow escape hatch described on :class:`Researcher`. The contract is
+    one attribute, checked for rather than required: a mutable ``extra_params``
+    mapping that the backend merges into its request, which
+    :class:`~commentary.llm.anthropic_backend.AnthropicBackend` has and a
+    scripted backend does not.
+
+    Setting it is scoped to the call and always undone, including when the call
+    raises, because leaving a web search tool attached to a backend the caller
+    shares would hand a live match an outside line — the one thing this system
+    is built not to have.
 
     Yields whether the tools were attached, so the researcher can record
     honestly what produced the pack.
