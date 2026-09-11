@@ -1,0 +1,32 @@
+tests/test_runtime.py
+  s_94df9e875c1f44::t_c45053dd1c179c 1-31,33-137
+  s_94df9e875c1f44::t_97cf1b4246e4f4 32
+src/commentary/runtime.py
+  s_94df9e875c1f44::t_c743ef19018f42 254-255
+  s_94df9e875c1f44::t_6efe0e382f6181 261
+  s_94df9e875c1f44::t_e165d6fbedeaa4 373-380
+  s_94df9e875c1f44::t_ae78b746c3de8c 389-401
+  s_94df9e875c1f44::t_e3bcec669d32a5 222-223
+  s_94df9e875c1f44::t_4e92af9c1a389c 232-235
+  s_94df9e875c1f44::t_6c501fe4e01d18 184-193
+  s_94df9e875c1f44::t_6e547fd6a9cba6 165-168,170
+  s_94df9e875c1f44::t_229604619f8317 37
+  s_94df9e875c1f44::t_345bd5d151e411 1-36,38-136,138-144,146-151,159-164,169,171-183,194-221,224-231,236-253,256-260,262-372,381-388,402-406
+  s_94df9e875c1f44::t_38da4359b49c26 137,145,152-158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0a12a22afe51f27e5b89c334e9d36ca48db42f27",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
