@@ -8,10 +8,21 @@ nothing else, and it recovers which moment it is looking at by decoding the
 timestamp burned into the picture. If the frames stop carrying it, the oracle
 fails rather than guessing, exactly as the real backend fails on a refusal.
 
-The lying is the other half of the job. The fact gate is only worth having if
-we can show it catching errors, and a model that is right by construction can
-never demonstrate that. ``error_rate`` injects the three failures that matter
-and writes down what it did, so the eval can divide caught by injected.
+Being wrong is the other half of the job, and it comes in two kinds that the
+results table has to be able to tell apart.
+
+``error_rate`` is hallucination: a name off the roster, a scoreline that
+contradicts the board, a goal nobody scored. The fact gate exists to stop
+exactly these, and it cannot be shown stopping them by a model that is right
+by construction. None of it has anything to do with how much of the match the
+caller was shown, so the rate does not move with the buffer depth.
+
+``outcome_guess_error`` is the failure the delay buffer was built for.
+A caller watching a shot leave a boot does not know whether it is a goal. If
+the prompt's lookahead frames reach past the moment it resolves, this oracle
+reads the answer off them and is right; if they do not, it guesses and is
+wrong this often. That is the only thing in this file allowed to depend on
+the delay, and it is the mechanism the headline chart is measuring.
 """
 
 from __future__ import annotations
@@ -34,13 +45,58 @@ from commentary.schemas import (
     Event,
     Scene,
 )
-from commentary.sim.match import MatchSim, SimState
+from commentary.sim.match import MatchSim, Outcome, SimState
 from commentary.sim.render import decode_ts
 
 T = TypeVar("T", bound=BaseModel)
 
 #: The three ways a caller goes wrong that the fact gate is built to stop.
+#: These are hallucinations: they have nothing to do with how much the caller
+#: could see, so they stay at the same rate however deep the buffer is.
 ERROR_KINDS: tuple[str, ...] = ("fake_name", "wrong_score", "phantom_goal")
+
+#: The other failure, and the one the delay is supposed to fix: committing to
+#: how a move ends before the picture has shown it. Recorded separately so the
+#: eval can tell a caller that invented a person from one that called a save
+#: a goal.
+OUTCOME_KIND = "guessed_outcome"
+INJECTED_KINDS: tuple[str, ...] = (*ERROR_KINDS, OUTCOME_KIND)
+
+#: How the caller prompt announces its lookahead frames. Matched on the words
+#: rather than the whole sentence, because that file is not ours.
+_FUTURE_MARKER = "near future"
+
+#: Fraction of unresolved moments a caller with no lookahead calls wrongly.
+#: This is a modelling assumption, not a measurement. A coin flip on goal
+#: against save would be 0.5; this sits a little under it because the picture
+#: carries some signal, and well above the base rate a caller would get by
+#: always saying "saved", because a model asked to narrate leans towards the
+#: dramatic reading. GetStream measured frame narration wrong more than half
+#: the time with no lookahead at all, which is the number this is anchored to.
+DEFAULT_OUTCOME_GUESS_ERROR = 0.45
+
+#: What a caller says instead when it guesses the ending wrong.
+_WRONG_OUTCOME: dict[Event, Event] = {
+    Event.GOAL: Event.SAVE,
+    Event.SAVE: Event.GOAL,
+    Event.PENALTY: Event.GOAL,
+    Event.NONE: Event.GOAL,
+}
+
+_OUTCOME_LINES: dict[Event, tuple[str, ...]] = {
+    Event.GOAL: (
+        "Goal! {who} finds the corner and the net bulges.",
+        "That is a goal, {who} gets it and this place goes up.",
+    ),
+    Event.SAVE: (
+        "Saved! The keeper gets across and smothers it.",
+        "Held by the keeper, and the chance is gone.",
+    ),
+    Event.NONE: (
+        "{who} looks for the shot, and it comes to nothing.",
+        "Half a chance for {team}, and it fizzles out.",
+    ),
+}
 
 #: Invented people, used only when lying. Checked against the rosters first.
 _OFF_ROSTER = (
@@ -78,8 +134,8 @@ _LINES: dict[Event, tuple[str, ...]] = {
     ),
     Event.SAVE: ("Saved, a strong hand from {who}.", "{who} gets down well to keep it out."),
     Event.GOAL: (
-        "It is in! {who} finishes, and it is {home} {h}-{a} {away}.",
-        "Goal! {who} buries it, {h}-{a}.",
+        "Goal! {who} finishes it off and the place erupts.",
+        "That is a goal, {who} buries it low to the near post.",
     ),
     Event.CORNER: ("Corner to {team}, swung in.", "{team} have it back from the corner."),
     Event.FOUL: ("Whistle goes, free kick {team}.", "That is a foul, and play stops."),
@@ -114,20 +170,67 @@ _ANALYST_LINES: dict[Angle, str] = {
 }
 
 
+@dataclass(frozen=True)
+class Sighting:
+    """What one caller call could and could not see, kept for the eval.
+
+    The delay chart is an argument about information, so the argument is
+    easier to check if the information itself is recorded rather than inferred
+    from the lines afterwards. ``pending`` says the moment was still in the
+    balance; ``knew`` says the lookahead reached far enough to settle it.
+    """
+
+    cursor_ts: float
+    horizon_s: float
+    pending: bool
+    knew: bool
+
+
+@dataclass(frozen=True)
+class Moment:
+    """The two instants one prompt is about.
+
+    ``cursor_ts`` is what the line is describing and what the runtime stamps
+    it with; ``live_ts`` is the furthest ahead the prompt let the caller see.
+    The gap between them is the delay the whole experiment sweeps.
+    """
+
+    cursor_ts: float
+    live_ts: float
+
+    @property
+    def horizon_s(self) -> float:
+        return max(0.0, self.live_ts - self.cursor_ts)
+
+
 @dataclass
 class SimOracle:
     """An :class:`LLMBackend` that reads the sim off the picture it is given.
 
-    ``error_rate`` is the fraction of caller and analyst calls that come back
-    deliberately wrong. A phantom goal cannot be injected at a moment when a
-    goal genuinely happened, since that would not be an error; in that case
-    one of the other two kinds is used instead.
+    Two failure modes, kept apart on purpose, because the delay experiment
+    only means something if they can be told apart in the results.
+
+    ``error_rate`` is hallucination: invented names, scorelines that
+    contradict the board, goals that never happened. It has nothing to do
+    with how much of the match the caller was shown, so it stays flat however
+    deep the buffer is. A phantom goal is not injected at a moment when a
+    goal genuinely happened, since that would not be an error; one of the
+    other two kinds is used instead.
+
+    ``outcome_guess_error`` is the failure the delay exists to fix. When the
+    prompt's lookahead frames reach past the moment a move resolves, this
+    oracle knows how it ended and says so. When they do not, it has to guess,
+    and it guesses wrongly this often: a save called as a goal, a goal called
+    as a save, a chance sold that fizzled out. Those are recorded under
+    :data:`OUTCOME_KIND` rather than as hallucinations.
     """
 
     sim: MatchSim
     error_rate: float = 0.0
+    outcome_guess_error: float = DEFAULT_OUTCOME_GUESS_ERROR
     seed: int = 17
     injected: list[tuple[float, str]] = field(default_factory=list)
+    sightings: list[Sighting] = field(default_factory=list)
     calls: int = 0
     _total: Usage = field(default_factory=Usage)
     _rng: random.Random = field(init=False, repr=False)
@@ -135,6 +238,8 @@ class SimOracle:
     def __post_init__(self) -> None:
         if not 0.0 <= self.error_rate <= 1.0:
             raise ValueError("error_rate must be between 0 and 1")
+        if not 0.0 <= self.outcome_guess_error <= 1.0:
+            raise ValueError("outcome_guess_error must be between 0 and 1")
         self._rng = random.Random(self.seed)
 
     @property
@@ -143,7 +248,7 @@ class SimOracle:
 
     @property
     def injected_kinds(self) -> dict[str, int]:
-        counts = {kind: 0 for kind in ERROR_KINDS}
+        counts = {kind: 0 for kind in INJECTED_KINDS}
         for _, kind in self.injected:
             counts[kind] += 1
         return counts
@@ -160,13 +265,13 @@ class SimOracle:
         cache_system: bool = True,
         tag: str = "",
     ) -> Parsed[T]:
-        ts = self.timestamp_from(blocks)
-        if ts is None:
+        moment = self.moment_from(blocks)
+        if moment is None:
             raise LLMError(
                 "no decodable timestamp in the frames: the oracle only knows what it can see"
             )
         self.calls += 1
-        value = self._answer(tag, output_format, self.sim.at(ts))
+        value = self._answer(tag, output_format, moment)
         if not isinstance(value, output_format):
             raise LLMError(f"oracle cannot produce {output_format.__name__} for tag {tag!r}")
         usage = Usage(
@@ -180,34 +285,60 @@ class SimOracle:
     # ------------------------------------------------------------ reading
 
     @staticmethod
-    def timestamp_from(blocks: list[Block]) -> float | None:
-        """Video time recovered from the last image in the prompt.
+    def moment_from(blocks: list[Block]) -> Moment | None:
+        """The two instants a prompt is asking about, recovered from the pictures.
 
-        The last image is the newest one every agent sends, so it is the one
-        the answer should be about.
+        The caller is sent the frames it is calling and then, behind a heading
+        announcing the near future, one or two frames from nearer the live
+        edge. Taking the last image in the prompt would therefore answer about
+        the live edge while the runtime files the line under the cursor, and
+        every line would describe something several seconds after the moment
+        it is stamped with. So the cursor is the last image *before* that
+        heading, and the live edge is the last image of all.
+
+        The heading is matched loosely, on the words rather than the sentence,
+        because the prompt is somebody else's file and will be reworded. When
+        there is no heading at all — a bare score-bug crop, or the analyst,
+        which gets no lookahead — the last image is both.
         """
-        for block in reversed(blocks):
-            if block.get("type") != "image":
+        cursor: float | None = None
+        latest: float | None = None
+        future = False
+        for block in blocks:
+            kind = block.get("type")
+            if kind == "text":
+                if _FUTURE_MARKER in str(block.get("text", "")).lower():
+                    future = True
                 continue
-            source = block.get("source", {})
-            data = source.get("data")
-            if not isinstance(data, str):
+            if kind != "image":
                 continue
-            raw = np.frombuffer(base64.standard_b64decode(data), dtype=np.uint8)
-            image = cv2.imdecode(raw, cv2.IMREAD_COLOR)
-            if image is None:
+            ts = _image_ts(block)
+            if ts is None:
                 continue
-            return decode_ts(np.asarray(image))
-        return None
+            latest = ts
+            if not future:
+                cursor = ts
+        if latest is None:
+            return None
+        if cursor is None:
+            cursor = latest
+        return Moment(cursor_ts=cursor, live_ts=max(cursor, latest))
+
+    @staticmethod
+    def timestamp_from(blocks: list[Block]) -> float | None:
+        """The cursor moment alone, for callers that do not care about lookahead."""
+        moment = SimOracle.moment_from(blocks)
+        return None if moment is None else moment.cursor_ts
 
     # ------------------------------------------------------------ answers
 
-    def _answer(self, tag: str, output_format: type[BaseModel], state: SimState) -> BaseModel:
+    def _answer(self, tag: str, output_format: type[BaseModel], moment: Moment) -> BaseModel:
+        state = self.sim.at(moment.cursor_ts)
         if tag == "board" or output_format is BoardRead:
             return self._board(state)
         if tag == "analyst" or output_format is AnalystLine:
             return self._analyst(state)
-        return self._caller(state)
+        return self._caller(state, moment)
 
     def _board(self, state: SimState) -> BoardRead:
         if state.in_replay:
@@ -220,7 +351,7 @@ class SimOracle:
             confidence=0.96,
         )
 
-    def _caller(self, state: SimState) -> CallerLine:
+    def _caller(self, state: SimState, moment: Moment) -> CallerLine:
         rng = self._moment_rng(state.ts)
         pack = self.sim.knowledge_pack
         team = pack.team(state.possession)
@@ -235,6 +366,21 @@ class SimOracle:
         )
         line = self._render_line(event, state, who, rng)
 
+        outcome = self.sim.outcome_at(state.ts)
+        self.sightings.append(
+            Sighting(
+                cursor_ts=state.ts,
+                horizon_s=moment.horizon_s,
+                pending=outcome.pending,
+                knew=outcome.known_by(moment.live_ts),
+            )
+        )
+        if outcome.pending and state.scene not in _QUIET_SCENES:
+            event, line, wrong = self._call_the_outcome(outcome, moment, state, who, rng)
+            speak = True
+            if wrong:
+                self.injected.append((state.ts, OUTCOME_KIND))
+
         injection = self._pick_injection(truth_event)
         if injection == "fake_name":
             fake = self._fake_name(rng)
@@ -247,7 +393,7 @@ class SimOracle:
             speak = True
         elif injection == "phantom_goal":
             event = Event.GOAL
-            line = f"It is in! {who} has scored, and this place erupts."
+            line = f"Goal! {who} has scored, and this place erupts."
             speak = True
         if injection is not None:
             self.injected.append((state.ts, injection))
@@ -262,6 +408,38 @@ class SimOracle:
             speak=speak,
             line=line[:200] if speak else "",
         )
+
+    def _call_the_outcome(
+        self,
+        outcome: Outcome,
+        moment: Moment,
+        state: SimState,
+        who: str,
+        rng: random.Random,
+    ) -> tuple[Event, str, bool]:
+        """Commit to how this move ends, knowing or guessing.
+
+        The caller prompt tells the model in as many words to use the later
+        frames to decide what to say, so when they reach past the resolution
+        this reports what actually happened. When they do not, there is
+        nothing to read it off and the answer is a guess, wrong
+        ``outcome_guess_error`` of the time. That is the entire mechanism the
+        delay-versus-error chart is measuring, so it is the one thing in this
+        file that must depend on how far ahead the prompt could see.
+        """
+        called = outcome.event
+        wrong = False
+        if not outcome.known_by(moment.live_ts) and self._rng.random() < self.outcome_guess_error:
+            called = _WRONG_OUTCOME.get(outcome.event, Event.GOAL)
+            wrong = True
+        options = _OUTCOME_LINES.get(called, _OUTCOME_LINES[Event.NONE])
+        pack = self.sim.knowledge_pack
+        team = pack.team(state.possession)
+        line = options[rng.randrange(len(options))].format(
+            who=who,
+            team=pack.home.name if team is None else team.name,
+        )
+        return (called if called is not Event.NONE else Event.SHOT), line, wrong
 
     def _analyst(self, state: SimState) -> AnalystLine:
         rng = self._moment_rng(state.ts + 0.5)
@@ -336,6 +514,18 @@ class SimOracle:
         if kind == "phantom_goal" and truth_event is Event.GOAL:
             return self._rng.choice(("fake_name", "wrong_score"))
         return kind
+
+
+def _image_ts(block: Block) -> float | None:
+    """The video time burned into one image block, or ``None`` if unreadable."""
+    data = block.get("source", {}).get("data")
+    if not isinstance(data, str):
+        return None
+    raw = np.frombuffer(base64.standard_b64decode(data), dtype=np.uint8)
+    image = cv2.imdecode(raw, cv2.IMREAD_COLOR)
+    if image is None:
+        return None
+    return decode_ts(np.asarray(image))
 
 
 def _rough_tokens(blocks: list[Block]) -> int:

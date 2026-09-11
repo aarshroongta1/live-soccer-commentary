@@ -15,6 +15,13 @@ import type { NextConfig } from "next";
 const API_ORIGIN = process.env.COMMENTARY_API_ORIGIN ?? "http://127.0.0.1:8000";
 
 const nextConfig: NextConfig = {
+  // Next only serves its dev bundle to `localhost` by default. Opening the
+  // page on 127.0.0.1 — which is what the runtime prints, and what anyone
+  // reaching for a loopback address types — silently blocks every chunk, so
+  // the page arrives as server HTML and never hydrates: a dead toggle, a
+  // frozen status strip, and no error anywhere in the browser.
+  allowedDevOrigins: ["127.0.0.1", "localhost", "[::1]"],
+
   // The dev badge sits in the bottom-left corner, over the transcript. This
   // page is demoed from `npm run dev` more often than from a build.
   devIndicators: false,

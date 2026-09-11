@@ -8,6 +8,7 @@ from commentary.capture import Frame, FrameSource
 from commentary.config import SETTINGS
 from commentary.llm.base import LLMError, encode_frame, image_block, text_block
 from commentary.perception.board import BoardReader, crop_score_bug
+from commentary.prompts.caller import caller_blocks
 from commentary.schemas import AnalystLine, BoardRead, CallerLine, Event, Scene
 from commentary.sim import (
     ERROR_KINDS,
@@ -286,9 +287,50 @@ async def test_a_source_must_be_entered_before_it_yields():
 # ----------------------------------------------------------------- oracle
 
 
-def build_oracle(error_rate: float = 0.0, seed: int = 11) -> tuple[SimOracle, BroadcastRenderer]:
+def build_oracle(
+    error_rate: float = 0.0,
+    seed: int = 11,
+    *,
+    outcome_guess_error: float = 0.0,
+) -> tuple[SimOracle, BroadcastRenderer]:
+    """An oracle with both failure modes off unless a test asks for one."""
     sim = MatchSim(seed=seed, duration_s=180.0)
-    return SimOracle(sim, error_rate=error_rate), BroadcastRenderer(sim.knowledge_pack)
+    oracle = SimOracle(sim, error_rate=error_rate, outcome_guess_error=outcome_guess_error)
+    return oracle, BroadcastRenderer(sim.knowledge_pack)
+
+
+def caller_call(
+    renderer: BroadcastRenderer, sim: MatchSim, cursor_ts: float, delay_s: float
+) -> list[dict]:
+    """The blocks a real caller call carries, at this cursor and this delay.
+
+    Built with the production prompt rather than a hand-rolled lookalike: the
+    ordering of the lookahead frames relative to the heading is exactly what
+    the oracle has to read, so a test that invents its own layout would prove
+    nothing.
+    """
+    cursor = [
+        Frame(ts=cursor_ts - k, image=renderer.frame(sim.at(cursor_ts - k)))
+        for k in (2.0, 1.0, 0.0)
+        if cursor_ts - k >= 0.0
+    ]
+    ahead: list[Frame] = []
+    if delay_s > 0:
+        ahead = [
+            Frame(ts=cursor_ts + off, image=renderer.frame(sim.at(cursor_ts + off)))
+            for off in (delay_s / 2.0, delay_s)
+        ]
+    return caller_blocks(cursor, ahead, "0-0", [], [])
+
+
+def in_flight_moment(sim: MatchSim) -> float:
+    """A cursor instant where a shot is in the air and nobody knows yet."""
+    for phase in sim.phases:
+        if phase.event is Event.SHOT and phase.start > 10.0:
+            ts = phase.start + 0.3
+            if sim.outcome_at(ts).pending:
+                return ts
+    raise AssertionError("this script never puts a shot in the air")
 
 
 async def test_the_oracle_reads_the_moment_off_the_picture():
@@ -419,3 +461,126 @@ async def test_no_lies_when_the_error_rate_is_zero():
         for name in result.value.names_read:
             assert name.isdigit() or name in roster
     assert oracle.injected == []
+
+
+# ----------------------------------------------- cursor, lookahead, outcome
+
+
+async def test_the_oracle_answers_about_the_cursor_not_the_live_edge():
+    """The last image in a caller prompt is the future, not the moment.
+
+    ``caller_blocks`` puts the lookahead frames last, behind a heading. An
+    oracle that simply took the newest image would answer about the live edge
+    while the runtime files the line under the cursor, and every line in the
+    match would describe something seconds after its own timestamp.
+    """
+    oracle, renderer = build_oracle()
+    cursor_ts = 40.0
+    blocks = caller_call(renderer, oracle.sim, cursor_ts, delay_s=8.0)
+
+    moment = SimOracle.moment_from(blocks)
+    assert moment is not None
+    assert moment.cursor_ts == pytest.approx(cursor_ts, abs=0.002)
+    assert moment.live_ts == pytest.approx(cursor_ts + 8.0, abs=0.002)
+    assert moment.horizon_s == pytest.approx(8.0, abs=0.004)
+    assert SimOracle.timestamp_from(blocks) == pytest.approx(cursor_ts, abs=0.002)
+
+    # And the answer follows the cursor: the clock it reports is the cursor's.
+    read = await oracle.parse(
+        model="fake", system="", blocks=blocks, output_format=BoardRead, tag="board"
+    )
+    assert read.value.clock == oracle.sim.at(cursor_ts).clock
+    assert read.value.clock != oracle.sim.at(cursor_ts + 8.0).clock
+
+
+async def test_a_prompt_with_no_lookahead_puts_both_moments_together():
+    oracle, renderer = build_oracle()
+    blocks = caller_call(renderer, oracle.sim, 40.0, delay_s=0.0)
+    moment = SimOracle.moment_from(blocks)
+    assert moment is not None
+    assert moment.cursor_ts == pytest.approx(40.0, abs=0.002)
+    assert moment.horizon_s == pytest.approx(0.0, abs=0.002)
+
+
+async def test_lookahead_decides_whether_the_oracle_knows_how_a_move_ends():
+    """The one thing in the oracle that is allowed to depend on the delay.
+
+    With the guess rate pinned at 1.0 the caller is wrong whenever it has to
+    guess, so this separates cleanly: no lookahead and it calls the wrong
+    outcome and records the guess; enough lookahead and it reads the right one
+    off the later frames and records nothing.
+    """
+    sim = MatchSim(seed=11, duration_s=180.0)
+    renderer = BroadcastRenderer(sim.knowledge_pack)
+    cursor_ts = in_flight_moment(sim)
+    truth = sim.outcome_at(cursor_ts)
+    assert truth.pending
+
+    blind = SimOracle(sim, outcome_guess_error=1.0)
+    guessed = await blind.parse(
+        model="fake",
+        system="",
+        blocks=caller_call(renderer, sim, cursor_ts, delay_s=0.0),
+        output_format=CallerLine,
+        tag="caller",
+    )
+    assert guessed.value.event is not truth.event
+    assert [kind for _, kind in blind.injected] == ["guessed_outcome"]
+
+    # Far enough ahead to see how it ends, and the guess never happens.
+    seeing = SimOracle(sim, outcome_guess_error=1.0)
+    delay = truth.ts - cursor_ts + 1.0
+    informed = await seeing.parse(
+        model="fake",
+        system="",
+        blocks=caller_call(renderer, sim, cursor_ts, delay_s=delay),
+        output_format=CallerLine,
+        tag="caller",
+    )
+    assert informed.value.event is truth.event
+    assert seeing.injected == []
+
+
+def test_guessing_gets_rarer_as_the_buffer_deepens():
+    """Deeper lookahead covers more of what is in the balance.
+
+    This one is deliberately pure: the end-to-end version above proves the
+    oracle reads the horizon off real prompt blocks, and rendering four
+    delays across a whole match to re-prove it would only buy slower tests.
+    What is measured here is the claim the delay chart rests on.
+    """
+    sim = MatchSim(seed=11, duration_s=180.0)
+    pending = [
+        (float(ts), sim.outcome_at(float(ts)))
+        for ts in np.arange(2.0, 178.0, 0.25)
+        if sim.outcome_at(float(ts)).pending
+    ]
+    assert len(pending) > 40, "the script has to put enough in the balance to measure"
+
+    blind = {
+        delay: sum(1 for ts, out in pending if not out.known_by(ts + delay))
+        for delay in (0.0, 2.0, 4.0, 8.0)
+    }
+    assert blind[0.0] == len(pending)
+    assert blind[8.0] == 0
+    assert blind[0.0] > blind[2.0] > blind[4.0] > blind[8.0]
+
+
+async def test_hallucination_does_not_move_with_the_delay():
+    """``error_rate`` models invention, which lookahead cannot help with."""
+    sim = MatchSim(seed=11, duration_s=180.0)
+    renderer = BroadcastRenderer(sim.knowledge_pack)
+    counts = []
+    for delay in (0.0, 8.0):
+        oracle = SimOracle(sim, error_rate=1.0, outcome_guess_error=0.0)
+        for ts in np.arange(10.0, 90.0, 4.0):
+            await oracle.parse(
+                model="fake",
+                system="",
+                blocks=caller_call(renderer, sim, float(ts), delay_s=delay),
+                output_format=CallerLine,
+                tag="caller",
+            )
+        counts.append(len(oracle.injected))
+    assert counts[0] == counts[1]
+    assert all(kind in ERROR_KINDS for _, kind in oracle.injected)

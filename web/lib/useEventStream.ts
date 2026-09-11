@@ -24,6 +24,8 @@ const FLUSH_MS = 100;
 const LOOP_GAP_MS = 4000;
 const BACKOFF_BASE_MS = 750;
 const BACKOFF_MAX_MS = 15_000;
+/** How long a connection may sit neither open nor failed before we retry. */
+const OPEN_TIMEOUT_MS = 5000;
 
 function backoff(attempt: number): number {
   return Math.min(BACKOFF_MAX_MS, BACKOFF_BASE_MS * 2 ** attempt) + Math.random() * 250;
@@ -110,7 +112,30 @@ export function useEventStream(source: StreamSource): StreamHandle {
       const opened = new EventSource("/api/stream");
       stream = opened;
 
+      let opening: number | undefined;
+
+      const fail = () => {
+        if (cancelled) return;
+        if (opening !== undefined) window.clearTimeout(opening);
+        // EventSource would retry on its own schedule; closing it here means
+        // the backoff below is the only retry policy, and it is visible.
+        opened.close();
+        const next = attempt + 1;
+        setAttempts(next);
+        setLiveConnection("reconnecting");
+        retry = window.setTimeout(() => connect(next), backoff(attempt));
+      };
+
+      // A connection that neither opens nor errors — a proxy holding the
+      // socket, a runtime wedged before its first write — would otherwise
+      // leave the page saying "opening stream" for the rest of the match.
+      opening = window.setTimeout(() => {
+        opening = undefined;
+        fail();
+      }, OPEN_TIMEOUT_MS);
+
       opened.onopen = () => {
+        if (opening !== undefined) window.clearTimeout(opening);
         if (cancelled) return;
         setLiveConnection("open");
         setAttempts(0);
@@ -125,16 +150,7 @@ export function useEventStream(source: StreamSource): StreamHandle {
         });
       }
 
-      opened.onerror = () => {
-        if (cancelled) return;
-        // EventSource would retry on its own schedule; closing it here means
-        // the backoff below is the only retry policy, and it is visible.
-        opened.close();
-        const next = attempt + 1;
-        setAttempts(next);
-        setLiveConnection("reconnecting");
-        retry = window.setTimeout(() => connect(next), backoff(attempt));
-      };
+      opened.onerror = fail;
     };
 
     connect(0);

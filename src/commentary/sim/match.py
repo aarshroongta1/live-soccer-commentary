@@ -235,6 +235,37 @@ class SimState:
         return None
 
 
+#: Events that settle a move one way or the other. Everything else in the
+#: script is a restart, and nobody is holding their breath over a throw-in.
+DECIDING = frozenset({Event.GOAL, Event.SAVE, Event.PENALTY})
+
+#: How far ahead of a decisive moment play counts as still in the balance,
+#: and how long after it the picture makes the answer plain. Both are
+#: modelling assumptions; see :meth:`MatchSim.outcome_at`.
+PENDING_HORIZON_S = 5.0
+OUTCOME_VISIBLE_AFTER_S = 1.0
+
+
+@dataclass(frozen=True)
+class Outcome:
+    """How a move in the balance ends, and whether it has ended yet.
+
+    ``pending`` is the whole point. Most of a match is not in the balance, and
+    a commentator describing a sideways pass in midfield is not guessing at
+    anything. It is the few seconds after a shot leaves a boot that separate a
+    caller with lookahead from one without, and those are the only seconds
+    where the delay can earn its keep.
+    """
+
+    event: Event
+    ts: float
+    pending: bool
+
+    def known_by(self, live_ts: float) -> bool:
+        """Whether a caller seeing up to ``live_ts`` can see how this ends."""
+        return not self.pending or live_ts >= self.ts
+
+
 @dataclass(frozen=True)
 class Phase:
     """A stretch of broadcast with one shot type and one thing going on."""
@@ -728,6 +759,40 @@ class MatchSim:
     def events_near(self, ts: float, window_s: float = 2.0) -> list[GroundTruthEvent]:
         """Ground truth within ``window_s`` before ``ts``, oldest first."""
         return [g for g in self._ground_truth if ts - window_s <= g.video_ts <= ts]
+
+    def outcome_at(
+        self,
+        ts: float,
+        *,
+        horizon_s: float = PENDING_HORIZON_S,
+        visible_after_s: float = OUTCOME_VISIBLE_AFTER_S,
+    ) -> Outcome:
+        """How the move that is in the balance at ``ts`` actually ends.
+
+        This is the fact the delay buffer exists to buy. A caller watching a
+        shot leave a boot does not know whether it is a goal until the picture
+        moves on, and the whole delay experiment is the claim that letting it
+        see those next seconds is worth the lag.
+
+        Two numbers here are modelling assumptions rather than measurements,
+        which is why they are arguments. ``horizon_s`` is how far ahead of a
+        decisive moment play counts as unresolved, and ``visible_after_s`` is
+        how long after the ball crosses the line the picture makes that plain,
+        since the single frame it happens in is ambiguous to anybody.
+        """
+        phase = self.phase_at(ts)
+        for g in self._ground_truth:
+            if g.video_ts <= ts:
+                continue
+            if g.video_ts - ts > horizon_s:
+                break
+            if g.event in DECIDING:
+                return Outcome(event=g.event, ts=g.video_ts + visible_after_s, pending=True)
+        if phase.event is Event.SHOT:
+            # A shot that comes to nothing still has to be called before it
+            # comes to nothing, which is the failure nobody counts.
+            return Outcome(event=Event.NONE, ts=phase.end + visible_after_s, pending=True)
+        return Outcome(event=Event.NONE, ts=ts, pending=False)
 
     def score_at(self, ts: float) -> tuple[int, int]:
         p = self.phase_at(ts)

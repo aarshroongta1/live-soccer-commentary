@@ -69,17 +69,16 @@ function describe(
   if (source === "fixture") {
     return { dot: "bg-analyst", text: "replaying fixture · no backend" };
   }
-  switch (connection) {
-    case "open":
-      return { dot: "bg-caller live-dot", text: "stream connected" };
-    case "connecting":
-      return { dot: "bg-dim", text: "opening stream on :8000" };
-    case "reconnecting":
-      return {
-        dot: "bg-reject",
-        text: `no stream — is the runtime on :8000? retrying (attempt ${attempts})`,
-      };
-    default:
-      return { dot: "bg-faint", text: "idle" };
+  if (connection === "open") {
+    return { dot: "bg-caller live-dot", text: "stream connected" };
   }
+  // One failure is enough to say the true thing. "Opening" is only honest
+  // before the first attempt has come back.
+  if (attempts > 0) {
+    return {
+      dot: "bg-reject",
+      text: `no runtime on :8000 — start it and this reconnects (attempt ${attempts})`,
+    };
+  }
+  return { dot: "bg-dim", text: "opening stream on :8000" };
 }

@@ -14,10 +14,18 @@ from commentary.sim.match import (
     PITCH_W,
     Dot,
     MatchSim,
+    Outcome,
     Phase,
     SimState,
 )
-from commentary.sim.oracle import ERROR_KINDS, SimOracle
+from commentary.sim.oracle import (
+    ERROR_KINDS,
+    INJECTED_KINDS,
+    OUTCOME_KIND,
+    Moment,
+    Sighting,
+    SimOracle,
+)
 from commentary.sim.render import (
     TS_BLOCK,
     TS_BLOCKS,
@@ -31,6 +39,8 @@ from commentary.sim.source import SimSource
 
 __all__ = [
     "ERROR_KINDS",
+    "INJECTED_KINDS",
+    "OUTCOME_KIND",
     "PITCH_L",
     "PITCH_W",
     "TS_BLOCK",
@@ -39,7 +49,10 @@ __all__ = [
     "Dot",
     "MatchAudio",
     "MatchSim",
+    "Moment",
+    "Outcome",
     "Phase",
+    "Sighting",
     "SimOracle",
     "SimSource",
     "SimState",

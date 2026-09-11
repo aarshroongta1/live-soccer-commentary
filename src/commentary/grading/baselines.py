@@ -51,6 +51,7 @@ from commentary.schemas import (
     Voice,
 )
 from commentary.sim import MatchSim, SimOracle, SimSource
+from commentary.sim.oracle import DEFAULT_OUTCOME_GUESS_ERROR
 from commentary.trace import RunTrace
 from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker
 
@@ -433,6 +434,7 @@ async def run_variant(
     seconds: float,
     out_dir: Path,
     error_rate: float = 0.0,
+    outcome_guess_error: float = DEFAULT_OUTCOME_GUESS_ERROR,
     speed: float = 0.0,
     oracle_seed: int = ORACLE_SEED,
 ) -> Scorecard:
@@ -449,7 +451,12 @@ async def run_variant(
     path.unlink(missing_ok=True)
 
     source = PacedSource(SimSource(sim, variant.settings.capture, realtime=False), speed)
-    oracle = SimOracle(sim=sim, error_rate=error_rate, seed=oracle_seed)
+    oracle = SimOracle(
+        sim=sim,
+        error_rate=error_rate,
+        outcome_guess_error=outcome_guess_error,
+        seed=oracle_seed,
+    )
     pack = sim.knowledge_pack if variant.knowledge_pack else None
 
     with RunTrace(path=path) as trace:
@@ -478,6 +485,7 @@ async def run_suite(
     duration_s: float = 180.0,
     seconds: float = 20.0,
     error_rate: float = 0.2,
+    outcome_guess_error: float = DEFAULT_OUTCOME_GUESS_ERROR,
     out_dir: Path = Path("runs"),
     speed: float = 0.0,
 ) -> list[Scorecard]:
@@ -498,6 +506,7 @@ async def run_suite(
                 seconds=seconds,
                 out_dir=out_dir,
                 error_rate=error_rate,
+                outcome_guess_error=outcome_guess_error,
                 speed=speed,
             )
         )
@@ -571,6 +580,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=0.2,
         help="fraction of oracle calls that come back deliberately wrong (default 0.2)",
     )
+    parser.add_argument(
+        "--outcome-guess-error",
+        type=float,
+        default=DEFAULT_OUTCOME_GUESS_ERROR,
+        help="how often a caller with no lookahead calls the end of a move wrongly. "
+        "This is the simulator's modelling assumption and the delay chart is only "
+        "as good as it, so it is a dial rather than a constant "
+        f"(default {DEFAULT_OUTCOME_GUESS_ERROR:g})",
+    )
     parser.add_argument("--out", type=Path, default=Path("runs"), help="where traces are written")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="match seed")
     parser.add_argument(
@@ -615,7 +633,8 @@ def provenance(args: argparse.Namespace, variants: Sequence[Variant]) -> str:
     return "\n".join(
         [
             f"Simulator, seed {args.seed}, {args.duration:g}s of match, "
-            f"oracle error rate {args.error_rate:g}.",
+            f"oracle hallucination rate {args.error_rate:g}, "
+            f"outcome guess error {args.outcome_guess_error:g}.",
             f"Each variant run for up to {args.seconds:g}s of wall clock, {pacing}.",
             f"Traces: {args.out}/<variant>.jsonl",
             "",
@@ -637,6 +656,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             duration_s=args.duration,
             seconds=args.seconds,
             error_rate=args.error_rate,
+            outcome_guess_error=args.outcome_guess_error,
             out_dir=args.out,
             speed=args.speed,
         )

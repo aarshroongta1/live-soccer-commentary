@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 
 import { AgentPanel } from "@/components/AgentPanel";
 import { Feed } from "@/components/Feed";
@@ -13,17 +13,14 @@ import { useEventStream, type StreamSource } from "@/lib/useEventStream";
  * The page. One stream, one store, three readers of it: the picture, the
  * transcript, and the panel that shows the decisions behind the transcript.
  */
-export function Watch() {
-  // `?mock=1` replays the fixture in any build, which is how the demo runs on
-  // a laptop with no Python and no broadcast. The query string is an external
-  // store as far as React is concerned: read on the client, false on the
-  // server, so the prerendered markup and the first client render agree.
-  const mockRequested = useSyncExternalStore(subscribeNever, readMockParam, () => false);
-  const [override, setOverride] = useState<StreamSource | null>(null);
-  const source: StreamSource = override ?? (mockRequested ? "fixture" : "live");
+export function Watch({ initialSource }: { initialSource: StreamSource }) {
+  // The server already decided from `?mock=1`; the toggle only overrides it
+  // from here on, so the first render and the markup it hydrates agree and no
+  // live request is made in fixture mode.
+  const [source, setSource] = useState<StreamSource>(initialSource);
 
   const { store, connection, attempts } = useEventStream(source);
-  const showToggle = mockRequested || process.env.NODE_ENV !== "production";
+  const showToggle = initialSource === "fixture" || process.env.NODE_ENV !== "production";
 
   return (
     <div className="flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
@@ -38,12 +35,12 @@ export function Watch() {
           lastEventAt={store.lastEventAt}
           notice={store.notice}
         />
-        {showToggle ? <SourceToggle source={source} onChange={setOverride} /> : null}
+        {showToggle ? <SourceToggle source={source} onChange={setSource} /> : null}
       </header>
 
       <main className="grid min-h-0 flex-1 gap-3 p-3 sm:p-4 lg:grid-cols-[minmax(0,1fr)_400px] xl:grid-cols-[minmax(0,1fr)_440px]">
         <div className="flex min-h-0 flex-col gap-3">
-          <VideoStage live={source === "live"} />
+          <VideoStage live={source === "live"} connected={connection === "open"} />
           <Scoreboard state={store.state} />
           <Feed items={store.feed} />
         </div>
@@ -54,16 +51,6 @@ export function Watch() {
       </main>
     </div>
   );
-}
-
-/** The query string does not change without a navigation, so there is nothing
- *  to subscribe to — but `useSyncExternalStore` still wants a subscriber. */
-function subscribeNever(): () => void {
-  return () => {};
-}
-
-function readMockParam(): boolean {
-  return new URLSearchParams(window.location.search).has("mock");
 }
 
 function SourceToggle({

@@ -5,6 +5,16 @@ side of the wall and only on this side. That is the project's central claim
 made structural rather than promised.
 """
 
+from commentary.grading.feed import Alignment, Feed, FeedEvent, align, load_feed, shift
+from commentary.grading.judge import (
+    FactualityReport,
+    JudgeReport,
+    PairwiseReport,
+    Verdict,
+    judge_factuality,
+    judge_pairwise,
+    judge_run,
+)
 from commentary.grading.metrics import (
     FactualError,
     Lag,
@@ -21,23 +31,40 @@ from commentary.grading.metrics import (
     silence_ratio,
 )
 from commentary.grading.report import Scorecard, detail, score, table
+from commentary.grading.transcripts import Transcript, segments_near, transcribe
 
 __all__ = [
+    "Alignment",
     "FactualError",
+    "FactualityReport",
+    "Feed",
+    "FeedEvent",
+    "JudgeReport",
     "Lag",
+    "PairwiseReport",
     "Recall",
     "Run",
     "Scorecard",
     "SpokenLine",
+    "Transcript",
+    "Verdict",
+    "align",
     "detail",
     "event_recall",
     "factual_errors",
     "gate_rejection_rate",
     "gate_table",
+    "judge_factuality",
+    "judge_pairwise",
+    "judge_run",
     "lag",
+    "load_feed",
     "load_run",
     "repetition_rate",
     "score",
+    "segments_near",
+    "shift",
     "silence_ratio",
     "table",
+    "transcribe",
 ]
