@@ -14,13 +14,19 @@ import asyncio
 import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from commentary.capture import DelayBuffer, FileCapture, ScreenCapture
+from commentary.capture import DelayBuffer, FileCapture, FrameSource, ScreenCapture
 from commentary.config import SETTINGS, Settings
 from commentary.llm.base import LLMBackend, LLMError
 from commentary.runtime import Runtime, trace_path
 from commentary.trace import RunTrace
 from commentary.voice import LogSpeaker, Speaker, VoiceUnavailable
+
+if TYPE_CHECKING:
+    # Imported for types only: the simulator pulls in the renderer and cv2,
+    # and `commentary capture` should not pay for either.
+    from commentary.sim import MatchSim
 
 # -- capture ------------------------------------------------------------
 
@@ -74,14 +80,14 @@ async def cmd_sim(args: argparse.Namespace) -> int:
     return 0
 
 
-async def _write_video(sim: object, path: Path, seconds: float) -> None:
+async def _write_video(sim: MatchSim, path: Path, seconds: float) -> None:
     """Dump rendered frames to an MP4 so the sim can be watched like a clip."""
     import cv2
 
     from commentary.sim import SimSource
 
     cfg = SETTINGS.capture
-    source = SimSource(sim, cfg, realtime=False)  # type: ignore[arg-type]
+    source = SimSource(sim, cfg, realtime=False)
     fourcc = int(cv2.VideoWriter.fourcc(*"mp4v"))
     writer = cv2.VideoWriter(str(path), fourcc, cfg.fps, (cfg.width, cfg.height))
     try:
@@ -104,7 +110,7 @@ def _settings(args: argparse.Namespace) -> Settings:
     return replace(SETTINGS, capture=capture)
 
 
-def _backend(args: argparse.Namespace, sim: object | None) -> LLMBackend:
+def _backend(args: argparse.Namespace, sim: MatchSim | None) -> LLMBackend:
     """Anthropic when a key is around, the simulator's oracle when not.
 
     The oracle is not a mock standing in for a missing feature. It is how the
@@ -116,7 +122,7 @@ def _backend(args: argparse.Namespace, sim: object | None) -> LLMBackend:
             raise SystemExit("--backend oracle only works with --source sim")
         from commentary.sim import SimOracle
 
-        return SimOracle(sim=sim, error_rate=args.error_rate)  # type: ignore[arg-type]
+        return SimOracle(sim=sim, error_rate=args.error_rate)
     from commentary.llm import default_backend
 
     return default_backend()
@@ -140,7 +146,7 @@ async def cmd_run(args: argparse.Namespace) -> int:
         from commentary.sim import MatchSim, SimSource
 
         sim = MatchSim(seed=args.seed, duration_s=args.duration)
-        source: object = SimSource(sim, settings.capture, realtime=True)
+        source: FrameSource = SimSource(sim, settings.capture, realtime=True)
         pack = sim.knowledge_pack
     elif args.source == "file":
         if not args.path:
