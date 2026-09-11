@@ -189,7 +189,7 @@ with the roster as the prompt, so it spells the players right.
 ## Development
 
 ```bash
-uv run pytest        # 333 tests, no network, no key
+uv run pytest        # 332 tests, no network, no key
 uv run ruff check .  # lint
 uv run mypy          # strict
 uv run pre-commit install
