@@ -23,6 +23,7 @@ from typing import Any
 
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack
 from commentary.trace import read_trace, rows_of
+from commentary.voice.speaker import WORDS_PER_SECOND
 
 WORD = re.compile(r"[a-z0-9']+")
 SCORELINE = re.compile(r"\b(\d{1,2})\s*[-–]\s*(\d{1,2})\b")
@@ -126,8 +127,6 @@ class Run:
     @property
     def spoken_seconds(self) -> float:
         """Wall time occupied by speech, at a realistic speaking rate."""
-        from commentary.voice.speaker import WORDS_PER_SECOND
-
         return sum(line.words for line in self.lines) / WORDS_PER_SECOND
 
 

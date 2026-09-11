@@ -30,7 +30,13 @@ from collections import Counter, deque
 from collections.abc import Mapping
 from typing import Any
 
-from commentary.agents.caller import RepetitionGate, clean_line, similarity, trim_words
+from commentary.agents.caller import (
+    RepetitionGate,
+    clean_line,
+    flatten,
+    similarity,
+    trim_words,
+)
 from commentary.capture.buffer import DelayBuffer
 from commentary.config import ANALYST_MODEL, AnalystConfig, CallerConfig
 from commentary.llm.base import LLMBackend, LLMError
@@ -90,11 +96,6 @@ _ANALYST_LABEL = re.compile(
 def strip_label(text: str) -> str:
     """``clean_line``, plus the labels only the second voice writes."""
     return clean_line(_ANALYST_LABEL.sub("", clean_line(text)))
-
-
-def spoken_words(text: str) -> str:
-    """Lower case, letters and digits only, so "one-nil" and "one nil" agree."""
-    return " ".join(re.sub(r"[^a-z0-9]+", " ", text.lower()).split())
 
 
 class Analyst:
@@ -394,7 +395,7 @@ def restates_score(text: str, scoreline: Any = None) -> bool:
     only caught when they match the live score, because "4-3-3" is a formation
     and a commentator is allowed to say it.
     """
-    flat = spoken_words(text)
+    flat = flatten(text)
     if any(phrase in flat for phrase in _SCORE_PHRASES):
         return True
     if not isinstance(scoreline, Mapping):

@@ -62,20 +62,25 @@ def similarity(left: str, right: str) -> float:
         overlap = len(left_tokens & right_tokens) / len(left_tokens | right_tokens)
     else:
         overlap = 0.0
-    ratio = difflib.SequenceMatcher(None, _flatten(left), _flatten(right)).ratio()
+    ratio = difflib.SequenceMatcher(None, flatten(left), flatten(right)).ratio()
     if not left_tokens or not right_tokens:
         return ratio
     return 0.7 * overlap + 0.3 * ratio
 
 
-def _flatten(text: str) -> str:
-    """Lower case, letters and digits only. Punctuation is not a difference."""
+def flatten(text: str) -> str:
+    """Lower case, letters and digits only.
+
+    Punctuation is not a difference between two lines, and it is not a
+    difference between "one-nil" and "one nil" either, which is what the
+    analyst's scoreline check leans on.
+    """
     return " ".join(re.sub(r"[^a-z0-9]+", " ", text.lower()).split())
 
 
 def _content(text: str) -> frozenset[str]:
     """The words that carry the meaning, stemmed so tense does not hide a repeat."""
-    return frozenset(_stem(word) for word in _flatten(text).split() if word not in _STOPWORDS)
+    return frozenset(_stem(word) for word in flatten(text).split() if word not in _STOPWORDS)
 
 
 def _stem(word: str) -> str:

@@ -157,10 +157,6 @@ class Runtime:
     def usage(self) -> Usage:
         return self.backend.total
 
-    @property
-    def tools(self) -> MatchTools:
-        return MatchTools(state=self.state, pack=self.pack)
-
     def status(self) -> dict[str, Any]:
         stats = self.gate.stats
         return {

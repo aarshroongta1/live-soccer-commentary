@@ -143,7 +143,6 @@ class CostConfig:
     """A match that costs more than this stops calling the model."""
 
     max_usd_per_match: float = float(os.getenv("MAX_USD_PER_MATCH", "35.0"))
-    warn_usd: float = 20.0
 
 
 @dataclass(frozen=True)
