@@ -205,12 +205,9 @@ def test_a_substitution_overwrites_the_number():
     registry = EntityRegistry(half_life_s=600.0)
     registry.believe(7, "Saka", 0.0)
     assert registry.name_for(7) == "Saka"
-    assert registry.number_for("Saka") == 7
 
     registry.believe(7, "Nwaneri", 4200.0)
     assert registry.name_for(7) == "Nwaneri"
-    assert registry.number_for("Nwaneri") == 7
-    assert registry.number_for("Saka") is None
     assert registry.confidence(7, 4200.0) == pytest.approx(1.0)
 
 

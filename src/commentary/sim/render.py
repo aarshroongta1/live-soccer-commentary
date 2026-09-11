@@ -149,9 +149,6 @@ def ts_block_size(width: int) -> int:
     return int(_block_width(width))
 
 
-#: What a 720p capture gets. Kept as a name because the tests reason about it.
-TS_BLOCK = ts_block_size(1280)
-
 #: Below this a block is too small to read back after JPEG.
 TS_MIN_BLOCK = 3
 

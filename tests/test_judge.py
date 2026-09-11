@@ -114,7 +114,6 @@ async def test_the_rate_counts_every_line_judged_not_just_the_checkable_ones(pac
     assert report.n == 4
     assert report.unsupported == 2
     assert report.error_rate == pytest.approx(0.25)
-    assert report.unsupported_rate == pytest.approx(0.5)
 
 
 async def test_the_judge_is_shown_the_roster_and_the_feed_around_the_line(pack, truth) -> None:

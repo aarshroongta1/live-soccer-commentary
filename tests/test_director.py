@@ -73,7 +73,7 @@ async def test_a_goal_cuts_the_analyst_off_mid_sentence() -> None:
         await task
 
     aside, goal = speaker.said[0], speaker.said[1]
-    assert aside.cut_off, "the analyst should have been cut off"
+    assert not aside.completed, "the analyst should have been cut off"
     assert len(aside.spoken.split()) < 40
     assert goal.beat.event is Event.GOAL
     assert director.stats.preempted == 1

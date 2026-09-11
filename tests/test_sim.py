@@ -337,7 +337,8 @@ async def test_the_oracle_reads_the_moment_off_the_picture():
     oracle, renderer = build_oracle()
     ts = first_phase(oracle.sim, Scene.LIVE_PLAY, Event.BUILD_UP).start + 1.4
     blocks = blocks_for(renderer.frame(oracle.sim.at(ts)))
-    assert SimOracle.timestamp_from(blocks) == pytest.approx(ts, abs=0.001)
+    moment = SimOracle.moment_from(blocks)
+    assert moment is not None and moment.cursor_ts == pytest.approx(ts, abs=0.001)
 
     read = await oracle.parse(
         model="fake", system="", blocks=blocks, output_format=BoardRead, tag="board"
@@ -483,7 +484,6 @@ async def test_the_oracle_answers_about_the_cursor_not_the_live_edge():
     assert moment.cursor_ts == pytest.approx(cursor_ts, abs=0.002)
     assert moment.live_ts == pytest.approx(cursor_ts + 8.0, abs=0.002)
     assert moment.horizon_s == pytest.approx(8.0, abs=0.004)
-    assert SimOracle.timestamp_from(blocks) == pytest.approx(cursor_ts, abs=0.002)
 
     # And the answer follows the cursor: the clock it reports is the cursor's.
     read = await oracle.parse(

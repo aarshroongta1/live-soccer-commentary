@@ -27,7 +27,6 @@ from commentary.sim.oracle import (
     SimOracle,
 )
 from commentary.sim.render import (
-    TS_BLOCK,
     TS_BLOCKS,
     BroadcastRenderer,
     decode_ts,
@@ -43,7 +42,6 @@ __all__ = [
     "OUTCOME_KIND",
     "PITCH_L",
     "PITCH_W",
-    "TS_BLOCK",
     "TS_BLOCKS",
     "BroadcastRenderer",
     "Dot",

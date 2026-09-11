@@ -137,7 +137,6 @@ async def test_a_cancel_stops_the_sound_and_leaves_the_rest_of_the_stream_unread
     utterance = await spk.say(beat("one two three four five six seven eight"), cancel)
 
     assert not utterance.completed
-    assert utterance.cut_off
     assert stream.yielded == 2, "the rest of the line should never have been downloaded"
     assert stream.closed, "the stream should have been abandoned, not left open"
     assert sink.stopped and not sink.finished

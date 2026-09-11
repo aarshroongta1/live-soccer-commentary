@@ -29,10 +29,6 @@ class Utterance:
     seconds: float
     completed: bool
 
-    @property
-    def cut_off(self) -> bool:
-        return not self.completed
-
 
 class Speaker(Protocol):
     """Anything that can say a beat out loud and stop when told."""

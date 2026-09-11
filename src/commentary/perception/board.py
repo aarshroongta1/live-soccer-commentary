@@ -19,7 +19,7 @@ import numpy as np
 from commentary.capture.buffer import Frame
 from commentary.config import BOARD_MODEL, SETTINGS, BoardConfig
 from commentary.llm.base import Block, LLMBackend, encode_frame, image_block, text_block
-from commentary.schemas import BoardRead, Side
+from commentary.schemas import BoardRead
 from commentary.state import period_for_clock
 
 BOARD_SYSTEM = """\
@@ -146,19 +146,6 @@ class BoardChange:
         if self.previous is None:
             return False
         return (self.home_score, self.away_score) != self.previous
-
-    @property
-    def scoring_side(self) -> Side:
-        """Which side the new goal belongs to, when exactly one score moved."""
-        if self.previous is None:
-            return Side.UNKNOWN
-        home_up = self.home_score > self.previous[0]
-        away_up = self.away_score > self.previous[1]
-        if home_up and not away_up:
-            return Side.HOME
-        if away_up and not home_up:
-            return Side.AWAY
-        return Side.UNKNOWN
 
 
 class BoardTracker:

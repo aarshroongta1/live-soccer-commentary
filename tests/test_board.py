@@ -5,7 +5,7 @@ from commentary.capture import Frame
 from commentary.config import BOARD_MODEL, BoardConfig
 from commentary.llm.fake import ScriptedBackend
 from commentary.perception import BoardReader, BoardTracker, crop_score_bug
-from commentary.schemas import BoardRead, Side
+from commentary.schemas import BoardRead
 
 CONFIG = BoardConfig()
 
@@ -106,7 +106,6 @@ def test_three_agreeing_reads_move_the_score():
     assert change is not None
     assert (tracker.home_score, tracker.away_score) == (1, 0)
     assert change.is_goal
-    assert change.scoring_side is Side.HOME
     assert tracker.pending is None
 
 
@@ -121,7 +120,6 @@ def test_the_change_is_stamped_at_the_first_agreeing_read():
 
     assert change is not None
     assert change.ts == first_ts
-    assert change.scoring_side is Side.AWAY
     # The goal is reported no later than the confirmation window, which is what
     # the day-2 gate ("within 3 s of every goal") is actually measuring.
     assert (first_ts + (CONFIG.confirmations - 1) * CONFIG.interval_s) - change.ts <= 4.0
@@ -203,7 +201,6 @@ def test_the_first_confirmed_board_is_not_reported_as_a_goal():
 
     assert change is not None
     assert not change.is_goal
-    assert change.scoring_side is Side.UNKNOWN
 
 
 def test_the_period_is_confirmed_like_the_score():

@@ -326,10 +326,6 @@ class FactualityReport:
         """
         return len(self.false_lines) / self.n if self.n else 0.0
 
-    @property
-    def unsupported_rate(self) -> float:
-        return self.unsupported / self.n if self.n else 0.0
-
 
 async def judge_factuality(
     run: Run,

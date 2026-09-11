@@ -206,22 +206,6 @@ class EntityRegistry:
         belief = self._resolve(number, side)
         return None if belief is None else belief.name
 
-    def number_for(self, name: str, side: Side = Side.UNKNOWN) -> int | None:
-        """The number wearing this name, matched on the full name or a surname."""
-        wanted = name.strip().lower()
-        if not wanted:
-            return None
-        found = [
-            b
-            for b in self._beliefs.values()
-            if b.name.lower() == wanted or b.name.rsplit(" ", 1)[-1].lower() == wanted
-        ]
-        if side is not Side.UNKNOWN:
-            found = [b for b in found if b.side in (side, Side.UNKNOWN)]
-        if not found:
-            return None
-        return max(found, key=lambda b: b.ts).number
-
     def confidence(self, number: int, ts: float, side: Side = Side.UNKNOWN) -> float:
         """How much that name is still worth, given how long ago it was read."""
         belief = self._resolve(number, side)

@@ -324,12 +324,6 @@ class SimOracle:
             cursor = latest
         return Moment(cursor_ts=cursor, live_ts=max(cursor, latest))
 
-    @staticmethod
-    def timestamp_from(blocks: list[Block]) -> float | None:
-        """The cursor moment alone, for callers that do not care about lookahead."""
-        moment = SimOracle.moment_from(blocks)
-        return None if moment is None else moment.cursor_ts
-
     # ------------------------------------------------------------ answers
 
     def _answer(self, tag: str, output_format: type[BaseModel], moment: Moment) -> BaseModel:
