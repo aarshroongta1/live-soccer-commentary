@@ -1,0 +1,86 @@
+src/commentary/runtime.py
+  s_94df9e875c1f44::t_4e5a4e5b5ab907 81
+  s_94df9e875c1f44::t_d0dfc6b4f9023b 69
+  s_94df9e875c1f44::t_da645ea93f96ab 317-324,327-331
+  s_94df9e875c1f44::t_be1c4d633fe68c 124-129
+  s_94df9e875c1f44::t_d344a352f321d2 30
+  s_94df9e875c1f44::t_ab6db71ee7badb 101-103
+  s_94df9e875c1f44::t_81f9278aecc799 325-326
+  s_94df9e875c1f44::t_67d606b9884b45 333-334,336
+  s_94df9e875c1f44::t_d8f3a995252aac 141-142
+  s_94df9e875c1f44::t_1b696b3ac89ddf 335,337-349,351-354,356-357,359-373,375-381
+  s_94df9e875c1f44::t_92124fb127f36c 374
+  s_94df9e875c1f44::t_855ed319e5aad0 431-432
+  s_94df9e875c1f44::t_518bddbd0c8882 47
+  s_94df9e875c1f44::t_158ac56ebfdbf8 350,355,358
+  s_94df9e875c1f44::t_7ff295ebabdcf4 332
+web/components/AgentPanel.tsx
+  s_94df9e875c1f44::t_4c378e390efcbb 260
+web/README.md
+  s_94df9e875c1f44::t_82fcc06cbdef86 1,3-4,6,9-10,13,15-21,23-28,30-31,33,35-48,50,52-64,66-69,71-83
+.env.example
+  s_94df9e875c1f44::t_167b650029061f 4-5,7-8
+src/commentary/voice/elevenlabs.py
+  s_94df9e875c1f44::t_493b56e7fe0a6b 199
+  s_94df9e875c1f44::t_6acfe886931683 181-183,198,200,208-212
+  s_94df9e875c1f44::t_6a7f985f9a170b 286,298,307
+  s_94df9e875c1f44::t_d26124a2eca219 26,31
+tests/test_researcher.py
+  s_94df9e875c1f44::t_4b8ba309374c1f 187-189
+  s_94df9e875c1f44::t_5744746493a726 218
+  s_94df9e875c1f44::t_05d557be18078c 1-186,190-217,219-221,225,227-228,232-361
+  s_94df9e875c1f44::t_e3d6ec90030053 222-224,226
+  s_94df9e875c1f44::t_9bf0c452905666 229-231
+web/lib/format.ts
+  s_94df9e875c1f44::t_1880f3cdb837a9 20-24,26
+src/commentary/prompts/analyst.py
+  s_94df9e875c1f44::t_fdbbcbeb5847fe 236-237
+  s_94df9e875c1f44::t_86054ba30329ce 102-106
+src/commentary/agents/analyst.py
+  s_94df9e875c1f44::t_338a624093f3cf 1-58,63-80,94-180,182-270,272-342,344-410
+  s_94df9e875c1f44::t_6f785250deba03 59-62
+  s_94df9e875c1f44::t_7ca2fe03d29f28 181
+  s_94df9e875c1f44::t_73cf0639a29950 271
+  s_94df9e875c1f44::t_490420f1e05e64 81-93
+  s_94df9e875c1f44::t_fd2e7f9e415a75 343
+src/commentary/agents/researcher.py
+  s_94df9e875c1f44::t_42aa3178996f8b 114-119
+src/commentary/grading/baselines.py
+  s_94df9e875c1f44::t_197aa2da9fe772 641
+  s_94df9e875c1f44::t_44cd1cca0d2391 610-615
+  s_94df9e875c1f44::t_9d245dc9540f21 483
+  s_94df9e875c1f44::t_985b8b5802c6f4 30
+  s_94df9e875c1f44::t_04d160e4944347 61,65-69
+  s_94df9e875c1f44::t_ac996507bdd6ea 1-29,31-34,36-60,62-64,70-180,249-437,439-452,454-462,464-482,484-501,503-577,584-609,616-640,642-651
+  s_94df9e875c1f44::t_30f8683d6eed97 35
+  s_94df9e875c1f44::t_db75d948cc4212 181-248
+  s_94df9e875c1f44::t_541d641aa46545 438,453,463
+  s_94df9e875c1f44::t_e142fe08d07a59 502
+  s_94df9e875c1f44::t_a9b42edc5547bf 578-583
+tests/test_elevenlabs.py
+  s_94df9e875c1f44::t_d463271167e11b 227-270
+  s_94df9e875c1f44::t_c448f2a6dced5b 178-181
+  s_94df9e875c1f44::t_3fc626da8be0f5 15
+  s_94df9e875c1f44::t_c09072692f5521 1-14,16-177,182-226,271-302
+tests/test_analyst.py
+  s_94df9e875c1f44::t_eb92f825ca7fae 162
+  s_94df9e875c1f44::t_7ca2fe03d29f28 231,302
+  s_94df9e875c1f44::t_2aa14eea7b5117 1-161,163-230,232-265,267-301,303-420
+  s_94df9e875c1f44::t_5653b10aa3a602 266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9d27f736bc592da7e184c800a8e45e399efad5b0",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
