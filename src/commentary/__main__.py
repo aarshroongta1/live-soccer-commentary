@@ -1,6 +1,7 @@
 """The commands. Five of them, and the one that matters is ``run``.
 
     uv run python -m commentary capture 10           # day one: frames reach Python
+    uv run python -m commentary crop --path m.mp4    # check the score-bug box by eye
     uv run python -m commentary sim                  # watch the fake broadcast
     uv run python -m commentary research Arsenal PSG # pre-match notes, once
     uv run python -m commentary run --serve          # call a match, in a browser
@@ -15,6 +16,8 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+import numpy as np
 
 from commentary.capture import DelayBuffer, FileCapture, FrameSource, ScreenCapture
 from commentary.config import SETTINGS, Settings
@@ -103,11 +106,33 @@ async def _write_video(sim: MatchSim, path: Path, seconds: float) -> None:
 # -- run ----------------------------------------------------------------
 
 
+def crop_box(text: str) -> tuple[float, float, float, float]:
+    """``x0,y0,x1,y1`` as fractions of the frame, for argparse.
+
+    Fractions rather than pixels so the same four numbers work on a 720p and
+    a 1080p grab of the same broadcast, which is also how ``BoardConfig``
+    stores them.
+    """
+    parts = text.split(",")
+    if len(parts) != 4:
+        raise argparse.ArgumentTypeError(f"crop needs four numbers, got {text!r}")
+    try:
+        x0, y0, x1, y1 = (float(p) for p in parts)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"crop must be four numbers: {exc}") from exc
+    if not (0.0 <= x0 < x1 <= 1.0 and 0.0 <= y0 < y1 <= 1.0):
+        raise argparse.ArgumentTypeError(f"crop must be an ordered box inside 0..1, got {text!r}")
+    return x0, y0, x1, y1
+
+
 def _settings(args: argparse.Namespace) -> Settings:
     capture = SETTINGS.capture
     if args.delay is not None:
         capture = replace(capture, delay_s=args.delay)
-    return replace(SETTINGS, capture=capture)
+    board = SETTINGS.board
+    if args.crop is not None:
+        board = replace(board, crop=args.crop)
+    return replace(SETTINGS, capture=capture, board=board)
 
 
 def _backend(args: argparse.Namespace, sim: MatchSim | None) -> LLMBackend:
@@ -215,6 +240,66 @@ async def _serve(runtime: Runtime, port: int) -> None:
     await uvicorn.Server(config).serve()
 
 
+# -- crop ---------------------------------------------------------------
+
+
+async def cmd_crop(args: argparse.Namespace) -> int:
+    """Show what the board reader will be looking at, before a run spends money.
+
+    A score-bug box that is half a bug reads as an unreadable board for
+    ninety minutes and there is nothing in the trace that says so. One frame
+    with the box drawn on it settles that in a second.
+    """
+    import cv2
+
+    cap = replace(SETTINGS.capture, fps=1)
+    async with FileCapture(args.path, cap, start_s=args.at, realtime=False) as source:
+        frame = await anext(aiter(source.frames()), None)
+    if frame is None:
+        print(f"no frame at {args.at:.0f}s in {args.path}")
+        return 1
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(out), _crop_preview(frame.image, args.crop))
+    print(f"{args.path} at {args.at:.0f}s, crop {','.join(str(c) for c in args.crop)}")
+    print(f"wrote {out}")
+    return 0
+
+
+def _crop_preview(image: np.ndarray, box: tuple[float, float, float, float]) -> np.ndarray:
+    """The frame with the box drawn on it, and the cut-out bug beside it.
+
+    The bug is scaled up to fill the panel because the question being asked
+    is whether a cheap vision model can tell a 3 from an 8 in it, and at its
+    native size in the corner of a 720p grab nobody can answer that by eye.
+    """
+    import cv2
+
+    from commentary.perception import crop_score_bug
+
+    marked = image.copy()
+    height, width = image.shape[:2]
+    x0, y0, x1, y1 = box
+    cv2.rectangle(
+        marked,
+        (int(x0 * width), int(y0 * height)),
+        (int(x1 * width), int(y1 * height)),
+        (0, 0, 255),
+        2,
+    )
+
+    bug = crop_score_bug(image, box)
+    panel_width = width // 2
+    panel = np.zeros((height, panel_width, 3), dtype=image.dtype)
+    scale = min(panel_width / bug.shape[1], height / bug.shape[0])
+    shown = cv2.resize(
+        bug, (max(1, int(bug.shape[1] * scale)), max(1, int(bug.shape[0] * scale)))
+    )
+    panel[: shown.shape[0], : shown.shape[1]] = shown
+    return np.asarray(np.hstack([marked, panel]))
+
+
 # -- serve --------------------------------------------------------------
 
 
@@ -295,12 +380,25 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--seconds", type=float, default=60.0, help="wall-clock run length")
     run.add_argument("--duration", type=float, default=600.0, help="sim match length")
     run.add_argument("--delay", type=float, default=None, help="override the buffer depth")
+    run.add_argument(
+        "--crop",
+        type=crop_box,
+        default=None,
+        help="score-bug box as x0,y0,x1,y1 fractions; check it with the crop command",
+    )
     run.add_argument("--error-rate", type=float, default=0.0, help="oracle lie rate")
     run.add_argument("--seed", type=int, default=11)
     run.add_argument("--serve", action="store_true", help="also serve the watch page")
     run.add_argument("--port", type=int, default=8000)
     run.add_argument("--out", default="runs")
     run.set_defaults(func=cmd_run)
+
+    cr = sub.add_parser("crop", help="draw the score-bug box on one frame of a file")
+    cr.add_argument("--path", required=True, help="video file")
+    cr.add_argument("--at", type=float, default=300.0, help="seconds into the file")
+    cr.add_argument("--crop", type=crop_box, default=SETTINGS.board.crop)
+    cr.add_argument("--out", default="crop.png")
+    cr.set_defaults(func=cmd_crop)
 
     res = sub.add_parser("research", help="write the pre-match notes (needs a key)")
     res.add_argument("home")
