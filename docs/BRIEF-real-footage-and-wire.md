@@ -528,6 +528,72 @@ overrides a gallery name; a cut followed by a gallery hit keeps the name on
 the new track id. Grading: the same `name_rate` / `name_precision` against
 StatsBomb, reported separately for number-named and gallery-named lines.
 
+### C11. Claude is the number reader; the marks are anonymous IDs
+
+Measured on the real clip with marks on (HEAD `6734b6b`, trace
+`scratchpad/run/runs/marks/`): 83 tracker passes in 175 s, median 1.6 s per
+pass, median 3 tracks per pass on footage with 15 bodies, `named: 0` on
+every pass, and PARSeq confirmed **no** shirt number in three minutes. In
+the same three minutes the caller read nine number-plus-name pairs off the
+same frames (`11 Di María`, `7 De Paul`, `26 Molina`, `3 Tagliafico`, `22
+Theo Hernández`, `10 Messi`, `18 Upamecano`, `20 MacAllister`, `5 Koundé`),
+all correct. The tracks died between passes because SigLIP's ~1 s per pass
+made passes too far apart for ByteTrack, and every re-created track was
+re-embedded, which kept passes slow. So: the model we already pay for is
+the better number reader, and the vision chain should do the one thing it
+is good at, which is holding a body's identity while the camera stays on
+it. This removes two models.
+
+1. **Remove PARSeq and SigLIP.** Delete `NumberReader`, `_Parseq`,
+   `Embedder`, the SigLIP wrapper, and `pytorch-lightning`, `nltk`, `timm`
+   and the SigLIP dependency from the `vision` extra. Kit split becomes a
+   colour histogram: per new track, HSV histogram of the torso half of the
+   crop, k-means k=2 fitted on the first ~100 crops and refitted every 5
+   minutes, assignment by nearest centroid with a distance gate
+   (`Side.UNKNOWN` beyond it); which cluster is home by the existing
+   kit-string colour-word rule. Microseconds per crop.
+2. **Detection-only passes.** With nothing else in the loop a pass is the
+   ~92 ms nano detection plus ByteTrack; target 5 passes/s or better, and
+   the `tracks` trace row proves it. Keep the executor and the
+   never-await rule from A18.
+3. **Marks are anonymous IDs.** `draw_marks` draws `#<track.id>` on every
+   tracked body with a side, and the surname instead once the track has a
+   name. Small tag, same style as C4.
+4. **The caller reports grounded sightings.** `CallerLine.sightings:
+   list[Sighting]` with `Sighting(mark: int, number: int | None = None,
+   name: str | None = None)`. Prompt (the "Names" paragraph, on top of A7
+   and C4): bodies may carry a small tag; `#4` is a tracked body not yet
+   identified, a surname is one that is; if you can read a shirt number or
+   a name on a tagged body, report the tag and what you read in
+   `sightings`; a surname tag is a name you may use; never report a
+   sighting you cannot actually read. `names_read` stays as the flat
+   record. Byte-stable rule text.
+5. **A sighting binds identity to the track.** In the runtime, on every
+   caller line: each sighting is checked against the roster (number must
+   be in that side's squad; a name must match the roster; when both are
+   given they must be the same player) and a passing one calls
+   `tracker.identify(mark, side, number, name, ts)`, which names that
+   track until the next cut, and `registry.believe(number, name, ts,
+   side)`. A failing sighting is dropped and counted in the trace. The
+   fact gate's `names_read` rule is unchanged.
+6. **C10's bootstrap is `identify`.** The gallery stores its samples on
+   that call. C10 needs a body embedding for its 11-way match; that
+   embedding is computed only on `identify` and on classification passes
+   for unnamed tracks at no more than 1 Hz, so it never sits in the
+   detection loop. Choose the embedder when C10 is built (SigLIP is fine
+   for that job; it was the wrong tool only in the per-pass kit split).
+
+Tests with fakes: detection-only passes stay under 200 ms with a
+`FakeDetector` returning 15 boxes; kit split separates two synthetic
+colours and gates a third as unknown; a sighting for `#4` with `11` and
+`Di María` names track 4 and believes 11 in the registry; a sighting with
+a number not in the squad is dropped; a sighting whose number and name
+disagree is dropped; a named track keeps its name until `reset()`;
+`draw_marks` draws `#id` for unnamed and the surname for named; the
+`no-marks` variant still runs. Update `SimTracker` to the same interface
+(it can answer `identify` trivially). Docs: README "Names" subsection says
+the caller reads the numbers and the tracker holds them.
+
 ### C9. Docs
 
 README: a "Names" subsection: the recipe above in five lines, the honest

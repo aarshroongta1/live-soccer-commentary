@@ -38,6 +38,7 @@ class SimTracker:
         self.pack = pack if pack is not None else sim.knowledge_pack
         self._ids: dict[tuple[Side, int], int] = {}
         self._read: set[tuple[Side, int]] = set()
+        self._named: dict[int, tuple[Side, int]] = {}
 
     def update(self, frame: Frame) -> list[Track]:
         state = self.sim.at(frame.ts)
@@ -47,7 +48,7 @@ class SimTracker:
             key = (dot.side, dot.number)
             if radius >= NUMBER_LEGIBLE_RADIUS:
                 self._read.add(key)
-            legible = key in self._read
+            legible = key in self._read or self._ids.get(key) in self._named
             number = dot.number if legible else None
             name = self._name_for(dot.side, dot.number) if legible else None
             tracks.append(
@@ -70,6 +71,17 @@ class SimTracker:
         """
         self._ids = {}
         self._read = set()
+        self._named = {}
+
+    def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
+        """The caller read a shirt the renderer drew too small to be legible.
+
+        On the sim that is not a contradiction worth fighting: something read
+        it, and on the real system the something is the caller looking at a
+        frame. The dot keeps its number from here on, which is what the real
+        tracker does too.
+        """
+        self._named[mark] = (side, number)
 
     def _id_for(self, key: tuple[Side, int]) -> int:
         if key not in self._ids:

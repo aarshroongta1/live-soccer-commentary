@@ -10,9 +10,7 @@ from commentary.perception.board import (
 )
 from commentary.perception.players import (
     Detector,
-    Embedder,
     NullTracker,
-    NumberReader,
     PlayerTracker,
     Track,
     Tracker,
@@ -27,9 +25,7 @@ __all__ = [
     "BoardReader",
     "BoardTracker",
     "Detector",
-    "Embedder",
     "NullTracker",
-    "NumberReader",
     "PlayerTracker",
     "Track",
     "Tracker",

@@ -7,14 +7,11 @@ from commentary.state import EntityRegistry
 
 Box = tuple[int, int, int, int]
 
-#: Solid BGR per kit, and the vector the fake embedder answers with. Separable
-#: by construction, because what is under test is the split and not SigLIP.
+#: Solid BGR per kit. The split is a histogram of the real pixels now, so
+#: these are the actual evidence rather than a stand-in for it.
 KIT_BGR = {"red": (0, 0, 220), "blue": (220, 0, 0), "yellow": (0, 230, 230)}
-KIT_VECTOR = {"red": (1.0, 0.0, 0.0), "blue": (0.0, 1.0, 0.0), "yellow": (0.0, 0.0, 1.0)}
-BY_BGR = {bgr: name for name, bgr in KIT_BGR.items()}
 
-#: Box heights in the 640-wide working image, so twice these in the frame: one
-#: side of the 110 px the number reader needs, and one side the other.
+#: Box heights in the 640-wide working image, so twice these in the frame.
 TALL = 60
 SHORT = 50
 
@@ -77,48 +74,8 @@ class FakeDetector:
         return list(boxes)
 
 
-class FakeEmbedder:
-    """One fixed vector per kit, looked up by the crop's mean colour."""
-
-    def __init__(self) -> None:
-        self.calls = 0
-        self.crops = 0
-
-    def embed(self, crops: list[np.ndarray]) -> np.ndarray:
-        self.calls += 1
-        self.crops += len(crops)
-        vectors = []
-        for crop in crops:
-            mean = tuple(int(round(v)) for v in crop.reshape(-1, 3).mean(axis=0))
-            vectors.append(KIT_VECTOR[BY_BGR[mean]])
-        return np.asarray(vectors, dtype=np.float32)
-
-
-class FakeNumberReader:
-    """Scripted (text, confidence), holding the last, and keeps every crop."""
-
-    def __init__(self, script: list[tuple[str, float]]) -> None:
-        self.script = script
-        self.crops: list[np.ndarray] = []
-
-    def read(self, crop: np.ndarray) -> tuple[str, float]:
-        self.crops.append(crop)
-        return self.script[min(len(self.crops) - 1, len(self.script) - 1)]
-
-
-def build(
-    script: list[list[Box]],
-    reads: list[tuple[str, float]],
-) -> tuple[PlayerTracker, FakeNumberReader]:
-    reader = FakeNumberReader(reads)
-    tracker = PlayerTracker(
-        FakeDetector(script),
-        FakeEmbedder(),
-        reader,
-        pack=PACK,
-        fit_samples=len(script[0]),
-    )
-    return tracker, reader
+def build(script: list[list[Box]]) -> PlayerTracker:
+    return PlayerTracker(FakeDetector(script), pack=PACK, fit_samples=len(script[0]))
 
 
 def believe(registry: EntityRegistry, tracks: list, ts: float) -> None:
@@ -135,7 +92,7 @@ def believe(registry: EntityRegistry, tracks: list, ts: float) -> None:
 
 def test_the_kits_split_in_two_and_the_referee_belongs_to_neither():
     frame, boxes = scene(SQUAD)
-    tracker, _ = build([boxes], [("", 0.0)])
+    tracker = build([boxes])
 
     sides = [track.side for track in tracker.update(frame)]
 
@@ -144,71 +101,80 @@ def test_the_kits_split_in_two_and_the_referee_belongs_to_neither():
     assert sides[8] is Side.UNKNOWN
 
 
-def test_a_number_confirms_on_the_second_agreeing_read():
-    first_frame, boxes = scene(SQUAD, ts=1.0)
-    second_frame, _ = scene(SQUAD, ts=2.0)
-    tracker, _ = build([boxes], [("7", 0.95)])
+def test_a_pass_is_the_detection_and_nothing_else():
+    """Fifteen bodies, well under the frame budget, or the tags mean nothing.
 
-    first = tracker.update(first_frame)
-    assert first[0].number is None
+    The run this replaced took 1.6 s a pass with SigLIP in it, and at that
+    rate a track id is a different body every time it is looked at. Nothing
+    that scales with the number of bodies belongs in here.
+    """
+    import time
 
-    second = tracker.update(second_frame)
-    assert second[0].id == first[0].id
-    assert second[0].number == 7
-    assert second[0].name == "Bukayo Saka"
+    crowd = [("red", SHORT)] * 7 + [("blue", SHORT)] * 7 + [("yellow", SHORT)]
+    frame, boxes = scene(crowd)
+    tracker = build([boxes])
+    tracker.update(frame)
 
+    started = time.perf_counter()
+    for i in range(5):
+        tracks = tracker.update(scene(crowd, ts=float(i))[0])
+    elapsed = (time.perf_counter() - started) / 5
 
-def test_a_low_confidence_read_is_not_evidence():
-    frames = [scene(SQUAD, ts=float(i)) for i in range(4)]
-    tracker, _ = build([frames[0][1]], [("7", 0.5), ("7", 0.5), ("7", 0.95), ("7", 0.95)])
-
-    numbers = [tracker.update(frame)[0].number for frame, _ in frames]
-
-    assert numbers == [None, None, None, 7]
-
-
-def test_a_three_digit_read_is_not_a_shirt_number():
-    frames = [scene(SQUAD, ts=float(i)) for i in range(4)]
-    tracker, _ = build([frames[0][1]], [("777", 0.95), ("777", 0.95), ("7", 0.95), ("7", 0.95)])
-
-    numbers = [tracker.update(frame)[0].number for frame, _ in frames]
-
-    assert numbers == [None, None, None, 7]
+    assert len(tracks) == 15
+    assert elapsed < 0.2, f"{elapsed * 1000:.0f} ms a pass for fifteen bodies"
 
 
-def test_a_confirmed_number_is_believed_as_a_name():
+def test_a_sighting_names_a_track_and_it_keeps_the_name():
+    """The caller read the shirt; the tracker's job is to hold on to it."""
+    frame, boxes = scene(SQUAD, ts=1.0)
+    tracker = build([boxes])
+    first = tracker.update(frame)
+    assert first[0].name is None
+
+    tracker.identify(first[0].id, Side.HOME, 7, "Bukayo Saka", 1.0)
+    assert first[0].name == "Bukayo Saka"
+
+    later = tracker.update(scene(SQUAD, ts=2.0)[0])
+    assert later[0].id == first[0].id
+    assert (later[0].number, later[0].name) == (7, "Bukayo Saka")
+
+
+def test_a_sighting_overrides_the_kit_split():
+    """Whatever read the number saw more than a histogram of a torso did."""
+    frame, boxes = scene(SQUAD, ts=1.0)
+    tracker = build([boxes])
+    referee = tracker.update(frame)[8]
+    assert referee.side is Side.UNKNOWN
+
+    tracker.identify(referee.id, Side.AWAY, 20, "Cole Palmer", 1.0)
+    after = tracker.update(scene(SQUAD, ts=2.0)[0])[8]
+
+    assert after.side is Side.AWAY
+    assert after.name == "Cole Palmer"
+
+
+def test_a_confirmed_sighting_is_believed_as_a_name():
     registry = EntityRegistry()
-    first_frame, boxes = scene(SQUAD, ts=1.0)
-    second_frame, _ = scene(SQUAD, ts=2.0)
-    tracker, _ = build([boxes], [("7", 0.95)])
+    frame, boxes = scene(SQUAD, ts=1.0)
+    tracker = build([boxes])
+    tracks = tracker.update(frame)
 
-    believe(registry, tracker.update(first_frame), 1.0)
-    believe(registry, tracker.update(second_frame), 2.0)
+    tracker.identify(tracks[0].id, Side.HOME, 7, "Bukayo Saka", 1.0)
+    believe(registry, tracker.update(scene(SQUAD, ts=2.0)[0]), 2.0)
 
     assert registry.name_for(7, Side.HOME) == "Bukayo Saka"
     assert registry.on_pitch(2.0) == {"7": "Bukayo Saka"}
 
 
-def test_a_player_too_far_away_is_never_sent_to_the_number_reader():
-    distant = [(colour, SHORT) for colour, _ in SQUAD]
-    frame, boxes = scene(distant)
-    tracker, reader = build([boxes], [("7", 0.95)])
-
-    tracker.update(frame)
-
-    assert reader.crops == []
-
-
 def test_a_cut_starts_the_ids_again_but_the_registry_keeps_the_names():
     registry = EntityRegistry()
     first_frame, boxes = scene(SQUAD, ts=1.0)
-    second_frame, _ = scene(SQUAD, ts=2.0)
     joined_frame, joined_boxes = scene([*SQUAD, ("blue", SHORT)], ts=3.0)
     after_frame, _ = scene(SQUAD, ts=40.0)
-    tracker, _ = build([boxes, boxes, joined_boxes, boxes], [("7", 0.95)])
+    tracker = build([boxes, joined_boxes, boxes])
 
-    believe(registry, tracker.update(first_frame), 1.0)
-    believe(registry, tracker.update(second_frame), 2.0)
+    tracks = tracker.update(first_frame)
+    tracker.identify(tracks[0].id, Side.HOME, 7, "Bukayo Saka", 1.0)
     joined = tracker.update(joined_frame)
     believe(registry, joined, 3.0)
     assert max(track.id for track in joined) == 9
@@ -217,8 +183,8 @@ def test_a_cut_starts_the_ids_again_but_the_registry_keeps_the_names():
     after = tracker.update(after_frame)
 
     assert [track.id for track in after] == list(range(9))
-    # The votes belonged to the old ids, so the number has to be earned again.
-    assert after[0].number is None
+    # The name belonged to the old id, and an id is not a person.
+    assert after[0].name is None
     assert registry.name_for(7, Side.HOME) == "Bukayo Saka"
 
 
@@ -228,41 +194,4 @@ def test_the_null_tracker_sees_nobody():
 
     assert tracker.update(frame) == []
     assert tracker.reset() is None
-
-
-def test_a_track_keeps_its_kit_rather_than_being_embedded_every_frame():
-    """SigLIP is the slowest thing in the chain and a player keeps his shirt.
-
-    A second to embed fifteen crops on this machine, against 92 ms for the
-    detector, so embedding every body on every pass is the whole frame budget
-    spent deciding something that cannot have changed. A track is embedded
-    when it is new, and then carried for the next EMBED_EVERY passes.
-    """
-    from commentary.perception.players import EMBED_EVERY
-
-    frame, boxes = scene(SQUAD)
-    tracker, _ = build([boxes], [("", 0.0)])
-
-    tracker.update(frame)
-    assert tracker.embedder.calls == 1
-    assert tracker.embedder.crops == len(SQUAD)
-
-    for _ in range(EMBED_EVERY):
-        sides = [track.side for track in tracker.update(frame)]
-        assert sides[:4] == [Side.HOME] * 4, "a track lost its team between frames"
-    assert tracker.embedder.calls == 1, "the same bodies were embedded again"
-
-    tracker.update(frame)
-    assert tracker.embedder.calls == 2
-
-
-def test_a_cut_forgets_the_kit_embeddings_with_the_ids():
-    """New ids on a new camera, and a vector is worth nothing without its id."""
-    frame, boxes = scene(SQUAD)
-    tracker, _ = build([boxes], [("", 0.0)])
-
-    tracker.update(frame)
-    tracker.reset()
-    tracker.update(frame)
-
-    assert tracker.embedder.calls == 2
+    assert tracker.identify(0, Side.HOME, 7, "Bukayo Saka", 1.0) is None
