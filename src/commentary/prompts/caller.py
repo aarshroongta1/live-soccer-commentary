@@ -190,7 +190,12 @@ def draw_marks(
             continue
         x0, y0, _x1, _y1 = track.box
         (width, height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)
-        top = max(0, y0 - height - 6)
+        top = y0 - height - 6
+        if top < 0:
+            # No room above the player: a label clipped by the top edge is not
+            # readable, and pinning it to y=0 would put it over whatever the
+            # broadcaster has up there.
+            continue
         cv2.rectangle(marked, (x0, top), (x0 + width + 6, top + height + 6), (20, 20, 20), -1)
         cv2.putText(
             marked,

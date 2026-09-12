@@ -104,8 +104,7 @@ def test_the_marks_change_the_pictures_and_nothing_else():
 def test_the_sim_tracker_names_the_dots_whose_numbers_are_drawn():
     sim = MatchSim(seed=11, duration_s=120.0)
     renderer = BroadcastRenderer(sim.knowledge_pack, width=1280, height=720)
-    registry = EntityRegistry()
-    tracker = SimTracker(sim, renderer, registry=registry)
+    tracker = SimTracker(sim, renderer)
 
     named: list[Track] = []
     for i in range(600):
@@ -120,7 +119,7 @@ def test_the_sim_tracker_names_the_dots_whose_numbers_are_drawn():
     squad = {p.name for sheet in sheets for p in sheet.squad}
     assert all(t.name in squad for t in named)
     assert all(t.side is not Side.UNKNOWN for t in named)
-    assert registry.identified(40.0), "nothing reached the registry"
+    assert all(t.number is not None for t in named)
 
 
 def test_the_sim_tracker_leaves_a_distant_dot_unread():
@@ -151,11 +150,13 @@ def test_a_cut_starts_the_ids_again_and_the_shirts_have_to_be_read_again():
     sim = MatchSim(seed=11, duration_s=120.0)
     renderer = BroadcastRenderer(sim.knowledge_pack, width=1280, height=720)
     registry = EntityRegistry()
-    tracker = SimTracker(sim, renderer, registry=registry)
+    tracker = SimTracker(sim, renderer)
 
     image = np.zeros((4, 4, 3), dtype=np.uint8)
     for i in range(200):
-        tracker.update(Frame(ts=i / 15.0, image=image))
+        for track in tracker.update(Frame(ts=i / 15.0, image=image)):
+            if track.number is not None and track.name is not None:
+                registry.believe(track.number, track.name, i / 15.0, side=track.side)
     before = registry.identified(13.0)
     assert before, "nothing was identified before the cut"
 
@@ -173,3 +174,41 @@ def test_the_null_tracker_is_the_same_shape_and_finds_nobody():
     tracker = NullTracker()
     assert tracker.update(Frame(ts=1.0, image=blank())) == []
     tracker.reset()
+
+
+async def test_the_runtime_puts_what_the_tracker_read_into_the_state():
+    """The tracker perceives; the registry remembers; the runtime joins them.
+
+    Without this the marks are drawn on the frames and the state's
+    "identified" line stays empty, so a name leaves with the camera.
+    """
+    from commentary.config import CaptureConfig, PredictorConfig, Settings
+    from commentary.runtime import Runtime
+    from commentary.sim import MatchSim, SimOracle, SimSource
+
+    sim = MatchSim(seed=11, duration_s=120.0)
+    settings = Settings(
+        capture=CaptureConfig(width=640, height=360, fps=8, delay_s=2.0, history_s=3.0),
+        predictor=PredictorConfig(tick_s=0.05),
+    )
+    source = SimSource(sim, settings.capture, realtime=False)
+    runtime = Runtime(
+        source=source,
+        backend=SimOracle(sim=sim, error_rate=0.0),
+        pack=sim.knowledge_pack,
+        settings=settings,
+        tracker=SimTracker(sim, source.renderer, pack=sim.knowledge_pack),
+    )
+    await runtime.run(seconds=3.0)
+
+    identified = runtime.state_tracker.registry.identified(runtime.cursor_ts)
+    assert identified, "the tracker read shirts and none of them reached the state"
+    assert "identified:" in runtime.state_tracker.summary(runtime.cursor_ts)
+
+
+def test_a_label_with_no_room_above_the_player_is_not_drawn():
+    """Clipped at the top edge it is unreadable, and it would sit over
+    whatever the broadcaster has up there — a score bug, a clock, a strap."""
+    image = blank()
+    high = Track(id=0, side=Side.HOME, box=(40, 2, 70, 90), number=11, name="Ángel Di María")
+    assert np.array_equal(draw_marks(image, [high], pack()), image)
