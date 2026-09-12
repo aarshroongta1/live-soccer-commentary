@@ -1,0 +1,24 @@
+src/commentary/prompts/caller.py
+  s_53408140bf619f::t_d08d80dd74bc72 50-61,89-95,107-108
+  s_53408140bf619f::t_f826bea5c6fe9e 246-248,254-260,263,265-266,268-269,273-281,284,286-287
+tests/test_prompts.py
+  s_53408140bf619f::t_c37424f7ced4c0 147-169,171-174
+  s_53408140bf619f::t_b705d7dde10c3d 170
+  s_53408140bf619f::t_d50451f3e16fdb 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ee3e05ff5badca04d8261c604450689181b54f13",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
