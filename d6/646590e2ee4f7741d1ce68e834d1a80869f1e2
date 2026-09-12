@@ -1,0 +1,32 @@
+src/commentary/perception/players.py
+  s_071588aa9615d3::t_4df23cfe0351ae 1,4-20,40,46-58,101-103
+  s_071588aa9615d3::t_926c097de3fc76 106-114,118,370-371,373-377,379-382
+  s_071588aa9615d3::t_64b9943a6e9461 459-461,510,514,516-521,524
+  s_071588aa9615d3::t_d88fa09939633c 147-173,235-236,251-252,265,269,275-277,282-283,292-309,314-318,322
+  s_071588aa9615d3::t_0eaba658b5b0e7 104-105
+tests/test_players.py
+  s_071588aa9615d3::t_29633d57891729 10-11,14,77-78,95
+  s_071588aa9615d3::t_d73ac3c2aff6f6 104-116,118-121,123-124,127-132,134-135,137-139,142-147,149-150,152-153,156,158-160,162-163,174,176-177,186-187,197
+docs/BRIEF-real-footage-and-wire.md
+  s_071588aa9615d3::t_b9fbc8627c7a65 531-596
+pyproject.toml
+  s_071588aa9615d3::t_a8a0d928430781 25-27
+src/commentary/sim/tracker.py
+  s_071588aa9615d3::t_64b9943a6e9461 41,51,74-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d6646590e2ee4f7741d1ce68e834d1a80869f1e2",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
