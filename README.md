@@ -302,7 +302,7 @@ with the roster as the prompt, so it spells the players right.
 ## Development
 
 ```bash
-uv run pytest        # 439 tests, no network, no key, no model weights
+uv run pytest        # 448 tests, no network, no key, no model weights
 uv run ruff check .  # lint
 uv run mypy          # strict
 uv run pre-commit install

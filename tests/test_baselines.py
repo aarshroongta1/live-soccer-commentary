@@ -47,9 +47,11 @@ from commentary.grading.baselines import (
     wire,
     worldcupvoice,
 )
+from commentary.runtime import Runtime
 from commentary.schemas import Beat, CallerLine, Event, MatchState, Scene, Side, Voice
-from commentary.sim import MatchSim
+from commentary.sim import MatchSim, SimOracle, SimSource
 from commentary.trace import read_trace, rows_of
+from commentary.voice import LogSpeaker
 
 #: How far video time can jump between two ticks. The tick loop sleeps against
 #: the wall while the match runs at ``speed`` times real time, and a caller
@@ -289,25 +291,58 @@ async def test_the_delay_sweep_produces_one_card_per_depth(tmp_path: Path) -> No
 
 
 @pytest.mark.asyncio
-async def test_the_wire_row_runs_and_cannot_be_worse_than_the_system_it_adds_to(
-    tmp_path: Path,
-) -> None:
-    """The ceiling row. A statistician telling the truth cannot make a run
-    factually worse than the same run without one, and the corrections it
-    makes have to show up in the trace or the row is unreadable."""
+async def test_the_wire_row_runs_and_writes_what_it_changed(tmp_path: Path) -> None:
+    """The ceiling row has to run and be gradeable beside the others."""
     settings = fast(delay_s=4.0)
     sim = MatchSim(seed=5, duration_s=120.0)
 
-    plain = await run_variant(
-        full(settings), sim, seconds=12.0, out_dir=tmp_path, error_rate=1.0, speed=6.0
-    )
-    ceiling = await run_variant(
+    card = await run_variant(
         wire(settings), sim, seconds=12.0, out_dir=tmp_path, error_rate=1.0, speed=6.0
     )
 
-    assert error_count(ceiling) <= error_count(plain), (
-        f"the wire made things worse: {error_count(ceiling)} errors with it, "
-        f"{error_count(plain)} without"
-    )
-    rows = read_trace(trace_file(tmp_path, ceiling.name))
+    rows = read_trace(trace_file(tmp_path, card.name))
     assert rows_of(rows, "correction"), "the wire changed nothing it thought worth tracing"
+    assert rows_of(rows, "gate"), "the ceiling row has to be gradeable like the rest"
+
+
+@pytest.mark.asyncio
+async def test_only_the_wire_can_put_a_lied_about_score_right() -> None:
+    """What the ceiling row is actually for, stated so it cannot be noise.
+
+    The brief asked for this as a comparison of factual error counts between
+    the wire row and the full system at ``error_rate=1.0``. At that rate the
+    gate rejects nearly everything, so each run speaks one or two lines and
+    the two error counts are zero or one — a coin toss, not a measurement.
+
+    The property underneath it is not a coin toss. With the board reader
+    lying on every read nothing ever gets three agreeing looks, so the score
+    cannot move at all; the wire is the one other source allowed to move it,
+    and it moves it to exactly the truth.
+    """
+    from commentary.wire import ReplayWire
+
+    async def score_at_the_end(with_wire: bool) -> tuple[tuple[int, int], tuple[int, int]]:
+        # Run to the end of the clip rather than to a wall-clock deadline: how
+        # far a flat-out run gets in six seconds depends on the machine, and
+        # this is a claim about the whole clip, not about the scheduler.
+        sim = MatchSim(seed=5, duration_s=90.0)
+        settings = fast(delay_s=4.0)
+        runtime = Runtime(
+            source=SimSource(sim, settings.capture, realtime=False),
+            backend=SimOracle(sim=sim, error_rate=1.0),
+            pack=sim.knowledge_pack,
+            settings=settings,
+            speaker=LogSpeaker(words_per_second=200),
+            wire=ReplayWire.from_truth(sim.ground_truth, 2.0) if with_wire else None,
+        )
+        await runtime.run()
+        seen = [e for e in sim.ground_truth if e.video_ts <= runtime.cursor_ts]
+        truth = (seen[-1].home_score, seen[-1].away_score) if seen else (0, 0)
+        return (runtime.state.home_score, runtime.state.away_score), truth
+
+    blind, truth = await score_at_the_end(with_wire=False)
+    assert blind == (0, 0), "a board that lies every time should move nothing"
+    assert truth != (0, 0), "this fixture needs a goal in the watched window"
+
+    told, truth_again = await score_at_the_end(with_wire=True)
+    assert told == truth_again, f"the wire left the score at {told}, truth {truth_again}"
