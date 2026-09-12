@@ -4,8 +4,8 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `f6c09ed`, 37 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 477 passed · `uv run ruff check .` clean ·
+**Head:** `04139f3`, 41 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 426 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
 ---
@@ -176,6 +176,29 @@ where the roster check has no latitude, and four lines died as invented
 names. That half is fixed in `a40b27b`: the rules now say a letter tag never
 goes in `names_read`, and the gate no longer reads a short capitalised
 alphabetic token there as a name claim. **It has not been run since.**
+
+### Run 3: the loop works, and it named the wrong man once
+
+`0eb2c4b`, $0.96 (trace `scratchpad/run/runs/r3/`). **21 sightings made, 16
+bound** — the first run where the naming loop did anything at all. What made
+the difference was not the prompt: it was deleting `names_read`, so there is
+one field to put a read in.
+
+Two failures worth keeping in mind, both fixed in `04139f3`:
+
+- **A wrong name.** "26" read off a body the kit split had put on France
+  bound as Marcus Thuram, through a passage StatsBomb has Argentina playing
+  all of. The body was Molina, Argentina's 26. A number alone now names
+  somebody only when one squad wears it, and the kit split is out of the
+  naming path entirely.
+- **A mark of "Thuram".** `id_of` took any alphabetic string, so a name in
+  the mark field parsed to a track id in the millions. A tag is at most three
+  letters now, which is all we ever draw.
+
+Still open after run 3: only 1 of 21 sightings carried a real tag, because
+the close-ups where a number is legible still have no tags on them (below).
+So nothing was ever carried on a mark, item 7 fails, and `name_rate` is 14%
+— the caller reads players constantly and writes lines about the crowd.
 
 ### The loop is blocked: close-up bodies have no tag
 
