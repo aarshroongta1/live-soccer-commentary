@@ -168,6 +168,17 @@ def fold(text: str) -> str:
     return " ".join(re.sub(r"[^0-9A-Za-z]+", " ", plain).lower().split())
 
 
+def _is_a_tag(token: str) -> bool:
+    """Is this one of the letter tags we drew over a body ourselves?
+
+    Short, alphabetic and capitalised, which is exactly what ``mark_of``
+    prints and what a name is not. The capitals do the real work: "Di" is two
+    letters and has to keep failing, because half a compound surname is the
+    thing A13 is about, and "GP" is a tag.
+    """
+    return token.isascii() and token.isalpha() and token.isupper() and len(token) <= 3
+
+
 def _similar(a: str, b: str) -> float:
     return SequenceMatcher(None, a, b).ratio()
 
@@ -478,6 +489,13 @@ class FactGate:
         invented a graphic, and a line built on an invented graphic is not
         worth saving.
 
+        One thing is not a claim at all: the letter tag drawn above a body.
+        That is our own label, put there by this system, and the caller
+        reporting it back is not the caller claiming to have read anything.
+        The rules say a letter tag does not belong here; the first run with
+        letters put seven of them here anyway and lost four lines to it, so
+        the rule is not the only thing standing between a tag and a rejection.
+
         A sighting is read the way the state reads it before it is checked.
         The caller writes what it saw — "11 Di María", "Di María (11)" —
         because that is the pairing that justifies the name, and matching the
@@ -488,7 +506,7 @@ class FactGate:
         problems: list[str] = []
         for read in line.names_read:
             token = read.strip()
-            if not token:
+            if not token or _is_a_tag(token):
                 continue
             sighting = parse_sighting(token)
             if sighting is not None:

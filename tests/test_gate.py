@@ -455,3 +455,32 @@ def test_a_name_that_opens_the_line_still_has_to_be_on_the_roster():
     verdict = FactGate().judge(line, state, pack)
     assert "Zaltimore" not in verdict.line
     assert any(r.startswith("name_not_on_roster: Zaltimore") for r in verdict.reasons)
+
+
+# -- the tags we drew ourselves ----------------------------------------------
+
+
+@pytest.mark.parametrize("tag", ["GA", "GP", "FQ", "KE", "LP", "A", "AAA"])
+def test_a_letter_tag_in_names_read_is_not_a_name_claim(tag: str):
+    """Seven of these cost four lines on the first run with letter tags.
+
+    A tag is this system's own label drawn over a body. The caller reporting
+    it back is not a claim to have read anything, and holding it to the roster
+    rejects the line for a word we wrote ourselves.
+    """
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, tag)
+    assert verdict.passed, verdict.reasons
+
+
+@pytest.mark.parametrize("token", ["Zaltimore", "Di", "Zi"])
+def test_something_that_is_not_a_tag_in_names_read_still_fails(token: str):
+    """The exemption is short, alphabetic AND capitalised.
+
+    "Di" is two letters and must keep failing: half a compound surname is
+    exactly what A13 is about, and the capitals are what tell the two apart.
+    """
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, token)
+    assert not verdict.passed
+    assert any(f"name_read_not_on_roster: {token}" in r for r in verdict.reasons)

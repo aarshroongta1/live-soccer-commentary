@@ -72,8 +72,10 @@ name you may use for that player, and for nobody else on the pitch. A tag
 that is a letter code — A, B, ... Z, AA, AB — is a body the system is
 following and has not identified. It is a label for that body and nothing
 else: it is not a shirt number, not a squad number, and not a name. A player
-with no tag at all is unidentified, whatever you think you recognise. Put
-every tag you used in names_read, exactly as it is printed.
+with no tag at all is unidentified, whatever you think you recognise. A
+surname tag you used goes in names_read exactly as printed, because it is a
+name you said. A letter tag never goes in names_read: it is not a name and
+not something you read off the picture, it is our label for a body.
 
 When you can read a shirt number or a name on a tagged player, say so in
 sightings: the letter of the tag, and what you read on the shirt. The player
