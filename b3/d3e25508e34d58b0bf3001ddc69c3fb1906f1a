@@ -1,0 +1,27 @@
+tests/test_board.py
+  s_071588aa9615d3::t_cdb496fdc08219 173-188,190,195,198-199,201,203-204,207-210,216
+  s_071588aa9615d3::t_7129aeefe08c67 189,191-194,196-197,200,202,205-206
+tests/test_runtime.py
+  s_071588aa9615d3::t_8c61bfcc854561 293-299,301,308-311,313-319
+src/commentary/perception/board.py
+  s_071588aa9615d3::t_0ba3f12304f72b 245-254
+src/commentary/runtime.py
+  s_071588aa9615d3::t_b21abdf585b251 417-425
+  s_071588aa9615d3::t_08a11465d32fdd 93-95,188-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b3d3e25508e34d58b0bf3001ddc69c3fb1906f1a",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
