@@ -1,0 +1,41 @@
+src/commentary/perception/players.py
+  s_071588aa9615d3::t_5372b50d954098 56-60,64-65,235-240,253,292-293,341-343,349,355-368,374
+  s_071588aa9615d3::t_a9faf41027efa6 350-354
+  s_071588aa9615d3::t_a6be74e09671f5 55,61-63,344-348
+docs/BRIEF-real-footage-and-wire.md
+  s_071588aa9615d3::t_c225bf9dee904d 282-309
+tests/test_runtime.py
+  s_071588aa9615d3::t_087a5b5f1aea5b 10,25,27,375-403,407-470
+  s_071588aa9615d3::t_60bf264a9e82f8 404-406
+tests/test_players.py
+  s_071588aa9615d3::t_6977360bd16d0a 83-86,88-89,231-238,240-249,251-268
+  s_071588aa9615d3::t_a6be74e09671f5 239,250
+src/commentary/prompts/caller.py
+  s_071588aa9615d3::t_06e353d9bbd30c 163-167
+src/commentary/bus.py
+  s_071588aa9615d3::t_06e353d9bbd30c 30
+src/commentary/runtime.py
+  s_071588aa9615d3::t_06e353d9bbd30c 61,84-94,194,196-200,249,306-308,314-330,333-334,336-338,340-345,347-355,357,376-381
+  s_071588aa9615d3::t_60bf264a9e82f8 335,339,346,356,369-371
+  s_071588aa9615d3::t_af3631eb362e6c 358-368
+docs/HANDOFF.md
+  s_071588aa9615d3::t_8c8840c7311fbb 133-137
+uv.lock
+  s_071588aa9615d3::t_b1f18420dc9d37 10-131,580,582,585,611,617,621,985-1073,1083-1087,1679-1691,2046-2183,2265-2280,2800-2893,3120-3138,3889-3903,4401-4482
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b1aa927f9d0a87d82b79557f58fe4633532644a2",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
