@@ -204,3 +204,22 @@ def test_the_table_renders_every_card(tmp_path: Path, truth, pack) -> None:
     rendered = report.table(cards)
     assert rendered.count("\n") == 3
     assert "| a |" in rendered and "| b |" in rendered
+
+
+def test_the_grader_does_not_count_half_a_compound_surname_as_invented():
+    """"Di María" arrives as two capitalised words, and "Di" is on no sheet.
+
+    Before the name parts went into the roster, every correct use of a
+    compound surname cost the run a fabricated ``name_off_roster``.
+    """
+    from commentary.grading.metrics import Run, SpokenLine, factual_errors, roster_names
+
+    pack = KnowledgePack(
+        home=TeamSheet(name="Argentina", starters=[Player(name="Ángel Di María", number=11)]),
+        away=TeamSheet(name="France"),
+    )
+    assert {"di", "maria", "angel"} <= roster_names(pack)
+
+    line = SpokenLine(video_ts=10.0, voice="caller", text="Di María cuts in")
+    run = Run(run_id="x", lines=[line])
+    assert factual_errors(run, [], pack) == []

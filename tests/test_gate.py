@@ -220,3 +220,77 @@ def test_stats_are_usable_standalone():
     )
     stats.record(verdict)
     assert stats.by_reason["too_short_after_trim"] == 1
+
+
+# -- names_read, in the form the caller actually writes them -----------------
+
+
+def argentina() -> tuple[MatchState, KnowledgePack]:
+    """The sheet the first real run used, with the names that broke on it."""
+    sheet = TeamSheet(
+        name="Argentina",
+        short="ARG",
+        starters=[
+            Player(name="Ángel Di María", number=11),
+            Player(name="Rodrigo De Paul", number=7),
+            Player(name="Alexis Mac Allister", number=20),
+        ],
+    )
+    pack = KnowledgePack(home=sheet, away=TeamSheet(name="France", short="FRA"))
+    return MatchState(home="Argentina", away="France"), pack
+
+
+def sighting_verdict(gate: FactGate, state: MatchState, pack: KnowledgePack, read: str):
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.BUILD_UP,
+        names_read=[read],
+        confidence=0.8,
+        speak=True,
+        line="He drives forward down the left.",
+    )
+    return gate.judge(line, state, pack)
+
+
+@pytest.mark.parametrize("read", ["11 Di María", "Di María (11)", "11", "Di María"])
+def test_a_sighting_is_parsed_before_it_is_checked(read: str):
+    """The caller writes the pairing that justifies the name, so read it that way.
+
+    On the first real run every one of these was rejected
+    ``name_read_not_on_roster``, because the whole string was matched against
+    the roster instead of being read as a number and a name.
+    """
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, read)
+    assert verdict.passed, verdict.reasons
+
+
+def test_a_sighting_whose_name_is_not_on_the_roster_still_fails():
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, "Zaltimore (11)")
+    assert not verdict.passed
+    assert any("name_read_not_on_roster: Zaltimore" in r for r in verdict.reasons)
+
+
+def test_a_sighting_whose_number_is_not_in_the_squad_still_fails():
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, "Di María (77)")
+    assert not verdict.passed
+    assert any("number_not_in_squad: 77" in r for r in verdict.reasons)
+
+
+# -- compound surnames -------------------------------------------------------
+
+
+@pytest.mark.parametrize("name", ["Di María", "De Paul", "Mac Allister", "María"])
+def test_a_compound_surname_is_on_the_roster(name: str):
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, name)
+    assert verdict.passed, verdict.reasons
+
+
+def test_half_a_compound_surname_is_not_a_name():
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, "Di")
+    assert not verdict.passed
+    assert any("name_read_not_on_roster: Di" in r for r in verdict.reasons)

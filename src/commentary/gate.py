@@ -39,6 +39,7 @@ from difflib import SequenceMatcher
 
 from commentary.config import SETTINGS, GateConfig
 from commentary.schemas import CallerLine, Event, GateVerdict, KnowledgePack, MatchState, Scene
+from commentary.state import parse_sighting
 
 # Words that open sentences or describe football, not people. A capitalised
 # token in here is never treated as a name, which is what stops the gate
@@ -246,7 +247,17 @@ def _candidates(line: str) -> list[_Candidate]:
 
 
 def _matches_roster(name: str, roster: _Roster, threshold: float) -> bool:
-    """Exact after folding, or close enough that it is the same person misspelt."""
+    """Exact after folding, or close enough that it is the same person misspelt.
+
+    The suffix rule is the one that earns its place. ``Player.surname`` is a
+    split on the last space, so Di María's surname is "María", De Paul's is
+    "Paul" and Mac Allister's is "Allister"; the roster's token list drops
+    anything under three letters, so "di" and "de" are never known; and the
+    similarity of "di maria" to "angel di maria" is 0.73, well under the
+    threshold. Every compound surname therefore failed — five lines of one
+    Sonnet run died on exactly this. A candidate that ends a known full name
+    on a word boundary is that person, and nothing else is.
+    """
     folded = fold(name)
     if not folded:
         return True
@@ -255,6 +266,9 @@ def _matches_roster(name: str, roster: _Roster, threshold: float) -> bool:
         return True
     parts = folded.split()
     if len(parts) > 1 and all(part in known for part in parts):
+        return True
+    suffix = f" {folded}"
+    if any(entry.endswith(suffix) for entry in known):
         return True
     return any(_similar(folded, entry) >= threshold for entry in known)
 
@@ -407,21 +421,42 @@ class FactGate:
         that is on no roster means the caller did not misjudge a face, it
         invented a graphic, and a line built on an invented graphic is not
         worth saving.
+
+        A sighting is read the way the state reads it before it is checked.
+        The caller writes what it saw — "11 Di María", "Di María (11)" —
+        because that is the pairing that justifies the name, and matching the
+        whole string against the roster rejected every one of them. Parsed,
+        it is two claims and both are checked: the number is in the squad and
+        the name is on the roster.
         """
         problems: list[str] = []
         for read in line.names_read:
             token = read.strip()
             if not token:
                 continue
+            sighting = parse_sighting(token)
+            if sighting is not None:
+                number, name = sighting
+                problems += self._check_number(str(number), roster, pack)
+                if not _matches_roster(name, roster, self.cfg.name_match_threshold):
+                    problems.append(f"name_read_not_on_roster: {name}")
+                continue
             if token.isdigit():
-                if pack is not None and token.lstrip("0") not in {
-                    number.lstrip("0") for number in roster.numbers
-                }:
-                    problems.append(f"number_not_in_squad: {token}")
+                problems += self._check_number(token, roster, pack)
                 continue
             if not _matches_roster(token, roster, self.cfg.name_match_threshold):
                 problems.append(f"name_read_not_on_roster: {token}")
         return problems
+
+    def _check_number(
+        self, number: str, roster: _Roster, pack: KnowledgePack | None
+    ) -> list[str]:
+        if pack is None:
+            return []
+        squad = {known.lstrip("0") for known in roster.numbers}
+        if number.lstrip("0") in squad:
+            return []
+        return [f"number_not_in_squad: {number}"]
 
     def _check_scoreline(self, text: str, state: MatchState) -> list[str]:
         """Either orientation is allowed: the gate cannot know which team was meant."""

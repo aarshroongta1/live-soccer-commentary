@@ -277,11 +277,22 @@ class FactualError:
 
 
 def roster_names(pack: KnowledgePack) -> set[str]:
+    """Every spelling of a squad member the grader will accept in a line.
+
+    Each word of a full name goes in as well as the whole, because a line is
+    scanned word by word and a compound surname arrives as two of them.
+    ``Player.surname`` splits on the last space, so Di María's is "María" and
+    De Paul's is "Paul"; without the parts, the grader counted "Di" and "De"
+    as names off the roster every time the system got one right.
+    """
     names: set[str] = set()
     for sheet in (pack.home, pack.away):
         for player in sheet.squad:
-            names.add(normalise(player.name))
+            full = normalise(player.name)
+            names.add(full)
             names.add(normalise(player.surname))
+            names.update(full.split())
+    names.discard("")
     return names
 
 
