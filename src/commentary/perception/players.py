@@ -453,6 +453,12 @@ class _RfDetr:
 
     RF-DETR rather than Ultralytics YOLO because RF-DETR is Apache-2.0 and YOLO
     is AGPL, which is not a licence this project can ship under.
+
+    The nano variant, which is what ``default_tracker`` builds. ``RFDETRBase``
+    is a deprecation proxy in current rfdetr and 355 MB of weights; nano is 62
+    MB and found the same fifteen bodies on the wide shots of the test clip.
+    Measured at 640 wide on this machine, MPS, warm: 92 ms a frame against
+    144 ms for ``RFDETRSmall``.
     """
 
     model: Any
@@ -491,7 +497,14 @@ class _SigLip:
 
 @dataclass
 class _Parseq:
-    """PARSeq on a 32x128 torso crop, which is the shape it was trained on."""
+    """PARSeq on a 32x128 torso crop, which is the shape it was trained on.
+
+    It comes from ``torch.hub`` rather than PyPI, so its requirements are
+    declared in our vision extra: pytorch-lightning, which the hub entry
+    point checks for before it will load anything, and nltk and timm, which
+    its code imports. 28 ms a crop on the CPU here, 18 ms on MPS — not worth
+    the device juggling when a pass reads one or two crops.
+    """
 
     model: Any
 
@@ -524,9 +537,17 @@ def default_tracker(
     siglip, _, preprocess = open_clip.create_model_and_transforms(
         "ViT-B-16-SigLIP", pretrained="webli"
     )
+    # rfdetr picks the device itself and resolves to MPS on this machine, so
+    # there is nothing to pass. SigLIP is left where open_clip puts it: moved
+    # to MPS it took 1103 ms to embed fifteen crops against 1007 ms on the
+    # CPU, which is no gain and one more thing to be wrong about.
+    #
+    # ``trust_repo=True`` on the hub load because the first real run died in
+    # it: torch.hub asks "trust this repository? [y/N]" the first time it sees
+    # baudm/parseq, and a run with no terminal answers that with an EOFError.
     return PlayerTracker(
-        _RfDetr(rfdetr.RFDETRBase()),
+        _RfDetr(rfdetr.RFDETRNano()),
         _SigLip(siglip.eval(), preprocess),
-        _Parseq(torch.hub.load("baudm/parseq", "parseq", pretrained=True).eval()),
+        _Parseq(torch.hub.load("baudm/parseq", "parseq", pretrained=True, trust_repo=True).eval()),
         pack=pack,
     )

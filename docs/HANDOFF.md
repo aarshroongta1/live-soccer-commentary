@@ -88,13 +88,22 @@ against. Both need real footage.
 
 ## The gap, and it is the whole remaining gap
 
-**Nothing here has seen a real broadcast.** In particular RF-DETR, SigLIP and
-PARSeq have never been run: the `vision` extra has never been installed on
-this machine, and on the simulator a `SimTracker` reads the dots straight from
-ground truth with the renderer's own legibility constant deciding what was
-readable. So the A/B above measures what the marks do to *the writer*, not how
-well those three models read a football match. That is the one thing a real
-clip settles and nothing else can.
+**All three vision models have now been run on real footage, and what they
+say is not yet measured.** The `vision` extra installs, and on frames pulled
+out of the Argentina-France clip: RF-DETR nano finds 15 bodies on a wide
+shot and 1 to 3 on a close-up, at 92 ms a frame at 640 wide on MPS; SigLIP
+embeds fifteen crops in about a second; PARSeq reads a torso crop in 28 ms.
+What it does *not* yet have is a number off a shirt. Across eight frames of
+that clip, 50 person crops, six were the 110 px tall the number reader asks
+for, and PARSeq returned "Flick", "THE" and a 0.52-confidence "7" — all of
+them thrown away by the digit and confidence gates, correctly. A wide shot
+of a football match is not where shirt numbers live; the close-ups are, and
+this clip is three minutes with most of it wide.
+
+So the A/B further up still measures what the marks do to *the writer*, not
+how well these three read a match. What a real run settles now is
+`name_rate` and `name_precision`, and the honest expectation in the README —
+names on the big moments, not pass-by-pass — is what is being tested.
 
 `scripts/first_real_run.md` is the order to do it in. Short version:
 

@@ -224,6 +224,61 @@ this one"). `AnalystConfig`: `max_words` 45 -> 30, `min_gap_s` 25 -> 40.
 Analyst rules: one observation per line, no rhetorical flourishes, and
 nothing about how a manager feels. Prompt and config only.
 
+### A15. A sentence-opening capital is not a name
+
+Second real run (HEAD `768246a`, marks off), cursor 57.8, the goal line:
+"Round the keeper and rolled in at the far post — Di María finishes off a
+breakaway of real beauty!" passed the gate as "The keeper and rolled in at
+the far post — ..." with `name_not_on_roster: Round`. The gate's
+`_STOPWORDS` has "around" but not "round", and more generally a capitalised
+first word that is an ordinary English word is grammar, not a name.
+`grading/metrics.py` already has `OPENERS` for exactly this and the gate
+does not use it. Fix: one shared opener list (put it where both can import
+it without crossing the grading wall, i.e. in `gate.py` and have the grader
+import from there), and `_candidates` never treats a run that starts at
+position 0 as a name when its first word is in that list or is a common
+English word (round, over, under, back, up, off, wide, long, high, short,
+straight, in, out, through...). Test with the trace line: the spoken text
+must be the full line.
+
+### A16. A replay must not destroy the evidence of the goal
+
+Same run: the score bug moved 1-0 -> 2-0 at video 62.7, read twice, then
+the broadcaster cut to the replay and the bug vanished from 70 to 132.
+`BoardTracker.update` clears `_pending` on an absent read ("a replay
+interrupts the evidence"), so the change was never confirmed, the state
+said 1-0 through the whole celebration, and three lines about the goal at
+62.3, 128.1 and 140.1 were rejected `unconfirmed_goal`. The sequence
+goal -> bug updates -> celebration -> replay with the bug pulled is what
+every broadcaster does after every goal, so this is the normal case, not
+an edge. Fix: a pending change survives absent reads; only a *visible* read
+showing a different score resets it. And `_last_goal_ts` (A8 part 3) is the
+cursor time at which the state applied the change, not the change's own
+ts, so "the score moved recently" is true for 45 s after the viewer's
+scoreboard changed even when confirmation waited out a replay. Consider
+`confirmations = 2` on top: 103 real board reads so far with zero score
+misreads, and reads land 3.5 s apart, so three reads is 7 s of waiting for
+a risk that has not shown up. Decide from the reads in the traces.
+
+### A17. The vision extra does not load on first use
+
+The first real run with `--marks` never reached a frame. Two errors out of
+`perception/players.default_tracker()`, one after the other:
+
+1. `torch.hub.load("baudm/parseq", "parseq", pretrained=True)` asks "trust
+   this repository? [y/N]" the first time it sees a repo, and a run with no
+   terminal answers that with an `EOFError`. Pass `trust_repo=True`.
+2. The parseq hubconf declares `pytorch_lightning` as a dependency and
+   torch.hub refuses to load without it: `RuntimeError: Missing dependencies:
+   pytorch_lightning`. Its code then imports `nltk`, and then `timm`. All
+   three go in the `vision` optional group; with them and `trust_repo=True`
+   the hub load returns a `PARSeq`.
+
+Also `RFDETRBase`, which the brief's Part C asked for as the nano/small
+variant: it is a deprecation proxy in current rfdetr and 355 MB of weights.
+`rfdetr` exports `RFDETRNano` (62 MB), which found the same fifteen bodies on
+the wide shots of the test clip at 640 wide.
+
 ### Measured on the run (for the README later)
 
 Opus 5 caller: 52 board reads, all confident, score and replay (bug absent 91-131 s)
@@ -373,6 +428,56 @@ it; a cut resets track IDs but not the registry; `caller_blocks` draws
 labels only where identity is known and leaves the buffer frame
 byte-identical; `SimTracker` names the sim's dots and the `no-marks`
 variant runs and writes a comparable trace.
+
+### C10. Persistent identity: a per-match gallery
+
+The reason naming goes blank after every cut is that the tracker's IDs die
+at the cut and nothing carries a name across. General re-identification
+is weak on eleven identical kits, but this problem is a **closed set**:
+the sheet says who the 22 are and the kit says which 11 a body belongs
+to. So identity across cuts is an 11-way classification against samples
+we collect during the match, not open-set re-ID.
+
+- **Bootstrap from certainty.** Every confirmed number read (C3) and every
+  name read off a graphic is a labelled sample of that player under this
+  match's lighting and kit. On each such event, store the body's
+  appearance embedding (the same SigLIP already in the chain) and, when
+  the crop is a close-up (box >= 200 px tall), a face embedding (an
+  Apache-licensed face model; InsightFace's `buffalo_l` is the usual
+  choice, check its licence, otherwise a small ArcFace port). Gallery:
+  per player, the last 8 body embeddings and last 4 face embeddings.
+- **Classify every body against its side's gallery**, on every tracker
+  pass for tracks with no number: cosine to each player's centroid, accept
+  when the best is above a threshold *and* beats the second-best by a
+  margin, both constants in config and both tuned on the real clip. A hit
+  becomes `registry.believe(number, name, ts, side, strength=0.6)`, a
+  weaker belief than a number read (1.0), so a later number overrides it.
+  No hit: the track stays "side, unknown". Never guess.
+- **The tracker carries it within a shot** (C2); after a cut, the gallery
+  re-establishes it on the new bodies. Identity therefore survives cuts
+  through the gallery, not the track.
+- **It improves through the match**: the gallery is thin at minute 5 and
+  full by half-time. Trace row `gallery` per pass: players with samples,
+  bodies classified, hits, and the margin of each hit, so the name-rate
+  curve over a match is visible.
+- **Marks (C4)** draw gallery names the same as number names, so the
+  caller cannot tell them apart and does not need to; `names_read` records
+  the label as printed.
+
+Limits to state in the docstring: nothing to embed on a 30 px body in a
+full wide shot (stays team-level); look-alikes within a team will fall
+under the margin and stay unnamed; a three-minute clip understates it
+because the gallery has not warmed up. The position prior (formation slot
+from the lineup) is the tie-breaker to add underneath if the margin rule
+leaves too many bodies unnamed; it needs pitch localisation and is its own
+item.
+
+Tests with fakes: two confirmed sightings build a two-player gallery; a
+new track whose embedding is near one centroid and far from the other is
+named at strength 0.6; one equidistant is not named; a later number read
+overrides a gallery name; a cut followed by a gallery hit keeps the name on
+the new track id. Grading: the same `name_rate` / `name_precision` against
+StatsBomb, reported separately for number-named and gallery-named lines.
 
 ### C9. Docs
 
