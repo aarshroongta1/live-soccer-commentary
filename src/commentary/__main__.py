@@ -349,6 +349,22 @@ async def cmd_captions(args: argparse.Namespace) -> int:
     return 0
 
 
+async def cmd_feed(args: argparse.Namespace) -> int:
+    """StatsBomb's event file to the feed the grader reads. Never fetches."""
+    import json
+
+    from commentary.grading import statsbomb
+
+    rows = json.loads(Path(args.path).read_text(encoding="utf-8"))
+    document = statsbomb.convert(rows, args.home, args.away)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(document, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"{len(rows)} rows in, {len(document['events'])} events out")
+    print(f"wrote {out}")
+    return 0
+
+
 async def cmd_grade(args: argparse.Namespace) -> int:
     """Score one or more traces. Needs a pack and a ground truth to grade against."""
     from commentary.grading import metrics
@@ -429,6 +445,13 @@ def build_parser() -> argparse.ArgumentParser:
     caps.add_argument("path")
     caps.add_argument("--out", default="transcript.json")
     caps.set_defaults(func=cmd_captions)
+
+    fd = sub.add_parser("feed", help="a StatsBomb events file to the feed shape")
+    fd.add_argument("path")
+    fd.add_argument("--home", required=True, help="team name as StatsBomb spells it")
+    fd.add_argument("--away", required=True)
+    fd.add_argument("--out", default="feed.json")
+    fd.set_defaults(func=cmd_feed)
 
     grade = sub.add_parser("grade", help="print metrics for saved traces")
     grade.add_argument("traces", nargs="+")

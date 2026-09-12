@@ -1,0 +1,23 @@
+[
+ {"period": 1, "minute": 2, "second": 5, "type": {"name": "Pass"},
+  "team": {"name": "Argentina"}, "player": {"name": "Rodrigo De Paul"}},
+ {"period": 1, "minute": 21, "second": 9, "type": {"name": "Shot"},
+  "team": {"name": "Argentina"}, "player": {"name": "Lionel Messi"},
+  "shot": {"outcome": {"name": "Saved"}}},
+ {"period": 1, "minute": 35, "second": 22, "type": {"name": "Shot"},
+  "team": {"name": "Argentina"}, "player": {"name": "Ángel Di María"},
+  "shot": {"outcome": {"name": "Goal"}}},
+ {"period": 1, "minute": 40, "second": 3, "type": {"name": "Foul Committed"},
+  "team": {"name": "France"}, "player": {"name": "Adrien Rabiot"},
+  "foul_committed": {"card": {"name": "Yellow Card"}}},
+ {"period": 2, "minute": 70, "second": 41, "type": {"name": "Own Goal Against"},
+  "team": {"name": "France"}, "player": {"name": "Dayot Upamecano"}},
+ {"period": 2, "minute": 71, "second": 0, "type": {"name": "Substitution"},
+  "team": {"name": "France"}, "player": {"name": "Olivier Giroud"},
+  "substitution": {"replacement": {"name": "Marcus Thuram"}}},
+ {"period": 2, "minute": 88, "second": 12, "type": {"name": "Bad Behaviour"},
+  "team": {"name": "France"}, "player": {"name": "Kylian Mbappé"},
+  "bad_behaviour": {"card": {"name": "Second Yellow"}}},
+ {"period": 2, "minute": 89, "second": 30, "type": {"name": "Pressure"},
+  "team": {"name": "Belgium"}, "player": {"name": "Nobody At All"}}
+]

@@ -32,6 +32,7 @@ from commentary.grading.metrics import (
     silence_ratio,
 )
 from commentary.grading.report import Scorecard, detail, score, table
+from commentary.grading.statsbomb import convert
 from commentary.grading.transcripts import Transcript, segments_near, transcribe
 
 __all__ = [
@@ -50,6 +51,7 @@ __all__ = [
     "Transcript",
     "Verdict",
     "align",
+    "convert",
     "detail",
     "event_recall",
     "factual_errors",
