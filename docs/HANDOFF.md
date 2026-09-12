@@ -4,8 +4,8 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `39bc5ee`, 27 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 463 passed · `uv run ruff check .` clean ·
+**Head:** `067428d`, 30 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 464 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
 ---
@@ -102,9 +102,60 @@ caller reads the numbers and reports them against a `#id` tag drawn over each
 tracked body, and the tracker's job is the one a model looking at single
 frames cannot do: keep that name on that body while the camera stays on it.
 
-What a real run settles now is `name_rate` and `name_precision`, and the
-honest expectation in the README — names on the big moments, not pass-by-pass
-— is what is being tested.
+### C11 was run on the clip, and half of it works
+
+`--marks` on the same clip at `067428d` (trace `scratchpad/run/runs/c11/`,
+$0.96). Against the run that motivated C11:
+
+| | before | after |
+|---|---:|---:|
+| tracker passes | 83 in 175 s (0.5/s) | 1039 in 179 s (**5.8/s**) |
+| median ms a pass | 1635 | **130** |
+| median tracks a pass | 3 | **13** |
+| median tracks with a side | 0 | **10** |
+| passes with a named track | 0 of 83 | **0 of 1039** |
+
+Five sightings bound and one was dropped, the roster check did its job, and
+the registry ended the run holding six players. **But no track was ever
+named**, and the reason is not in C11 at all.
+
+**Track ids do not live long enough to be bound.** Measured offline on the
+same clip at the same rate, no API: 300 passes, **1966 distinct ids, 1539 of
+them lasting a single pass**, median lifetime 0.00 s, two ids alive for 8 s.
+`_assign_ids` is greedy IoU >= 0.3 against the previous pass only, and its
+own docstring has always said it is the simple version standing in for the
+ByteTrack that C2 specified. On a panning broadcast camera at 5.8 Hz it
+almost never matches. So the mark the caller reports is, nearly always, a
+body that no longer exists by the time the sighting comes back.
+
+Two things would fix it, and both were measured on the same detections:
+
+- **Give the tracker a memory.** A lost track kept for 30 passes and matched
+  at IoU 0.2 gives 836 ids (median life 0.92 s, 76 alive at 8 s); at IoU 0.1,
+  568 ids and 89 alive at 8 s. Ten lines, no dependency. The loose gate is
+  the risk: a different body inheriting a dead id inherits its name, and a
+  wrong name is the thing this system exists not to do. ByteTrack via
+  `supervision` — in the vision extra since C1 and never wired up — scored
+  296 ids, median 1.67 s, 16 alive at 8 s: far better than today, worse than
+  the memory, and it brings matplotlib and scipy.
+- **Track the cursor, not the live edge.** Nothing but the caller consumes
+  tracks and the caller lives at the cursor, so a mark has to survive from
+  the cursor frame it was drawn on to the moment the line comes back — about
+  twelve seconds of frame time with the tracker eight seconds ahead, about
+  four with it on the cursor. The cut reset would have to move with it: it
+  is fired by the frame loop at the live edge and would otherwise wipe the
+  ids eight seconds early.
+
+**The caller also reads the tag as a shirt number.** Of six sightings, three
+said mark 11 wearing number 11 and one said mark 1 wearing number 7, and one
+came back as `#916` with neither a number nor a name. The rules say twice
+that a tag is not a shirt number; on this evidence they are not enough, and
+a tag that cannot be confused with a number — a letter, a colour — may be
+the cheaper fix than more words.
+
+What a real run settles once that is closed is `name_rate` and
+`name_precision`, and the honest expectation in the README — names on the big
+moments, not pass-by-pass — is what is being tested.
 
 `scripts/first_real_run.md` is the order to do it in. Short version:
 
