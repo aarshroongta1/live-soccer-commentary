@@ -46,23 +46,31 @@ def test_a_named_track_gets_its_surname():
     assert int(image.min()) == int(image.max()) == 90
 
 
-def test_a_number_with_nobody_on_the_sheet_gets_the_team_and_the_number():
+def test_an_unidentified_body_gets_a_handle_and_not_a_guess():
+    """``#0`` claims nothing about who it is, which is the point of it.
+
+    The caller cannot report "I can read an eleven on that one" without a way
+    to say which one, and a tag it can point at is that way. It is not a
+    shirt number and the rules say so.
+    """
     image = blank()
-    track = Track(id=0, side=Side.HOME, box=(40, 60, 70, 130), number=14, name=None)
-    assert not np.array_equal(draw_marks(image, [track], pack()), image)
+    track = Track(id=0, side=Side.HOME, box=(40, 60, 70, 130))
+
+    marked = draw_marks(image, [track], pack())
+    named = draw_marks(
+        image,
+        [Track(id=0, side=Side.HOME, box=(40, 60, 70, 130), number=11, name="Ángel Di María")],
+        pack(),
+    )
+
+    assert not np.array_equal(marked, image)
+    assert not np.array_equal(marked, named), "a handle and a name must not look the same"
 
 
-@pytest.mark.parametrize(
-    "track",
-    [
-        Track(id=0, side=Side.HOME, box=(40, 60, 70, 130)),
-        Track(id=1, side=Side.UNKNOWN, box=(40, 60, 70, 130), number=11, name="Ángel Di María"),
-    ],
-)
-def test_an_unidentified_body_is_left_unmarked(track: Track):
-    """No "?" labels. An unlabelled body means unknown, and a frame full of
-    question marks is noise the model has to reason past."""
+def test_a_body_on_neither_team_is_left_unmarked():
+    """The referee, a physio, somebody in the crowd: a handle on them is noise."""
     image = blank()
+    track = Track(id=1, side=Side.UNKNOWN, box=(40, 60, 70, 130), number=11, name="Ángel Di María")
     assert np.array_equal(draw_marks(image, [track], pack()), image)
 
 

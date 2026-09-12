@@ -45,7 +45,7 @@ from commentary.capture.audio import CutDetector, RoarDetector, WhistleDetector
 from commentary.capture.buffer import AudioRing, DelayBuffer, Frame
 from commentary.config import SETTINGS, Settings
 from commentary.director import Director, next_beat_id
-from commentary.gate import FactGate
+from commentary.gate import FactGate, fold
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.perception.players import NullTracker, Track, Tracker
@@ -59,8 +59,10 @@ from commentary.schemas import (
     Incident,
     KnowledgePack,
     MatchState,
+    Player,
     Scene,
     Side,
+    Sighting,
     SpeakDecision,
     Trigger,
     Voice,
@@ -112,6 +114,38 @@ TRACK_MAX_HZ = 15
 GOAL_TALK_CAP_S = 150.0
 
 
+def _player_named(pack: KnowledgePack, name: str) -> tuple[Side, Player] | None:
+    """Which player on either sheet this is, if it is one of them.
+
+    Folded, and matched on the full name, the surname, or a suffix of the
+    full name on a word boundary — the last of those because "Di María" is
+    not the surname ``rsplit`` derives and is exactly what a caller reads off
+    a shirt. The gate makes the same three allowances for the same reason.
+    """
+    wanted = fold(name)
+    if not wanted:
+        return None
+    for side in (Side.HOME, Side.AWAY):
+        sheet = pack.team(side)
+        if sheet is None:
+            continue
+        for player in sheet.squad:
+            full = fold(player.name)
+            if wanted in (full, fold(player.surname)) or full.endswith(f" {wanted}"):
+                return side, player
+    return None
+
+
+def _player_numbered(pack: KnowledgePack, side: Side, number: int) -> Player | None:
+    sheet = pack.team(side)
+    if sheet is None:
+        return None
+    for player in sheet.squad:
+        if player.number == number:
+            return player
+    return None
+
+
 @dataclass
 class RuntimeStats:
     frames: int = 0
@@ -122,6 +156,8 @@ class RuntimeStats:
     analyst_calls: int = 0
     ticks: int = 0
     gated_out: int = 0
+    sightings: int = 0
+    sightings_dropped: int = 0
     spoken: int = 0
     cost_stopped: bool = False
 
@@ -641,6 +677,7 @@ class Runtime:
         self._publish(Topic.CALLER, cursor, line)
         self.state_tracker.apply_caller(line, cursor)
         self._note_restart(line, cursor)
+        self._bind_sightings(line, cursor)
         if not line.speak or not line.line.strip():
             return
 
@@ -724,6 +761,75 @@ class Runtime:
             return False
         window = min(GOAL_GRAPHIC_LAG_S, self.settings.capture.delay_s)
         return cursor - 2.0 <= pending.first_ts <= cursor + window
+
+    def _bind_sightings(self, line: CallerLine, cursor: float) -> None:
+        """Put the numbers the caller read onto the bodies it read them off.
+
+        The caller can read a shirt in a frame; the tracker can hold a body
+        across frames; neither does the other's job. This is the joint, and
+        the team sheets are the check on it — a number has to be in that
+        side's squad and a name has to be on the roster, because a hallucinated
+        pair here would not just be one wrong line, it would follow that
+        player around until the next cut.
+
+        Both writes happen together on purpose: the track so the tag says the
+        surname from now on, the registry so the name survives the cut that
+        kills the track.
+        """
+        if not line.sightings:
+            return
+        bound: list[str] = []
+        dropped: list[str] = []
+        for sighting in line.sightings:
+            found = self._roster_check(sighting, cursor)
+            if found is None:
+                dropped.append(f"#{sighting.mark} {sighting.number} {sighting.name}")
+                continue
+            side, number, name = found
+            self.tracker.identify(sighting.mark, side, number, name, cursor)
+            self.state_tracker.registry.believe(number, name, cursor, side=side)
+            bound.append(f"#{sighting.mark} {number} {name}")
+        self.stats.sightings += len(bound)
+        self.stats.sightings_dropped += len(dropped)
+        self._publish(Topic.SIGHTING, cursor, bound=bound, dropped=dropped)
+
+    def _roster_check(self, sighting: Sighting, cursor: float) -> tuple[Side, int, str] | None:
+        """The player this sighting is about, or None if it does not stand up.
+
+        A name settles which side it is and which number goes with it, so a
+        number given alongside has to agree. A number on its own is checked
+        against the squad of whichever side the tracker says that body is in,
+        because both teams have an eleven and only the picture can say which
+        one this is.
+        """
+        if self.pack is None:
+            return None
+        if sighting.name:
+            found = _player_named(self.pack, sighting.name)
+            if found is None:
+                return None
+            side, player = found
+            if player.number is None:
+                return None
+            if sighting.number is not None and sighting.number != player.number:
+                return None
+            return side, player.number, player.name
+        if sighting.number is None:
+            return None
+        side = self._side_of(sighting.mark, cursor)
+        if side is Side.UNKNOWN:
+            return None
+        numbered = _player_numbered(self.pack, side, sighting.number)
+        if numbered is None:
+            return None
+        return side, sighting.number, numbered.name
+
+    def _side_of(self, mark: int, cursor: float) -> Side:
+        """Which team the tracker has that body in, as of the frame called on."""
+        for track in self.tracks_for(cursor):
+            if track.id == mark:
+                return track.side
+        return Side.UNKNOWN
 
     def _note_restart(self, line: CallerLine, cursor: float) -> None:
         """Has the game gone again since the goal the state is holding?

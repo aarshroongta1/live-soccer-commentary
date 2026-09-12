@@ -28,6 +28,7 @@ class Topic(StrEnum):
     STATE = "state"
     BOARD = "board"
     TRACKS = "tracks"
+    SIGHTING = "sighting"
     CALLER = "caller"
     ANALYST = "analyst"
     GATE = "gate"

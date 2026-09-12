@@ -24,7 +24,7 @@ from commentary.config import (
 from commentary.grading import metrics, report
 from commentary.perception.players import Track
 from commentary.runtime import Runtime
-from commentary.schemas import CallerLine, Event, Scene, Side
+from commentary.schemas import CallerLine, Event, Scene, Side, Sighting
 from commentary.sim import MatchSim, SimOracle, SimSource
 from commentary.trace import RunTrace
 from commentary.voice import LogSpeaker
@@ -561,3 +561,115 @@ async def test_the_next_goal_starts_the_talking_over(tmp_path: Path) -> None:
     assert runtime._restart_ts is None
     assert runtime._whistle_since_goal is False
     assert runtime._board_supports_goal(runtime.cursor_ts + 30.0) is True
+
+
+# -- the caller reads the shirt, the tracker holds the body ------------------
+#
+# On the real clip the local number reader confirmed nothing in three minutes
+# and the caller read nine correct number-and-name pairs off the same frames.
+# So the caller reports what it read against the tag drawn above the body,
+# and this is where the two are joined — with the team sheets as the check,
+# because a wrong pair here follows that player until the next cut.
+
+
+def _sighting_line(*sightings: Sighting) -> CallerLine:
+    return CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.CARRY,
+        confidence=0.8,
+        speak=True,
+        line="He drives at the defence.",
+        sightings=list(sightings),
+    )
+
+
+class _Binder:
+    """A tracker that remembers what it was told, and which side each body is."""
+
+    def __init__(self, sides: dict[int, Side]) -> None:
+        self.sides = sides
+        self.bound: list[tuple[int, Side, int, str]] = []
+
+    def update(self, frame: Frame) -> list[Track]:
+        return [Track(id=tid, side=side, box=(0, 0, 10, 20)) for tid, side in self.sides.items()]
+
+    def reset(self) -> None:
+        return None
+
+    def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
+        self.bound.append((mark, side, number, name))
+
+
+async def _with_sightings(
+    tmp_path: Path, *sightings: Sighting, sides: dict[int, Side] | None = None
+) -> tuple[Runtime, _Binder]:
+    runtime, sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    binder = _Binder(sides if sides is not None else {4: Side.HOME})
+    runtime.tracker = binder
+    runtime._tracks.append((runtime.cursor_ts, binder.update(Frame(ts=0.0, image=np.zeros(1)))))
+    runtime._bind_sightings(_sighting_line(*sightings), runtime.cursor_ts)
+    return runtime, binder
+
+
+def _home_number(runtime: Runtime) -> tuple[int, str]:
+    """A real number and name off the sim's own home sheet."""
+    assert runtime.pack is not None
+    player = next(p for p in runtime.pack.home.squad if p.number is not None)
+    assert player.number is not None
+    return player.number, player.name
+
+
+@pytest.mark.asyncio
+async def test_a_sighting_names_the_track_and_is_believed(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    number, name = _home_number(runtime)
+
+    runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, number=number, name=name))
+
+    assert binder.bound == [(4, Side.HOME, number, name)]
+    assert runtime.state_tracker.registry.name_for(number, Side.HOME) == name
+    assert runtime.stats.sightings == 1
+
+
+@pytest.mark.asyncio
+async def test_a_number_alone_is_read_against_the_side_the_tracker_says(
+    tmp_path: Path,
+) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    number, name = _home_number(runtime)
+
+    runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, number=number))
+    assert binder.bound == [(4, Side.HOME, number, name)]
+
+    # The same number on a body the tracker has in neither team is nobody:
+    # both squads have an eleven and only the picture says which this is.
+    _runtime, unknown = await _with_sightings(
+        tmp_path, Sighting(mark=4, number=number), sides={4: Side.UNKNOWN}
+    )
+    assert unknown.bound == []
+
+
+@pytest.mark.asyncio
+async def test_a_number_not_in_the_squad_is_dropped(tmp_path: Path) -> None:
+    runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, number=98))
+
+    assert binder.bound == []
+    assert runtime.stats.sightings_dropped == 1
+
+
+@pytest.mark.asyncio
+async def test_a_name_on_no_roster_is_dropped(tmp_path: Path) -> None:
+    _runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, name="Zaltimore"))
+    assert binder.bound == []
+
+
+@pytest.mark.asyncio
+async def test_a_sighting_whose_number_and_name_disagree_is_dropped(tmp_path: Path) -> None:
+    """Two readings of one shirt that cannot both be right is neither."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    number, name = _home_number(runtime)
+
+    _runtime, binder = await _with_sightings(
+        tmp_path, Sighting(mark=4, number=number + 40, name=name)
+    )
+    assert binder.bound == []

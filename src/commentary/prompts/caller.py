@@ -67,23 +67,33 @@ allowed to use: match the kit that player is wearing to a team sheet below,
 find that number in it, and use that player's surname. A name across the back
 of a shirt and a name in a broadcast graphic count the same way.
 
-Some players carry a small label drawn above them. A label with a surname is
-a name you may use for that player, and for nobody else on the pitch. A label
-with a team and a number — "ARG #14" — means the number was read but nobody
-on that sheet wears it, so say the team and the number and not a name. A
-player with no label is unidentified, whatever you think you recognise. Put
-every label you used in names_read, exactly as it is printed.
+Some players carry a small tag drawn above them. A tag with a surname is a
+name you may use for that player, and for nobody else on the pitch. A tag
+like "#4" is a body the system is following and has not identified: it is a
+handle for that player and not a shirt number, and it is not a name. A player
+with no tag at all is unidentified, whatever you think you recognise. Put
+every tag you used in names_read, exactly as it is printed.
+
+When you can read a shirt number or a name on a tagged player, say so in
+sightings: the tag it is wearing, and what you read on it. The player tagged
+"#4" in an eleven shirt is a sighting with mark 4 and number 11; a name
+across the shoulders of the same player is a sighting with mark 4 and that
+name; give both when you can see both. That is how a name gets attached to a
+body and stays on it through the shots where the number is turned away, so it
+is worth doing every time a shirt is legible. Never report a sighting you
+cannot actually read — a guess here follows that player around for the rest
+of the passage.
 
 MATCH STATE may carry a statistician's lines: "on the ball" with a name,
 "from" with the name of whoever passed it, and a "just now" list of things
 somebody did — a foul, a card, an offside, a save. Those names may be used as
 given, for exactly the thing the statistician says that player did and for
 nothing else. They are the only names you may use without a legible number, a
-name on a shirt, a graphic or a label. A foul in the picture with "foul by
+name on a shirt, a graphic or a tag. A foul in the picture with "foul by
 Rabiot on Messi" in the state is called with both names; a foul with nothing
 in the state is called by kit and role.
 
-If you cannot read a number and there is no label, say the role and the kit
+If you cannot read a number and there is no surname tag, say the role and the kit
 instead: "the left-back in white", "the near-post runner in blue", "the keeper
 in green". That is a complete answer and it costs nothing. A wrong name is the
 worst thing you can do here. There is no credit for guessing and no penalty
@@ -170,14 +180,20 @@ MARK_TOLERANCE_S = 0.5
 def draw_marks(
     image: np.ndarray, tracks: Sequence[Track], pack: KnowledgePack | None
 ) -> np.ndarray:
-    """A small name above each body the system has identified, on a COPY.
+    """A small tag above each body being followed, on a COPY.
 
-    This is the whole point of the vision chain: the language model reads a
-    name off the picture instead of guessing at one. A surname when the
-    registry has resolved the number, the team and the number when the shirt
-    was read but the sheet has nobody with it, and nothing at all otherwise —
-    an unlabelled body means "unknown", and a frame full of "?" is noise the
-    model has to reason past.
+    This is the whole point of the vision chain, and what it is for changed
+    once it was measured. It was "the local models read the shirt and the
+    language model reads the name off the picture"; the local models read no
+    shirt in three minutes and the language model read nine. So the tag is a
+    handle: ``#4`` says "this body, the one I am following", and the caller
+    that can read its shirt reports the pair. From then on the tag is that
+    player's surname, and the name stays on the body through the shots where
+    the number is turned away.
+
+    A body with no side is not tagged: it is the referee, a physio or
+    somebody in the crowd, and a handle on them is noise the model has to
+    reason past.
 
     Never on a frame in the buffer. The board reader and the analyst get the
     picture as it was broadcast, and a mark drawn over the score bug would be
@@ -213,15 +229,19 @@ def draw_marks(
 
 
 def _mark_text(track: Track, pack: KnowledgePack | None) -> str | None:
+    """What to print above a body: who it is, or which body it is.
+
+    An unnamed body gets its track id, which is not a claim about anybody —
+    it is a handle, so the caller can say "the number I read is on that one"
+    and be understood. The tag was a team and a number when the tracker did
+    its own reading; the tracker no longer reads, so the only two things a
+    tag can say are a surname and a tracked body.
+    """
     if track.side is Side.UNKNOWN:
         return None
     if track.name is not None:
         return track.name.rsplit(" ", 1)[-1]
-    if track.number is None:
-        return None
-    sheet = pack.team(track.side) if pack is not None else None
-    short = (sheet.short or sheet.name) if sheet is not None else track.side.value
-    return f"{short} #{track.number}"
+    return f"#{track.id}"
 
 
 def _marked_block(frame: Frame, tracks_for: TracksFor, pack: KnowledgePack | None) -> Block:

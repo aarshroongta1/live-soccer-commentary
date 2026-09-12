@@ -67,6 +67,21 @@ class BoardRead(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
 
 
+class Sighting(BaseModel):
+    """A shirt number or a name, read off a body the tracker is holding.
+
+    The tag drawn above a player is what makes this possible: without it the
+    caller can say it read "11" somewhere in the frame, and nothing can tell
+    which of the twenty-two bodies that was. With it the read is attached to
+    a track, so the name can ride that body through the frames where the
+    number is turned away.
+    """
+
+    mark: int = Field(description="The number printed in the tag above the player")
+    number: int | None = Field(default=None, description="Shirt number, if legible")
+    name: str | None = Field(default=None, description="Name on the shirt or a graphic")
+
+
 class CallerLine(BaseModel):
     """The caller fills a form, not just a sentence.
 
@@ -80,6 +95,10 @@ class CallerLine(BaseModel):
     names_read: list[str] = Field(
         default_factory=list,
         description="Names or shirt numbers actually visible in the frames or a graphic",
+    )
+    sightings: list[Sighting] = Field(
+        default_factory=list,
+        description="Tagged players whose shirt number or name you could actually read",
     )
     confidence: float = Field(ge=0.0, le=1.0)
     speak: bool = Field(description="False is a valid answer; silence is allowed")
