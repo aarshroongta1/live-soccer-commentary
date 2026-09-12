@@ -556,9 +556,19 @@ it. This removes two models.
    ~92 ms nano detection plus ByteTrack; target 5 passes/s or better, and
    the `tracks` trace row proves it. Keep the executor and the
    never-await rule from A18.
-3. **Marks are anonymous IDs.** `draw_marks` draws `#<track.id>` on every
-   tracked body with a side, and the surname instead once the track has a
-   name. Small tag, same style as C4.
+3. **Marks are anonymous IDs.** `draw_marks` draws a letter tag on **every
+   tracked body**, and the surname instead once the track has a name. Small
+   tag, same style as C4.
+
+   It was "every tracked body with a side", and that cost 94% of the
+   close-ups: of 784 bodies on the clip tall enough for a shirt number to be
+   legible, 44 carried a tag. A close-up crop looks nothing like the
+   wide-shot crops the kit split is fitted on, so the split calls it a
+   referee — and the bodies whose numbers can be read were exactly the
+   bodies with nothing to read them against. The side is resolved at bind
+   time from the roster, not from the tag, so a letter over the real referee
+   costs nothing: nobody reports a shirt number off him, and the roster
+   would throw it out if they did.
 4. **The caller reports grounded sightings.** `CallerLine.sightings:
    list[Sighting]` with `Sighting(mark: int, number: int | None = None,
    name: str | None = None)`. Prompt (the "Names" paragraph, on top of A7

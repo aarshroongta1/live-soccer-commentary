@@ -67,11 +67,19 @@ def test_an_unidentified_body_gets_a_handle_and_not_a_guess():
     assert not np.array_equal(marked, named), "a handle and a name must not look the same"
 
 
-def test_a_body_on_neither_team_is_left_unmarked():
-    """The referee, a physio, somebody in the crowd: a handle on them is noise."""
+def test_a_body_on_neither_team_is_tagged_like_any_other():
+    """It used to be left alone, and that cost 94% of the close-ups.
+
+    Of 784 bodies on the real clip tall enough for a shirt number to be
+    legible, 44 carried a tag: a close-up crop looks nothing like the
+    wide-shot crops the kit split was fitted on, so the split called them
+    referees. The bodies whose numbers can be read were exactly the bodies
+    with nothing to read them against. A letter over the actual referee is
+    harmless — nobody reports a shirt number off him.
+    """
     image = blank()
-    track = Track(id=1, side=Side.UNKNOWN, box=(40, 60, 70, 130), number=11, name="Ángel Di María")
-    assert np.array_equal(draw_marks(image, [track], pack()), image)
+    track = Track(id=1, side=Side.UNKNOWN, box=(40, 60, 70, 130))
+    assert not np.array_equal(draw_marks(image, [track], pack()), image)
 
 
 # -- the caller's blocks -----------------------------------------------------

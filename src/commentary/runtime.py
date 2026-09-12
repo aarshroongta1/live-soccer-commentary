@@ -865,8 +865,22 @@ class Runtime:
         picture: the referee's whistle alone is not enough, because the goal
         itself was whistled, but a whistle and then the caller reporting live
         play is the restart whatever the caller called the event.
+
+        Neither counts while the score bug is away or the board reader thinks
+        we are in a replay. That is the broadcaster's own answer to "has the
+        game started again", it does not depend on the caller getting the
+        scene right, and the caller does not: it wrote a kickoff over a replay
+        of the goal.
         """
         if self._last_goal_ts is None or self._restart_ts is not None:
+            return
+        if not self.state.bug_visible or self.state.in_replay:
+            # The broadcaster pulls the score bug for the replays and brings
+            # it back when the game does. Until it is back we are watching
+            # the goal, whatever the caller calls the scene — on the second
+            # real run it wrote "kickoff, live play" over a replay at cursor
+            # 89.5 and ended goal talk sixty seconds early, which cost the
+            # celebration lines that followed.
             return
         if line.event is Event.KICKOFF or (
             self._whistle_since_goal and line.scene is Scene.LIVE_PLAY
@@ -890,7 +904,13 @@ class Runtime:
         """
         if self._last_goal_ts is None:
             return False
-        if not 0.0 <= cursor - self._last_goal_ts <= GOAL_TALK_CAP_S:
+        since = cursor - self._last_goal_ts
+        # A line from just before the state caught up is a line about the same
+        # goal: the caller watched the ball cross the line and the graphic
+        # followed it, which is the whole of what GOAL_GRAPHIC_LAG_S measures.
+        # The third run lost a correct goal call at cursor 59.3 to a state
+        # that applied the board at 62.2.
+        if not -GOAL_GRAPHIC_LAG_S <= since <= GOAL_TALK_CAP_S:
             return False
         return self._restart_ts is None or cursor < self._restart_ts
 

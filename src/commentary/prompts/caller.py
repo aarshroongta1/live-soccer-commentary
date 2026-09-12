@@ -19,7 +19,7 @@ from commentary.capture.buffer import Frame
 from commentary.config import CallerConfig
 from commentary.llm.base import Block, encode_frame, image_block, text_block
 from commentary.perception.players import Track, mark_of
-from commentary.schemas import KnowledgePack, Player, Side, TeamSheet, Trigger
+from commentary.schemas import KnowledgePack, Player, TeamSheet, Trigger
 
 #: Tracks known at a moment of video time. The runtime keeps the store; this
 #: module only asks it what was on the pitch when this frame was captured.
@@ -136,6 +136,14 @@ you speak.
 Do not repeat the recent lines and do not paraphrase them either. If the only
 true thing to say is the thing you have just said, say nothing.
 
+One exception, and it overrides the rest of this paragraph. When the reason
+you are being asked includes silence_pressure, nobody has spoken for a long
+time, and a broadcast is never silent through half a minute of live
+football. Say something true about the shape of play — who is on the ball,
+where the ball is, which way the game is being pushed, who has settled into
+what — unless the picture is a replay, in which case stay quiet and let it
+run. Ordinary passing is worth a line when the alternative is dead air.
+
 THE FORM
 
 Fill every field from the picture, not from the story you would like to tell.
@@ -230,10 +238,6 @@ def draw_marks(
     player's surname, and the name stays on the body through the shots where
     the number is turned away.
 
-    A body with no side is not tagged: it is the referee, a physio or
-    somebody in the crowd, and a handle on them is noise the model has to
-    reason past.
-
     Never on a frame in the buffer. The board reader and the analyst get the
     picture as it was broadcast, and a mark drawn over the score bug would be
     a system writing its own evidence.
@@ -298,9 +302,16 @@ def _mark_text(track: Track, pack: KnowledgePack | None) -> str | None:
     understood. It is letters rather than the track id printed as "#4"
     because that is what the caller did with a digit: three of six sightings
     on the real clip came back with the mark equal to the number read.
+
+    Every tracked body, including the ones the kit split will not put in a
+    team. That rule cost 94% of the close-ups: of 784 bodies tall enough for
+    a shirt number to be legible, 44 carried a tag, and the rest were called
+    referees because a close-up crop looks nothing like the wide-shot crops
+    the split was fitted on. The bodies whose numbers can be read were
+    exactly the bodies with nothing to read them against. A letter over the
+    referee is a letter over the referee; nobody reports a shirt number off
+    him, and if they did the roster would throw it out.
     """
-    if track.side is Side.UNKNOWN:
-        return None
     if track.name is not None:
         return track.name.rsplit(" ", 1)[-1]
     return mark_of(track.id)
