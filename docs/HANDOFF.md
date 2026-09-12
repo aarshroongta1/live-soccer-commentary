@@ -4,8 +4,8 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `b3d3e25`, 23 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 455 passed · `uv run ruff check .` clean ·
+**Head:** `b1aa927`, 26 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 459 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
 ---
