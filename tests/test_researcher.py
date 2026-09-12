@@ -43,6 +43,7 @@ from commentary.schemas import (
     Player,
     Scene,
     Side,
+    Sighting,
     TeamSheet,
 )
 
@@ -242,7 +243,7 @@ def speaking(text: str, *names: str) -> CallerLine:
         event=Event.SUBSTITUTION,
         side=Side.HOME,
         team="Arsenal",
-        names_read=list(names),
+        sightings=[Sighting(name=n) for n in names],
         confidence=0.8,
         speak=True,
         line=text,

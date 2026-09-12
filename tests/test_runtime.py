@@ -607,6 +607,9 @@ async def _with_sightings(
     runtime, sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     binder = _Binder(sides if sides is not None else {4: Side.HOME})
     runtime.tracker = binder
+    # The sim run above binds sightings of its own; the counters here are
+    # about the ones this test hands over.
+    runtime.stats.sightings = runtime.stats.sightings_dropped = 0
     runtime._tracks.append((runtime.cursor_ts, binder.update(Frame(ts=0.0, image=np.zeros(1)))))
     runtime._bind_sightings(_sighting_line(*sightings), runtime.cursor_ts)
     return runtime, binder
@@ -683,3 +686,20 @@ async def test_a_mark_that_is_not_a_tag_is_dropped(tmp_path: Path) -> None:
 
     assert binder.bound == []
     assert runtime.stats.sightings_dropped == 1
+
+
+@pytest.mark.asyncio
+async def test_a_read_with_no_tag_is_still_believed(tmp_path: Path) -> None:
+    """A close-up of a player nobody is tracking is still worth reporting.
+
+    It cannot be tied to a body — there is no body to tie it to — but the name
+    and the number are a real reading and the registry should have them.
+    """
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    number, name = _home_number(runtime)
+
+    runtime, binder = await _with_sightings(tmp_path, Sighting(number=number, name=name))
+
+    assert binder.bound == [], "nothing to bind it to"
+    assert runtime.state_tracker.registry.name_for(number, Side.HOME) == name
+    assert runtime.stats.sightings == 1

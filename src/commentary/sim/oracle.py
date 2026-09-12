@@ -45,6 +45,7 @@ from commentary.schemas import (
     Event,
     Scene,
 )
+from commentary.schemas import Sighting as Read
 from commentary.sim.match import MatchSim, Outcome, SimState
 from commentary.sim.render import decode_ts
 
@@ -354,7 +355,7 @@ class SimOracle:
         truth_event = recent[-1].event if recent else event
 
         who = self._who(state)
-        names = self._names_read(state, rng)
+        names = self._sightings(state, rng)
         speak = state.scene not in _QUIET_SCENES and (
             event in _WORTH_SAYING or rng.random() < 0.4
         )
@@ -378,7 +379,7 @@ class SimOracle:
         injection = self._pick_injection(truth_event)
         if injection == "fake_name":
             fake = self._fake_name(rng)
-            names = [*names, fake]
+            names = [*names, Read(name=fake)]
             line = f"{fake} is all over this, and {line[0].lower()}{line[1:]}"
             speak = True
         elif injection == "wrong_score":
@@ -397,7 +398,7 @@ class SimOracle:
             event=event,
             side=state.possession,
             team=None if team is None else team.name,
-            names_read=names,
+            sightings=names,
             confidence=round(rng.uniform(0.62, 0.94), 2),
             speak=speak,
             line=line[:200] if speak else "",
@@ -473,15 +474,20 @@ class SimOracle:
         nearest = min(candidates, key=lambda d: (d.x - ball[0]) ** 2 + (d.y - ball[1]) ** 2)
         return f"number {nearest.number}"
 
-    def _names_read(self, state: SimState, rng: random.Random) -> list[str]:
-        """Only what a camera could actually have shown: a graphic, or numbers."""
+    def _sightings(self, state: SimState, rng: random.Random) -> list[Read]:
+        """Only what a camera could actually have shown: a graphic, or numbers.
+
+        No mark: the oracle is standing in for a model reading a picture, and
+        it is not looking at the picture, so it cannot honestly claim to have
+        matched a read to a tag drawn on it.
+        """
         if state.graphic is not None:
-            return [state.graphic.name]
+            return [Read(name=state.graphic.name)]
         near = sorted(
             (d for d in state.players if state.zoom > 1.1 or d.side is state.possession),
             key=lambda d: (d.x - state.ball[0]) ** 2 + (d.y - state.ball[1]) ** 2,
         )[: 1 + rng.randrange(2)]
-        return [str(d.number) for d in near]
+        return [Read(number=d.number) for d in near]
 
     def _render_line(self, event: Event, state: SimState, who: str, rng: random.Random) -> str:
         pack = self.sim.knowledge_pack

@@ -39,7 +39,6 @@ from difflib import SequenceMatcher
 
 from commentary.config import SETTINGS, GateConfig
 from commentary.schemas import CallerLine, Event, GateVerdict, KnowledgePack, MatchState, Scene
-from commentary.state import parse_sighting
 
 # Words that open sentences or describe football, not people. A capitalised
 # token in here is never treated as a name, which is what stops the gate
@@ -168,15 +167,21 @@ def fold(text: str) -> str:
     return " ".join(re.sub(r"[^0-9A-Za-z]+", " ", plain).lower().split())
 
 
-def _is_a_tag(token: str) -> bool:
-    """Is this one of the letter tags we drew over a body ourselves?
+def _is_that_player(pack: KnowledgePack, number: int, name: str) -> bool:
+    """Do the number and the name on one sighting describe the same person?
 
-    Short, alphabetic and capitalised, which is exactly what ``mark_of``
-    prints and what a name is not. The capitals do the real work: "Di" is two
-    letters and has to keep failing, because half a compound surname is the
-    thing A13 is about, and "GP" is a tag.
+    Folded, and generous about which part of the name was read: a shirt shows
+    a surname and a graphic shows whatever it likes.
     """
-    return token.isascii() and token.isalpha() and token.isupper() and len(token) <= 3
+    wanted = fold(name)
+    for sheet in (pack.home, pack.away):
+        for player in sheet.squad:
+            if player.number != number:
+                continue
+            full = fold(player.name)
+            if wanted in (full, fold(player.surname)) or full.endswith(f" {wanted}"):
+                return True
+    return False
 
 
 def _similar(a: str, b: str) -> float:
@@ -464,7 +469,7 @@ class FactGate:
 
         roster = _roster_of(state, pack)
         fatal: list[str] = []
-        fatal += self._check_names_read(line, roster, pack)
+        fatal += self._check_sightings(line, roster, pack)
         fatal += self._check_scoreline(text, state)
         if (
             self.cfg.require_board_for_goal
@@ -479,47 +484,39 @@ class FactGate:
 
         return self._trim_unverified(text, roster)
 
-    def _check_names_read(
+    def _check_sightings(
         self, line: CallerLine, roster: _Roster, pack: KnowledgePack | None
     ) -> list[str]:
-        """A name claimed off a graphic is held to the roster like any other.
+        """A number or a name claimed off the picture is held to the roster.
 
-        This is the one place the gate refuses to trim. A name in ``names_read``
-        that is on no roster means the caller did not misjudge a face, it
-        invented a graphic, and a line built on an invented graphic is not
-        worth saving.
+        This is the one place the gate refuses to trim. A read that is on no
+        roster means the caller did not misjudge a face, it invented one, and
+        a line built on an invented reading is not worth saving.
 
-        One thing is not a claim at all: the letter tag drawn above a body.
-        That is our own label, put there by this system, and the caller
-        reporting it back is not the caller claiming to have read anything.
-        The rules say a letter tag does not belong here; the first run with
-        letters put seven of them here anyway and lost four lines to it, so
-        the rule is not the only thing standing between a tag and a rejection.
+        Both halves are checked and so is their agreement: the number has to
+        be in that squad, the name has to be on the roster, and when a
+        sighting carries both they have to be the same player. Two readings
+        of one shirt that cannot both be right is neither.
 
-        A sighting is read the way the state reads it before it is checked.
-        The caller writes what it saw — "11 Di María", "Di María (11)" —
-        because that is the pairing that justifies the name, and matching the
-        whole string against the roster rejected every one of them. Parsed,
-        it is two claims and both are checked: the number is in the squad and
-        the name is on the roster.
+        The tag is not checked at all. It is a letter this system drew over a
+        body itself, not a claim about the world, and it has its own field so
+        that it can never arrive here dressed as a name.
         """
         problems: list[str] = []
-        for read in line.names_read:
-            token = read.strip()
-            if not token or _is_a_tag(token):
+        for sighting in line.sightings:
+            if sighting.number is not None:
+                problems += self._check_number(str(sighting.number), roster, pack)
+            name = (sighting.name or "").strip()
+            if not name:
                 continue
-            sighting = parse_sighting(token)
-            if sighting is not None:
-                number, name = sighting
-                problems += self._check_number(str(number), roster, pack)
-                if not _matches_roster(name, roster, self.cfg.name_match_threshold):
-                    problems.append(f"name_read_not_on_roster: {name}")
-                continue
-            if token.isdigit():
-                problems += self._check_number(token, roster, pack)
-                continue
-            if not _matches_roster(token, roster, self.cfg.name_match_threshold):
-                problems.append(f"name_read_not_on_roster: {token}")
+            if not _matches_roster(name, roster, self.cfg.name_match_threshold):
+                problems.append(f"name_read_not_on_roster: {name}")
+            elif (
+                sighting.number is not None
+                and pack is not None
+                and not _is_that_player(pack, sighting.number, name)
+            ):
+                problems.append(f"sighting_disagrees: {name} is not number {sighting.number}")
         return problems
 
     def _check_number(

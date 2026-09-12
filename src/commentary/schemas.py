@@ -80,13 +80,20 @@ class Sighting(BaseModel):
     clip three of six sightings came back with the mark equal to the number
     read — the caller reporting the tag as the shirt. A letter cannot be a
     shirt number, so the ambiguity is gone rather than argued with.
+
+    This is also the only record of what the caller read. There used to be a
+    second one, ``names_read``, a list of free text, and given two places to
+    put a read the caller put everything in that one and left this empty —
+    thirteen lines to two on the run that measured it. One field, and the
+    tag is a field in it rather than a competing habit.
     """
 
-    mark: str = Field(
+    mark: str | None = Field(
+        default=None,
         description=(
-            "The letter in the tag above that player, copied exactly. "
-            "Required: a sighting with no letter cannot be used at all."
-        )
+            "The letter tag drawn on that body, e.g. GA; required whenever "
+            "the body wears a tag; null only if it wears none"
+        ),
     )
     number: int | None = Field(default=None, description="Shirt number, if legible")
     name: str | None = Field(default=None, description="Name on the shirt or a graphic")
@@ -102,13 +109,9 @@ class CallerLine(BaseModel):
     event: Event
     side: Side = Side.UNKNOWN
     team: str | None = Field(default=None, description="Team name, only if legible or inferable")
-    names_read: list[str] = Field(
-        default_factory=list,
-        description="Names or shirt numbers actually visible in the frames or a graphic",
-    )
     sightings: list[Sighting] = Field(
         default_factory=list,
-        description="Tagged players whose shirt number or name you could actually read",
+        description="Every shirt number or name you could actually read, one entry per player",
     )
     confidence: float = Field(ge=0.0, le=1.0)
     speak: bool = Field(description="False is a valid answer; silence is allowed")

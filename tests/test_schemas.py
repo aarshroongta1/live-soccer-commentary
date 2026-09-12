@@ -8,7 +8,7 @@ from commentary.schemas import AnalystLine, BoardRead, CallerLine, Event, Scene
 def test_silence_is_a_valid_caller_answer():
     call = CallerLine(scene=Scene.REPLAY, event=Event.NONE, confidence=0.9, speak=False)
     assert call.line == ""
-    assert call.names_read == []
+    assert call.sightings == []
 
 
 def test_confidence_is_bounded():

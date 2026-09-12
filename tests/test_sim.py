@@ -445,7 +445,7 @@ async def test_injected_errors_are_recorded_and_visible_in_the_line():
     fake_named = [
         line
         for line in lines
-        if any(name not in roster and not name.isdigit() for name in line.names_read)
+        if any(s.name is not None and s.name not in roster for s in line.sightings)
     ]
     assert len(fake_named) == counts["fake_name"]
     assert any(line.event is Event.GOAL for line in lines)
@@ -459,8 +459,8 @@ async def test_no_lies_when_the_error_rate_is_zero():
         result = await oracle.parse(
             model="fake", system="", blocks=blocks, output_format=CallerLine, tag="caller"
         )
-        for name in result.value.names_read:
-            assert name.isdigit() or name in roster
+        for sighting in result.value.sightings:
+            assert sighting.name is None or sighting.name in roster
     assert oracle.injected == []
 
 

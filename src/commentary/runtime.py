@@ -786,24 +786,29 @@ class Runtime:
         """
         if not line.sightings:
             return
+        drawn = self.tracks_for(cursor)
+        tagged = {t.id for t in drawn if t.side is not Side.UNKNOWN}
         seen: list[dict[str, Any]] = []
         for sighting in line.sightings:
-            mark = id_of(sighting.mark)
-            found = None if mark is None else self._roster_check(sighting, mark, cursor)
-            # Whether the tag still meant a body by the time the line came
-            # back. Offline the id survives the round trip 42% of the time;
-            # this is the same number measured in the loop it has to hold in.
-            live = mark is not None and any(t.id == mark for t in self.tracks_for(cursor))
+            mark = id_of(sighting.mark) if sighting.mark else None
+            found = self._roster_check(sighting, mark, cursor)
             row: dict[str, Any] = {
                 "mark": sighting.mark,
                 "number": sighting.number,
                 "name": sighting.name,
-                "live": live,
+                # Whether that tag still meant a body by the time the line came
+                # back, and whether there was a tag on it at all when the
+                # frame was drawn. The two failures look identical from the
+                # outside and want opposite fixes.
+                "live": mark is not None and any(t.id == mark for t in drawn),
+                "tagged": mark in tagged if mark is not None else None,
+                "tags_on_frame": len(tagged),
                 "bound": found is not None,
             }
-            if found is not None and mark is not None:
+            if found is not None:
                 side, number, name = found
-                self.tracker.identify(mark, side, number, name, cursor)
+                if mark is not None:
+                    self.tracker.identify(mark, side, number, name, cursor)
                 self.state_tracker.registry.believe(number, name, cursor, side=side)
                 row["as"] = f"{number} {name}"
                 self.stats.sightings += 1
@@ -813,7 +818,7 @@ class Runtime:
         self._publish(Topic.SIGHTING, cursor, sightings=seen)
 
     def _roster_check(
-        self, sighting: Sighting, mark: int, cursor: float
+        self, sighting: Sighting, mark: int | None, cursor: float
     ) -> tuple[Side, int, str] | None:
         """The player this sighting is about, or None if it does not stand up.
 
@@ -821,7 +826,8 @@ class Runtime:
         number given alongside has to agree. A number on its own is checked
         against the squad of whichever side the tracker says that body is in,
         because both teams have an eleven and only the picture can say which
-        one this is.
+        one this is — so a number with no tag resolves to nobody, and says
+        so, rather than picking a side.
         """
         if self.pack is None:
             return None
@@ -835,7 +841,7 @@ class Runtime:
             if sighting.number is not None and sighting.number != player.number:
                 return None
             return side, player.number, player.name
-        if sighting.number is None:
+        if sighting.number is None or mark is None:
             return None
         side = self._side_of(mark, cursor)
         if side is Side.UNKNOWN:

@@ -48,7 +48,16 @@ from commentary.grading.baselines import (
     worldcupvoice,
 )
 from commentary.runtime import Runtime
-from commentary.schemas import Beat, CallerLine, Event, MatchState, Scene, Side, Voice
+from commentary.schemas import (
+    Beat,
+    CallerLine,
+    Event,
+    MatchState,
+    Scene,
+    Side,
+    Sighting,
+    Voice,
+)
 from commentary.sim import MatchSim, SimOracle, SimSource
 from commentary.trace import read_trace, rows_of
 from commentary.voice import LogSpeaker
@@ -94,7 +103,7 @@ def a_terrible_line() -> CallerLine:
         scene=Scene.LIVE_PLAY,
         event=Event.GOAL,
         side=Side.HOME,
-        names_read=["Ronan Velasquez"],
+        sightings=[Sighting(name="Ronan Velasquez")],
         confidence=0.5,
         speak=True,
         line="It is in! Ronan Velasquez makes it 4-3.",

@@ -268,33 +268,6 @@ class EntityRegistry:
         return named
 
 
-#: "9", "#9", "9 Haaland", "Haaland (9)", "Haaland #9".
-_SIGHTING_RES = (
-    re.compile(r"^#?(\d{1,2})\s*[-—:.]?\s*([A-Za-z][\w'’.\- ]*)$"),
-    re.compile(r"^([A-Za-z][\w'’.\- ]*?)\s*[(#]\s*(\d{1,2})\s*\)?$"),
-)
-
-
-def parse_sighting(text: str) -> tuple[int, str] | None:
-    """Pull a number and a name out of whatever the caller wrote down.
-
-    The caller reports names_read as free text because that is what it can
-    honestly produce; a bare name or a bare number carries no pairing and is
-    not a sighting at all.
-    """
-    cleaned = text.strip()
-    for number_first, pattern in zip((True, False), _SIGHTING_RES, strict=True):
-        match = pattern.match(cleaned)
-        if match is None:
-            continue
-        number_s = match.group(1) if number_first else match.group(2)
-        name = (match.group(2) if number_first else match.group(1)).strip()
-        if not name:
-            return None
-        return int(number_s), name
-    return None
-
-
 class MatchStateTracker:
     """The single writable copy of what we believe, with the sources separated."""
 
@@ -369,12 +342,13 @@ class MatchStateTracker:
 
         sighting_ts = ts if ts is not None else (self.state.clock_s or 0.0)
         seen = False
-        for raw in line.names_read:
-            sighting = parse_sighting(raw)
-            if sighting is None:
+        for sighting in line.sightings:
+            # A number without a name names nobody, and a name without a
+            # number cannot be believed against a shirt. The pairing is the
+            # sighting; half of one is a note.
+            if sighting.number is None or not sighting.name:
                 continue
-            number, name = sighting
-            self.registry.believe(number, name, sighting_ts, side=line.side)
+            self.registry.believe(sighting.number, sighting.name, sighting_ts, side=line.side)
             seen = True
         if seen:
             self.state.on_pitch = self.registry.on_pitch(sighting_ts)

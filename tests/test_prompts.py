@@ -171,4 +171,4 @@ def test_the_names_rule_sends_the_caller_looking_for_a_number_first():
     # The bad example that showed a model naming two players it could not read
     # is gone; what replaces it shows the number that justified the name.
     assert "Odegaard" not in CALLER_RULES
-    assert 'names_read carries "11 Di María"' in CALLER_RULES
+    assert 'sightings carries mark "D", number 11' in CALLER_RULES

@@ -11,6 +11,7 @@ from commentary.schemas import (
     Player,
     Scene,
     Side,
+    Sighting,
     TeamSheet,
 )
 
@@ -98,7 +99,12 @@ def test_accents_and_case_fold_away(pack, state, spelling):
 def test_a_name_read_off_a_graphic_but_on_no_roster_is_rejected(pack, state):
     gate = FactGate()
     verdict = gate.judge(
-        call("The substitute is warming up on the touchline", names_read=["Zaltimore"]), state, pack
+        call(
+            "The substitute is warming up on the touchline",
+            sightings=[Sighting(name="Zaltimore")],
+        ),
+        state,
+        pack,
     )
     assert not verdict.passed
     assert verdict.reasons == ["name_read_not_on_roster: Zaltimore"]
@@ -106,7 +112,9 @@ def test_a_name_read_off_a_graphic_but_on_no_roster_is_rejected(pack, state):
 
 def test_a_shirt_number_that_is_not_in_the_squad_is_rejected(pack, state):
     gate = FactGate()
-    verdict = gate.judge(call("The number comes short", names_read=["77"]), state, pack)
+    verdict = gate.judge(
+        call("The number comes short", sightings=[Sighting(number=77)]), state, pack
+    )
     assert not verdict.passed
     assert verdict.reasons == ["number_not_in_squad: 77"]
 
@@ -224,7 +232,7 @@ def test_stats_are_usable_standalone():
     assert stats.by_reason["too_short_after_trim"] == 1
 
 
-# -- names_read, in the form the caller actually writes them -----------------
+# -- sightings, the one record of what was read ------------------------------
 
 
 def argentina() -> tuple[MatchState, KnowledgePack]:
@@ -242,11 +250,19 @@ def argentina() -> tuple[MatchState, KnowledgePack]:
     return MatchState(home="Argentina", away="France"), pack
 
 
-def sighting_verdict(gate: FactGate, state: MatchState, pack: KnowledgePack, read: str):
+def sighting_verdict(
+    gate: FactGate,
+    state: MatchState,
+    pack: KnowledgePack,
+    *,
+    number: int | None = None,
+    name: str | None = None,
+    mark: str | None = None,
+):
     line = CallerLine(
         scene=Scene.LIVE_PLAY,
         event=Event.BUILD_UP,
-        names_read=[read],
+        sightings=[Sighting(mark=mark, number=number, name=name)],
         confidence=0.8,
         speak=True,
         line="He drives forward down the left.",
@@ -254,31 +270,44 @@ def sighting_verdict(gate: FactGate, state: MatchState, pack: KnowledgePack, rea
     return gate.judge(line, state, pack)
 
 
-@pytest.mark.parametrize("read", ["11 Di María", "Di María (11)", "11", "Di María"])
-def test_a_sighting_is_parsed_before_it_is_checked(read: str):
-    """The caller writes the pairing that justifies the name, so read it that way.
-
-    On the first real run every one of these was rejected
-    ``name_read_not_on_roster``, because the whole string was matched against
-    the roster instead of being read as a number and a name.
-    """
+@pytest.mark.parametrize(
+    ("number", "name"),
+    [(11, "Di María"), (11, None), (None, "Di María"), (11, "Ángel Di María")],
+)
+def test_a_sighting_of_a_real_player_passes(number, name):
+    """Either half on its own, or both, as long as they are that player."""
     state, pack = argentina()
-    verdict = sighting_verdict(FactGate(), state, pack, read)
+    verdict = sighting_verdict(FactGate(), state, pack, number=number, name=name)
     assert verdict.passed, verdict.reasons
 
 
 def test_a_sighting_whose_name_is_not_on_the_roster_still_fails():
     state, pack = argentina()
-    verdict = sighting_verdict(FactGate(), state, pack, "Zaltimore (11)")
+    verdict = sighting_verdict(FactGate(), state, pack, number=11, name="Zaltimore")
     assert not verdict.passed
     assert any("name_read_not_on_roster: Zaltimore" in r for r in verdict.reasons)
 
 
 def test_a_sighting_whose_number_is_not_in_the_squad_still_fails():
     state, pack = argentina()
-    verdict = sighting_verdict(FactGate(), state, pack, "Di María (77)")
+    verdict = sighting_verdict(FactGate(), state, pack, number=77, name="Di María")
     assert not verdict.passed
     assert any("number_not_in_squad: 77" in r for r in verdict.reasons)
+
+
+def test_a_sighting_whose_halves_disagree_is_rejected():
+    """Two readings of one shirt that cannot both be right is neither."""
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, number=7, name="Di María")
+    assert not verdict.passed
+    assert any("sighting_disagrees" in r for r in verdict.reasons)
+
+
+def test_the_tag_is_never_held_to_the_roster():
+    """It is a letter this system drew over a body, not a claim about anyone."""
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, mark="GP", number=11, name="Di María")
+    assert verdict.passed, verdict.reasons
 
 
 # -- compound surnames -------------------------------------------------------
@@ -287,13 +316,13 @@ def test_a_sighting_whose_number_is_not_in_the_squad_still_fails():
 @pytest.mark.parametrize("name", ["Di María", "De Paul", "Mac Allister", "María"])
 def test_a_compound_surname_is_on_the_roster(name: str):
     state, pack = argentina()
-    verdict = sighting_verdict(FactGate(), state, pack, name)
+    verdict = sighting_verdict(FactGate(), state, pack, name=name)
     assert verdict.passed, verdict.reasons
 
 
 def test_half_a_compound_surname_is_not_a_name():
     state, pack = argentina()
-    verdict = sighting_verdict(FactGate(), state, pack, "Di")
+    verdict = sighting_verdict(FactGate(), state, pack, name="Di")
     assert not verdict.passed
     assert any("name_read_not_on_roster: Di" in r for r in verdict.reasons)
 
@@ -455,32 +484,3 @@ def test_a_name_that_opens_the_line_still_has_to_be_on_the_roster():
     verdict = FactGate().judge(line, state, pack)
     assert "Zaltimore" not in verdict.line
     assert any(r.startswith("name_not_on_roster: Zaltimore") for r in verdict.reasons)
-
-
-# -- the tags we drew ourselves ----------------------------------------------
-
-
-@pytest.mark.parametrize("tag", ["GA", "GP", "FQ", "KE", "LP", "A", "AAA"])
-def test_a_letter_tag_in_names_read_is_not_a_name_claim(tag: str):
-    """Seven of these cost four lines on the first run with letter tags.
-
-    A tag is this system's own label drawn over a body. The caller reporting
-    it back is not a claim to have read anything, and holding it to the roster
-    rejects the line for a word we wrote ourselves.
-    """
-    state, pack = argentina()
-    verdict = sighting_verdict(FactGate(), state, pack, tag)
-    assert verdict.passed, verdict.reasons
-
-
-@pytest.mark.parametrize("token", ["Zaltimore", "Di", "Zi"])
-def test_something_that_is_not_a_tag_in_names_read_still_fails(token: str):
-    """The exemption is short, alphabetic AND capitalised.
-
-    "Di" is two letters and must keep failing: half a compound surname is
-    exactly what A13 is about, and the capitals are what tell the two apart.
-    """
-    state, pack = argentina()
-    verdict = sighting_verdict(FactGate(), state, pack, token)
-    assert not verdict.passed
-    assert any(f"name_read_not_on_roster: {token}" in r for r in verdict.reasons)

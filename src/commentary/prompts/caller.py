@@ -74,26 +74,25 @@ followed that nobody has identified yet. A letter is a label for that body
 and nothing else: not a shirt number, not a squad number, not a name. A
 player with no tag at all is unidentified, whatever you think you recognise.
 
-Whenever you read a shirt number, you have two jobs and the second one is the
-one that lasts. Say the name in your line, and put the pairing in sightings:
-the letter of the tag over that player, and the number you read on the shirt.
-The player tagged D whose shirt reads 11 is one sighting, mark "D", number 11.
-A name across the shoulders goes in the same sighting. Do this every single
-time a number is legible, even if you have reported that player before and
-even if the line you are writing does not mention them.
+Everything you read off the picture goes in sightings, one entry per player.
+A shirt number you can read, a name across the shoulders, a name in a
+graphic: that is a sighting. Add the letter of the tag over that player
+whenever they are wearing one, and leave the mark null when they are not —
+a close-up of a player with no tag is still worth reporting, it just cannot
+be tied to a body afterwards.
 
-That pairing is the only way a name sticks to a body. Report it and the tag
-over that player becomes their surname for everybody who looks at the picture
+Do it every time a number is legible, even for a player you have reported
+before and even when the line you are writing does not mention them. The
+player tagged D whose shirt reads 11 is one sighting: mark "D", number 11.
+A tagged player whose name you can read across the shoulders is the same
+sighting with the name filled in too.
+
+The tag is what makes a name last. Report a number against a tag and that
+tag becomes the player's surname for everybody who looks at the picture
 afterwards, including you, through all the shots where the number is turned
-away. Leave it out and the name dies with the line. A sighting without a
-letter is worth nothing at all — if you cannot see which tag is on the player
-whose number you read, there is nothing to report. And never report a pairing
-you cannot actually see: a guess follows that player around for the rest of
-the passage.
-
-A surname tag you used goes in names_read exactly as printed, because it is a
-name you said. A letter tag never goes in names_read: it is not a name and
-not something you read off the picture, it is our label for a body.
+away. Leave the tag out and the name dies with your line. And never report
+something you cannot actually see: a guess here follows that player around
+for the rest of the passage.
 
 MATCH STATE may carry a statistician's lines: "on the ball" with a name,
 "from" with the name of whoever passed it, and a "just now" list of things
@@ -143,11 +142,10 @@ Fill every field from the picture, not from the story you would like to tell.
 Confidence is your honest read on whether these frames support the claim; low
 confidence is not punished, but a confident guess is.
 
-names_read is the record of what was legible, and it is how a name in your
-line is justified. Write the number and the name together, exactly as you
-read them: "11 Di María" for the eleven on an Argentina shirt. A bare number
-is fine when you read a number you cannot put a name to. Knowing who usually
-plays there is not a sighting and does not belong in it.
+sightings is the record of what was legible, and it is how a name in your
+line is justified. One entry per player: the tag letter if they have one,
+the number if you can read it, the name if you can read that. Knowing who
+usually plays there is not a sighting and does not belong in it.
 
 THE LINE
 
@@ -159,8 +157,8 @@ says out loud, not what an observer writes down.
   Good: Cutback from the right, and it is hammered over the bar.
   Good: Long ball forward, and the centre-half in red heads it clear.
   Bad:  In this frame we can see a player in a red shirt. (describing a picture)
-  Good: Di María cuts inside and drives it low. (the 11 was legible, so
-        names_read carries "11 Di María")
+  Good: Di María cuts inside and drives it low. (the 11 was legible on the
+        player tagged D, so sightings carries mark "D", number 11)
   Bad:  That is the equaliser, two apiece. (the score is not yours to give)
   Bad:  The replay shows him clean through. (a replay called as live)\
 """
@@ -187,15 +185,35 @@ def caller_system(pack: KnowledgePack | None, config: CallerConfig | None = None
 #: other frame, which at three passes a second means no marks at all.
 MARK_TOLERANCE_S = 0.5
 
-#: How big to draw a tag, and how thick. The caller's frames are downscaled
-#: to 768 px wide and JPEG'd at quality 70 before they are sent, so a tag
-#: drawn at 0.4 and one pixel thick arrives about six pixels tall — legible
-#: to somebody looking for it, which is not the same as legible to somebody
-#: reading a football match. On the first run with letters the caller read
-#: nine shirt numbers correctly and reported a tag exactly twice, both times
-#: leaving the letter blank.
-MARK_SCALE = 0.6
-MARK_THICKNESS = 2
+#: How tall a tag has to be *as the caller receives it*, and the width it is
+#: received at. Frames go out through ``encode_frame``, which downscales to
+#: 768 px and JPEGs at quality 70, so a tag drawn at cv2's scale 0.4 arrives
+#: about six pixels tall — legible to somebody looking for it, which is not
+#: the same as legible to somebody reading a football match. Twenty-two
+#: pixels is the height of ordinary body text on that image.
+MARK_ENCODED_PX = 22
+ENCODED_WIDTH = 768
+
+#: Cap height of FONT_HERSHEY_SIMPLEX at scale 1.0, which is what turns a
+#: height in pixels into a cv2 font scale.
+_SIMPLEX_CAP_PX = 22.0
+
+#: Padding inside the dark box behind the text.
+MARK_PAD = 4
+
+#: How many times a tag may be moved up to clear another before it is dropped.
+MARK_NUDGES = 2
+
+
+def mark_font(width: int) -> tuple[float, int]:
+    """Font scale and stroke for a tag on a frame this wide.
+
+    Derived rather than fixed, so the tag is the same size in the picture the
+    model sees whether the capture is 720p or 1080p — the only thing that
+    matters is how many pixels survive the downscale to ``ENCODED_WIDTH``.
+    """
+    scale = (MARK_ENCODED_PX / _SIMPLEX_CAP_PX) * max(1.0, width / ENCODED_WIDTH)
+    return scale, max(2, int(round(scale * 1.5)))
 
 
 def draw_marks(
@@ -223,32 +241,53 @@ def draw_marks(
     import cv2
 
     marked = image.copy()
+    scale, stroke = mark_font(image.shape[1])
+    placed: list[tuple[int, int, int, int]] = []
     for track in tracks:
         text = _mark_text(track, pack)
         if text is None:
             continue
         x0, y0, _x1, _y1 = track.box
-        (width, height), _ = cv2.getTextSize(
-            text, cv2.FONT_HERSHEY_SIMPLEX, MARK_SCALE, MARK_THICKNESS
-        )
-        top = y0 - height - 6
+        (width, height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, stroke)
+        box_w, box_h = width + 2 * MARK_PAD, height + 2 * MARK_PAD
+        top = y0 - box_h - 2
+        # Two tags on top of each other are one unreadable smudge, and a tag
+        # that cannot be read is worse than no tag: the caller is asked to
+        # copy it exactly. Walk up to clear another tag — but only twice. A
+        # tag nudged further than that has left the player it names, and a
+        # label floating over somebody else is the one thing worse than none.
+        for _ in range(MARK_NUDGES):
+            here = (x0, top, x0 + box_w, top + box_h)
+            if not any(_overlaps(here, other) for other in placed):
+                break
+            top -= box_h + 2
+        else:
+            if any(
+                _overlaps((x0, top, x0 + box_w, top + box_h), other) for other in placed
+            ):
+                continue
         if top < 0:
             # No room above the player: a label clipped by the top edge is not
             # readable, and pinning it to y=0 would put it over whatever the
             # broadcaster has up there.
             continue
-        cv2.rectangle(marked, (x0, top), (x0 + width + 6, top + height + 6), (20, 20, 20), -1)
+        placed.append((x0, top, x0 + box_w, top + box_h))
+        cv2.rectangle(marked, (x0, top), (x0 + box_w, top + box_h), (20, 20, 20), -1)
         cv2.putText(
             marked,
             text,
-            (x0 + 3, top + height + 1),
+            (x0 + MARK_PAD, top + box_h - MARK_PAD),
             cv2.FONT_HERSHEY_SIMPLEX,
-            MARK_SCALE,
+            scale,
             (255, 255, 255),
-            MARK_THICKNESS,
+            stroke,
             cv2.LINE_AA,
         )
     return marked
+
+
+def _overlaps(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
+    return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
 
 
 def _mark_text(track: Track, pack: KnowledgePack | None) -> str | None:
