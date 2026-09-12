@@ -39,11 +39,15 @@ def test_a_goal_carries_its_clock_and_its_scorer():
     assert goal["player"] == "Ángel Di María"
 
 
-def test_an_own_goal_counts_for_the_other_side():
+def test_an_own_goal_counts_for_the_other_side_and_names_nobody():
     own = converted()["events"][2]
     # Upamecano's, so the row is France's and the goal is Argentina's.
     assert own["team"] == "home"
     assert (own["home_score"], own["away_score"]) == (2, 0)
+    # And no scorer. The only name available is an opposition player, and
+    # writing it into a row credited to the other side would have the grader
+    # reading a France defender as Argentina's scorer.
+    assert own["player"] is None
 
 
 def test_the_score_runs_forward():
