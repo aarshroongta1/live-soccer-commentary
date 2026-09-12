@@ -4,8 +4,8 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `d7c4f9b`, 19 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 448 passed · `uv run ruff check .` clean ·
+**Head:** `b3d3e25`, 23 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 455 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
 ---
@@ -22,7 +22,10 @@ checked by eye, `captions` turns yt-dlp's `.en.json3` into the human
 transcript, `feed` turns StatsBomb's event file into the grading feed. The gate
 fixes from the first real traces all landed — compound surnames, sightings
 written as `"11 Di María"`, "towards their own goal", demonyms, and the
-goal-confirmation rework.
+goal-confirmation rework. A second real run added two more (A15, A16): an
+ordinary word opening a line is no longer read as a name, and the evidence
+for a score change now survives the replay the broadcaster cuts to after
+every goal.
 
 **C — vision names the players.** Detect → track → split by kit → read the
 shirt number → draw the name on a copy of the caller's frames. Every model
@@ -123,9 +126,10 @@ clip settles and nothing else can.
   marks. `draw_marks` refuses to draw a label with no room above the player,
   which keeps labels out of that corner. If you move the strip, check that
   still holds.
-- **Two runtime tests are timing-sensitive** because the sim runs flat out
-  against wall-clock loops: `test_a_goal_is_never_announced_before_the_board_confirms_it`
-  and anything comparing single-digit error counts between two short runs.
+- **Three runtime tests are timing-sensitive** because the sim runs flat out
+  against wall-clock loops: `test_a_goal_is_never_announced_before_the_board_confirms_it`,
+  `test_only_the_wire_can_put_a_lied_about_score_right`, and anything
+  comparing single-digit error counts between two short runs.
   Both were rewritten this session to assert properties rather than
   statistics; keep it that way.
 - **Commit `9b76685` contains a mid-flight snapshot** of
@@ -133,13 +137,26 @@ clip settles and nothing else can.
   was still writing it. That one commit does not pass mypy on its own. HEAD
   does. Left as is rather than rewriting history.
 - **`docs/BRIEF-real-footage-and-wire.md` is modified in the working tree.**
-  That edit is the user's, not this session's.
+  That edit is the user's, not this session's. It is where A15 and A16 came
+  from; the brief in the last commit does not have them.
+- **`tests/test_baselines.py::test_only_the_wire_can_put_a_lied_about_score_right`
+  failed once in about fifteen runs**, and only while a second full suite was
+  running against the same machine. `blind` came back 1-1 rather than 0-0.
+  Its docstring says the board reader lies on every read at `error_rate=1.0`,
+  and `SimOracle._board` does not lie at all — the rate only injects errors
+  into caller lines — so what holds the score at 0-0 is the clip ending
+  before three agreeing post-goal reads land, which is a race. Nothing to do
+  with A16: eight runs of it after that change all passed.
+- **The board tracker now believes a score change it saw before a replay.**
+  A pending change survives absent reads and confirms whenever the bug comes
+  back, stamped at the first read that saw it. Anything asserting the old
+  "a replay interrupts the evidence" behaviour is asserting a bug.
 
 ---
 
 ## Where things deviate from the brief
 
-Five, all deliberate:
+Six, all deliberate:
 
 1. **The team sheets print the full name**, `#11 Ángel Di María (LW)`, not the
    `rsplit`-derived surname the brief specified. That would print "María" and
@@ -153,7 +170,17 @@ Five, all deliberate:
    score bug was last glanced at, which is nothing to do with it.
 4. **`WireSync` will not re-stamp an event that arrived with a `video_ts`** —
    the simulator's own truth. Otherwise the kickoff offset moves every event.
-5. **B10's wire error-count assertion was replaced.** At `error_rate=1.0` each
+5. **A16's account of the second run is half right, and the fix is right
+   anyway.** The brief has the bug absent from 70 to 132 and the state stuck
+   at 1-0 through the celebration. The trace has one absent read at 70.2 at
+   confidence 0.15 — discarded before it could clear anything — and the state
+   reaching 2-0 at cursor 66.8; the eleven confident absent reads run 91.0 to
+   132.4, after confirmation. So the pending-survives-a-replay fix does not
+   rescue the two late rejections at 128.1 and 140.1 in *this* run. It is in
+   because a confident absent read at 70.2, which is what the board reader
+   will usually return, would have held confirmation until 136 with the state
+   saying 1-0 throughout.
+6. **B10's wire error-count assertion was replaced.** At `error_rate=1.0` each
    run speaks one or two lines, so the comparison failed about one run in
    three on noise. What is tested instead is deterministic and stronger: a
    board lying on every read cannot move the score at all, and the wire moves
