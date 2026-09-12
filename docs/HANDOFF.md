@@ -4,8 +4,8 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `067428d`, 30 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 464 passed · `uv run ruff check .` clean ·
+**Head:** `a40b27b`, 33 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 477 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
 ---
@@ -153,7 +153,45 @@ that a tag is not a shirt number; on this evidence they are not enough, and
 a tag that cannot be confused with a number — a letter, a colour — may be
 the cheaper fix than more words.
 
-What a real run settles once that is closed is `name_rate` and
+### C12 fixed the tracking and the naming loop still does not close
+
+`ccaba63`, same clip, $0.99 (trace `scratchpad/run/runs/c12/`).
+
+| | C11 | C12 |
+|---|---:|---:|
+| passes a second | 5.8 | **7.8** |
+| median ms a pass | 130 | **114** |
+| id survives the 4 s round trip (offline) | 3 % | **42 %** |
+| sightings bound | 5 | **0** |
+| passes with a named track | 0 of 1039 | **0 of 1343** |
+
+The tracking is fixed: ByteTrack at 0.9 with a 30-pass buffer turns 1966 ids
+in 300 passes into 202, and takes the chance that a body the caller points at
+still carries its id four seconds later from 3 % to 42 %. Measured offline on
+the clip's own detections, so it is not an estimate.
+
+**But the run made only one sighting, and it was unusable** — mark `KE` with
+no number and no name. And the caller put seven tag letters in `names_read`,
+where the roster check has no latitude, and four lines died as invented
+names. That half is fixed in `a40b27b`: the rules now say a letter tag never
+goes in `names_read`, and the gate no longer reads a short capitalised
+alphabetic token there as a name claim. **It has not been run since.**
+
+Why one sighting when C11 got six is the open question, and the tag rejection
+is the first suspect: every line that used a tag was being rejected, so the
+caller had every reason to stop mentioning them. The next run answers it.
+
+Two things that are not regressions, so nobody re-investigates them:
+
+- **Tracks a pass looks worse (13 to 4) and is mostly footage.** The tracker
+  is at the cursor now, so it never sees the last eight seconds of the clip,
+  which is the wide restart; and the middle two minutes of this clip are
+  celebration close-ups with one to three people in frame. In the first
+  thirty seconds, which is wide play in both runs, it is 14 and 13.
+- **The cut detector fires 16 times in 180 s of this clip**, not hundreds, so
+  the reset is not what keeps the track count down.
+
+What a real run settles once the loop closes is `name_rate` and
 `name_precision`, and the honest expectation in the README — names on the big
 moments, not pass-by-pass — is what is being tested.
 
@@ -182,9 +220,12 @@ moments, not pass-by-pass — is what is being tested.
 - **`run --source file` has the marks on by default**, so on a machine without
   the `vision` extra it stops with a one-line message telling you to install
   it. That is deliberate; `--no-marks` is the other answer.
-- **A `#id` tag is not a shirt number.** It is a handle so the caller can say
-  which body it read a number off, and the caller prompt says so twice. If it
-  ever reads as a claim about a player, the marks are doing harm.
+- **A tag is a letter, and it is neither a shirt number nor a name.** It is a
+  label so the caller can say which body it read a number off. Both failures
+  have now happened on real footage: with digits the caller reported the tag
+  as the shirt number, and with letters it filed the tags in `names_read`
+  where the gate killed the lines. Anything that makes a tag look like a
+  claim about a player is the marks doing harm.
 - **The tracker runs in its own loop, on the newest frame, and skips the
   rest.** It is not a per-frame pipeline and must never become one again: one
   pass is 92 ms at best and frames arrive every 66 ms, so anything that
