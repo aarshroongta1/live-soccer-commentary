@@ -50,10 +50,18 @@ Nothing else.
   │ Board reader  │ │ Caller (vision)            │   │ Speak predictor      │
   │ Haiku 4.5,    │ │ Sonnet 5 or Haiku 4.5      │◄──│ triggers + salience  │
   │ score-bug crop│ │ 4 frames at cursor + 2 at  │   │ + silence pressure   │
-  │ every 2 s     │ │ live edge, state, notes    │   │ + rate cap           │
-  │ -> score,     │ │ -> structured: scene, event│   └──────────────────────┘
-  │ clock, replay │ │ names seen, line, confidence│
+  │ every 2 s     │ │ live edge, state, notes,   │   │ + rate cap           │
+  │ -> score,     │ │ names drawn on the frames  │   └──────────────────────┘
+  │ clock, replay │ │ -> structured: scene, event│
+  │               │ │ names seen, line, confidence│
   └───────┬───────┘ └─────────────┬──────────────┘
+          │                       │
+  ┌───────┴───────┐               │
+  │ Player tracker│               │  RF-DETR + ByteTrack + SigLIP kit
+  │ local, open   │───────────────┤  clustering + PARSeq shirt numbers;
+  │ every 2nd     │               │  (team, number) -> name, drawn on a
+  │ frame, 640 px │               │  COPY of the caller's frames only
+  └───────┬───────┘               │
           ▼                       ▼
   ┌──────────────────────────────────────────────┐
   │ Match state + entity registry                │  score, clock, possession
@@ -185,14 +193,32 @@ as the hint prompt). Both are used only here, never at runtime.
 - **Fact gate rejection rate** and reasons.
 - **Lag**: buffer depth plus generation time, p50 and p95.
 - **Silence ratio**, **repetition**, **cost per match**.
+- **Name rate** and **name precision**: what fraction of spoken lines name a
+  player, and how many of those names are the player the feed says was
+  involved within three seconds. This is the number the vision naming chain
+  is answerable for, and the `no-marks` ablation is what it is compared
+  against.
 - **Pairwise judge** win rate, blind, both orderings, Batch API: your line
   versus the human commentator's line for the same 10 s window, and your
   line versus each baseline's.
 
 Baselines, all on the same clips: (1) worldcupvoice's loop reproduced with
 the same model, fixed 4 s cadence, no delay, no state; (2) full system at
-delay 0; (3) full system without the fact gate; (4) single voice. The
-headline chart is factual error rate versus delay depth at 0, 2, 4, 8 s.
+delay 0; (3) full system without the fact gate; (4) single voice; (5) the
+full system with no names drawn on the caller's frames. The headline chart is
+factual error rate versus delay depth at 0, 2, 4, 8 s.
+
+There is a sixth row, and it is a ceiling rather than a baseline: the full
+system plus a statistician's play-by-play feed at 10 s of modelled latency.
+The feed stays behind the grading wall in every other respect — the default
+runtime never loads one, and the project's claim is unchanged by it — but a
+writeup that says vision can name players should say what a feed would have
+bought instead, and at what. The row also makes the delay argument twice
+over: a feed is late by construction, so an event is known when the live
+edge passes `video_ts + latency_s` and applied when the cursor passes
+`video_ts`, and a correction therefore lands at `video_ts + max(0,
+latency_s - delay_s)`. A system that wants a live feed and wants to be right
+has to wait at least as long as the feed does.
 
 ---
 

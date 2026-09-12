@@ -307,3 +307,31 @@ def test_without_a_feed_the_name_columns_are_zero_rather_than_guessed():
     lines = [SpokenLine(video_ts=10.0, voice="caller", text="Messi turns")]
     scored = names(Run(run_id="x", lines=lines), [])
     assert (scored.names, scored.lines_with_name, scored.rate) == (0, 0, 0.0)
+
+
+def test_where_the_match_is_being_played_is_not_an_invented_name():
+    """A commentator says where they are, and the gate has always allowed it.
+
+    The grader used to report "Park" in "away at Ashcombe Park" as a name the
+    system invented, so the results table counted errors the gate had
+    deliberately let through.
+    """
+    from commentary.grading.metrics import Run, SpokenLine, factual_errors
+
+    pack = KnowledgePack(
+        home=TeamSheet(name="Ashcombe Rangers", short="ASH", demonym="Ashcombe"),
+        away=TeamSheet(name="Verity Athletic", short="VER"),
+        competition="Coastal Cup",
+        venue="Ashcombe Park",
+    )
+    line = SpokenLine(video_ts=1.0, voice="caller", text="We are away at Ashcombe Park")
+    assert factual_errors(Run(run_id="x", lines=[line]), [], pack) == []
+
+
+@pytest.mark.parametrize("text", ["Red shirts swarm the ball", "Whoever wins tops the group"])
+def test_an_opener_the_caller_was_told_to_use_is_not_an_invented_name(text: str):
+    from commentary.grading.metrics import Run, SpokenLine, factual_errors
+
+    pack = KnowledgePack(home=TeamSheet(name="Argentina"), away=TeamSheet(name="France"))
+    line = SpokenLine(video_ts=1.0, voice="caller", text=text)
+    assert factual_errors(Run(run_id="x", lines=[line]), [], pack) == []

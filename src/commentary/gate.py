@@ -44,6 +44,11 @@ from commentary.state import parse_sighting
 # Words that open sentences or describe football, not people. A capitalised
 # token in here is never treated as a name, which is what stops the gate
 # trimming "Brilliant from the far post" down to "from the far post".
+#
+# The kit colours are in here for a sharper reason: the caller is told to say
+# "the near-post runner in blue" when it cannot read a number, so a line
+# opening "Blue shirts crowd it out" would otherwise have the one word that
+# identified the team cut out of it as an unverifiable name.
 _STOPWORD_TEXT = """
     a an and as at back but by for from in into of off on onto or out over the then to
     towards under up with within without
@@ -54,7 +59,9 @@ _STOPWORD_TEXT = """
     is am are was were be been being do does did done has have had having
     can could may might must shall should will would let
     goal goals ball cross corner corners penalty penalties header headers keeper goalkeeper
-    referee ref offside card cards yellow red foul fouls throw box area pitch half time
+    referee ref offside card cards foul fouls throw box area pitch half time
+    red blue white black green yellow orange purple claret navy maroon gold grey amber
+    stripes stripe shirt shirts sleeves kit
     full whistle replay touch pass passes shot shots save saves free kick kicks run runs
     side left right centre center middle midfield defence defense attack striker winger
     captain sub subs substitution bench minute minutes second seconds injury stoppage var

@@ -29,7 +29,7 @@ WORD = re.compile(r"[a-z0-9']+")
 SCORELINE = re.compile(r"\b(\d{1,2})\s*[-–]\s*(\d{1,2})\b")
 _STOPWORD_TEXT = (
     "the a an and or but it is in on at to of for with as its his her their they he she "
-    "this that now up down out off over into from by"
+    "we us our you your me my this that now up down out off over into from by"
 )
 STOPWORDS = frozenset(_STOPWORD_TEXT.split(" "))
 
@@ -40,7 +40,11 @@ _OPENER_TEXT = (
     "brilliant great good lovely superb poor well terrible what here there oh yes no "
     "still again almost nearly surely away back first second half time full free corner "
     "goal penalty offside saved blocked cleared straight short long high wide just "
-    "another one two three four five never always plenty nothing everything both"
+    "another one two three four five never always plenty nothing everything both "
+    "whoever whatever whenever everyone everybody nobody somebody someone neither either "
+    # The kit colours, for the same reason the gate keeps them: the caller is
+    # told to reach for one when it cannot read a number.
+    "red blue white black green yellow orange purple claret navy maroon gold grey amber"
 )
 OPENERS = frozenset(_OPENER_TEXT.split(" "))
 
@@ -363,10 +367,20 @@ def factual_errors(
 
 
 def _is_team_word(candidate: str, pack: KnowledgePack) -> bool:
+    """A word that names one of the two sides, the ground, or the competition.
+
+    The ground is in here because a commentator says where they are — "away
+    at Ashcombe Park" — and without it the grader reports "Park" as a name
+    the system invented. The gate has always allowed these; the two have to
+    agree or the results table counts errors the gate deliberately let by.
+    """
     for sheet in (pack.home, pack.away):
-        for part in (sheet.name, sheet.short):
+        for part in (sheet.name, sheet.short, sheet.demonym):
             if part and candidate in normalise(part).split():
                 return True
+    for label in (pack.venue, pack.competition):
+        if label and candidate in normalise(label).split():
+            return True
     return False
 
 

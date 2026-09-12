@@ -372,3 +372,27 @@ def test_a_demonym_is_a_team_word_and_survives_the_trim():
     verdict = FactGate().judge(line, state, pack)
     assert verdict.passed
     assert verdict.line == "Argentine pressure, and the French lines drop deeper"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Blue shirts crowd it out on the edge of the box",
+        "Red shirts swarm the ball and boot it away",
+        "White sleeves everywhere as the cross comes in",
+    ],
+)
+def test_a_kit_colour_is_not_a_name_to_be_trimmed(text: str):
+    """The caller is told to reach for the kit when it cannot read a number.
+
+    A line opening "Blue shirts crowd it out" would otherwise lose the one
+    word identifying which team did it, because it is capitalised and on no
+    team sheet.
+    """
+    state, pack = argentina()
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.BUILD_UP, confidence=0.7, speak=True, line=text
+    )
+    verdict = FactGate().judge(line, state, pack)
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == text
