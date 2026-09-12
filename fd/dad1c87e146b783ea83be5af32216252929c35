@@ -1,0 +1,86 @@
+tests/test_runtime.py
+  s_53408140bf619f::t_2ec5c15c34c94f 192-203,206,211
+  s_53408140bf619f::t_dacd08f28c85b7 303-355
+src/commentary/perception/board.py
+  s_53408140bf619f::t_0a4b9767c3df24 27,161-176
+  s_53408140bf619f::t_67e009b1b6a37d 177
+src/commentary/grading/report.py
+  s_53408140bf619f::t_ac1758626aa543 14
+  s_53408140bf619f::t_b30db7645dd9d3 33-37,49-50
+  s_53408140bf619f::t_86c637bfb17116 55-57,68,70-75,80,99-101,127-128
+src/commentary/grading/metrics.py
+  s_53408140bf619f::t_d05fae9bf5dd8d 459-460
+  s_53408140bf619f::t_d0accd84e23e69 24,127,161,384-393,396-458
+  s_53408140bf619f::t_b30db7645dd9d3 394-395
+tests/test_grading.py
+  s_53408140bf619f::t_e37e85ff1864dd 11-19,256-309
+src/commentary/runtime.py
+  s_53408140bf619f::t_8cf83a1e95f167 58,65,132-135,189,280,354,361-365,369-377,406-416,420-429,436-444,564,673-687
+  s_53408140bf619f::t_d05fae9bf5dd8d 688
+  s_53408140bf619f::t_fbe2b666ff1a7c 366-368,430-435
+  s_53408140bf619f::t_0a4b9767c3df24 56,69
+src/commentary/schemas.py
+  s_53408140bf619f::t_dfb6b46df30156 264-280,317
+  s_53408140bf619f::t_946a07b8b80207 43-47,223-263,281-295,315-316
+tests/test_baselines.py
+  s_53408140bf619f::t_573094364a0793 47,289-313
+src/commentary/wire.py
+  s_53408140bf619f::t_6419f18ebeb28c 141-145,161
+  s_53408140bf619f::t_c7b5b3ea3122b1 1-140,146-160,162-193
+tests/test_statsbomb.py
+  s_53408140bf619f::t_bbe368cca47296 1,8,10,12-15,88-155
+src/commentary/prompts/caller.py
+  s_53408140bf619f::t_9e92a4f9ecf5d3 38-41,77-84
+  s_53408140bf619f::t_763493ff9291ec 85
+src/commentary/grading/baselines.py
+  s_53408140bf619f::t_bd48a2927f13ef 293-296,367-390,409,529-533
+  s_53408140bf619f::t_80c8c2ca97641d 58
+  s_53408140bf619f::t_4941dfc9163c57 100
+src/commentary/statsbomb.py
+  s_53408140bf619f::t_9faf8092b9e2e1 1-211
+tests/test_gate.py
+  s_53408140bf619f::t_f4480bd95743d5 134,139-140
+tests/fixtures/statsbomb-wire-events.json
+  s_53408140bf619f::t_79c7b64268c01f 1-62
+src/commentary/state.py
+  s_53408140bf619f::t_f67bd95b524a56 382-397,400,403-406,409-411,413-426,428-521
+  s_53408140bf619f::t_d05fae9bf5dd8d 599
+  s_53408140bf619f::t_a7793db686438a 532,589-590
+  s_53408140bf619f::t_7bfbd5a5db91be 25,28-29,32,41-55,308,313,316-323,329
+  s_53408140bf619f::t_c6a064f45d2fee 398-399,401-402,407-408,412,427
+  s_53408140bf619f::t_89f11c42359ee1 529,533,548-549,555-588,591-598
+tests/test_state.py
+  s_53408140bf619f::t_f0f86c1fd398b3 248-260,264-327,330-349,353-373
+  s_53408140bf619f::t_b214eaea83ee49 8,14,261-263,328-329,350-352
+src/commentary/__main__.py
+  s_53408140bf619f::t_1d124266c51cab 279-282,293-300
+  s_53408140bf619f::t_7c7683996a5f34 35,186-213,249,264,506-512
+  s_53408140bf619f::t_94e18dead3a1a6 513
+src/commentary/grading/statsbomb.py
+  s_53408140bf619f::t_3e11dcb34e8934 13-17,24-25,27-30,41-49,55-60
+src/commentary/bus.py
+  s_53408140bf619f::t_4941dfc9163c57 33
+tests/fixtures/statsbomb-lineups.json
+  s_53408140bf619f::t_79c7b64268c01f 1-20
+src/commentary/gate.py
+  s_53408140bf619f::t_4941dfc9163c57 371,378-379,387,400,419,421-423
+tests/test_wire.py
+  s_53408140bf619f::t_3803af24a87e2c 154-155
+  s_53408140bf619f::t_5ee325af9fdf93 1-153,156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fddad1c87e146b783ea83be5af32216252929c35",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
