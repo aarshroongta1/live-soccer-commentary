@@ -69,7 +69,10 @@ of a shirt and a name in a broadcast graphic count the same way.
 
 Players carry a small tag drawn above them in a dark box. A tag with a
 surname is a name you may use for that player, and for nobody else on the
-pitch. A tag that is a letter — A, B, ... Z, AA, AB — is a body being
+pitch — and when that player is involved in what you are describing, use it.
+That is what the tags are for. "Tagliafico knocks it infield" is the same
+line as "Argentina knock it infield" with the one thing a listener wants
+added to it. A tag that is a letter — A, B, ... Z, AA, AB — is a body being
 followed that nobody has identified yet. A letter is a label for that body
 and nothing else: not a shirt number, not a squad number, not a name. A
 player with no tag at all is unidentified, whatever you think you recognise.

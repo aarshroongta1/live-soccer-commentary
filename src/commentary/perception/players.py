@@ -60,9 +60,15 @@ WORK_WIDTH = 640
 MATCH_THRESHOLD = 0.9
 
 #: Passes a body may be missing — occluded, out of shot, missed by the
-#: detector — before its id is given up. Thirty of them, about five seconds at
-#: the rate the detector manages.
-LOST_PASSES = 30
+#: detector — before its id is given up. Sixty of them, about eight seconds at
+#: the rate the detector manages. Measured on the clip, at match 0.9, the
+#: chance a body the caller points at still carries its id four seconds later:
+#: 42% at thirty passes, 46% at forty-five, 49% at sixty, 53% at ninety. It
+#: stops at sixty because the median identity then lives 3.0 s, which is what
+#: a tag has to manage for a name to outlast the line that earned it, and
+#: because re-matching a body that has been gone a quarter of a minute is a
+#: claim about a crowd of similar shirts that nothing here can support.
+LOST_PASSES = 60
 
 #: What the tracker expects to run at, which is all ByteTrack uses the frame
 #: rate for: it scales the lost-track buffer by it.
