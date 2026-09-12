@@ -12,8 +12,10 @@ flags nobody asked for, no "in case". If a feature in this brief can be done
 in fewer moving parts than described, do that. Match the surrounding code's
 style: short modules, docstrings that say why, no abstraction for one caller.
 
-Part A unblocks the first run on real YouTube full-match footage, which is
-imminent. Do it first. Part B is decided; build it after A is committed.
+Part A unblocks the first run on real YouTube full-match footage. Do it
+first. Part C is the product path for naming players from the picture; build
+it second. Part B is the play-by-play wire, kept only as the off-by-default
+ceiling ablation; build it last.
 
 Rules that must survive:
 
@@ -123,21 +125,279 @@ a design change. Also make sure `_pack_section` prints every player as
 `#<number> <surname> (<position>)` on one line per player and the kit
 colours for both sides, since that is what the instruction refers to.
 
+### A8. Goal confirmation, from the first real run
+
+First real run (Argentina v France 2022, video 36:00-39:00, Opus 5 caller,
+delay 8 s, trace `scratchpad/run/runs/opus/`): the caller called Di María's
+goal correctly at cursor 56.5 with the finish in the lookahead, and the
+gate rejected it, `unconfirmed_goal`. Then it rejected three more lines
+about the same goal over the next 80 s. Measured facts behind that:
+
+- The FIFA score bug moved 1-0 -> 2-0 at video 63.7, about 7 s after the
+  ball crossed the line (StatsBomb 35:22 ≈ video 58). `GOAL_GRAPHIC_LAG_S`
+  is 5.0. The window `[cursor - 2, cursor + 5]` = `[54.5, 61.5]` missed it.
+- `BoardTracker` needs 3 agreeing reads, and reads land every ~3.5 s (2 s
+  sleep plus ~1.5 s of Haiku), so the change was *confirmed* at 70.0, 13 s
+  after the goal. No delay we would run at covers that.
+- `_board_changed_near` only looks near the cursor, so a line about a goal
+  that the state already holds (celebration, replay talk, "the scorer")
+  is rejected as a phantom goal 10, 20, 80 s later.
+
+Fix, three parts, all in `runtime.py` / `gate.py`:
+
+1. `GOAL_GRAPHIC_LAG_S = 10.0`, docstring citing the measurement above.
+2. The gate accepts the board's *pending* change as corroboration. Expose
+   `BoardTracker.pending` (exists) and let `_board_changed_near` also match
+   a pending score increase whose `first_ts` is in the window. One board
+   read agreeing with an independent caller claim is two sources; state
+   still moves only on three reads. Say that in the docstring.
+3. A goal claim is also allowed when the state's score changed within the
+   last 45 s of cursor time (track `_last_goal_ts` when a board goal is
+   applied). That is the case for every line *about* a goal after it is
+   confirmed. A claim with neither is still `unconfirmed_goal`.
+
+Tests: the three rejected lines from the trace as fixtures (times and
+board reads as above) must pass; a goal claim at cursor 200 with the last
+board goal at 100 and nothing pending must still fail.
+
+### A9. `names_read` in the sighting form is rejected
+
+Trace, cursor 56.5: `names_read=['11 Di María']`, gate reason
+`name_read_not_on_roster: 11 Di María`. The caller writes sightings the
+way `state.parse_sighting` reads them ("11 Di María", "Di María (11)");
+`FactGate._check_names_read` does not parse them and matches the whole
+string against the roster. Fix: run `parse_sighting` first; a parsed
+sighting is checked as number-in-squad AND name-on-roster; only an
+unparseable token is matched whole. Test with "11 Di María", "Di María
+(11)", "11", "Di María", "Zaltimore (11)" (number fine, name not).
+
+### A10. "towards their own goal" is not a goal claim
+
+Trace, cursor 50.0: "...France scrambling back towards their own goal",
+`event=build_up`, rejected `unconfirmed_goal`. `_NOT_A_GOAL` strips "towards
+the goal" but not "towards their own goal" / "his goal" / "the French
+goal". Fix: drop the bare `\bgoal\b` pattern from `_GOAL_CLAIMS`; a goal
+claim is `event is Event.GOAL` or one of the strong phrases ("scores",
+"scored", "it's in", "back of the net", "finds the net", "makes it N",
+"equalis"). `grading/metrics.factual_errors` uses the spoken row's `event`
+field the same way instead of the bare word. Test with the trace line.
+
+### A11. Demonyms
+
+Trace, cursor 0.3: "the French lines" trimmed to "the lines" as
+`name_not_on_roster: French`. Add `TeamSheet.demonym: str = ""`
+("French", "Argentine"); the gate's `_roster_of` adds the folded demonym
+to team words; the researcher prompt asks for it; the StatsBomb pack path
+sets it by hand in the pack file. Test: "the French lines" passes untrimmed.
+
+### A12. The analyst's clock arithmetic
+
+Trace, 88.5 s: "Deschamps has barely half an hour of the first half left"
+at 35:52. Add to the analyst rules: the MATCH STATE clock is the match
+clock, a half is 45 minutes, and time remaining is computed from it or not
+mentioned. Prompt-only.
+
+### A13. Multi-word surnames fail the roster check
+
+Sonnet run, five lines: `names_read=['Di María']` rejected
+`name_read_not_on_roster: Di María`, and the same would happen to De Paul,
+Mac Allister, Van Dijk, De Bruyne. `Player.surname` is `rsplit(" ", 1)`,
+so Di María's surname is "María"; `_roster_of` adds only tokens of three
+letters or more, so "di" is never known; and the similarity ratio of "di
+maria" to "angel di maria" is 0.73, under the 0.86 threshold. Fix in one
+place: `_matches_roster` also accepts a folded candidate that is a
+suffix of a known full name on a word boundary (`known.endswith(" " +
+candidate)`). Apply the same rule in `grading/metrics.roster_names` /
+`factual_errors` so the grader stops counting "Di" as a name off the
+roster (it would today). Tests: "Di María", "De Paul", "Mac Allister"
+pass against the Argentina sheet; "María" alone still passes; "Di" alone
+does not.
+
+Also from the Sonnet run: the caller said "before the half-hour mark is
+even done" at 35:5x. The A12 clock rule goes in the caller prompt too.
+
+### A14. The analyst on a shorter leash
+
+Sonnet run: the analyst spoke 5 of 7 lines, 40 to 50 words each, and
+editorialised ("No holder has ever wanted a half-time whistle more than
+this one"). `AnalystConfig`: `max_words` 45 -> 30, `min_gap_s` 25 -> 40.
+Analyst rules: one observation per line, no rhetorical flourishes, and
+nothing about how a manager feels. Prompt and config only.
+
+### Measured on the run (for the README later)
+
+Opus 5 caller: 52 board reads, all confident, score and replay (bug absent 91-131 s)
+tracked correctly; 27 caller calls, 0 timeouts on Opus 5 at default
+effort, 12 judged, 8 passed; 10 lines spoken in 172 s of cursor (6 caller,
+4 analyst); every spoken name correct against StatsBomb (Tagliafico at
+34:25-34:30, Di María 35:22); $0.75 for three minutes. Sonnet 5 caller, same clip: 54 board
+reads, 43 caller calls, 8 judged, 3 passed, 5 rejected (all the goal and
+every `Di María` sighting); 7 spoken (2 caller, 5 analyst); $0.48. Model
+choice is open until the gate fixes land and both are re-run.
+
 ---
 
-## Part B: the wire
+## Part C: names from the picture
 
-**Decision (2026-09-11): the picture decides what to say, the feed decides
-who.** A vision model cannot name the player on the ball from a wide shot,
-and commentary that cannot say "Otamendi to Mac Allister" is not commentary.
-So a play-by-play feed becomes a runtime input, opt-in, carrying passes,
-carries and shots with player names, and match state tracks who is on the
-ball. The fact gate is unchanged: every name still has to be on the roster,
-and now the names it sees come from data.
+**Decision (2026-09-11): vision names the players.** The research on this
+(SoccerNet jersey-number and game-state work, Roboflow's sports pipelines,
+Set-of-Mark prompting) converges on one recipe, and it is not "ask the
+vision model who that is". It is: track every body, split by kit, read the
+shirt number once when it is legible and carry it on the track, resolve
+(team, number) to a name from the lineup, and **draw the name on the frame**
+so the language model reads it instead of guessing. Claude stays the
+writer; open models do the "is that a 7 or a 1" layer, locally, free.
 
-This rewrites rule 2 above: the default runtime (`--wire` absent) still uses
-no outside data, and that variant stays in the ablation table as "vision
-only". The full system is vision plus wire. README and PLAN say so plainly.
+Expectation, stated in the README when it ships: names on the big moments
+(shooter, scorer, the fouled and the fouler, the booked player, the sub),
+names through a sustained shot once a number has been read, role and kit
+after a cut until the next legible number. Not pass-by-pass naming from a
+wide shot. `name_rate` and `name_precision` (B8) against StatsBomb say how
+far it gets.
+
+### C1. Dependencies
+
+A `vision` optional group in `pyproject.toml`: `torch`, `rfdetr`
+(Apache 2.0; not Ultralytics YOLO, which is AGPL), `supervision` (ByteTrack
+lives there), `open_clip_torch` or `transformers` for SigLIP (pick the one
+with fewer transitive dependencies), and PARSeq via `torch.hub.load(
+"baudm/parseq", "parseq", pretrained=True)`. Model weights download on
+first use to the default cache; never in tests. Every model sits behind a
+small Protocol (`Detector`, `Embedder`, `NumberReader`) with a fake in
+tests, so the suite runs with no weights and no network. That is the one
+place this brief allows an abstraction for one caller: the alternative is
+downloading a gigabyte in CI.
+
+### C2. `perception/players.py`: tracks
+
+```python
+@dataclass
+class Track:
+    id: int
+    side: Side            # from kit clustering; UNKNOWN for referees/others
+    box: tuple[int, int, int, int]
+    number: int | None    # confirmed by voting, else None
+    name: str | None      # registry lookup of (side, number)
+
+class PlayerTracker:
+    def update(self, frame: Frame) -> list[Track]: ...
+    def reset(self) -> None: ...   # on a scene cut
+```
+
+Per frame at the live edge, on a copy downscaled to 640 wide: RF-DETR
+(COCO "person" is enough), ByteTrack for IDs, SigLIP embedding of each crop
+and k-means with k=2 fitted on the first ~200 crops of the match and
+refitted every 5 minutes; a crop farther than a threshold from both
+centroids is `Side.UNKNOWN` (referees, staff). Which cluster is home: the
+pack's `kit` strings name a colour; compare the mean crop colour of each
+cluster to the first colour word in each kit string. Say in the docstring
+that this is the weakest link and log the assignment once per fit.
+
+Run detection on every other frame (7.5 Hz is plenty for IDs) in a thread
+executor so the asyncio loops are not blocked; tracks are stored per frame
+ts in a bounded dict the caller reads from at cursor time. `reset()` on
+every cut the `CutDetector` finds; the tracker starts fresh IDs and the
+registry keeps the names.
+
+### C3. Shirt numbers, read once and voted
+
+For each track, when its box is at least 110 px tall at 720p: crop the
+upper half (torso), run PARSeq, keep results that are 1 or 2 digits, 1-99,
+confidence >= 0.8. Keep the last 5 reads per track; a number is confirmed
+when 2 reads agree. No legibility classifier; PARSeq's confidence gate is
+the simple version and the voting absorbs the rest. On confirmation:
+`registry.believe(number, name, ts, side=side)` where `name` is the pack's
+player with that number on that side, and the `EntityRegistry` already
+gives it decay and sub handling. If the pack has no such number, the track
+stays numbered but unnamed and the caller sees "ARG #14".
+
+### C4. Marks on the caller's frames
+
+In `prompts/caller.caller_blocks`, before `encode_frame`, draw on a *copy*
+of each cursor and lookahead frame a small label above each track that has
+a side: the surname when `name` is set, else `<short> #<number>` when only
+the number is known, else nothing (an unlabelled body means "unknown"; do
+not draw "?" labels, they are noise). White text on a dark rounded box,
+small, `cv2.putText`, never on the frames in the buffer (the board reader
+and the analyst get clean frames). Tracks are looked up by the frame's
+`ts` (nearest tracked frame within 0.2 s).
+
+Caller rules, "Names" paragraph, on top of A7: players may carry a small
+label above them with a surname or a team and number. A surname label is a
+name you may use for that player and nothing else. A team-and-number label
+means the number was read but the player is not on the sheet; say the
+team. No label means unknown; role and kit. Put every label you used in
+`names_read` exactly as printed. Byte-stable: the rule text does not depend
+on whether marks are on.
+
+### C5. State
+
+`Track.name` reads come through the registry, so `state.on_pitch` already
+reflects confirmed identities with decay. `summary()` gains one line,
+`identified: ARG 11 Di María, 7 De Paul · FRA 10 Mbappé`, from `on_pitch`
+split by side, so the caller has the names even on frames where the label
+is off screen. No `ball` field from vision in this version: there is no
+ball detector, and the caller can see who has it once the bodies are named.
+Say so; add ball detection only if the measurement says naming the carrier
+is the gap.
+
+### C6. Ablation
+
+`Variant.marks: bool = True`. `no-marks` is the full system with a
+`NullTracker` (same type, returns no tracks) substituted, so the table shows
+what the marks buy. For the simulator, RF-DETR will not find dots, so
+`SimTracker` (same type) reads tracks from the sim's ground truth
+(positions, sides, numbers), and the renderer's font size decides
+legibility: a dot whose number is drawn at fewer than N px is "unread".
+That keeps the suite runnable offline and gives the marks row a number on
+the sim before any footage.
+
+### C7. Runtime
+
+- `Runtime.tracker: PlayerTracker` built in `__post_init__` from the vision
+  extra when `--marks` is on (default on for `--source file|screen`,
+  `SimTracker` for `--source sim`); `NullTracker` otherwise.
+- `_ingest_frames`: every other frame, `await loop.run_in_executor(None,
+  tracker.update, frame)`; store the tracks by ts; on a cut, `reset()`.
+- The caller gets `tracks_for(ts)` via a callable passed into
+  `caller_blocks`, which draws the marks.
+
+### C8. Tests
+
+No weights: `FakeDetector` returns boxes from a script, `FakeEmbedder`
+returns a vector per "kit colour", `FakeNumberReader` returns scripted
+(text, confidence). Test: k-means splits two kits and leaves the referee
+unknown; a number confirms on the second agreeing read and not the first;
+a confirmed number believes the name in the registry and `on_pitch` shows
+it; a cut resets track IDs but not the registry; `caller_blocks` draws
+labels only where identity is known and leaves the buffer frame
+byte-identical; `SimTracker` names the sim's dots and the `no-marks`
+variant runs and writes a comparable trace.
+
+### C9. Docs
+
+README: a "Names" subsection: the recipe above in five lines, the honest
+expectation, the `name_rate` / `name_precision` columns, and that every
+model in the chain is local and open. PLAN.md section 1 stays as is; add
+the tracker row to section 2's table.
+
+---
+
+## Part B: the wire (ceiling ablation only)
+
+**Decision (2026-09-11, superseding the earlier one): vision names the
+players. The feed stays behind the grading wall as ground truth and appears
+at runtime only as the off-by-default ceiling row in the ablation table.**
+The user's call: a statistician in the ear is not what a human commentator
+has, and the thesis is the picture, the sound, and notes. Part C is how
+names come from the picture. Part B exists so the writeup can show what a
+feed would buy next to what vision achieves.
+
+Everything below stays as specified, with one reading: `--wire` is an
+ablation switch, the README's claim does not change, and the state fields
+the wire fills (`ball`, `named`, `incidents`) are the same fields Part C
+fills from vision, so the caller prompt is one prompt whichever source is
+on.
 
 Module: `commentary/wire.py`. One StatsBomb reader, `commentary/statsbomb.py`,
 used by both the wire and `grading/statsbomb.py` (so A4 becomes a thin
@@ -356,12 +616,10 @@ table.
 
 ### B11. Docs
 
-README: rewrite the opening claim to "the picture decides what to say, the
-feed decides who"; the vision-only variant stays in the table as the
-ablation. A "The wire" subsection: the two-clock rule, why the delay should
-be at least the feed's latency, the name-precision columns. PLAN.md: the
-same paragraph under section 6, and section 1's "Nothing else." becomes
-"Nothing else, except the play-by-play feed when `--wire` is given."
+README: the opening claim does not change. A "The wire" subsection under
+Ablations: the ceiling row, the two-clock rule, why a live feed's latency
+sets the minimum delay, the name-precision columns, and that the default
+runtime never loads one. PLAN.md: one paragraph under section 6.
 
 ---
 
@@ -382,3 +640,11 @@ backend already forwards it; check `caller.py` passes it and add it if
 not). Keep the 8 s timeout. Do not disable thinking (it makes the model put
 tool calls in visible text on Opus 5); low effort is the lever. The
 analyst keeps whatever it has; it is not on the clock.
+
+## Addendum: after the simplification pass
+
+The simplification commits (`5fa89d6`..`90de9ce`) removed
+`BoardChange.scoring_side` and `EntityRegistry.number_for` as dead code.
+Part B needs the first one back (board goals become incidents with a side);
+re-add it when B7 needs it, not before. `number_for` is not needed.
+`MatchStateTracker.apply_board` now takes only a `ConfirmedBoard`.
