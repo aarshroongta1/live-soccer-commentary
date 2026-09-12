@@ -49,8 +49,11 @@ OPENERS = frozenset(_OPENER_TEXT.split(" "))
 #: so phantom goals in that phrasing were counted nowhere and every factual
 #: error rate was understated. A commentator has many ways to say it and a
 #: checker that only knows three is measuring its own vocabulary.
+#:
+#: The bare word "goal" came off the list for the opposite reason. "Back
+#: towards their own goal" is not a claim that one was scored, and the
+#: trace's ``event`` field says outright whether the caller thought it was.
 GOAL_CLAIMS: tuple[str, ...] = (
-    "goal",
     "scores",
     "scored",
     "it's in",
@@ -348,7 +351,9 @@ def factual_errors(
                     )
                 )
 
-        claims_goal = any(phrase in lowered for phrase in GOAL_CLAIMS)
+        claims_goal = line.event == Event.GOAL.value or any(
+            phrase in lowered for phrase in GOAL_CLAIMS
+        )
         if claims_goal and not any(abs(line.video_ts - g) <= goal_window_s for g in goals):
             errors.append(FactualError(line.video_ts, "phantom_goal", "no goal nearby", line.text))
 

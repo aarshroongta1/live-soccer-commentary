@@ -98,18 +98,16 @@ _DIGIT_PAIR = re.compile(r"\b([0-9])\s*[-–—:]\s*([0-9])\b")
 _WORD_PAIR = re.compile(rf"\b({_WORD_ALT})[\s-]+({_WORD_ALT})\b", re.IGNORECASE)
 _ALL_PAIR = re.compile(rf"\b({_WORD_ALT})[\s-]+all\b", re.IGNORECASE)
 
-# "goal" is usually not a claim that one was scored. Strip the innocent uses
-# first, then look at what is left.
-_NOT_A_GOAL = re.compile(
-    r"\b(?:at|on|to|towards|into|near|in|for|of|from)\s+(?:the\s+)?goal\b"
-    r"|\bgoal\s*(?:kick|line|mouth|keeper|side|less)\b"
-    r"|\bgoalkeeper\b|\bgoalmouth\b|\bgoalless\b",
-    re.IGNORECASE,
-)
+#: How a line says a goal was scored. The word "goal" is not on the list.
+#: It used to be, with a second expression stripping the innocent uses first
+#: — "towards the goal", "goal kick", "goalkeeper" — and that list can never
+#: be finished: the first real run lost "France scrambling back towards their
+#: own goal" to it, and "his goal" and "the French goal" were next. The form
+#: already carries an unambiguous answer in ``event``, so the prose only has
+#: to catch the phrasings that mean a goal and nothing else.
 _GOAL_CLAIMS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
-        r"\bgoal\b",
         r"\bscores\b(?!\s+(?:are|level|tied))",
         r"\bscored\b",
         r"\bit'?s\s+in\b",
@@ -290,10 +288,15 @@ def _stated_scores(line: str) -> list[tuple[int, int]]:
 
 
 def _claims_goal(line: CallerLine) -> bool:
-    """Whether this line asserts that a goal has been scored, form or prose."""
+    """Whether this line asserts that a goal has been scored, form or prose.
+
+    The form field is the half that is not guesswork: a caller describing a
+    goal marks the event as one. The phrases are for the line that says it
+    without the form agreeing.
+    """
     if line.event is Event.GOAL:
         return True
-    return any(pattern.search(_NOT_A_GOAL.sub(" ", line.line)) for pattern in _GOAL_CLAIMS)
+    return any(pattern.search(line.line) for pattern in _GOAL_CLAIMS)
 
 
 def _tidy(text: str) -> str:

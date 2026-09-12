@@ -48,7 +48,9 @@ def write_trace(tmp_path: Path, rows: list[tuple[Topic, float, dict[str, object]
     return path
 
 
-def spoken(ts: float, text: str, live: float | None = None) -> tuple[Topic, float, dict]:
+def spoken(
+    ts: float, text: str, live: float | None = None, event: str = "none"
+) -> tuple[Topic, float, dict]:
     """One spoken line. ``live`` is where the live edge had reached by then."""
     return (
         Topic.SPOKEN,
@@ -59,6 +61,7 @@ def spoken(ts: float, text: str, live: float | None = None) -> tuple[Topic, floa
             "spoken": text,
             "created_ts": ts,
             "live_ts": live if live is not None else ts + 8.4,
+            "event": event,
         },
     )
 
@@ -110,7 +113,9 @@ def test_an_ordinary_sentence_opener_is_not_mistaken_for_a_name(
 
 
 def test_a_goal_claimed_where_none_happened_is_caught(tmp_path: Path, truth, pack) -> None:
-    path = write_trace(tmp_path, [spoken(150.0, "and that is a goal for Arsenal")])
+    # A caller calling a goal marks the form as one, which is what the trace
+    # carries; the bare word "goal" in a line is not itself a claim.
+    path = write_trace(tmp_path, [spoken(150.0, "and that is a goal for Arsenal", event="goal")])
     run = metrics.load_run(path)
     kinds = {e.kind for e in metrics.factual_errors(run, truth, pack)}
     assert "phantom_goal" in kinds
@@ -119,7 +124,6 @@ def test_a_goal_claimed_where_none_happened_is_caught(tmp_path: Path, truth, pac
 @pytest.mark.parametrize(
     "line",
     [
-        "and that is a goal for Arsenal",
         "It is in! Saka has scored",
         "Saka finds the net",
         "Saka makes it two",
@@ -223,3 +227,21 @@ def test_the_grader_does_not_count_half_a_compound_surname_as_invented():
     line = SpokenLine(video_ts=10.0, voice="caller", text="Di María cuts in")
     run = Run(run_id="x", lines=[line])
     assert factual_errors(run, [], pack) == []
+
+
+def test_the_grader_reads_the_event_field_rather_than_the_bare_word_goal():
+    from commentary.grading.metrics import Run, SpokenLine, factual_errors
+
+    pack = KnowledgePack(home=TeamSheet(name="Argentina"), away=TeamSheet(name="France"))
+    lines = [
+        SpokenLine(
+            video_ts=50.0,
+            voice="caller",
+            text="France scrambling back towards their own goal",
+            event="build_up",
+        ),
+        SpokenLine(video_ts=200.0, voice="caller", text="And it is worked wide", event="goal"),
+    ]
+    errors = factual_errors(Run(run_id="x", lines=lines), [], pack)
+    assert [e.kind for e in errors] == ["phantom_goal"]
+    assert errors[0].video_ts == 200.0

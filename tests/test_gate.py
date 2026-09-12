@@ -294,3 +294,57 @@ def test_half_a_compound_surname_is_not_a_name():
     verdict = sighting_verdict(FactGate(), state, pack, "Di")
     assert not verdict.passed
     assert any("name_read_not_on_roster: Di" in r for r in verdict.reasons)
+
+
+# -- what counts as claiming a goal ------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "France scrambling back towards their own goal",
+        "Everyone piles back into his goal",
+        "The ball is worked towards the French goal",
+        "A goal kick to restart it",
+    ],
+)
+def test_the_word_goal_in_passing_is_not_a_goal_claim(text: str):
+    """The first real run lost 'towards their own goal' to the bare word.
+
+    A list of innocent uses of "goal" can never be finished, so there is no
+    longer a list: the form's event field answers the question outright.
+    """
+    state, pack = argentina()
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.BUILD_UP,
+        confidence=0.7,
+        speak=True,
+        line=text,
+    )
+    verdict = FactGate().judge(line, state, pack, board_changed=False)
+    assert verdict.passed, verdict.reasons
+
+
+def test_the_form_saying_goal_is_still_a_goal_claim():
+    state, pack = argentina()
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        confidence=0.9,
+        speak=True,
+        line="He drives it low across the keeper",
+    )
+    assert not FactGate().judge(line, state, pack, board_changed=False).passed
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["He scores from twenty yards", "It is in the back of the net", "That finds the net"],
+)
+def test_a_line_that_says_it_outright_is_still_a_goal_claim(text: str):
+    state, pack = argentina()
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.SHOT, confidence=0.9, speak=True, line=text
+    )
+    assert not FactGate().judge(line, state, pack, board_changed=False).passed
