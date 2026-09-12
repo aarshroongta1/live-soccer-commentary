@@ -90,6 +90,9 @@ TRACK_EVERY = 2
 #: already holds, and on the same run four lines about one goal were rejected
 #: as phantom goals over the eighty seconds after it because the only
 #: question being asked was whether the board had moved *near the cursor*.
+#:
+#: Measured from the cursor at which the state took the change in, which is
+#: when the scoreline in front of the viewer changed.
 GOAL_TALK_WINDOW_S = 45.0
 
 
@@ -182,6 +185,8 @@ class Runtime:
         self._tracks: deque[tuple[float, list[Track]]] = deque(
             maxlen=int((cap.delay_s + cap.history_s) * cap.fps / TRACK_EVERY) + 1
         )
+        #: Cursor time at which the state last took in a board goal — not the
+        #: time of the board change itself. See ``_apply_due_board_changes``.
         self._last_goal_ts: float | None = None
         self._last_spoken_video_ts: float | None = None
         self._last_analyst_ts: float = 0.0
@@ -409,9 +414,15 @@ class Runtime:
         if not due:
             return
         self._board_changes = [c for c in self._board_changes if c.ts > cursor]
-        goals = [c.ts for c in due if c.is_goal]
-        if goals:
-            self._last_goal_ts = max(goals)
+        # Stamped with the cursor, not with the change's own ts. "The score
+        # moved recently" is a fact about the viewer's scoreboard, and the
+        # viewer's scoreboard moves when the state takes the change in. The
+        # two are the same moment when confirmation is prompt and a long way
+        # apart when it is not: a change first seen at 62.7 and confirmed
+        # only when the bug came back after the replay at 136 is news at 136,
+        # and the lines about the goal come after that, not after 62.7.
+        if any(c.is_goal for c in due):
+            self._last_goal_ts = cursor
         for change in due:
             if change.is_goal and change.scoring_side is not None:
                 self.state.incidents.append(

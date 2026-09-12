@@ -290,16 +290,33 @@ async def test_a_goal_claim_long_after_the_last_one_still_fails(tmp_path: Path) 
 async def test_applying_a_board_goal_starts_the_clock_on_talking_about_it(
     tmp_path: Path,
 ) -> None:
+    """The clock starts when the state takes the goal in, not when the bug moved.
+
+    A change first seen at 63.7 and confirmed only when the score bug came
+    back from behind the replay is news when it lands, and the celebration
+    lines come after that. Stamping it 63.7 made the window expire before the
+    viewer's scoreboard had even changed.
+    """
     from commentary.perception.board import BoardChange
+    from commentary.runtime import GOAL_TALK_WINDOW_S
 
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     runtime._last_goal_ts = None
     runtime._board_changes = [
         BoardChange(ts=63.7, home_score=2, away_score=0, clock=None, period=1, previous=(1, 0)),
     ]
-    runtime.buffer.append(Frame(ts=80.0, image=np.zeros((4, 4, 3), dtype=np.uint8)))
+    runtime.buffer.append(Frame(ts=140.0, image=np.zeros((4, 4, 3), dtype=np.uint8)))
+    cursor = runtime.buffer.cursor_ts
+    assert cursor is not None and cursor > 63.7 + GOAL_TALK_WINDOW_S
+
     runtime._apply_due_board_changes()
-    assert runtime._last_goal_ts == 63.7
+    assert runtime._last_goal_ts == cursor
+
+    # A line about the goal, well over 45 s after the board first showed it
+    # and seconds after the state caught up, is a line about a goal we hold.
+    runtime.board_tracker._pending = None
+    assert runtime._board_supports_goal(cursor + 5.0) is True
+    assert runtime._board_supports_goal(cursor + GOAL_TALK_WINDOW_S + 1.0) is False
 
 
 @pytest.mark.asyncio

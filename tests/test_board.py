@@ -170,13 +170,50 @@ def test_two_absent_reads_are_a_replay_and_the_bug_coming_back_ends_it():
     assert not tracker.in_replay
 
 
-def test_a_replay_discards_half_formed_evidence():
+def test_a_replay_does_not_destroy_the_evidence_of_the_goal():
+    """This test used to assert the opposite, and the opposite was wrong.
+
+    It read "a replay interrupts the evidence": an absent read cleared the
+    half-formed score. But the bug is pulled for the replay of *the goal that
+    just went in*, every time, on every broadcast — so the reads that had seen
+    the score move were thrown away exactly when they mattered. On the second
+    real run the bug went 1-0 to 2-0, was read twice, and then vanished for a
+    minute behind the celebration and the replay; the change had to start
+    again from nothing, and lines about the goal were rejected as phantoms
+    while the state still said 1-0.
+
+    The pending change now survives an absent run and confirms on the next
+    agreeing read, stamped at the first read that saw it.
+    """
+    tracker = BoardTracker(CONFIG)
+    settle(tracker, read(1, 0))
+
+    # The reads of that run, at their own times: 2-0 twice, then eleven absent
+    # looks from 91.0 to 132.4, then the bug back at 136.1.
+    assert tracker.update(read(2, 0), 62.7) is None
+    assert tracker.update(read(2, 0), 66.3) is None
+    absent = read(None, None, clock=None, visible=False)
+    for i in range(11):
+        assert tracker.update(absent, 91.0 + i * 3.8) is None
+    assert tracker.pending is not None
+    assert tracker.pending.count == 2
+    assert tracker.pending.first_ts == 62.7
+
+    change = tracker.update(read(2, 0), 136.1)
+    assert change is not None
+    assert change.is_goal
+    assert change.ts == 62.7
+    assert (tracker.home_score, tracker.away_score) == (2, 0)
+
+
+def test_a_visible_board_showing_something_else_does_discard_the_evidence():
+    """The one thing that is a reason to stop believing: a look that disagrees."""
     tracker = BoardTracker(CONFIG)
     settle(tracker, read(0, 0))
 
     tracker.update(read(1, 0), 10.0)
     tracker.update(read(1, 0), 12.0)
-    tracker.update(read(None, None, clock=None, visible=False), 14.0)
+    tracker.update(read(0, 0), 14.0)
     assert tracker.pending is None
 
     assert tracker.update(read(1, 0), 16.0) is None

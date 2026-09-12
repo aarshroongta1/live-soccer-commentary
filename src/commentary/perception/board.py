@@ -242,6 +242,16 @@ class BoardTracker:
         None. A read the model was unsure about is discarded rather than
         counted against the run: an uncertain look is no evidence, in either
         direction.
+
+        An absent read is no evidence either, and in particular it does not
+        destroy the evidence already gathered. The sequence after every goal
+        ever scored on television is: ball in, bug updates, celebration,
+        replay with the bug pulled. Clearing the half-formed score there threw
+        away the reads that had seen the goal, so the change had to start
+        again from nothing when the bug came back a minute later — and the
+        state said the old score right through the celebration. Only a
+        *visible* read of a different board resets the evidence, because only
+        that is a reason to think the board says something else.
         """
         if read.confidence < self.config.min_confidence:
             return None
@@ -251,9 +261,6 @@ class BoardTracker:
             self._absent_run += 1
             if self._absent_since is None:
                 self._absent_since = ts
-            # A replay interrupts the evidence: the half-formed score we were
-            # accumulating belongs to a board we can no longer see.
-            self._pending = None
             return None
 
         self._absent_run = 0
