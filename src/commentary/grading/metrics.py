@@ -199,6 +199,11 @@ def silence_ratio(run: Run, duration_s: float | None = None) -> float:
 
     Real commentary sits somewhere around a third to a half silent. Zero means
     the system is chattering; close to one means it has nothing to say.
+
+    Compared against a human broadcast this number has to be read carefully
+    when the human side came from captions rather than from a transcription:
+    a gap in auto-captions is either a commentator saying nothing or an ASR
+    giving up in crowd noise, so the human's silence ratio is a ceiling.
     """
     total = duration_s or run.duration_s
     if total <= 0:

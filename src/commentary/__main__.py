@@ -332,6 +332,23 @@ async def cmd_research(args: argparse.Namespace) -> int:
     return 0
 
 
+async def cmd_captions(args: argparse.Namespace) -> int:
+    """Turn the broadcast's own captions into the transcript the eval reads.
+
+    yt-dlp leaves a ``.en.json3`` beside the video when it is asked for one,
+    which is ninety minutes of professional commentary already timestamped on
+    the video clock. Nothing here reaches the network.
+    """
+    from commentary.grading import captions, transcripts
+
+    transcript = captions.load_json3(Path(args.path))
+    out = Path(args.out)
+    transcripts.save(transcript, out)
+    print(f"{len(transcript)} segments over {transcript.duration_s:.0f}s")
+    print(f"wrote {out}")
+    return 0
+
+
 async def cmd_grade(args: argparse.Namespace) -> int:
     """Score one or more traces. Needs a pack and a ground truth to grade against."""
     from commentary.grading import metrics
@@ -407,6 +424,11 @@ def build_parser() -> argparse.ArgumentParser:
     res.add_argument("--when", default="")
     res.add_argument("--out", help="where to write the pack; defaults under packs/")
     res.set_defaults(func=cmd_research)
+
+    caps = sub.add_parser("captions", help="a yt-dlp .en.json3 caption file to a transcript")
+    caps.add_argument("path")
+    caps.add_argument("--out", default="transcript.json")
+    caps.set_defaults(func=cmd_captions)
 
     grade = sub.add_parser("grade", help="print metrics for saved traces")
     grade.add_argument("traces", nargs="+")

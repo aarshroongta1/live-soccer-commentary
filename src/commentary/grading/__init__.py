@@ -5,6 +5,7 @@ side of the wall and only on this side. That is the project's central claim
 made structural rather than promised.
 """
 
+from commentary.grading.captions import load_json3
 from commentary.grading.feed import Alignment, Feed, FeedEvent, align, load_feed, shift
 from commentary.grading.judge import (
     FactualityReport,
@@ -59,6 +60,7 @@ __all__ = [
     "judge_run",
     "lag",
     "load_feed",
+    "load_json3",
     "load_run",
     "repetition_rate",
     "score",

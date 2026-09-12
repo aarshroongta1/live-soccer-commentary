@@ -6,6 +6,14 @@ calling the same pictures this system is calling — and transcribing them
 gives the pairwise judge something to compare against that is not another
 language model's idea of good commentary.
 
+A transcript is ground truth for timing and naturalness and never for facts.
+It says when a professional spoke, for how long, and what a sentence of live
+commentary is shaped like; it is not consulted about who scored or what the
+score is, because the feed is. That is why the broadcast's own captions are
+a fair substitute for a transcription (see :mod:`commentary.grading.captions`)
+even though auto-captions mangle surnames: a misspelt name in a source
+nobody reads facts out of costs nothing.
+
 Transcription is local, with ``mlx-whisper``, which matters for two reasons.
 The broadcast audio is not ours to upload, and this is the only part of the
 eval that would otherwise send match content anywhere. It is also an
