@@ -1,0 +1,28 @@
+tests/test_statsbomb.py
+  s_53408140bf619f::t_1fc8f5e9a95666 1-83
+src/commentary/grading/statsbomb.py
+  s_53408140bf619f::t_22b783bead6dfa 1-97
+src/commentary/__main__.py
+  s_53408140bf619f::t_d33938f734a3f1 352-367,449-454
+  s_53408140bf619f::t_e1755771c9ed11 455
+src/commentary/grading/__init__.py
+  s_53408140bf619f::t_d33938f734a3f1 35,54
+tests/fixtures/statsbomb-events.json
+  s_53408140bf619f::t_d33938f734a3f1 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2f17bb1490773da2ed2b2bab1b96f99d45ef4444",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
