@@ -11,12 +11,24 @@ match state, what has just been said, and why the system is asking now.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+
+import numpy as np
 
 from commentary.capture.buffer import Frame
 from commentary.config import CallerConfig
 from commentary.llm.base import Block, encode_frame, image_block, text_block
-from commentary.schemas import KnowledgePack, Player, TeamSheet, Trigger
+from commentary.perception.players import Track
+from commentary.schemas import KnowledgePack, Player, Side, TeamSheet, Trigger
+
+#: Tracks known at a moment of video time. The runtime keeps the store; this
+#: module only asks it what was on the pitch when this frame was captured.
+TracksFor = Callable[[float], list[Track]]
+
+
+def no_tracks(ts: float) -> list[Track]:
+    """The substitution that turns the marks off, rather than a flag to check."""
+    return []
 
 #: The rules. ``{max_words}`` is the only substitution, and it comes from
 #: config so a sweep of the word cap changes the prompt with it.
@@ -54,11 +66,18 @@ allowed to use: match the kit that player is wearing to a team sheet below,
 find that number in it, and use that player's surname. A name across the back
 of a shirt and a name in a broadcast graphic count the same way.
 
-If you cannot read a number, say the role and the kit instead: "the left-back
-in white", "the near-post runner in blue", "the keeper in green". That is a
-complete answer and it costs nothing. A wrong name is the worst thing you can
-do here. There is no credit for guessing and no penalty for saying "Arsenal"
-when you cannot see who it is.
+Some players carry a small label drawn above them. A label with a surname is
+a name you may use for that player, and for nobody else on the pitch. A label
+with a team and a number — "ARG #14" — means the number was read but nobody
+on that sheet wears it, so say the team and the number and not a name. A
+player with no label is unidentified, whatever you think you recognise. Put
+every label you used in names_read, exactly as it is printed.
+
+If you cannot read a number and there is no label, say the role and the kit
+instead: "the left-back in white", "the near-post runner in blue", "the keeper
+in green". That is a complete answer and it costs nothing. A wrong name is the
+worst thing you can do here. There is no credit for guessing and no penalty
+for saying "Arsenal" when you cannot see who it is.
 
 The clock. The clock in MATCH STATE is the match clock, counting up from
 zero. A half is 45 minutes and a match is 90. If you talk about time at all,
@@ -130,12 +149,78 @@ def caller_system(pack: KnowledgePack | None, config: CallerConfig | None = None
     return "\n\n".join(parts)
 
 
+#: How far a mark may be from a frame's own timestamp and still be about it.
+#: Detection runs on every other frame, so the nearest tracked frame is at
+#: most a frame or two away; past this the bodies have moved.
+MARK_TOLERANCE_S = 0.2
+
+
+def draw_marks(
+    image: np.ndarray, tracks: Sequence[Track], pack: KnowledgePack | None
+) -> np.ndarray:
+    """A small name above each body the system has identified, on a COPY.
+
+    This is the whole point of the vision chain: the language model reads a
+    name off the picture instead of guessing at one. A surname when the
+    registry has resolved the number, the team and the number when the shirt
+    was read but the sheet has nobody with it, and nothing at all otherwise —
+    an unlabelled body means "unknown", and a frame full of "?" is noise the
+    model has to reason past.
+
+    Never on a frame in the buffer. The board reader and the analyst get the
+    picture as it was broadcast, and a mark drawn over the score bug would be
+    a system writing its own evidence.
+    """
+    import cv2
+
+    marked = image.copy()
+    for track in tracks:
+        text = _mark_text(track, pack)
+        if text is None:
+            continue
+        x0, y0, _x1, _y1 = track.box
+        (width, height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)
+        top = max(0, y0 - height - 6)
+        cv2.rectangle(marked, (x0, top), (x0 + width + 6, top + height + 6), (20, 20, 20), -1)
+        cv2.putText(
+            marked,
+            text,
+            (x0 + 3, top + height + 1),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.4,
+            (255, 255, 255),
+            1,
+            cv2.LINE_AA,
+        )
+    return marked
+
+
+def _mark_text(track: Track, pack: KnowledgePack | None) -> str | None:
+    if track.side is Side.UNKNOWN:
+        return None
+    if track.name is not None:
+        return track.name.rsplit(" ", 1)[-1]
+    if track.number is None:
+        return None
+    sheet = pack.team(track.side) if pack is not None else None
+    short = (sheet.short or sheet.name) if sheet is not None else track.side.value
+    return f"{short} #{track.number}"
+
+
+def _marked_block(frame: Frame, tracks_for: TracksFor, pack: KnowledgePack | None) -> Block:
+    tracks = tracks_for(frame.ts)
+    image = draw_marks(frame.image, tracks, pack) if tracks else frame.image
+    return image_block(encode_frame(image))
+
+
 def caller_blocks(
     cursor_frames: Sequence[Frame],
     lookahead_frames: Sequence[Frame],
     state_summary: str,
     recent_lines: Sequence[str],
     triggers: Sequence[Trigger],
+    tracks_for: TracksFor = no_tracks,
+    pack: KnowledgePack | None = None,
 ) -> list[Block]:
     """One call's content: the moment, the near future, then the volatile tail.
 
@@ -162,7 +247,7 @@ def caller_blocks(
         offset = origin - frame.ts
         when = "this is now" if offset < 0.05 else f"{offset:.1f} s before now"
         blocks.append(text_block(f"Frame {i} of {len(cursor_frames)} — {when}."))
-        blocks.append(image_block(encode_frame(frame.image)))
+        blocks.append(_marked_block(frame, tracks_for, pack))
 
     if lookahead_frames:
         blocks.append(
@@ -182,7 +267,7 @@ def caller_blocks(
                     "the moment you are calling. Outcome check only."
                 )
             )
-            blocks.append(image_block(encode_frame(frame.image)))
+            blocks.append(_marked_block(frame, tracks_for, pack))
     else:
         blocks.append(
             text_block(

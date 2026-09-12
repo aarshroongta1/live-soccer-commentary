@@ -167,7 +167,7 @@ def test_the_pack_prints_one_player_a_line_with_the_number_first():
 
 def test_the_names_rule_sends_the_caller_looking_for_a_number_first():
     assert "Look before you give up on one" in CALLER_RULES
-    assert "A wrong name is the worst thing you can\ndo here" in CALLER_RULES
+    assert "A wrong name is the\nworst thing you can do here" in CALLER_RULES
     # The bad example that showed a model naming two players it could not read
     # is gone; what replaces it shows the number that justified the name.
     assert "Odegaard" not in CALLER_RULES

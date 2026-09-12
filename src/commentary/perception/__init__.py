@@ -15,6 +15,7 @@ from commentary.perception.players import (
     NumberReader,
     PlayerTracker,
     Track,
+    Tracker,
     VisionExtraMissing,
     default_tracker,
 )
@@ -31,6 +32,7 @@ __all__ = [
     "NumberReader",
     "PlayerTracker",
     "Track",
+    "Tracker",
     "VisionExtraMissing",
     "crop_score_bug",
     "default_tracker",

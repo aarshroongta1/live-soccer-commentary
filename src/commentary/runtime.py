@@ -33,6 +33,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import time
+from collections import deque
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -47,7 +48,9 @@ from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
+from commentary.perception.players import NullTracker, Track, Tracker
 from commentary.predictor import SpeakPredictor
+from commentary.prompts.caller import MARK_TOLERANCE_S
 from commentary.schemas import (
     Beat,
     Event,
@@ -74,6 +77,11 @@ from commentary.voice.speaker import LogSpeaker, Speaker
 #: correct goal call was rejected as unconfirmed.
 GOAL_GRAPHIC_LAG_S = 10.0
 
+#: Detection runs on every other frame. Fifteen frames a second is more than
+#: identity needs — a body does not become a different body in 130 ms — and
+#: halving the rate halves what the executor thread has to do.
+TRACK_EVERY = 2
+
 #: How long a goal stays a thing worth talking about. The celebration, the
 #: replay, the scorer's face and the restart all belong to a goal the state
 #: already holds, and on the same run four lines about one goal were rejected
@@ -85,6 +93,7 @@ GOAL_TALK_WINDOW_S = 45.0
 @dataclass
 class RuntimeStats:
     frames: int = 0
+    tracked_frames: int = 0
     audio_chunks: int = 0
     board_reads: int = 0
     caller_calls: int = 0
@@ -113,6 +122,10 @@ class Runtime:
     #: The second voice. Off by one flag, because "single voice" is one of the
     #: ablations the results table has to report.
     with_analyst: bool = True
+    #: Who is on the pitch, read off the picture. A :class:`NullTracker` by
+    #: default: naming players from vision is opt-in, and the no-marks row of
+    #: the ablation table is this same field with the null one in it.
+    tracker: Tracker = field(default_factory=NullTracker)
 
     bus: Bus = field(default_factory=Bus)
     stats: RuntimeStats = field(default_factory=RuntimeStats)
@@ -132,7 +145,12 @@ class Runtime:
             if self.pack is not None
             else MatchStateTracker(home=self.home, away=self.away)
         )
-        self.caller = Caller(self.backend, config=self.settings.caller, pack=self.pack)
+        self.caller = Caller(
+            self.backend,
+            config=self.settings.caller,
+            pack=self.pack,
+            tracks_for=self.tracks_for,
+        )
         self.analyst = Analyst(
             self.backend,
             config=self.settings.analyst,
@@ -151,6 +169,12 @@ class Runtime:
         self._board_changes: list[BoardChange] = []
         self._roars: list[float] = []
         self._cuts: list[float] = []
+        #: Tracks by the video time of the frame they were read from, bounded
+        #: to the buffer's own reach: a mark is only ever drawn on a frame the
+        #: caller is being shown, and those never come from further back.
+        self._tracks: deque[tuple[float, list[Track]]] = deque(
+            maxlen=int((cap.delay_s + cap.history_s) * cap.fps / TRACK_EVERY) + 1
+        )
         self._last_goal_ts: float | None = None
         self._last_spoken_video_ts: float | None = None
         self._last_analyst_ts: float = 0.0
@@ -250,10 +274,46 @@ class Runtime:
                 # speaking and the edge of what counts as "next" for the
                 # caller, and only the second of those needs to know when.
                 self._cuts.append(cut.ts)
+                # A cut is a different camera on a different part of the
+                # pitch, so no body in it continues a body from before.
+                self.tracker.reset()
                 self._fire(Trigger.CAMERA_CUT)
+            await self._track(frame)
         # The source ran out: a clip ended, or the stream died. Either way the
         # match is over as far as this process is concerned.
         self.stop()
+
+    async def _track(self, frame: Frame) -> None:
+        """Find the bodies, off the event loop.
+
+        Detection is tens of milliseconds of numpy and, with real weights, a
+        neural network; run inline it would stall the frame, audio and
+        caller loops that share this thread. In an executor it costs the
+        ingest loop only the hop.
+        """
+        if self.stats.frames % TRACK_EVERY:
+            return
+        loop = asyncio.get_running_loop()
+        tracks = await loop.run_in_executor(None, self.tracker.update, frame)
+        self.stats.tracked_frames += 1
+        if tracks:
+            self._tracks.append((frame.ts, tracks))
+
+    def tracks_for(self, ts: float) -> list[Track]:
+        """Who was where when this frame was captured, for drawing on it.
+
+        Nearest tracked frame rather than an exact hit, because detection
+        runs on every other frame and the caller is shown whichever frames
+        the buffer sampled. Past the tolerance the bodies have moved and a
+        name would be drawn over the wrong player, which is the one failure
+        this whole chain exists to avoid.
+        """
+        best: tuple[float, list[Track]] | None = None
+        for tracked_ts, tracks in self._tracks:
+            gap = abs(tracked_ts - ts)
+            if gap <= MARK_TOLERANCE_S and (best is None or gap < best[0]):
+                best = (gap, tracks)
+        return [] if best is None else best[1]
 
     async def _ingest_audio(self) -> None:
         async for chunk in self.source.audio():
@@ -374,7 +434,7 @@ class Runtime:
         if not allowed:
             return False
 
-        line = await self.analyst.call(self.buffer, self.state_tracker.summary(), reason)
+        line = await self.analyst.call(self.buffer, self.state_tracker.summary(cursor), reason)
         if line is None:
             self._publish(Topic.ERROR, cursor, where="analyst", detail=self.analyst.last_reason)
             return False
@@ -419,7 +479,7 @@ class Runtime:
         self.stats.caller_calls += 1
         line = await self.caller.call(
             self.buffer,
-            self.state_tracker.summary(),
+            self.state_tracker.summary(cursor),
             triggers,
             lookahead_until=self._next_cut_after(cursor),
         )

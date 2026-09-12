@@ -35,6 +35,7 @@ from commentary.sim.render import (
     ts_block_size,
 )
 from commentary.sim.source import SimSource
+from commentary.sim.tracker import SimTracker
 
 __all__ = [
     "ERROR_KINDS",
@@ -54,6 +55,7 @@ __all__ = [
     "SimOracle",
     "SimSource",
     "SimState",
+    "SimTracker",
     "band_energy",
     "decode_ts",
     "encode_ts",

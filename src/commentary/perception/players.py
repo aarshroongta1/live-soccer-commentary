@@ -97,6 +97,19 @@ class NumberReader(Protocol):
     def read(self, crop: np.ndarray) -> tuple[str, float]: ...
 
 
+class Tracker(Protocol):
+    """What the runtime holds. Two implementations, and they are substituted.
+
+    The ablation that measures what the marks buy does not set a flag: it
+    puts a :class:`NullTracker` where the real one goes, so the match loop
+    has no branch in it and cannot drift between the two configurations.
+    """
+
+    def update(self, frame: Frame) -> list[Track]: ...
+
+    def reset(self) -> None: ...
+
+
 @dataclass
 class Track:
     """One body, followed across frames, named once the evidence allows."""
@@ -301,11 +314,11 @@ class PlayerTracker:
             matched[i] = tid
             taken.add(tid)
         ids: list[int] = []
-        for tid in matched:
-            if tid is None:
-                tid = self._next_id
+        for kept in matched:
+            if kept is None:
+                kept = self._next_id
                 self._next_id += 1
-            ids.append(tid)
+            ids.append(kept)
         return ids
 
     def _sides(self, crops: list[np.ndarray], ts: float) -> list[Side]:

@@ -29,7 +29,9 @@ from commentary.voice import LogSpeaker, Speaker, VoiceUnavailable
 if TYPE_CHECKING:
     # Imported for types only: the simulator pulls in the renderer and cv2,
     # and `commentary capture` should not pay for either.
-    from commentary.sim import MatchSim
+    from commentary.perception.players import Tracker
+    from commentary.schemas import KnowledgePack
+    from commentary.sim import MatchSim, SimSource
 
 # -- capture ------------------------------------------------------------
 
@@ -153,6 +155,33 @@ def _backend(args: argparse.Namespace, sim: MatchSim | None) -> LLMBackend:
     return default_backend()
 
 
+def _tracker(
+    args: argparse.Namespace,
+    sim: MatchSim | None,
+    sim_source: SimSource | None,
+    pack: KnowledgePack | None,
+) -> Tracker:
+    """Who is on the pitch, or nobody.
+
+    On a real broadcast this is open models running locally and it needs the
+    vision extra; on the simulator RF-DETR would find no dots, so the sim's
+    own tracker reads them off the truth and the renderer decides what is
+    legible. Both are the same type, which is what lets the no-marks ablation
+    be a substitution rather than a branch in the match loop.
+    """
+    from commentary.perception.players import NullTracker
+
+    if not args.marks:
+        return NullTracker()
+    if sim is not None and sim_source is not None:
+        from commentary.sim import SimTracker
+
+        return SimTracker(sim, sim_source.renderer, pack=sim.knowledge_pack)
+    from commentary.perception.players import default_tracker
+
+    return default_tracker(pack, None)
+
+
 def _speaker(args: argparse.Namespace) -> Speaker:
     """The voice that was asked for, or an error saying why there isn't one."""
     if args.voice == "elevenlabs":
@@ -166,12 +195,14 @@ async def cmd_run(args: argparse.Namespace) -> int:
     settings = _settings(args)
     sim = None
     pack = None
+    sim_source = None
 
     if args.source == "sim":
         from commentary.sim import MatchSim, SimSource
 
         sim = MatchSim(seed=args.seed, duration_s=args.duration)
-        source: FrameSource = SimSource(sim, settings.capture, realtime=True)
+        sim_source = SimSource(sim, settings.capture, realtime=True)
+        source: FrameSource = sim_source
         pack = sim.knowledge_pack
     elif args.source == "file":
         if not args.path:
@@ -185,6 +216,8 @@ async def cmd_run(args: argparse.Namespace) -> int:
 
         pack = load_pack(Path(args.pack))
 
+    tracker = _tracker(args, sim, sim_source, pack)
+
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     path = trace_path(out, args.source)
@@ -197,6 +230,7 @@ async def cmd_run(args: argparse.Namespace) -> int:
             settings=settings,
             speaker=_speaker(args),
             trace=trace,
+            tracker=tracker,
         )
         server_task = asyncio.create_task(_serve(runtime, args.port)) if args.serve else None
         if server_task is not None:
@@ -421,6 +455,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--error-rate", type=float, default=0.0, help="oracle lie rate")
     run.add_argument("--seed", type=int, default=11)
+    run.add_argument(
+        "--marks",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="draw the names vision has read onto the caller's frames",
+    )
     run.add_argument("--serve", action="store_true", help="also serve the watch page")
     run.add_argument("--port", type=int, default=8000)
     run.add_argument("--out", default="runs")

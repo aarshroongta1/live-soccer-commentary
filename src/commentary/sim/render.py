@@ -24,7 +24,7 @@ import numpy as np
 
 from commentary.config import SETTINGS
 from commentary.schemas import Event, KnowledgePack, Player, Scene, Side
-from commentary.sim.match import PITCH_L, PITCH_W, SimState
+from commentary.sim.match import PITCH_L, PITCH_W, Dot, SimState
 
 #: The pitch drawn flat into a wide virtual plane, before the camera crops it.
 _FAR_Y = 120.0
@@ -261,6 +261,13 @@ def _homography() -> np.ndarray:
     return matrix
 
 
+#: A dot smaller than this gets no number printed on it, because at that size
+#: the digits would be two or three pixels of mush. The simulator's tracker
+#: reads the same constant: what is unreadable in the picture must be
+#: unreadable to anything claiming to read the picture.
+NUMBER_LEGIBLE_RADIUS = 11
+
+
 def _circle_points(cx: float, cy: float, radius: float, n: int = 48) -> list[tuple[float, float]]:
     angles = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
     return [(cx + radius * float(np.cos(a)), cy + radius * float(np.sin(a))) for a in angles]
@@ -391,22 +398,38 @@ class BroadcastRenderer:
             mark = self._screen([spot], cam)[0]
             cv2.circle(image, (int(mark[0]), int(mark[1])), thickness + 1, LINE, -1, cv2.LINE_AA)
 
-    def _draw_players(
-        self, image: np.ndarray, state: SimState, cam: tuple[float, float, float]
-    ) -> None:
+    def dots_on_screen(
+        self, state: SimState, cam: tuple[float, float, float]
+    ) -> list[tuple[Dot, tuple[int, int], int]]:
+        """Every player the camera can see, as ``(dot, centre, radius)``.
+
+        Shared with the simulator's player tracker rather than copied into it.
+        The tracker's whole job is to know what is legible in the picture, and
+        legibility here is decided by this projection and this radius — two
+        implementations of it would drift apart and the ablation would then be
+        measuring the drift.
+        """
         world = [(d.x, d.y) for d in state.players]
         view = self.to_view(world)
         screen = self._view_to_screen(view, cam)
+        visible: list[tuple[Dot, tuple[int, int], int]] = []
         for dot, vpt, spt in zip(state.players, view, screen, strict=True):
             depth = 0.55 + 0.85 * float((vpt[1] - _FAR_Y) / (_NEAR_Y - _FAR_Y))
             radius = int(round(13.0 * depth * cam[2]))
             on_screen = -60 < spt[0] < self.width + 60 and -60 < spt[1] < self.height + 60
             if radius < 2 or not on_screen:
                 continue
+            visible.append((dot, (int(spt[0]), int(spt[1])), radius))
+        return visible
+
+    def _draw_players(
+        self, image: np.ndarray, state: SimState, cam: tuple[float, float, float]
+    ) -> None:
+        for dot, spt, radius in self.dots_on_screen(state, cam):
             colour = self.home_colour if dot.side is Side.HOME else self.away_colour
             cv2.circle(image, (int(spt[0]), int(spt[1])), radius + 2, (20, 20, 20), -1, cv2.LINE_AA)
             cv2.circle(image, (int(spt[0]), int(spt[1])), radius, colour, -1, cv2.LINE_AA)
-            if radius >= 11:
+            if radius >= NUMBER_LEGIBLE_RADIUS:
                 label = str(dot.number)
                 scale = radius / 20.0
                 (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_DUPLEX, scale, 1)

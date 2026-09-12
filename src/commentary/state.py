@@ -217,6 +217,27 @@ class EntityRegistry:
         decay = math.exp(-math.log(2.0) * age / self.half_life_s)
         return belief.strength * decay
 
+    def identified(
+        self, ts: float, *, min_confidence: float = 0.35
+    ) -> dict[Side, list[tuple[int, str]]]:
+        """Numbers a *sighting* has put a name to, by side, lowest number first.
+
+        Roster seeds are left out. A squad list says who might play, and the
+        caller already has both of them printed in full above the frames; a
+        line naming all forty would tell it nothing and cost it attention.
+        What belongs here is the handful of shirts something actually read.
+        """
+        found: dict[Side, list[tuple[int, str]]] = {}
+        for belief in self._beliefs.values():
+            if belief.strength <= ROSTER_STRENGTH or belief.side is Side.UNKNOWN:
+                continue
+            if self.confidence(belief.number, ts, belief.side) < min_confidence:
+                continue
+            found.setdefault(belief.side, []).append((belief.number, belief.name))
+        for numbered in found.values():
+            numbered.sort()
+        return found
+
     def on_pitch(self, ts: float, *, min_confidence: float = 0.35) -> dict[str, str]:
         """Numbers still worth naming, in the shape ``MatchState`` wants them."""
         named: dict[str, str] = {}
@@ -265,16 +286,28 @@ class MatchStateTracker:
         *,
         registry: EntityRegistry | None = None,
         max_events: int = 8,
+        shorts: dict[Side, str] | None = None,
     ) -> None:
         self.state = MatchState(home=home, away=away)
         self.registry = registry if registry is not None else EntityRegistry()
         self.max_events = max_events
+        #: What each side is called in one word, for the lines of summary
+        #: where the full name would be most of the line.
+        self.shorts = shorts if shorts is not None else {Side.HOME: home, Side.AWAY: away}
 
     @classmethod
     def from_pack(cls, pack: KnowledgePack, *, kickoff_ts: float = 0.0) -> MatchStateTracker:
         registry = EntityRegistry()
         registry.seed(pack, kickoff_ts)
-        return cls(pack.home.name, pack.away.name, registry=registry)
+        return cls(
+            pack.home.name,
+            pack.away.name,
+            registry=registry,
+            shorts={
+                Side.HOME: pack.home.short or pack.home.name,
+                Side.AWAY: pack.away.short or pack.away.name,
+            },
+        )
 
     def apply_board(self, source: ConfirmedBoard) -> None:
         """Take the score, clock and replay flag from the board. Only from the board.
@@ -327,8 +360,13 @@ class MatchStateTracker:
         if seen:
             self.state.on_pitch = self.registry.on_pitch(sighting_ts)
 
-    def summary(self) -> str:
-        """A few lines of state for the top of a prompt. It goes in every call."""
+    def summary(self, ts: float = 0.0) -> str:
+        """A few lines of state for the top of a prompt. It goes in every call.
+
+        ``ts`` is video time, and it is here for the identity line: a shirt
+        read twenty minutes ago is worth less than one read twenty seconds
+        ago, and the registry needs to know when "now" is to say so.
+        """
         state = self.state
         lines = [state.scoreline]
         clock = state.clock or "clock unseen"
@@ -342,7 +380,29 @@ class MatchStateTracker:
         if state.possession is not Side.UNKNOWN:
             holder = state.home if state.possession is Side.HOME else state.away
             lines.append(f"possession: {holder}")
+        identified = self._identified_line(ts)
+        if identified:
+            lines.append(identified)
         if state.last_events:
             recent = ", ".join(e.value for e in state.last_events[-5:])
             lines.append(f"recent: {recent}")
         return "\n".join(lines)
+
+    def _identified_line(self, ts: float) -> str:
+        """``identified: ARG 11 Di María, 7 De Paul · FRA 10 Mbappé``.
+
+        The labels drawn on the frames go off screen the moment the camera
+        moves, and the caller is asked about a moment several seconds later.
+        This is the same knowledge in a form that survives the cut.
+        """
+        by_side = self.registry.identified(ts)
+        if not by_side:
+            return ""
+        parts: list[str] = []
+        for side in (Side.HOME, Side.AWAY):
+            numbered = by_side.get(side)
+            if not numbered:
+                continue
+            who = ", ".join(f"{number} {name}" for number, name in numbered)
+            parts.append(f"{self.shorts.get(side, side.value)} {who}")
+        return "identified: " + " · ".join(parts) if parts else ""
