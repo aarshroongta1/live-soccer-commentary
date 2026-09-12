@@ -1,0 +1,24 @@
+src/commentary/capture/source.py
+  s_53408140bf619f::t_47535d47115aaf 12,37-45,50-55,57-58,114,244
+  s_53408140bf619f::t_ac9a8fa0745633 28-30,32-34
+  s_53408140bf619f::t_09dafcbd743b1d 20,175,179-185,195-196,201-243,245-271
+  s_53408140bf619f::t_4daea48160eed1 24-27,31,35-36,46-49,56
+tests/test_capture.py
+  s_53408140bf619f::t_d56177dce9e372 1-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "73538e55614f0ef770820066277e9aa6a8799e7c",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
