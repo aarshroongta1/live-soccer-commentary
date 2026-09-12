@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from commentary.perception.players import Tracker
     from commentary.schemas import KnowledgePack
     from commentary.sim import MatchSim, SimSource
+    from commentary.wire import Wire
 
 # -- capture ------------------------------------------------------------
 
@@ -182,6 +183,34 @@ def _tracker(
     return default_tracker(pack, None)
 
 
+def _wire(
+    args: argparse.Namespace, sim: MatchSim | None, pack: KnowledgePack | None
+) -> Wire | None:
+    """A statistician, if one was asked for. Nothing loads one by default.
+
+    This is the ablation's ceiling row reachable from the command line, and
+    it is the only place in the runtime where information that did not come
+    off the screen can get in.
+    """
+    from commentary.wire import ReplayWire
+
+    if args.wire:
+        if pack is None:
+            raise SystemExit("--wire needs --pack: the feed's team names come from it")
+        if not args.lineups:
+            raise SystemExit("--wire needs --lineups, for the names the feed uses")
+        from commentary import statsbomb
+
+        events = statsbomb.read(
+            Path(args.wire), Path(args.lineups), pack.home.name, pack.away.name
+        )
+        print(f"wire: {len(events)} events at {args.wire_latency:g}s modelled latency")
+        return ReplayWire(events, args.wire_latency)
+    if args.wire_latency is not None and sim is not None:
+        return ReplayWire.from_truth(sim.ground_truth, args.wire_latency)
+    return None
+
+
 def _speaker(args: argparse.Namespace) -> Speaker:
     """The voice that was asked for, or an error saying why there isn't one."""
     if args.voice == "elevenlabs":
@@ -217,6 +246,7 @@ async def cmd_run(args: argparse.Namespace) -> int:
         pack = load_pack(Path(args.pack))
 
     tracker = _tracker(args, sim, sim_source, pack)
+    wire = _wire(args, sim, pack)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -231,6 +261,7 @@ async def cmd_run(args: argparse.Namespace) -> int:
             speaker=_speaker(args),
             trace=trace,
             tracker=tracker,
+            wire=wire,
         )
         server_task = asyncio.create_task(_serve(runtime, args.port)) if args.serve else None
         if server_task is not None:
@@ -245,6 +276,10 @@ async def cmd_run(args: argparse.Namespace) -> int:
     print(runtime.gate.stats.table())
     print(f"trace: {path}")
     print(f"cost:  ${runtime.backend.total.cost_usd:.3f}")
+    if wire is not None:
+        from commentary.grading import metrics
+
+        print(f"wire corrections: {metrics.corrections(metrics.load_run(path))}")
 
     if sim is not None and pack is not None:
         from commentary.grading import report
@@ -255,7 +290,14 @@ async def cmd_run(args: argparse.Namespace) -> int:
         # fixture makes every number meaningless in the same direction.
         watched = runtime.live_ts
         truth = [e for e in sim.ground_truth if e.video_ts <= watched]
-        card = report.score("run", path, truth, pack, duration_s=watched)
+        card = report.score(
+            "run",
+            path,
+            truth,
+            pack,
+            duration_s=watched,
+            wire_events=wire.events if wire is not None else None,
+        )
         print()
         print(report.table([card]))
         print()
@@ -460,6 +502,14 @@ def build_parser() -> argparse.ArgumentParser:
         action=argparse.BooleanOptionalAction,
         default=True,
         help="draw the names vision has read onto the caller's frames",
+    )
+    run.add_argument("--wire", help="StatsBomb events JSON: the ablation's ceiling row")
+    run.add_argument("--lineups", help="StatsBomb lineups JSON, for the names the feed uses")
+    run.add_argument(
+        "--wire-latency",
+        type=float,
+        default=None,
+        help="modelled feed latency in seconds; on --source sim this alone builds the wire",
     )
     run.add_argument("--serve", action="store_true", help="also serve the watch page")
     run.add_argument("--port", type=int, default=8000)

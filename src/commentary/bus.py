@@ -30,6 +30,7 @@ class Topic(StrEnum):
     CALLER = "caller"
     ANALYST = "analyst"
     GATE = "gate"
+    CORRECTION = "correction"
     TRIGGER = "trigger"
     COST = "cost"
     STATUS = "status"

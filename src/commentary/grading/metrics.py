@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from commentary.schemas import Event, GroundTruthEvent, KnowledgePack
+from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, WireEvent
 from commentary.trace import read_trace, rows_of
 from commentary.voice.speaker import WORDS_PER_SECOND
 
@@ -124,6 +124,7 @@ class Run:
     cost_usd: float = 0.0
     duration_s: float = 0.0
     preempted: int = 0
+    corrections: int = 0
 
     @property
     def spoken_seconds(self) -> float:
@@ -157,6 +158,7 @@ def load_run(path: Path) -> Run:
         else:
             run.gate_rejections.extend(str(r) for r in row.get("reasons", []))
     run.board_reads = rows_of(rows, "board")
+    run.corrections = len(rows_of(rows, "correction"))
     costs = rows_of(rows, "cost")
     if costs:
         run.cost_usd = float(costs[-1].get("total_usd", 0.0))
@@ -377,6 +379,83 @@ def _is_ordinary_opener(text: str, word: str) -> bool:
     name claim. The model judge is what settles the genuinely ambiguous ones.
     """
     return text.strip().startswith(word) and normalise(word) in OPENERS
+
+
+# -- naming players ------------------------------------------------------
+
+
+@dataclass
+class Names:
+    """Does it name players, and is it right? The two numbers that answer."""
+
+    lines_with_name: int = 0
+    names: int = 0
+    correct: int = 0
+    #: Lines in the run, so ``rate`` is a fraction of something stated.
+    total: int = 0
+
+    @property
+    def rate(self) -> float:
+        """Lines carrying at least one player name, as a fraction of all lines."""
+        return self.lines_with_name / self.total if self.total else 0.0
+
+    @property
+    def precision(self) -> float:
+        return self.correct / self.names if self.names else 0.0
+
+
+def names(run: Run, wire_events: list[WireEvent], *, window_s: float = 3.0) -> Names:
+    """Score every player named in a line against what the feed says happened.
+
+    A name is correct when the feed has that player doing something within
+    ``window_s`` of the line — as the actor or as the other party, because
+    "foul by Rabiot on Messi" names two people and both are right.
+
+    The window is small on purpose. A name that happens to belong to somebody
+    who touched the ball twenty seconds earlier is not the system naming the
+    right player, it is the system naming a player who is on the pitch.
+    """
+    scored = Names(total=len(run.lines))
+    for line in run.lines:
+        found = _named_in(line.text, wire_events)
+        if not found:
+            continue
+        scored.lines_with_name += 1
+        scored.names += len(found)
+        near = _people_near(wire_events, line.video_ts, window_s)
+        scored.correct += sum(1 for name in found if name in near)
+    return scored
+
+
+def _named_in(text: str, wire_events: list[WireEvent]) -> list[str]:
+    """Every surname from the feed's cast that this line says out loud."""
+    words = {normalise(w) for w in re.findall(r"\b[A-ZÁÉÍÓÚÄÖÜÑ][\w'-]+\b", text)}
+    found: list[str] = []
+    for person in _cast(wire_events):
+        if normalise(person.rsplit(" ", 1)[-1]) in words:
+            found.append(person)
+    return found
+
+
+def _cast(wire_events: list[WireEvent]) -> set[str]:
+    people: set[str] = set()
+    for event in wire_events:
+        people.update(name for name in (event.player, event.recipient) if name)
+    return people
+
+
+def _people_near(wire_events: list[WireEvent], ts: float, window_s: float) -> set[str]:
+    near: set[str] = set()
+    for event in wire_events:
+        if event.video_ts is None or abs(event.video_ts - ts) > window_s:
+            continue
+        near.update(name for name in (event.player, event.recipient) if name)
+    return near
+
+
+def corrections(run: Run) -> int:
+    """How many times the statistician changed something the system believed."""
+    return run.corrections
 
 
 # -- the gate -----------------------------------------------------------

@@ -189,14 +189,26 @@ async def test_the_goal_confirmation_window_does_not_widen_with_the_buffer(
 
 @pytest.mark.asyncio
 async def test_a_goal_is_never_announced_before_the_board_confirms_it(tmp_path: Path) -> None:
-    _runtime, sim, path = await run_sim(tmp_path, seconds=5.0, delay_s=4.0)
+    """No goal line without a goal behind it, within the window the gate allows.
+
+    The tolerance is the gate's own forward window and not a tighter number,
+    because the simulator's score bug has no graphic lag: it changes the
+    instant the ball crosses the line, where a broadcaster's takes about six
+    seconds. A graphic ahead of the cursor is evidence of a goal at or before
+    the cursor on real footage, and evidence of one slightly after it here.
+    """
+    from commentary.runtime import GOAL_GRAPHIC_LAG_S
+
+    delay_s = 4.0
+    _runtime, sim, path = await run_sim(tmp_path, seconds=5.0, delay_s=delay_s)
     run = metrics.load_run(path)
     goals = [e.video_ts for e in sim.ground_truth if e.event is Event.GOAL]
+    window = min(GOAL_GRAPHIC_LAG_S, delay_s) + 0.5
 
     for line in run.lines:
         if "goal" not in line.text.lower():
             continue
-        assert any(line.video_ts >= goal - 2.0 for goal in goals), (
+        assert any(line.video_ts >= goal - window for goal in goals), (
             f"a goal was called at {line.video_ts:.1f}s with no goal behind it"
         )
 
@@ -288,3 +300,56 @@ async def test_applying_a_board_goal_starts_the_clock_on_talking_about_it(
     runtime.buffer.append(Frame(ts=80.0, image=np.zeros((4, 4, 3), dtype=np.uint8)))
     runtime._apply_due_board_changes()
     assert runtime._last_goal_ts == 63.7
+
+
+@pytest.mark.asyncio
+async def test_a_wire_inside_the_buffer_lands_every_goal_as_an_incident(
+    tmp_path: Path,
+) -> None:
+    """The two-clock rule end to end.
+
+    At ``latency_s`` below the buffer depth the feed's own lag is absorbed
+    entirely: everything it says about the stretch the cursor has reached has
+    already been applied by the time the run ends.
+    """
+    from commentary.schemas import Event as SchemaEvent
+    from commentary.wire import ReplayWire
+
+    sim = MatchSim(seed=5, duration_s=120.0)
+    settings = fast_settings(4.0)
+    source = SimSource(sim, settings.capture, realtime=False)
+    path = tmp_path / "wire.jsonl"
+    with RunTrace(path=path) as trace:
+        runtime = Runtime(
+            source=source,
+            backend=SimOracle(sim=sim, error_rate=0.0),
+            pack=sim.knowledge_pack,
+            settings=settings,
+            speaker=LogSpeaker(words_per_second=120),
+            trace=trace,
+            wire=ReplayWire.from_truth(sim.ground_truth, 2.0),
+        )
+        await runtime.run(seconds=5.0)
+
+    watched = runtime.cursor_ts
+    goals = [
+        e for e in sim.ground_truth if e.event is SchemaEvent.GOAL and e.video_ts <= watched - 2.0
+    ]
+    landed = {
+        round(i.video_ts, 1)
+        for i in runtime.state.incidents
+        if i.event is SchemaEvent.GOAL and i.source == "wire"
+    }
+    for goal in goals:
+        assert any(abs(ts - goal.video_ts) < 1.0 for ts in landed), (
+            f"the wire's goal at {goal.video_ts:.1f}s never reached the state"
+        )
+
+
+@pytest.mark.asyncio
+async def test_the_default_runtime_loads_no_wire(tmp_path: Path) -> None:
+    """Rule two, made structural: every outside source is opt-in and off."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0)
+    assert runtime.wire is None
+    assert runtime._sync is None
+    assert runtime._wire_confirms_goal(10.0) is False

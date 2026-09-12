@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from commentary.grading import metrics
-from commentary.schemas import GroundTruthEvent, KnowledgePack
+from commentary.schemas import GroundTruthEvent, KnowledgePack, WireEvent
 
 
 @dataclass
@@ -30,6 +30,11 @@ class Scorecard:
     lag_p95: float = 0.0
     silence_ratio: float = 0.0
     repetition_rate: float = 0.0
+    #: What fraction of lines name a player, and how many of those names are
+    #: the right one. The pair is the question the vision chain exists for.
+    name_rate: float = 0.0
+    name_precision: float = 0.0
+    corrections: int = 0
     preempted: int = 0
     cost_usd: float = 0.0
     #: Seconds of match this run actually saw. Recall and silence mean
@@ -41,13 +46,15 @@ class Scorecard:
             f"| {self.name} | {self.lines} | {self.factual_error_rate:.1%} | "
             f"{self.event_recall:.0%} | {self.gate_rejection_rate:.1%} | "
             f"{self.lag_p50:.1f} / {self.lag_p95:.1f} | {self.silence_ratio:.0%} | "
-            f"{self.repetition_rate:.1%} | ${self.cost_usd:.2f} |"
+            f"{self.repetition_rate:.1%} | {self.name_rate:.0%} | "
+            f"{self.name_precision:.0%} | ${self.cost_usd:.2f} |"
         )
 
 
 HEADER = (
-    "| run | lines | factual err | recall | gate rej | lag p50/p95 s | silence | repeat | cost |\n"
-    "|---|---:|---:|---:|---:|---:|---:|---:|---:|"
+    "| run | lines | factual err | recall | gate rej | lag p50/p95 s | silence | repeat "
+    "| named | name prec | cost |\n"
+    "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
 )
 
 
@@ -58,11 +65,19 @@ def score(
     pack: KnowledgePack,
     *,
     duration_s: float | None = None,
+    wire_events: list[WireEvent] | None = None,
 ) -> Scorecard:
+    """Every headline number for one trace.
+
+    ``wire_events`` is the feed, and it is the only way to say whether a name
+    in a line was the right one — so the two name columns are zero without it
+    rather than guessed at.
+    """
     run = metrics.load_run(trace_path)
     errors = metrics.factual_errors(run, truth, pack)
     recall = metrics.event_recall(run, truth)
     lag = metrics.lag(run)
+    named = metrics.names(run, wire_events or [])
 
     by_kind: dict[str, int] = {}
     for error in errors:
@@ -81,6 +96,9 @@ def score(
         lag_p95=lag.p95,
         silence_ratio=metrics.silence_ratio(run, duration_s),
         repetition_rate=metrics.repetition_rate(run),
+        name_rate=named.rate,
+        name_precision=named.precision,
+        corrections=run.corrections,
         preempted=run.preempted,
         cost_usd=run.cost_usd,
     )
@@ -106,6 +124,8 @@ def detail(card: Scorecard) -> str:
             f"{k} {got}/{need}" for k, (got, need) in sorted(card.recall_by_event.items())
         ))
     lines.append(f"Lines cut off mid-sentence: {card.preempted}")
+    if card.corrections:
+        lines.append(f"Corrections from the wire: {card.corrections}")
     if card.watched_s:
         lines.append(f"Match watched: {card.watched_s:.0f}s")
     return "\n".join(lines)

@@ -24,7 +24,7 @@ import numpy as np
 from commentary.capture.buffer import Frame
 from commentary.config import BOARD_MODEL, SETTINGS, BoardConfig
 from commentary.llm.base import Block, LLMBackend, encode_frame, image_block, text_block
-from commentary.schemas import BoardRead
+from commentary.schemas import BoardRead, Side
 from commentary.state import period_for_clock
 
 #: Longer than any replay a broadcast cuts to. Past this the bug is not
@@ -157,6 +157,23 @@ class BoardChange:
         if self.previous is None:
             return False
         return (self.home_score, self.away_score) != self.previous
+
+    @property
+    def scoring_side(self) -> Side | None:
+        """Whose goal it was, when the board can say.
+
+        Both numbers moving between two reads is a board we cannot reason
+        about — two goals in one confirmation window, or a misread — and
+        naming a side for it would be inventing one.
+        """
+        if self.previous is None:
+            return None
+        home, away = self.previous
+        if self.home_score > home and self.away_score == away:
+            return Side.HOME
+        if self.away_score > away and self.home_score == home:
+            return Side.AWAY
+        return None
 
 
 class BoardTracker:

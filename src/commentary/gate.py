@@ -368,12 +368,15 @@ class FactGate:
         *,
         board_changed: bool = False,
         lookahead_celebration: bool = False,
+        wire_confirmed: bool = False,
     ) -> GateVerdict:
         """Pass, trim, or reject — and always say why.
 
         ``board_changed`` is whether the scoreboard supports a goal claimed
         at this moment: a settled change near the cursor, a change the board
         reader is still confirming, or a goal already in the state.
+        ``wire_confirmed`` is a statistician having said so, which is only
+        ever true in the ablation that runs one.
         """
         verdict = self._judge(
             line,
@@ -381,6 +384,7 @@ class FactGate:
             pack,
             board_changed=board_changed,
             lookahead_celebration=lookahead_celebration,
+            wire_confirmed=wire_confirmed,
         )
         self.stats.record(verdict)
         return verdict
@@ -393,6 +397,7 @@ class FactGate:
         *,
         board_changed: bool,
         lookahead_celebration: bool,
+        wire_confirmed: bool = False,
     ) -> GateVerdict:
         text = line.line.strip()
         if line.scene is Scene.REPLAY:
@@ -411,9 +416,11 @@ class FactGate:
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
-            and not (board_changed or lookahead_celebration)
+            and not (board_changed or lookahead_celebration or wire_confirmed)
         ):
-            fatal.append("unconfirmed_goal: no board change and no celebration in the lookahead")
+            fatal.append(
+                "unconfirmed_goal: no board change, no celebration in the lookahead, no wire"
+            )
         if fatal:
             return GateVerdict(passed=False, reasons=fatal)
 

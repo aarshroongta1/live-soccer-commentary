@@ -44,6 +44,7 @@ from commentary.grading.baselines import (
     standard_variants,
     sweep_table,
     trace_file,
+    wire,
     worldcupvoice,
 )
 from commentary.schemas import Beat, CallerLine, Event, MatchState, Scene, Side, Voice
@@ -285,3 +286,28 @@ async def test_the_delay_sweep_produces_one_card_per_depth(tmp_path: Path) -> No
     for card, depth in zip(cards, DELAY_DEPTHS, strict=True):
         if card.lines:
             assert card.lag_p50 == pytest.approx(depth, abs=1.0)
+
+
+@pytest.mark.asyncio
+async def test_the_wire_row_runs_and_cannot_be_worse_than_the_system_it_adds_to(
+    tmp_path: Path,
+) -> None:
+    """The ceiling row. A statistician telling the truth cannot make a run
+    factually worse than the same run without one, and the corrections it
+    makes have to show up in the trace or the row is unreadable."""
+    settings = fast(delay_s=4.0)
+    sim = MatchSim(seed=5, duration_s=120.0)
+
+    plain = await run_variant(
+        full(settings), sim, seconds=12.0, out_dir=tmp_path, error_rate=1.0, speed=6.0
+    )
+    ceiling = await run_variant(
+        wire(settings), sim, seconds=12.0, out_dir=tmp_path, error_rate=1.0, speed=6.0
+    )
+
+    assert error_count(ceiling) <= error_count(plain), (
+        f"the wire made things worse: {error_count(ceiling)} errors with it, "
+        f"{error_count(plain)} without"
+    )
+    rows = read_trace(trace_file(tmp_path, ceiling.name))
+    assert rows_of(rows, "correction"), "the wire changed nothing it thought worth tracing"

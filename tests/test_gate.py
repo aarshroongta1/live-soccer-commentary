@@ -131,11 +131,13 @@ def test_a_goal_needs_the_board_or_a_celebration(pack, state):
     unconfirmed = gate.judge(goal, state, pack)
     assert not unconfirmed.passed
     assert unconfirmed.reasons == [
-        "unconfirmed_goal: no board change and no celebration in the lookahead"
+        "unconfirmed_goal: no board change, no celebration in the lookahead, no wire"
     ]
 
     assert gate.judge(goal, state, pack, board_changed=True).passed
     assert gate.judge(goal, state, pack, lookahead_celebration=True).passed
+    # The third route exists only when an ablation is running a statistician.
+    assert gate.judge(goal, state, pack, wire_confirmed=True).passed
 
 
 def test_a_goal_claimed_in_prose_is_caught_too(pack, state):

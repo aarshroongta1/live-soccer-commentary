@@ -53,17 +53,20 @@ from commentary.predictor import SpeakPredictor
 from commentary.prompts.caller import MARK_TOLERANCE_S
 from commentary.schemas import (
     Beat,
+    BoardRead,
     Event,
+    Incident,
     KnowledgePack,
     MatchState,
     SpeakDecision,
     Trigger,
     Voice,
 )
-from commentary.state import MatchStateTracker
+from commentary.state import MatchStateTracker, parse_clock, period_for_clock
 from commentary.tools import MatchTools
 from commentary.trace import RunTrace
 from commentary.voice.speaker import LogSpeaker, Speaker
+from commentary.wire import Wire, WireSync
 
 #: How long after the ball crosses the line a broadcaster's score bug
 #: catches up. A property of television, not of our buffer, which is the
@@ -126,6 +129,10 @@ class Runtime:
     #: default: naming players from vision is opt-in, and the no-marks row of
     #: the ablation table is this same field with the null one in it.
     tracker: Tracker = field(default_factory=NullTracker)
+    #: A statistician's feed. ``None`` in the default runtime and in every
+    #: row of the results table but one: the thesis is the picture, the sound
+    #: and notes, and this is here to say what a feed would have bought.
+    wire: Wire | None = None
 
     bus: Bus = field(default_factory=Bus)
     stats: RuntimeStats = field(default_factory=RuntimeStats)
@@ -179,6 +186,7 @@ class Runtime:
         self._last_spoken_video_ts: float | None = None
         self._last_analyst_ts: float = 0.0
         self._recent_event: tuple[Event, float] | None = None
+        self._sync = WireSync(self.wire) if self.wire is not None else None
         self._stop = asyncio.Event()
 
     # -- what the web layer is allowed to see ----------------------------
@@ -269,6 +277,7 @@ class Runtime:
             self.buffer.append(frame)
             self.stats.frames += 1
             self._apply_due_board_changes()
+            self._apply_due_wire()
             if (cut := self.cut.feed(frame)) is not None:
                 # Kept with its timestamp: a cut is both a reason to consider
                 # speaking and the edge of what counts as "next" for the
@@ -342,11 +351,29 @@ class Runtime:
                 continue
             self.stats.board_reads += 1
             self._publish(Topic.BOARD, frame.ts, read)
+            self._observe_clock(read, frame.ts)
             change = self.board_tracker.update(read, frame.ts)
             if change is not None:
                 self._board_changes.append(change)
                 self._fire(Trigger.BOARD_CHANGE)
             self._note_screen()
+
+    def _observe_clock(self, read: BoardRead, ts: float) -> None:
+        """Tell the sync where the match clock and the video clock meet.
+
+        The feed counts in match time and everything here counts in video
+        time, and the board reader's own glance at the graphic is the only
+        bridge between them that exists at runtime. This is the whole of the
+        board's involvement: when an event is *released* is a question about
+        the live edge, and the frame loop answers that one.
+        """
+        if self._sync is None or not read.bug_visible or read.clock is None:
+            return
+        clock_s = parse_clock(read.clock)
+        period = period_for_clock(read.clock)
+        if clock_s is None or period is None:
+            return
+        self._sync.observe_clock(clock_s, period, ts)
 
     def _live_frame(self) -> Frame | None:
         live = self.buffer.live_ts
@@ -376,8 +403,44 @@ class Runtime:
         goals = [c.ts for c in due if c.is_goal]
         if goals:
             self._last_goal_ts = max(goals)
+        for change in due:
+            if change.is_goal and change.scoring_side is not None:
+                self.state.incidents.append(
+                    Incident(
+                        event=Event.GOAL,
+                        side=change.scoring_side,
+                        player=None,
+                        video_ts=change.ts,
+                        source="board",
+                    )
+                )
         self.state_tracker.apply_board(self.board_tracker)
         self._publish(Topic.STATE, cursor, self.state)
+
+    def _apply_due_wire(self) -> None:
+        """Let the statistician catch up to the cursor, never to the live edge.
+
+        Same rule as the board, and for the same reason: the feed knows
+        things before the viewer has seen them, and commentary that used them
+        would be describing a match nobody is watching yet.
+        """
+        cursor = self.buffer.cursor_ts
+        if self._sync is None or cursor is None:
+            return
+        # Polled here rather than off the back of a board read. What the feed
+        # has said is a fact about the live edge, which this loop knows
+        # exactly and the board reader only samples every couple of seconds;
+        # tying release to that sampling made a goal's arrival depend on when
+        # the score bug was last glanced at, which is nothing to do with it.
+        self._sync.poll(self.live_ts)
+        for correction in self._sync.apply_due(cursor, self.state_tracker):
+            self._publish(
+                Topic.CORRECTION,
+                correction.video_ts,
+                what=correction.what,
+                event=correction.event.event.value,
+            )
+            self._publish(Topic.STATE, cursor, self.state)
 
     # -- deciding to speak -----------------------------------------------
 
@@ -498,6 +561,7 @@ class Runtime:
             self.pack,
             board_changed=self._board_supports_goal(cursor),
             lookahead_celebration=self._celebration_ahead(cursor),
+            wire_confirmed=self._wire_confirms_goal(cursor),
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:
@@ -605,6 +669,22 @@ class Runtime:
         window = min(GOAL_GRAPHIC_LAG_S, self.settings.capture.delay_s)
         recent = [c for c in self._board_changes if c.is_goal]
         return any(cursor - 2.0 <= c.ts <= cursor + window for c in recent)
+
+    def _wire_confirms_goal(self, cursor: float) -> bool:
+        """Has the statistician said a goal went in around this moment?
+
+        Known rather than applied: the feed's own latency is the thing being
+        modelled, and a goal it has reported is evidence from the instant it
+        reports it even though the state waits for the cursor.
+        """
+        if self._sync is None:
+            return False
+        return any(
+            event.event is Event.GOAL
+            and event.video_ts is not None
+            and cursor - GOAL_GRAPHIC_LAG_S <= event.video_ts <= cursor + 2.0
+            for event in self._sync.known
+        )
 
     def _celebration_ahead(self, cursor: float) -> bool:
         """Is there a crowd celebration between the cursor and the live edge?

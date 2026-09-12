@@ -22,10 +22,14 @@ from typing import Protocol
 from commentary.schemas import (
     CallerLine,
     Event,
+    Incident,
     KnowledgePack,
     MatchState,
+    NamedEvent,
+    Possession,
     Scene,
     Side,
+    WireEvent,
 )
 
 #: "37:12", "45", "45+2", "45+2:13", with an optional broadcast apostrophe.
@@ -33,6 +37,21 @@ _CLOCK_RE = re.compile(r"^(\d{1,3})(?:\s*\+\s*(\d{1,2}))?(?::(\d{1,2}))?$")
 
 #: Longer than any match clock ever reaches, so anything past it is junk.
 _MAX_MINUTES = 130
+
+#: How long a possession is worth reporting. Past it the caller is being told
+#: who had the ball in a passage of play that has since ended.
+BALL_FRESH_S = 6.0
+
+#: How long a named event stays in "just now". A foul is news for about this
+#: long and then it is history.
+JUST_NOW_S = 20.0
+
+#: The last few named events, so a quiet spell does not scroll the prompt.
+MAX_NAMED = 6
+
+#: A wire goal this close to a board goal on the same side is the same goal,
+#: and the wire is naming it rather than reporting a second one.
+SAME_GOAL_S = 15.0
 
 PERIOD_NAMES = {
     1: "first half",
@@ -286,28 +305,28 @@ class MatchStateTracker:
         *,
         registry: EntityRegistry | None = None,
         max_events: int = 8,
-        shorts: dict[Side, str] | None = None,
+        pack: KnowledgePack | None = None,
     ) -> None:
         self.state = MatchState(home=home, away=away)
         self.registry = registry if registry is not None else EntityRegistry()
         self.max_events = max_events
+        self.pack = pack
         #: What each side is called in one word, for the lines of summary
         #: where the full name would be most of the line.
-        self.shorts = shorts if shorts is not None else {Side.HOME: home, Side.AWAY: away}
+        self.shorts = {
+            Side.HOME: (pack.home.short or pack.home.name) if pack is not None else home,
+            Side.AWAY: (pack.away.short or pack.away.name) if pack is not None else away,
+        }
+        #: A pass names the passer now and the recipient when the ball gets
+        #: there. Held rather than applied, so possession is right at every
+        #: cursor time in between instead of jumping forward.
+        self._handover: tuple[float, Possession] | None = None
 
     @classmethod
     def from_pack(cls, pack: KnowledgePack, *, kickoff_ts: float = 0.0) -> MatchStateTracker:
         registry = EntityRegistry()
         registry.seed(pack, kickoff_ts)
-        return cls(
-            pack.home.name,
-            pack.away.name,
-            registry=registry,
-            shorts={
-                Side.HOME: pack.home.short or pack.home.name,
-                Side.AWAY: pack.away.short or pack.away.name,
-            },
-        )
+        return cls(pack.home.name, pack.away.name, registry=registry, pack=pack)
 
     def apply_board(self, source: ConfirmedBoard) -> None:
         """Take the score, clock and replay flag from the board. Only from the board.
@@ -360,6 +379,146 @@ class MatchStateTracker:
         if seen:
             self.state.on_pitch = self.registry.on_pitch(sighting_ts)
 
+    # -- the wire ------------------------------------------------------
+
+    def apply_wire(self, event: WireEvent, ts: float) -> str | None:
+        """Take one statistician's event. Returns what changed, for the trace.
+
+        This is the only path other than the board that may move the score,
+        and it may because a feed is not a model: it is not guessing at the
+        picture, it is reporting the match. Everything else it carries is
+        what the picture cannot give — who passed to whom, who was fouled,
+        whose card it is — and none of it touches the scoreline.
+
+        Possession answers ``None``. It changes twice a second and a trace
+        row for each would bury the corrections that matter.
+        """
+        self._settle_ball(ts)
+        if event.event is Event.PASS:
+            self._pass(event, ts)
+            return None
+        if event.event in (Event.CARRY, Event.SHOT):
+            self._carry(event, ts)
+            return None
+        if event.event is Event.GOAL:
+            return self._wire_goal(event, ts)
+        if event.event in (Event.CARD, Event.SUBSTITUTION):
+            return self._wire_incident(event, ts)
+        self._wire_named(event, ts)
+        return None
+
+    def _pass(self, event: WireEvent, ts: float) -> None:
+        if event.player is None:
+            return
+        self.state.ball = Possession(player=event.player, side=event.side, since_ts=ts)
+        if event.recipient is not None:
+            self._handover = (
+                ts + event.duration_s,
+                Possession(
+                    player=event.recipient,
+                    side=event.side,
+                    since_ts=ts + event.duration_s,
+                    from_player=event.player,
+                ),
+            )
+
+    def _carry(self, event: WireEvent, ts: float) -> None:
+        if event.player is None:
+            return
+        held = self.state.ball
+        if held is None or held.player != event.player:
+            self.state.ball = Possession(player=event.player, side=event.side, since_ts=ts)
+        if event.event is Event.SHOT:
+            self._note_event(Event.SHOT)
+
+    def _wire_goal(self, event: WireEvent, ts: float) -> str | None:
+        """The score, and a name on a goal the board may already have seen.
+
+        The board sees a graphic change; the wire saw the ball cross the
+        line. When both report the same goal the second one to arrive is not
+        news, it is the missing half of the first — so it names the existing
+        incident instead of inventing a second goal.
+        """
+        before = (self.state.home_score, self.state.away_score)
+        self.state.home_score, self.state.away_score = event.home_score, event.away_score
+        self._note_event(Event.GOAL)
+
+        for incident in reversed(self.state.incidents):
+            if (
+                incident.event is Event.GOAL
+                and incident.side is event.side
+                and abs(incident.video_ts - ts) <= SAME_GOAL_S
+            ):
+                if incident.player is None:
+                    incident.player = event.player
+                    return f"goal {event.side.value} is {event.player}"
+                return None
+
+        self.state.incidents.append(
+            Incident(
+                event=Event.GOAL,
+                side=event.side,
+                player=event.player,
+                video_ts=ts,
+                source="wire",
+            )
+        )
+        after = (self.state.home_score, self.state.away_score)
+        return f"score {before[0]}-{before[1]} -> {after[0]}-{after[1]}"
+
+    def _wire_incident(self, event: WireEvent, ts: float) -> str:
+        self.state.incidents.append(
+            Incident(
+                event=event.event,
+                side=event.side,
+                player=event.player,
+                video_ts=ts,
+                source="wire",
+            )
+        )
+        self._note_event(event.event)
+        if event.event is Event.SUBSTITUTION and event.player is not None:
+            self._believe_by_name(event.player, event.side, ts)
+        detail = f" {event.detail}" if event.detail else ""
+        return f"{event.event.value}{detail} {event.side.value} {event.player or 'unknown'}"
+
+    def _wire_named(self, event: WireEvent, ts: float) -> None:
+        self.state.named.append(
+            NamedEvent(
+                event=event.event,
+                side=event.side,
+                player=event.player,
+                recipient=event.recipient,
+                detail=event.detail,
+                video_ts=ts,
+            )
+        )
+        del self.state.named[:-MAX_NAMED]
+        self._note_event(event.event)
+
+    def _believe_by_name(self, name: str, side: Side, ts: float) -> None:
+        """A substitute whose number is in the pack is a shirt we can now read."""
+        sheet = self.pack.team(side) if self.pack is not None else None
+        if sheet is None:
+            return
+        for player in sheet.squad:
+            if player.name == name and player.number is not None:
+                self.registry.believe(player.number, player.name, ts, side=side)
+                return
+
+    def _note_event(self, event: Event) -> None:
+        self.state.last_events.append(event)
+        del self.state.last_events[: -self.max_events]
+
+    def _settle_ball(self, ts: float) -> None:
+        """Let a pass reach its recipient, once the cursor has reached them."""
+        if self._handover is None:
+            return
+        when, possession = self._handover
+        if ts >= when:
+            self.state.ball = possession
+            self._handover = None
+
     def summary(self, ts: float = 0.0) -> str:
         """A few lines of state for the top of a prompt. It goes in every call.
 
@@ -367,8 +526,11 @@ class MatchStateTracker:
         read twenty minutes ago is worth less than one read twenty seconds
         ago, and the registry needs to know when "now" is to say so.
         """
+        self._settle_ball(ts)
         state = self.state
         lines = [state.scoreline]
+        if holder := self._ball_line(ts):
+            lines.append(holder)
         clock = state.clock or "clock unseen"
         lines.append(f"{clock} ({PERIOD_NAMES.get(state.period, f'period {state.period}')})")
         if state.in_replay:
@@ -383,10 +545,57 @@ class MatchStateTracker:
         identified = self._identified_line(ts)
         if identified:
             lines.append(identified)
+        lines.extend(self._just_now(ts))
+        lines.extend(self._so_far())
         if state.last_events:
             recent = ", ".join(e.value for e in state.last_events[-5:])
             lines.append(f"recent: {recent}")
         return "\n".join(lines)
+
+    def _ball_line(self, ts: float) -> str:
+        """``on the ball: Mac Allister (ARG), from Otamendi``, while it is true.
+
+        Stale possession is worse than none: a caller told who has the ball
+        will say so, and a name six seconds old belongs to a passage of play
+        that has already ended.
+        """
+        ball = self.state.ball
+        if ball is None or ts - ball.since_ts > BALL_FRESH_S:
+            return ""
+        side = self.shorts.get(ball.side, ball.side.value)
+        line = f"on the ball: {ball.player} ({side})"
+        return f"{line}, from {ball.from_player}" if ball.from_player else line
+
+    def _just_now(self, ts: float) -> list[str]:
+        """The named events of the last twenty seconds, newest last."""
+        recent = [e for e in self.state.named if 0.0 <= ts - e.video_ts <= JUST_NOW_S]
+        if not recent:
+            return []
+        return ["just now:", *(f"  {self._named_line(e)}" for e in recent)]
+
+    def _named_line(self, event: NamedEvent) -> str:
+        side = self.shorts.get(event.side, event.side.value)
+        who = f"{event.player} ({side})" if event.player else side
+        if event.event is Event.FOUL:
+            line = f"foul by {who}"
+            return f"{line} on {event.recipient}" if event.recipient else line
+        if event.detail:
+            return f"{event.detail} {event.event.value} {who}"
+        return f"{event.event.value} {who}"
+
+    def _so_far(self) -> list[str]:
+        """Goals, cards and subs, one line each, for as long as the match lasts."""
+        lines: list[str] = []
+        kinds = (("goals", Event.GOAL), ("cards", Event.CARD), ("subs", Event.SUBSTITUTION))
+        for label, kind in kinds:
+            found = [i for i in self.state.incidents if i.event is kind]
+            if not found:
+                continue
+            who = ", ".join(
+                f"{i.player or 'unknown'} ({self.shorts.get(i.side, i.side.value)})" for i in found
+            )
+            lines.append(f"{label}: {who}")
+        return lines
 
     def _identified_line(self, ts: float) -> str:
         """``identified: ARG 11 Di María, 7 De Paul · FRA 10 Mbappé``.

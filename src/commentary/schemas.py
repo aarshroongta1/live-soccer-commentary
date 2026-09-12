@@ -40,6 +40,11 @@ class Event(StrEnum):
     SUBSTITUTION = "substitution"
     KICKOFF = "kickoff"
     BUILD_UP = "build_up"
+    PASS = "pass"
+    CARRY = "carry"
+    INTERCEPTION = "interception"
+    CLEARANCE = "clearance"
+    TACKLE = "tackle"
 
 
 #: Events worth interrupting anything else for.
@@ -215,6 +220,79 @@ class KnowledgePack(BaseModel):
         return None
 
 
+class WireEvent(BaseModel):
+    """One thing a statistician says happened, timed on the match clock.
+
+    A feed knows only match time, so ``video_ts`` starts empty and is filled
+    in by :class:`commentary.wire.WireSync` from the board reader's clock
+    readings; an event that has not been resolved yet cannot be released.
+    The sim's own truth is already on video time and arrives with it set.
+
+    The wire is off by default. It exists as the ceiling row of the ablation
+    table — what a play-by-play feed would buy over what the picture gives —
+    and never as part of the default runtime.
+    """
+
+    event: Event
+    side: Side
+    player: str | None = None
+    recipient: str | None = Field(
+        default=None, description="Pass recipient; the fouled player; the player coming off"
+    )
+    detail: str = Field(default="", description='"yellow", "red", "own goal"')
+    home_score: int = 0
+    away_score: int = 0
+    clock_s: float = Field(description="Match clock, seconds played")
+    period: int
+    duration_s: float = Field(default=0.0, description="Passes and carries")
+    video_ts: float | None = None
+
+
+class Possession(BaseModel):
+    """Who is on the ball, from the wire.
+
+    Separate from :attr:`MatchState.possession`, which is only a side: the
+    caller needs a name to say, and a side never gives it one.
+    """
+
+    player: str
+    side: Side
+    since_ts: float
+    from_player: str | None = Field(default=None, description="Who passed it, when known")
+
+
+class NamedEvent(BaseModel):
+    """Something the statistician named, close enough to still be worth saying.
+
+    Fouls, offsides, saves, tackles: the things commentary is expected to
+    attribute and the picture almost never can. Kept as a short rolling list
+    rather than as state, because "who was fouled" stops being news about
+    twenty seconds after the whistle.
+    """
+
+    event: Event
+    side: Side
+    player: str | None = None
+    recipient: str | None = None
+    detail: str = ""
+    video_ts: float = 0.0
+
+
+class Incident(BaseModel):
+    """A goal, a card or a substitution, and which source reported it.
+
+    The board and the wire both see goals and they disagree about when: the
+    board sees the graphic, the wire saw the ball cross the line. A trace
+    that cannot say which one moved the score cannot explain a correction.
+    """
+
+    event: Event
+    side: Side
+    player: str | None
+    video_ts: float
+    source: str = Field(description='"board" or "wire"')
+
+
 class MatchState(BaseModel):
     """Everything the system believes, built only from the board and the caller."""
 
@@ -234,6 +312,9 @@ class MatchState(BaseModel):
     on_pitch: dict[str, str] = Field(
         default_factory=dict, description="Shirt number to name, as learned from graphics"
     )
+    ball: Possession | None = None
+    incidents: list[Incident] = Field(default_factory=list)
+    named: list[NamedEvent] = Field(default_factory=list)
 
     @property
     def scoreline(self) -> str:

@@ -5,11 +5,13 @@ import pytest
 from commentary.schemas import (
     CallerLine,
     Event,
+    Incident,
     KnowledgePack,
     Player,
     Scene,
     Side,
     TeamSheet,
+    WireEvent,
 )
 from commentary.state import (
     EntityRegistry,
@@ -243,3 +245,129 @@ def test_summary_says_when_the_bug_is_gone_rather_than_calling_it_a_replay():
     summary = tracker.summary()
     assert "no score bug visible" in summary
     assert "replay" not in summary
+
+
+# -- the statistician --------------------------------------------------------
+
+
+def wire_pack() -> KnowledgePack:
+    return KnowledgePack(
+        home=TeamSheet(
+            name="Argentina",
+            short="ARG",
+            starters=[Player(name="Alexis Mac Allister", number=20)],
+            bench=[Player(name="Paulo Dybala", number=21)],
+        ),
+        away=TeamSheet(
+            name="France", short="FRA", starters=[Player(name="Adrien Rabiot", number=14)]
+        ),
+    )
+
+
+def wire_event(**fields: object) -> WireEvent:
+    return WireEvent.model_validate({"clock_s": 0.0, "period": 1, **fields})
+
+
+def test_the_wire_may_move_the_score():
+    """The one source other than the board that may, and it may because a feed
+    is not a model guessing at a picture — it is reporting the match."""
+    tracker = MatchStateTracker.from_pack(wire_pack())
+    what = tracker.apply_wire(
+        wire_event(
+            event=Event.GOAL, side=Side.HOME, player="Alexis Mac Allister", home_score=1
+        ),
+        100.0,
+    )
+    assert (tracker.state.home_score, tracker.state.away_score) == (1, 0)
+    assert what == "score 0-0 -> 1-0"
+    assert [i.source for i in tracker.state.incidents] == ["wire"]
+
+
+def test_a_wire_goal_names_a_board_goal_instead_of_duplicating_it():
+    tracker = MatchStateTracker.from_pack(wire_pack())
+    tracker.state.incidents.append(
+        Incident(event=Event.GOAL, side=Side.HOME, player=None, video_ts=100.0, source="board")
+    )
+    what = tracker.apply_wire(
+        wire_event(
+            event=Event.GOAL, side=Side.HOME, player="Alexis Mac Allister", home_score=1
+        ),
+        106.0,
+    )
+    assert len(tracker.state.incidents) == 1, "the same goal was counted twice"
+    assert tracker.state.incidents[0].player == "Alexis Mac Allister"
+    assert tracker.state.incidents[0].source == "board"
+    assert what == "goal home is Alexis Mac Allister"
+
+
+def test_a_goal_long_after_a_board_goal_is_a_second_goal():
+    tracker = MatchStateTracker.from_pack(wire_pack())
+    tracker.state.incidents.append(
+        Incident(event=Event.GOAL, side=Side.HOME, player=None, video_ts=100.0, source="board")
+    )
+    tracker.apply_wire(
+        wire_event(event=Event.GOAL, side=Side.HOME, player="Paulo Dybala", home_score=2),
+        400.0,
+    )
+    assert len(tracker.state.incidents) == 2
+
+
+def test_possession_reaches_the_recipient_when_the_ball_does():
+    tracker = MatchStateTracker.from_pack(wire_pack())
+    tracker.apply_wire(
+        wire_event(
+            event=Event.PASS,
+            side=Side.HOME,
+            player="Nicolás Otamendi",
+            recipient="Alexis Mac Allister",
+            duration_s=1.2,
+        ),
+        100.0,
+    )
+    assert "on the ball: Nicolás Otamendi (ARG)" in tracker.summary(100.5)
+    later = tracker.summary(101.5)
+    assert "on the ball: Alexis Mac Allister (ARG), from Nicolás Otamendi" in later
+
+
+def test_the_ball_line_goes_away_once_it_is_stale():
+    """A caller told who has the ball will say so, and a name six seconds old
+    belongs to a passage of play that has already ended."""
+    tracker = MatchStateTracker.from_pack(wire_pack())
+    tracker.apply_wire(
+        wire_event(event=Event.CARRY, side=Side.HOME, player="Alexis Mac Allister"), 100.0
+    )
+    assert "on the ball" in tracker.summary(103.0)
+    assert "on the ball" not in tracker.summary(110.0)
+
+
+def test_named_events_are_said_plainly_and_then_expire():
+    tracker = MatchStateTracker.from_pack(wire_pack())
+    tracker.apply_wire(
+        wire_event(
+            event=Event.FOUL, side=Side.AWAY, player="Adrien Rabiot", recipient="Lionel Messi"
+        ),
+        100.0,
+    )
+    tracker.apply_wire(
+        wire_event(event=Event.SAVE, side=Side.HOME, player="Emiliano Martínez"), 104.0
+    )
+
+    summary = tracker.summary(105.0)
+    assert "just now:" in summary
+    assert "foul by Adrien Rabiot (FRA) on Lionel Messi" in summary
+    assert "save Emiliano Martínez (ARG)" in summary
+    assert "just now:" not in tracker.summary(200.0)
+
+
+def test_a_substitution_teaches_the_registry_the_shirt():
+    tracker = MatchStateTracker.from_pack(wire_pack())
+    tracker.apply_wire(
+        wire_event(
+            event=Event.SUBSTITUTION,
+            side=Side.HOME,
+            player="Paulo Dybala",
+            recipient="Alexis Mac Allister",
+        ),
+        100.0,
+    )
+    assert tracker.registry.identified(100.0)[Side.HOME] == [(21, "Paulo Dybala")]

@@ -8,7 +8,15 @@ import pytest
 
 from commentary.bus import Message, Topic
 from commentary.grading import metrics, report
-from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, Player, Side, TeamSheet
+from commentary.schemas import (
+    Event,
+    GroundTruthEvent,
+    KnowledgePack,
+    Player,
+    Side,
+    TeamSheet,
+    WireEvent,
+)
 from commentary.trace import RunTrace, read_trace
 
 
@@ -245,3 +253,57 @@ def test_the_grader_reads_the_event_field_rather_than_the_bare_word_goal():
     errors = factual_errors(Run(run_id="x", lines=lines), [], pack)
     assert [e.kind for e in errors] == ["phantom_goal"]
     assert errors[0].video_ts == 200.0
+
+
+# -- does it name players, and is it right -----------------------------------
+
+
+def wire_event(ts: float, **fields) -> WireEvent:
+    return WireEvent.model_validate({"clock_s": ts, "period": 1, "video_ts": ts, **fields})
+
+
+def test_names_scores_each_name_against_what_the_feed_says_happened():
+    from commentary.grading.metrics import Run, SpokenLine, names
+
+    feed = [
+        wire_event(
+            50.0,
+            event=Event.PASS,
+            side=Side.HOME,
+            player="Rodrigo De Paul",
+            recipient="Ángel Di María",
+        ),
+        wire_event(90.0, event=Event.SHOT, side=Side.HOME, player="Lionel Messi"),
+    ]
+    lines = [
+        # Right: Di María is the recipient of the pass a second earlier.
+        SpokenLine(video_ts=51.0, voice="caller", text="Di María takes it down the left"),
+        # Wrong: Messi is on the pitch but is doing nothing here.
+        SpokenLine(video_ts=52.0, voice="caller", text="Messi drops in to collect"),
+        # No name at all.
+        SpokenLine(video_ts=53.0, voice="caller", text="Worked patiently across the back"),
+    ]
+    scored = names(Run(run_id="x", lines=lines), feed)
+
+    assert (scored.total, scored.lines_with_name, scored.names) == (3, 2, 2)
+    assert scored.correct == 1
+    assert scored.rate == pytest.approx(2 / 3)
+    assert scored.precision == pytest.approx(0.5)
+
+
+def test_a_name_far_from_what_the_player_did_is_not_credited():
+    """A player who touched the ball twenty seconds ago is not this moment."""
+    from commentary.grading.metrics import Run, SpokenLine, names
+
+    feed = [wire_event(50.0, event=Event.SHOT, side=Side.HOME, player="Lionel Messi")]
+    lines = [SpokenLine(video_ts=75.0, voice="caller", text="Messi picks it up again")]
+    scored = names(Run(run_id="x", lines=lines), feed)
+    assert (scored.names, scored.correct) == (1, 0)
+
+
+def test_without_a_feed_the_name_columns_are_zero_rather_than_guessed():
+    from commentary.grading.metrics import Run, SpokenLine, names
+
+    lines = [SpokenLine(video_ts=10.0, voice="caller", text="Messi turns")]
+    scored = names(Run(run_id="x", lines=lines), [])
+    assert (scored.names, scored.lines_with_name, scored.rate) == (0, 0, 0.0)

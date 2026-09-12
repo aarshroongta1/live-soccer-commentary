@@ -55,6 +55,7 @@ from commentary.sim import MatchSim, SimOracle, SimSource, SimTracker
 from commentary.sim.oracle import DEFAULT_OUTCOME_GUESS_ERROR
 from commentary.trace import RunTrace
 from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker
+from commentary.wire import ReplayWire
 
 #: The headline chart sweeps the buffer depth over these, in seconds.
 DELAY_DEPTHS: tuple[float, ...] = (0.0, 2.0, 4.0, 8.0)
@@ -96,6 +97,7 @@ class OpenGate(FactGate):
         *,
         board_changed: bool,
         lookahead_celebration: bool,
+        wire_confirmed: bool = False,
     ) -> GateVerdict:
         return GateVerdict(
             passed=True,
@@ -288,6 +290,10 @@ class Variant:
     #: False substitutes a :class:`NullTracker`, so no names are drawn on the
     #: frames the caller sees. This is the row that says what they buy.
     marks: bool = True
+    #: A number here gives the run a statistician's feed at that modelled
+    #: latency. ``None`` everywhere but the ceiling row: the default runtime
+    #: never loads one, and the README's claim does not depend on it.
+    wire_latency_s: float | None = None
     note: str = ""
 
     @property
@@ -358,6 +364,30 @@ def single_voice(base: Settings = SETTINGS) -> Variant:
     )
 
 
+#: What a live play-by-play feed costs in lag. Ten seconds is the number the
+#: delay argument is made against: with the buffer at eight the feed is still
+#: two seconds stale at the cursor, and with no buffer it is ten.
+DEFAULT_WIRE_LATENCY_S = 10.0
+
+
+def wire(base: Settings = SETTINGS) -> Variant:
+    """The ceiling: everything the system has, plus a statistician.
+
+    Not a row the project is claiming. It is here so the writeup can put a
+    number next to what vision achieves — what a feed would have bought, at
+    the cost of the one thing a human commentator does not have.
+    """
+    return Variant(
+        name=f"wire-{DEFAULT_WIRE_LATENCY_S:g}s",
+        settings=base,
+        wire_latency_s=DEFAULT_WIRE_LATENCY_S,
+        note=(
+            f"vision plus the play-by-play feed at {DEFAULT_WIRE_LATENCY_S:g}s modelled "
+            "latency; on the sim the feed has no passes, so this is goals, cards and subs"
+        ),
+    )
+
+
 def no_marks(base: Settings = SETTINGS) -> Variant:
     return Variant(
         name="no-marks",
@@ -376,6 +406,7 @@ def standard_variants(base: Settings = SETTINGS) -> list[Variant]:
         no_gate(base),
         single_voice(base),
         no_marks(base),
+        wire(base),
     ]
 
 
@@ -495,6 +526,11 @@ async def run_variant(
             trace=trace,
             with_analyst=variant.analyst,
             tracker=SimTracker(sim, inner.renderer, pack=sim.knowledge_pack),
+            wire=(
+                None
+                if variant.wire_latency_s is None
+                else ReplayWire.from_truth(sim.ground_truth, variant.wire_latency_s)
+            ),
             variant=variant,
         )
         await runtime.run(seconds=seconds)
