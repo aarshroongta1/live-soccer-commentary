@@ -4,7 +4,7 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `a40b27b`, 33 commits on top of `c2ef18e`.
+**Head:** `de26be1`, 35 commits on top of `c2ef18e`.
 **Gates:** `uv run pytest` 477 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
@@ -177,9 +177,40 @@ names. That half is fixed in `a40b27b`: the rules now say a letter tag never
 goes in `names_read`, and the gate no longer reads a short capitalised
 alphabetic token there as a name claim. **It has not been run since.**
 
-Why one sighting when C11 got six is the open question, and the tag rejection
-is the first suspect: every line that used a tag was being rejected, so the
-caller had every reason to stop mentioning them. The next run answers it.
+### The tag fix worked, and the caller will not use the tag
+
+`de26be1`, same clip, $1.02 (trace `scratchpad/run/runs/c12b/`).
+
+| | C12 | C12 + the tag fix |
+|---|---:|---:|
+| passes a second | 7.8 | **9.0** |
+| judged / passed / rejected | 13 / 9 / 4 | **17 / 16 / 1** |
+| `name_read_not_on_roster` rejections | 7 | **0** |
+| spoken lines | 12 | **14** |
+| sightings made / bound | 1 / 0 | 2 / 0 |
+| passes with a named track | 0 of 1343 | **0 of 1538** |
+
+The rejection half is fixed outright: the only line lost in three minutes was
+an unconfirmed goal, and that was the pre-existing lag.
+
+**The naming loop is now blocked on one thing, and it is not the tracker.**
+Tags are drawn on 82% of tracked bodies (9424 of 11476) and at least one is
+on screen in 900 of 1538 passes, so there is a tag to point at. The caller
+reads shirts constantly and correctly — thirteen lines carried a read in
+`names_read`, every one of them right: `3 Tagliafico`, `24 Enzo Fernandez`,
+`11 Di María` six times, `7 De Paul` three times, `10 Messi`, `18
+Upamecano`, `5 Koundé`, `1 Lloris`. And it filled `sightings` twice, both
+times with the right player and **an empty `mark`**.
+
+So: it reads the number, it writes it in the field it has always written it
+in, and it will not tie it to a tag. Nothing downstream can work until it
+does. What has not been tried is making `sightings` the only place a read
+goes, or refusing a sighting without a mark at the schema, instead of asking
+for both in prose and hoping.
+
+The in-loop version of the 42% survival number is still unmeasured, because
+a mark that is an empty string never resolves to anything. The trace carries
+it (`live` on every sighting row) the moment a mark arrives.
 
 Two things that are not regressions, so nobody re-investigates them:
 
