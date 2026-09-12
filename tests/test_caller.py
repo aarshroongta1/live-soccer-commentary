@@ -250,3 +250,15 @@ def test_clean_line_leaves_a_clean_line_alone():
 
 def test_trim_words_does_not_leave_a_dangling_comma():
     assert trim_words("one two three, four five", 3) == "one two three"
+
+
+def test_the_caller_asks_for_low_effort():
+    """Opus 5 thinks by default and the caller answers against an 8 s timeout.
+
+    Thinking is not disabled — without it Opus 5 writes tool calls into
+    visible text — so effort is the only lever.
+    """
+    from commentary.agents.caller import Caller
+    from commentary.llm.fake import ScriptedBackend
+
+    assert Caller(ScriptedBackend()).effort == "low"

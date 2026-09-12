@@ -348,3 +348,25 @@ def test_a_line_that_says_it_outright_is_still_a_goal_claim(text: str):
         scene=Scene.LIVE_PLAY, event=Event.SHOT, confidence=0.9, speak=True, line=text
     )
     assert not FactGate().judge(line, state, pack, board_changed=False).passed
+
+
+def test_a_demonym_is_a_team_word_and_survives_the_trim():
+    """'The French lines' was trimmed to 'the lines' on the first real run.
+
+    "French" is capitalised, is on no roster, and is exactly the word a
+    commentator reaches for when they cannot name anybody — so it is the last
+    word the gate should be taking out.
+    """
+    sheet = TeamSheet(name="France", short="FRA", demonym="French")
+    pack = KnowledgePack(home=TeamSheet(name="Argentina", demonym="Argentine"), away=sheet)
+    state = MatchState(home="Argentina", away="France")
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.BUILD_UP,
+        confidence=0.7,
+        speak=True,
+        line="Argentine pressure, and the French lines drop deeper",
+    )
+    verdict = FactGate().judge(line, state, pack)
+    assert verdict.passed
+    assert verdict.line == "Argentine pressure, and the French lines drop deeper"

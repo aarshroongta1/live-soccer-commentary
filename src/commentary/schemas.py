@@ -177,6 +177,10 @@ class TeamSheet(BaseModel):
     name: str
     short: str = ""
     kit: str = Field(default="", description="Shirt colours, so the caller can tell sides apart")
+    demonym: str = Field(
+        default="",
+        description="What this team's players are called collectively: French, Argentine",
+    )
     formation: str | None = None
     manager: str | None = None
     starters: list[Player] = Field(default_factory=list)

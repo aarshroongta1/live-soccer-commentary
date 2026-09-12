@@ -175,7 +175,11 @@ def _roster_of(state: MatchState, pack: KnowledgePack | None) -> _Roster:
 
     if pack is not None:
         for sheet in (pack.home, pack.away):
-            for label in (sheet.name, sheet.short):
+            # The demonym is a team word, not a name. "The French lines" was
+            # trimmed to "the lines" on the first real run, because "French"
+            # is capitalised, is on no roster, and is exactly the word a
+            # commentator reaches for when they cannot name anybody.
+            for label in (sheet.name, sheet.short, sheet.demonym):
                 if label:
                     teams.add(fold(label))
                     teams.update(token for token in fold(label).split() if len(token) >= 3)

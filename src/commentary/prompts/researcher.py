@@ -54,6 +54,11 @@ third strip. Give shirts and shorts where they differ in a way that matters,
 and give the goalkeeper's colour too — the keeper is the one player guaranteed
 not to match anybody else on the pitch.
 
+Demonym. The adjective a commentator uses for a side collectively — "French",
+"Argentine", "Merseyside" — and nothing else goes in the field. It is a word
+that gets said constantly and is on no team sheet, so without it every "the
+French lines" is trimmed out of a line as an unverifiable name.
+
 Formation and manager, one short line each. A formation tells the caller which
 shapes to expect down which flank; the manager is the one name off the pitch
 that regularly gets said.

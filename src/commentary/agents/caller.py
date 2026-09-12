@@ -193,7 +193,7 @@ class Caller:
         *,
         model: str = CALLER_MODEL,
         max_tokens: int = 512,
-        effort: str | None = None,
+        effort: str = "low",
     ) -> None:
         self.backend = backend
         self.config = config or CallerConfig()
@@ -203,6 +203,10 @@ class Caller:
         #: reason it is not smaller is that adaptive thinking spends from the
         #: same budget, and a truncated response is a dropped line.
         self.max_tokens = max_tokens
+        #: Low, always. The caller runs on Opus 5, which thinks by default,
+        #: and it has to answer inside the delay window against an 8 s
+        #: timeout. Thinking is not turned off: without it Opus 5 puts tool
+        #: calls in visible text. Effort is the lever.
         self.effort = effort
         #: Built once, never rebuilt. Identical bytes on every call is what
         #: makes the cache hit that pays for sending two squads each time.

@@ -79,8 +79,11 @@ class AnalystConfig:
     window_s: float = 20.0
     #: Only speaks when nothing has been said for this long.
     lull_s: float = 7.0
-    min_gap_s: float = 25.0
-    max_words: int = 45
+    #: Both measured on the first real run, where the analyst spoke five of
+    #: seven lines at 40 to 50 words each and editorialised to fill them.
+    #: A second voice that talks more than the first is not a second voice.
+    min_gap_s: float = 40.0
+    max_words: int = 30
 
 
 @dataclass(frozen=True)
