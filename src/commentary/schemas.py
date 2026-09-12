@@ -75,9 +75,14 @@ class Sighting(BaseModel):
     which of the twenty-two bodies that was. With it the read is attached to
     a track, so the name can ride that body through the frames where the
     number is turned away.
+
+    The tag is letters. It was the track id printed as "#4", and on the real
+    clip three of six sightings came back with the mark equal to the number
+    read — the caller reporting the tag as the shirt. A letter cannot be a
+    shirt number, so the ambiguity is gone rather than argued with.
     """
 
-    mark: int = Field(description="The number printed in the tag above the player")
+    mark: str = Field(description="The letter code printed in the tag above the player")
     number: int | None = Field(default=None, description="Shirt number, if legible")
     name: str | None = Field(default=None, description="Name on the shirt or a graphic")
 

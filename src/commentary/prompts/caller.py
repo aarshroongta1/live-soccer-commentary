@@ -18,7 +18,7 @@ import numpy as np
 from commentary.capture.buffer import Frame
 from commentary.config import CallerConfig
 from commentary.llm.base import Block, encode_frame, image_block, text_block
-from commentary.perception.players import Track
+from commentary.perception.players import Track, mark_of
 from commentary.schemas import KnowledgePack, Player, Side, TeamSheet, Trigger
 
 #: Tracks known at a moment of video time. The runtime keeps the store; this
@@ -69,15 +69,16 @@ of a shirt and a name in a broadcast graphic count the same way.
 
 Some players carry a small tag drawn above them. A tag with a surname is a
 name you may use for that player, and for nobody else on the pitch. A tag
-like "#4" is a body the system is following and has not identified: it is a
-handle for that player and not a shirt number, and it is not a name. A player
+that is a letter code — A, B, ... Z, AA, AB — is a body the system is
+following and has not identified. It is a label for that body and nothing
+else: it is not a shirt number, not a squad number, and not a name. A player
 with no tag at all is unidentified, whatever you think you recognise. Put
 every tag you used in names_read, exactly as it is printed.
 
 When you can read a shirt number or a name on a tagged player, say so in
-sightings: the tag it is wearing, and what you read on it. The player tagged
-"#4" in an eleven shirt is a sighting with mark 4 and number 11; a name
-across the shoulders of the same player is a sighting with mark 4 and that
+sightings: the letter of the tag, and what you read on the shirt. The player
+tagged D in an eleven shirt is a sighting with mark "D" and number 11; a name
+across the shoulders of the same player is a sighting with mark "D" and that
 name; give both when you can see both. That is how a name gets attached to a
 body and stays on it through the shots where the number is turned away, so it
 is worth doing every time a shirt is legible. Never report a sighting you
@@ -231,17 +232,17 @@ def draw_marks(
 def _mark_text(track: Track, pack: KnowledgePack | None) -> str | None:
     """What to print above a body: who it is, or which body it is.
 
-    An unnamed body gets its track id, which is not a claim about anybody —
-    it is a handle, so the caller can say "the number I read is on that one"
-    and be understood. The tag was a team and a number when the tracker did
-    its own reading; the tracker no longer reads, so the only two things a
-    tag can say are a surname and a tracked body.
+    An unnamed body gets a letter, which is not a claim about anybody — it is
+    a label, so the caller can say "the number I read is on that one" and be
+    understood. It is letters rather than the track id printed as "#4"
+    because that is what the caller did with a digit: three of six sightings
+    on the real clip came back with the mark equal to the number read.
     """
     if track.side is Side.UNKNOWN:
         return None
     if track.name is not None:
         return track.name.rsplit(" ", 1)[-1]
-    return f"#{track.id}"
+    return mark_of(track.id)
 
 
 def _marked_block(frame: Frame, tracks_for: TracksFor, pack: KnowledgePack | None) -> Block:

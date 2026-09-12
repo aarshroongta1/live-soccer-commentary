@@ -177,14 +177,19 @@ def test_a_cut_starts_the_ids_again_but_the_registry_keeps_the_names():
     tracker.identify(tracks[0].id, Side.HOME, 7, "Bukayo Saka", 1.0)
     joined = tracker.update(joined_frame)
     believe(registry, joined, 3.0)
-    assert max(track.id for track in joined) == 9
+    # Nine of the ten: a body is tagged from the second pass it is seen on,
+    # so a one-pass false positive never gets a tag the caller could point at.
+    assert len(joined) == 9
 
+    before = {track.id for track in joined}
     tracker.reset()
     after = tracker.update(after_frame)
 
-    assert [track.id for track in after] == list(range(9))
+    # No id is ever reused. A sighting written before the cut and delivered
+    # after it names a body that has gone, rather than whoever inherited it.
+    assert not before & {track.id for track in after}
     # The name belonged to the old id, and an id is not a person.
-    assert after[0].name is None
+    assert all(track.name is None for track in after)
     assert registry.name_for(7, Side.HOME) == "Bukayo Saka"
 
 
@@ -195,3 +200,47 @@ def test_the_null_tracker_sees_nobody():
     assert tracker.update(frame) == []
     assert tracker.reset() is None
     assert tracker.identify(0, Side.HOME, 7, "Bukayo Saka", 1.0) is None
+
+
+def test_a_tag_is_letters_and_never_a_number():
+    """Three of six sightings on the real clip came back with the mark equal
+    to the shirt number, which is a reading of the tag and not of the shirt."""
+    from commentary.perception.players import id_of, mark_of
+
+    assert [mark_of(n) for n in (0, 1, 25, 26, 27, 701, 702)] == [
+        "A",
+        "B",
+        "Z",
+        "AA",
+        "AB",
+        "ZZ",
+        "AAA",
+    ]
+    assert all(id_of(mark_of(n)) == n for n in range(2000))
+    assert id_of("#4") is None
+    assert id_of("11") is None
+    assert id_of("") is None
+    assert id_of(" aa ") == 26
+
+
+def test_a_body_keeps_its_id_while_it_moves():
+    """What the greedy matcher could not do: a pan is not a new set of people.
+
+    On the real clip the median overlap between consecutive passes is 0.35
+    against a threshold of 0.3, so half the bodies were renamed every pass.
+    ByteTrack matches against where a body is predicted to be instead.
+    """
+    tracker = build([scene(SQUAD)[1]])
+    tracker.update(scene(SQUAD, ts=0.0)[0])
+
+    ids = []
+    for step in range(1, 6):
+        drifted = [(colour, height) for colour, height in SQUAD]
+        frame, boxes = scene(drifted, ts=float(step))
+        # The whole shot slides sideways, the way a camera follows play.
+        slid = [(x0 + 6 * step, y0, x1 + 6 * step, y1) for x0, y0, x1, y1 in boxes]
+        tracker.detector.script = [slid]
+        tracker.detector.calls = 0
+        ids.append([track.id for track in tracker.update(frame)])
+
+    assert ids[0] == ids[-1], f"ids churned across a pan: {ids[0]} -> {ids[-1]}"

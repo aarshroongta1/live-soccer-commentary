@@ -48,7 +48,7 @@ from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate, fold
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
-from commentary.perception.players import NullTracker, Track, Tracker
+from commentary.perception.players import NullTracker, Track, Tracker, id_of
 from commentary.predictor import SpeakPredictor
 from commentary.prompts.caller import MARK_TOLERANCE_S
 from commentary.schemas import (
@@ -237,11 +237,7 @@ class Runtime:
         self._tracks: deque[tuple[float, list[Track]]] = deque(
             maxlen=int((cap.delay_s + cap.history_s) * TRACK_MAX_HZ) + 1
         )
-        #: A cut seen by the frame loop, for the tracker loop to act on. The
-        #: tracker is touched from one place only: ``reset`` from here while
-        #: ``update`` was running in the executor is two threads in the same
-        #: dictionaries.
-        self._cut_pending = False
+
         #: Cursor time at which the state last took in a board goal — not the
         #: time of the board change itself. See ``_apply_due_board_changes``.
         self._last_goal_ts: float | None = None
@@ -353,10 +349,6 @@ class Runtime:
                 # speaking and the edge of what counts as "next" for the
                 # caller, and only the second of those needs to know when.
                 self._cuts.append(cut.ts)
-                # A cut is a different camera on a different part of the
-                # pitch, so no body in it continues a body from before. The
-                # tracker loop does the resetting; see ``_cut_pending``.
-                self._cut_pending = True
                 self._fire(Trigger.CAMERA_CUT)
         # The source ran out: a clip ended, or the stream died. Either way the
         # match is over as far as this process is concerned.
@@ -373,26 +365,35 @@ class Runtime:
         66 ms, and a loop that awaits something slower than its own input
         stops being a loop.
 
-        So: a task of its own, always on the *newest* buffered frame, one
-        detection at a time, going round again the moment it finishes. Frames
-        it was too slow to see are skipped rather than queued, which is the
-        right answer — a track from four seconds ago is not worth catching up
-        on, the bodies have moved. Nothing else waits for it, and if it
-        manages three passes a second the marks are three a second.
+        So: a task of its own, one detection at a time, going round again the
+        moment it finishes. Frames it was too slow to see are skipped rather
+        than queued, which is the right answer — a track from four seconds ago
+        is not worth catching up on, the bodies have moved. Nothing else waits
+        for it, and if it manages three passes a second the marks are three a
+        second.
+
+        On the frame at the *cursor*, not the live edge. The caller is the
+        only thing that reads tracks and the caller lives at the cursor, so
+        that is where a tag has to mean something: a body the caller points at
+        has to still be there when its line comes back a few seconds later,
+        and with the tracker eight seconds ahead the id had to survive the
+        delay on top of that. The cut reset moves with it, off the live edge's
+        cut detector and onto the cursor crossing the same timestamps.
         """
         loop = asyncio.get_running_loop()
         last_ts: float | None = None
         while True:
             started = time.perf_counter()
-            live = self.buffer.live_ts
-            frame = None if live is None else self.buffer.nearest(live)
+            cursor = self.buffer.cursor_ts
+            frame = None if cursor is None else self.buffer.nearest(cursor)
             if frame is None or frame.ts == last_ts:
                 await asyncio.sleep(TRACK_MIN_PERIOD_S)
                 continue
-            last_ts = frame.ts
-            if self._cut_pending:
-                self._cut_pending = False
+            if last_ts is not None and any(last_ts < cut <= frame.ts for cut in self._cuts):
+                # A cut is a different camera on a different part of the
+                # pitch, so no body after it continues a body from before.
                 self.tracker.reset()
+            last_ts = frame.ts
             tracks = await loop.run_in_executor(None, self.tracker.update, frame)
             elapsed = time.perf_counter() - started
             self.stats.tracked_frames += 1
@@ -770,7 +771,8 @@ class Runtime:
         the team sheets are the check on it — a number has to be in that
         side's squad and a name has to be on the roster, because a hallucinated
         pair here would not just be one wrong line, it would follow that
-        player around until the next cut.
+        player around until the next cut. A mark that is not a tag we could
+        have drawn is dropped on the same grounds.
 
         Both writes happen together on purpose: the track so the tag says the
         surname from now on, the registry so the name survives the cut that
@@ -781,19 +783,22 @@ class Runtime:
         bound: list[str] = []
         dropped: list[str] = []
         for sighting in line.sightings:
-            found = self._roster_check(sighting, cursor)
-            if found is None:
-                dropped.append(f"#{sighting.mark} {sighting.number} {sighting.name}")
+            mark = id_of(sighting.mark)
+            found = None if mark is None else self._roster_check(sighting, mark, cursor)
+            if mark is None or found is None:
+                dropped.append(f"{sighting.mark} {sighting.number} {sighting.name}")
                 continue
             side, number, name = found
-            self.tracker.identify(sighting.mark, side, number, name, cursor)
+            self.tracker.identify(mark, side, number, name, cursor)
             self.state_tracker.registry.believe(number, name, cursor, side=side)
-            bound.append(f"#{sighting.mark} {number} {name}")
+            bound.append(f"{sighting.mark} {number} {name}")
         self.stats.sightings += len(bound)
         self.stats.sightings_dropped += len(dropped)
         self._publish(Topic.SIGHTING, cursor, bound=bound, dropped=dropped)
 
-    def _roster_check(self, sighting: Sighting, cursor: float) -> tuple[Side, int, str] | None:
+    def _roster_check(
+        self, sighting: Sighting, mark: int, cursor: float
+    ) -> tuple[Side, int, str] | None:
         """The player this sighting is about, or None if it does not stand up.
 
         A name settles which side it is and which number goes with it, so a
@@ -816,7 +821,7 @@ class Runtime:
             return side, player.number, player.name
         if sighting.number is None:
             return None
-        side = self._side_of(sighting.mark, cursor)
+        side = self._side_of(mark, cursor)
         if side is Side.UNKNOWN:
             return None
         numbered = _player_numbered(self.pack, side, sighting.number)

@@ -40,8 +40,33 @@ log = logging.getLogger(__name__)
 #: they would on the full frame and cost a quarter as much.
 WORK_WIDTH = 640
 
-#: Overlap at which a box is the same body as last frame, and keeps its id.
-IOU_KEEP = 0.3
+#: How permissive ByteTrack's association is, as its own "matching threshold"
+#: — a distance, so 0.9 accepts a match at an overlap of 0.1 or better against
+#: the *predicted* box. Tuned on 300 passes of the real clip at 5.8 passes a
+#: second, scored on the only thing that matters here: the caller points at a
+#: body, and four seconds later its line comes back — is the id still there?
+#:
+#:   matcher                     ids   median life   still there at +4 s
+#:   greedy IoU >= 0.3 (before) 1966         0.00 s                   3 %
+#:   ByteTrack 0.7               392         1.50 s                  17 %
+#:   ByteTrack 0.8               274         2.42 s                  28 %
+#:   ByteTrack 0.9               202         2.67 s                  42 %
+#:   ByteTrack 0.95              177         3.17 s                  48 %
+#:
+#: 0.95 keeps going up and is where it stops being tuning: an overlap of 0.05
+#: is barely a claim that this is the same body, and a body that inherits a
+#: track inherits a name. 0.9 is the last value that still requires the boxes
+#: to actually overlap.
+MATCH_THRESHOLD = 0.9
+
+#: Passes a body may be missing — occluded, out of shot, missed by the
+#: detector — before its id is given up. Thirty of them, about five seconds at
+#: the rate the detector manages.
+LOST_PASSES = 30
+
+#: What the tracker expects to run at, which is all ByteTrack uses the frame
+#: rate for: it scales the lost-track buffer by it.
+TRACK_RATE_HZ = 5.8
 
 #: Bins of the kit histogram: hue, then saturation, then value. Hue is what
 #: separates red from blue; saturation and value are what separate white from
@@ -124,15 +149,33 @@ class Track:
     name: str | None = None
 
 
-def _iou(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> float:
-    x0, y0 = max(a[0], b[0]), max(a[1], b[1])
-    x1, y1 = min(a[2], b[2]), min(a[3], b[3])
-    overlap = max(0, x1 - x0) * max(0, y1 - y0)
-    if overlap == 0:
-        return 0.0
-    area_a = (a[2] - a[0]) * (a[3] - a[1])
-    area_b = (b[2] - b[0]) * (b[3] - b[1])
-    return overlap / float(area_a + area_b - overlap)
+def mark_of(track_id: int) -> str:
+    """The tag printed above a body: A, B, ... Z, AA, AB, ...
+
+    Letters, because the first version printed the track id as "#4" and the
+    caller read it as a shirt number — three of six sightings on the real
+    clip came back with the mark equal to the number, which is a reading of
+    the tag and not of the shirt. A letter cannot be a shirt number, so the
+    ambiguity is gone rather than argued with in the prompt.
+    """
+    letters = ""
+    n = track_id
+    while True:
+        letters = chr(ord("A") + n % 26) + letters
+        n = n // 26 - 1
+        if n < 0:
+            return letters
+
+
+def id_of(mark: str) -> int | None:
+    """The track a tag refers to, or None if that is not a tag."""
+    text = mark.strip().upper()
+    if not text or not text.isalpha() or not text.isascii():
+        return None
+    value = 0
+    for char in text:
+        value = value * 26 + (ord(char) - ord("A") + 1)
+    return value - 1
 
 
 def _crop(image: np.ndarray, box: tuple[int, int, int, int]) -> np.ndarray:
@@ -217,14 +260,20 @@ def _colour_gap(mean: np.ndarray, bgr: tuple[int, int, int]) -> float:
 
 
 class PlayerTracker:
-    """Bodies in, named tracks out.
+    """Bodies in, tagged tracks out.
 
-    The id assignment here is greedy IoU against the previous frame and nothing
-    more: nearest box over a threshold keeps its id, everything else is new. A
-    real pipeline would hand this to ByteTrack (via ``supervision``), which
-    survives the occlusions a penalty box is made of. This is deliberately the
-    simple version — it is honest about losing an id behind a crowd of players,
-    and a lost id costs one re-read of a shirt, not a wrong name.
+    Ids come from ByteTrack, which the plan always called for and which the
+    first version stood in for with greedy IoU against the previous pass. That
+    stand-in did not survive contact with a broadcast: on the real clip the
+    median best overlap between consecutive passes is 0.35 against a threshold
+    of 0.3, so about half of every frame's bodies were handed a new id every
+    pass — 1966 ids in 300 passes, 1539 of them lasting a single pass. A tag
+    that means a different body each time it is drawn is worse than no tag.
+
+    The difference is not the threshold, it is the Kalman filter: ByteTrack
+    matches against where a body is *predicted* to be, so a camera pan stops
+    counting against every overlap in the frame. See ``MATCH_THRESHOLD`` for
+    what that is worth, measured.
     """
 
     def __init__(
@@ -246,7 +295,14 @@ class PlayerTracker:
         self._centroids: np.ndarray | None = None
         self._home_cluster = 0
         self._fit_ts = 0.0
-        self._previous: list[tuple[int, tuple[int, int, int, int]]] = []
+        self._bytetrack = _new_bytetrack()
+        #: ByteTrack counts from one again on a fresh instance, so ids are
+        #: shifted past everything the last camera used. A sighting written
+        #: before a cut and delivered after it then names a body that does not
+        #: exist, which is the right answer — the alternative is that it names
+        #: whoever inherited the number.
+        self._base = 0
+        self._high = 0
         self._live: dict[int, Track] = {}
         #: Names bound to track ids by :meth:`identify`, kept until a cut.
         self._named: dict[int, _Identity] = {}
@@ -254,14 +310,14 @@ class PlayerTracker:
 
     def update(self, frame: Frame) -> list[Track]:
         """Every body in this frame, carrying whatever is known about each."""
-        boxes = self._detect(frame.image)
-        if not boxes:
-            self._previous = []
+        found = self._assign_ids(self._detect(frame.image))
+        if not found:
             self._live = {}
             return []
 
+        ids = [tid for tid, _ in found]
+        boxes = [box for _, box in found]
         crops = [_crop(frame.image, box) for box in boxes]
-        ids = self._assign_ids(boxes)
         sides = self._sides(crops, frame.ts)
 
         tracks: list[Track] = []
@@ -286,7 +342,6 @@ class PlayerTracker:
             tracks.append(track)
 
         self._live = live
-        self._previous = list(zip(ids, boxes, strict=True))
         return tracks
 
     def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
@@ -317,10 +372,10 @@ class PlayerTracker:
         name learned before the cut is still true after it, and so does the kit
         split, because the teams did not change shirts.
         """
-        self._previous = []
+        self._bytetrack = _new_bytetrack()
+        self._base = self._high + 1
         self._live = {}
         self._named = {}
-        self._next_id = 0
 
     def _detect(self, image: np.ndarray) -> list[tuple[int, int, int, int]]:
         h, w = image.shape[:2]
@@ -346,26 +401,44 @@ class PlayerTracker:
             )
         return boxes
 
-    def _assign_ids(self, boxes: list[tuple[int, int, int, int]]) -> list[int]:
-        matched: list[int | None] = [None] * len(boxes)
-        taken: set[int] = set()
-        pairs = sorted(
-            (_iou(box, old), i, tid)
-            for i, box in enumerate(boxes)
-            for tid, old in self._previous
+    def _assign_ids(
+        self, boxes: list[tuple[int, int, int, int]]
+    ) -> list[tuple[int, tuple[int, int, int, int]]]:
+        """Which body is which, across passes.
+
+        ByteTrack answers this, and answers it about where each body is going
+        rather than where it was, which is the whole difference on footage
+        where the camera moves. Detections arrive without a score — the
+        detector has already applied its own threshold — so they all go in as
+        high-confidence, and ByteTrack's second pass over low-scoring boxes
+        does nothing. That pass is for recovering a body the detector nearly
+        missed; recovering it wrongly would put a name on it.
+
+        A box ByteTrack will not take responsibility for is dropped rather
+        than given an id of our own: an id nothing is tracking is exactly the
+        tag the caller must not be shown.
+        """
+        import numpy as np
+        import supervision as sv
+
+        if not boxes:
+            self._bytetrack.update_with_detections(sv.Detections.empty())
+            return []
+        detections = sv.Detections(
+            xyxy=np.asarray(boxes, dtype=np.float32),
+            confidence=np.full(len(boxes), 0.9, dtype=np.float32),
+            class_id=np.zeros(len(boxes), dtype=int),
         )
-        for overlap, i, tid in reversed(pairs):
-            if overlap < IOU_KEEP or matched[i] is not None or tid in taken:
-                continue
-            matched[i] = tid
-            taken.add(tid)
-        ids: list[int] = []
-        for kept in matched:
-            if kept is None:
-                kept = self._next_id
-                self._next_id += 1
-            ids.append(kept)
-        return ids
+        tracked = self._bytetrack.update_with_detections(detections)
+        if tracked.tracker_id is None:
+            return []
+        found: list[tuple[int, tuple[int, int, int, int]]] = []
+        for box, tid in zip(tracked.xyxy, tracked.tracker_id, strict=True):
+            x0, y0, x1, y1 = (int(round(float(v))) for v in box)
+            mine = self._base + int(tid)
+            self._high = max(self._high, mine)
+            found.append((mine, (x0, y0, x1, y1)))
+        return found
 
     def _sides(self, crops: list[np.ndarray], ts: float) -> list[Side]:
         """Which team each body is in, from the colour of its shirt.
@@ -458,6 +531,27 @@ class NullTracker:
 
     def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
         return None
+
+
+def _new_bytetrack() -> Any:
+    """A fresh ByteTrack, which is also how the tracker forgets a cut.
+
+    The deprecation warning is swallowed here and nowhere else. supervision
+    moves ByteTrack to a separate ``trackers`` package in 0.31 and we are
+    pinned below that; what the warning has to say is in the pin's comment in
+    pyproject, and it would otherwise print on every camera cut of every run.
+    """
+    import warnings
+
+    import supervision as sv
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message=".*ByteTrack.*deprecated.*")
+        return sv.ByteTrack(
+            minimum_matching_threshold=MATCH_THRESHOLD,
+            lost_track_buffer=int(round(LOST_PASSES * 30.0 / TRACK_RATE_HZ)),
+            frame_rate=TRACK_RATE_HZ,
+        )
 
 
 class VisionExtraMissing(ImportError):

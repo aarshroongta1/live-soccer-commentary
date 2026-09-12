@@ -470,6 +470,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+    { name = "supervision" },
 ]
 
 [package.metadata]
@@ -488,7 +489,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "rfdetr", marker = "extra == 'vision'", specifier = ">=1.0" },
     { name = "soundfile", marker = "extra == 'audio'", specifier = ">=0.12" },
-    { name = "supervision", marker = "extra == 'vision'", specifier = ">=0.24" },
+    { name = "supervision", marker = "extra == 'vision'", specifier = ">=0.24,<0.31" },
     { name = "torch", marker = "extra == 'vision'", specifier = ">=2.4" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
@@ -501,6 +502,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
     { name = "ruff", specifier = ">=0.7" },
+    { name = "supervision", specifier = ">=0.24,<0.31" },
 ]
 
 [[package]]

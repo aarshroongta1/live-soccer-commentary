@@ -569,7 +569,8 @@ async def test_the_next_goal_starts_the_talking_over(tmp_path: Path) -> None:
 # and the caller read nine correct number-and-name pairs off the same frames.
 # So the caller reports what it read against the tag drawn above the body,
 # and this is where the two are joined — with the team sheets as the check,
-# because a wrong pair here follows that player until the next cut.
+# because a wrong pair here follows that player until the next cut. The tag
+# is a letter: mark "E" is track 4.
 
 
 def _sighting_line(*sightings: Sighting) -> CallerLine:
@@ -624,7 +625,7 @@ async def test_a_sighting_names_the_track_and_is_believed(tmp_path: Path) -> Non
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     number, name = _home_number(runtime)
 
-    runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, number=number, name=name))
+    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=number, name=name))
 
     assert binder.bound == [(4, Side.HOME, number, name)]
     assert runtime.state_tracker.registry.name_for(number, Side.HOME) == name
@@ -638,20 +639,20 @@ async def test_a_number_alone_is_read_against_the_side_the_tracker_says(
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     number, name = _home_number(runtime)
 
-    runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, number=number))
+    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=number))
     assert binder.bound == [(4, Side.HOME, number, name)]
 
     # The same number on a body the tracker has in neither team is nobody:
     # both squads have an eleven and only the picture says which this is.
     _runtime, unknown = await _with_sightings(
-        tmp_path, Sighting(mark=4, number=number), sides={4: Side.UNKNOWN}
+        tmp_path, Sighting(mark="E", number=number), sides={4: Side.UNKNOWN}
     )
     assert unknown.bound == []
 
 
 @pytest.mark.asyncio
 async def test_a_number_not_in_the_squad_is_dropped(tmp_path: Path) -> None:
-    runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, number=98))
+    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=98))
 
     assert binder.bound == []
     assert runtime.stats.sightings_dropped == 1
@@ -659,7 +660,7 @@ async def test_a_number_not_in_the_squad_is_dropped(tmp_path: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_a_name_on_no_roster_is_dropped(tmp_path: Path) -> None:
-    _runtime, binder = await _with_sightings(tmp_path, Sighting(mark=4, name="Zaltimore"))
+    _runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", name="Zaltimore"))
     assert binder.bound == []
 
 
@@ -670,6 +671,15 @@ async def test_a_sighting_whose_number_and_name_disagree_is_dropped(tmp_path: Pa
     number, name = _home_number(runtime)
 
     _runtime, binder = await _with_sightings(
-        tmp_path, Sighting(mark=4, number=number + 40, name=name)
+        tmp_path, Sighting(mark="E", number=number + 40, name=name)
     )
     assert binder.bound == []
+
+
+@pytest.mark.asyncio
+async def test_a_mark_that_is_not_a_tag_is_dropped(tmp_path: Path) -> None:
+    """A digit is the caller reading the shirt into the wrong field."""
+    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="11", number=11))
+
+    assert binder.bound == []
+    assert runtime.stats.sightings_dropped == 1

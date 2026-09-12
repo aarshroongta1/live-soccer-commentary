@@ -594,6 +594,64 @@ disagree is dropped; a named track keeps its name until `reset()`;
 (it can answer `identify` trivially). Docs: README "Names" subsection says
 the caller reads the numbers and the tracker holds them.
 
+### C12. The tag has to mean the same body twice
+
+C11 ran on the clip (trace `scratchpad/run/runs/c11/`, $0.96). Passes went
+0.5/s to 5.8/s, tracks a pass 3 to 13, tracks with a side 0 to 10, five
+sightings bound — and **no track was ever named**, on any of 1039 passes.
+
+Two causes, both measured.
+
+**The ids do not survive.** 300 passes of the clip through the tracker: 1966
+distinct ids, 1539 of them lasting one pass, median lifetime 0.00 s. Not a
+coordinate or box-format mistake — the boxes are xyxy in frame pixels and
+plausibly sized (336x598 for a close-up body) — but the threshold sitting on
+the middle of the distribution: the median best overlap between consecutive
+passes is **0.35**, against `IOU_KEEP = 0.3`, so about half of every frame's
+bodies were handed a new id every pass. `_assign_ids` was always the stand-in
+for the ByteTrack C2 asked for, and greedy IoU against the previous box
+cannot survive a camera that pans.
+
+Scored on the question that matters — the caller points at a body, its line
+comes back four seconds later, is the id still there?
+
+| matcher | ids | median life | still there at +4 s |
+|---|---:|---:|---:|
+| greedy IoU >= 0.3 | 1966 | 0.00 s | 3 % |
+| ByteTrack 0.7 | 392 | 1.50 s | 17 % |
+| ByteTrack 0.8 | 274 | 2.42 s | 28 % |
+| **ByteTrack 0.9** | **202** | **2.67 s** | **42 %** |
+| ByteTrack 0.95 | 177 | 3.17 s | 48 % |
+
+**The caller reads the tag as a shirt number.** Three of six sightings came
+back with the mark equal to the number read, and one was `#916` with neither
+a number nor a name.
+
+Fix, three parts:
+
+1. **ByteTrack, from `supervision`, as C2 specified.** `minimum_matching_threshold
+   = 0.9` — the last value that still requires the boxes to overlap; 0.95 keeps
+   improving and is where tuning becomes "any overlap will do", and a body that
+   inherits a track inherits a name. `lost_track_buffer` of 30 passes, about
+   five seconds, so an occluded body keeps its id. No hand-rolled lost-track
+   memory: at the IoU that made one competitive it is the same risk.
+   Detections go in at a constant high confidence, so ByteTrack's second pass
+   over low-scoring boxes is inert — that pass recovers a body the detector
+   nearly missed, and recovering it wrongly puts a name on it. Ids are shifted
+   past the previous camera's on every reset, so a sighting written before a
+   cut and delivered after it names a body that has gone rather than whoever
+   inherited the number.
+2. **Track at the cursor, not the live edge.** The caller is the only consumer
+   and it lives at the cursor, so an id has to survive from the drawn frame
+   until the line comes back — about four seconds, not the twelve it was with
+   the tracker eight seconds ahead. The cut reset moves with it: off the live
+   edge's detector and onto the cursor crossing the stored cut timestamps.
+   The never-await rule and the `tracks` row are unchanged.
+3. **Tags are letters.** A, B, ... Z, AA, AB, assigned from the track id, so a
+   tag cannot be read as a shirt number. `Sighting.mark` is a string; a mark
+   that is not a tag we could have drawn is dropped like any other failing
+   sighting.
+
 ### C9. Docs
 
 README: a "Names" subsection: the recipe above in five lines, the honest
