@@ -1,0 +1,28 @@
+src/commentary/runtime.py
+  s_53408140bf619f::t_1800da5f099757 308-318
+tests/test_players.py
+  s_53408140bf619f::t_cc5b4f43793760 118-129,177,202
+  s_53408140bf619f::t_f8a4c083325fa1 179-180,204-205,207
+src/commentary/sim/tracker.py
+  s_53408140bf619f::t_1800da5f099757 67-69
+src/commentary/__main__.py
+  s_53408140bf619f::t_2ea30fc1fa32ae 184
+src/commentary/perception/players.py
+  s_53408140bf619f::t_cdc67f3dce037d 512
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f35451712b85d8c21a1c6cf14e50d977240a6644",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
