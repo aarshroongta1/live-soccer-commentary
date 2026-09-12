@@ -80,6 +80,34 @@ _STOPWORD_TEXT = """
 """
 _STOPWORDS = frozenset(_STOPWORD_TEXT.split())
 
+#: Words that open a commentary sentence and are grammar, not people.
+#:
+#: The one place a capital letter carries no information is at the start of a
+#: line, and a capitalised ordinary word there is the gate's worst trim: the
+#: second real run lost "Round the keeper and rolled in at the far post — Di
+#: María finishes off a breakaway of real beauty!" to "The keeper and rolled
+#: in at the far post — ...", because "around" was a stopword and "round" was
+#: not. That list can never be finished one word at a time, so the rule is
+#: positional: a run that *starts the line* is not a name if its first word is
+#: an ordinary English opener.
+#:
+#: ``grading/metrics.py`` imports this rather than keeping its own copy. The
+#: two had separate lists and the grader's was the fuller one, so the gate
+#: trimmed names the grader would have allowed. One list, and the grading
+#: wall stays intact because it only ever points this way.
+_OPENER_TEXT = """
+    round over under back up off in out through into onto past across along down
+    inside outside forward square deep wide long high short straight low
+    brilliant great good lovely superb poor well terrible fine smart
+    what here there oh yes no still again almost nearly surely just never always
+    away first second half time full free corner goal penalty offside
+    saved blocked cleared another plenty nothing everything both
+    one two three four five whoever whatever whenever
+    everyone everybody nobody somebody someone neither either
+    red blue white black green yellow orange purple claret navy maroon gold grey amber
+"""
+OPENERS = frozenset(_OPENER_TEXT.split())
+
 #: Prepositions left dangling by a trim ("comes in from  and the winger"), so
 #: they go with the name rather than staying behind as debris.
 _DANGLERS = "from|by|to|for|off|with|of|onto|into|at|on|through|past"
@@ -221,11 +249,18 @@ def _candidates(line: str) -> list[_Candidate]:
 
     Runs rather than single words, so "Jude Bellingham" is checked against the
     roster as one person instead of as two unknown halves.
+
+    A run that starts the line loses an ordinary opener off the front of it
+    first. At position 0 the capital is grammar, and the word after a full
+    stop is the one place where an everyday word — "Round the keeper", "Wide
+    of the post", "Off the bar" — looks exactly like a surname.
     """
     runs: list[_Candidate] = []
     current: list[re.Match[str]] = []
 
     def flush() -> None:
+        if current and current[0].start() == 0 and fold(current[0].group()) in OPENERS:
+            current.pop(0)
         while current and fold(current[0].group()) in _STOPWORDS:
             current.pop(0)
         while current and fold(current[-1].group()) in _STOPWORDS:

@@ -396,3 +396,62 @@ def test_a_kit_colour_is_not_a_name_to_be_trimmed(text: str):
     verdict = FactGate().judge(line, state, pack)
     assert verdict.passed, verdict.reasons
     assert verdict.line == text
+
+
+# -- sentence openers --------------------------------------------------------
+
+
+def test_an_ordinary_word_opening_the_line_is_not_a_name():
+    """The goal line of the second real run, which the gate beheaded.
+
+    "Round the keeper and rolled in at the far post — Di María finishes off a
+    breakaway of real beauty!" went out as "The keeper and rolled in at the far
+    post — ...", reason ``name_not_on_roster: Round``: "around" was a stopword
+    and "round" was not.
+    """
+    state, pack = argentina()
+    text = (
+        "Round the keeper and rolled in at the far post "
+        "— Di María finishes off a breakaway of real beauty!"
+    )
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.GOAL, confidence=0.9, speak=True, line=text
+    )
+    verdict = FactGate().judge(line, state, pack, board_changed=True)
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == text
+    assert verdict.reasons == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Wide of the far post, and the keeper had it covered anyway",
+        "Off the bar and away, France breathe again",
+        "Straight at the goalkeeper from eight yards",
+        "Through the legs of the full-back and into the box",
+    ],
+)
+def test_an_opener_is_only_an_opener_at_the_start_of_the_line(text: str):
+    state, pack = argentina()
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.BUILD_UP, confidence=0.7, speak=True, line=text
+    )
+    verdict = FactGate().judge(line, state, pack)
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == text
+
+
+def test_a_name_that_opens_the_line_still_has_to_be_on_the_roster():
+    """The rule drops one ordinary word, not the front of every sentence."""
+    state, pack = argentina()
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.BUILD_UP,
+        confidence=0.7,
+        speak=True,
+        line="Zaltimore turns inside and drives at the back four",
+    )
+    verdict = FactGate().judge(line, state, pack)
+    assert "Zaltimore" not in verdict.line
+    assert any(r.startswith("name_not_on_roster: Zaltimore") for r in verdict.reasons)

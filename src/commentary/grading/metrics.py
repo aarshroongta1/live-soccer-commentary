@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from commentary.gate import OPENERS
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, WireEvent
 from commentary.trace import read_trace, rows_of
 from commentary.voice.speaker import WORDS_PER_SECOND
@@ -33,20 +34,6 @@ _STOPWORD_TEXT = (
 )
 STOPWORDS = frozenset(_STOPWORD_TEXT.split(" "))
 
-#: Words that commonly open a commentary sentence and are not people.
-#: Without these, every "Brilliant save" reads as an unknown surname, because
-#: the one place a capital letter carries no information is after a full stop.
-_OPENER_TEXT = (
-    "brilliant great good lovely superb poor well terrible what here there oh yes no "
-    "still again almost nearly surely away back first second half time full free corner "
-    "goal penalty offside saved blocked cleared straight short long high wide just "
-    "another one two three four five never always plenty nothing everything both "
-    "whoever whatever whenever everyone everybody nobody somebody someone neither either "
-    # The kit colours, for the same reason the gate keeps them: the caller is
-    # told to reach for one when it cannot read a number.
-    "red blue white black green yellow orange purple claret navy maroon gold grey amber"
-)
-OPENERS = frozenset(_OPENER_TEXT.split(" "))
 
 #: Ways a line can claim a goal. The first version listed "goal", "scores"
 #: and "it's in", and therefore missed "It is in! ... has scored" entirely —
@@ -391,6 +378,11 @@ def _is_ordinary_opener(text: str, word: str) -> bool:
     invented and then put first in the sentence is the error that matters
     most, so anything not recognisably an ordinary opener is treated as a
     name claim. The model judge is what settles the genuinely ambiguous ones.
+
+    The list lives in the gate, which applies the same rule to the same
+    words. A grader with its own copy marks names the gate has already
+    trimmed, or lets through words the gate cut — either way the table stops
+    describing the system it is scoring.
     """
     return text.strip().startswith(word) and normalise(word) in OPENERS
 
