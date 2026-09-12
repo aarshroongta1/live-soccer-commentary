@@ -823,11 +823,15 @@ class Runtime:
         """The player this sighting is about, or None if it does not stand up.
 
         A name settles which side it is and which number goes with it, so a
-        number given alongside has to agree. A number on its own is checked
-        against the squad of whichever side the tracker says that body is in,
-        because both teams have an eleven and only the picture can say which
-        one this is — so a number with no tag resolves to nobody, and says
-        so, rather than picking a side.
+        number given alongside has to agree.
+
+        A number on its own only names somebody when one squad wears it. This
+        used to resolve the side from the kit split, and the kit split is the
+        weakest link in the chain by its own docstring: on the real clip it
+        put an Argentina body on France, and a sighting of "26" on it became
+        Marcus Thuram in a passage Argentina played the whole of. Both squads
+        had a 26. Nothing that saw the shirt could tell them apart, so
+        nothing should have claimed to.
         """
         if self.pack is None:
             return None
@@ -841,22 +845,17 @@ class Runtime:
             if sighting.number is not None and sighting.number != player.number:
                 return None
             return side, player.number, player.name
-        if sighting.number is None or mark is None:
+        if sighting.number is None:
             return None
-        side = self._side_of(mark, cursor)
-        if side is Side.UNKNOWN:
+        wearing = [
+            (side, wearer)
+            for side in (Side.HOME, Side.AWAY)
+            if (wearer := _player_numbered(self.pack, side, sighting.number)) is not None
+        ]
+        if len(wearing) != 1:
             return None
-        numbered = _player_numbered(self.pack, side, sighting.number)
-        if numbered is None:
-            return None
-        return side, sighting.number, numbered.name
-
-    def _side_of(self, mark: int, cursor: float) -> Side:
-        """Which team the tracker has that body in, as of the frame called on."""
-        for track in self.tracks_for(cursor):
-            if track.id == mark:
-                return track.side
-        return Side.UNKNOWN
+        one_side, wearer = wearing[0]
+        return one_side, sighting.number, wearer.name
 
     def _note_restart(self, line: CallerLine, cursor: float) -> None:
         """Has the game gone again since the goal the state is holding?

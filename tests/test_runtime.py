@@ -636,21 +636,45 @@ async def test_a_sighting_names_the_track_and_is_believed(tmp_path: Path) -> Non
 
 
 @pytest.mark.asyncio
-async def test_a_number_alone_is_read_against_the_side_the_tracker_says(
+async def test_a_number_alone_names_somebody_only_if_one_squad_wears_it(
     tmp_path: Path,
 ) -> None:
+    """The kit split does not get to say who a shirt belongs to.
+
+    On the real clip it put an Argentina body on France, and a sighting of
+    "26" on that track became Marcus Thuram through a passage Argentina
+    played the whole of. Both squads had a 26; nothing that saw the shirt
+    could tell them apart, so nothing should have claimed to.
+    """
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    assert runtime.pack is not None
+    home = {p.number for p in runtime.pack.home.squad if p.number is not None}
+    away = {p.number for p in runtime.pack.away.squad if p.number is not None}
+    shared = sorted(home & away)
+    only_home = sorted(home - away)
+
+    if only_home:
+        number = only_home[0]
+        name = next(p.name for p in runtime.pack.home.squad if p.number == number)
+        _runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=number))
+        assert binder.bound == [(4, Side.HOME, number, name)]
+
+    if shared:
+        _runtime, both = await _with_sightings(tmp_path, Sighting(mark="E", number=shared[0]))
+        assert both.bound == [], "two players wear it and the picture cannot say which"
+
+
+@pytest.mark.asyncio
+async def test_a_mark_that_is_a_word_is_not_a_tag(tmp_path: Path) -> None:
+    """A real run reported a mark of "Thuram", which parsed to a track id."""
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     number, name = _home_number(runtime)
 
-    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=number))
-    assert binder.bound == [(4, Side.HOME, number, name)]
-
-    # The same number on a body the tracker has in neither team is nobody:
-    # both squads have an eleven and only the picture says which this is.
-    _runtime, unknown = await _with_sightings(
-        tmp_path, Sighting(mark="E", number=number), sides={4: Side.UNKNOWN}
+    _runtime, binder = await _with_sightings(
+        tmp_path, Sighting(mark="Thuram", number=number, name=name)
     )
-    assert unknown.bound == []
+
+    assert binder.bound == [], "a word is not a tag, so there is no body to bind to"
 
 
 @pytest.mark.asyncio

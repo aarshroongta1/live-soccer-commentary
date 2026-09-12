@@ -167,10 +167,19 @@ def mark_of(track_id: int) -> str:
             return letters
 
 
+#: Longest tag we will ever draw, and therefore the longest we will read. Three
+#: letters is 18278 tracks, more than a match produces. Without the cap every
+#: word is a tag: a real run reported a mark of "Thuram", which parsed to a
+#: track id in the millions and bound a name to a body that did not exist.
+MARK_MAX_LETTERS = 3
+
+
 def id_of(mark: str) -> int | None:
     """The track a tag refers to, or None if that is not a tag."""
     text = mark.strip().upper()
     if not text or not text.isalpha() or not text.isascii():
+        return None
+    if len(text) > MARK_MAX_LETTERS:
         return None
     value = 0
     for char in text:
