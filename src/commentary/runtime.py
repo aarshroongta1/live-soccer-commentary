@@ -54,10 +54,12 @@ from commentary.prompts.caller import MARK_TOLERANCE_S
 from commentary.schemas import (
     Beat,
     BoardRead,
+    CallerLine,
     Event,
     Incident,
     KnowledgePack,
     MatchState,
+    Scene,
     Side,
     SpeakDecision,
     Trigger,
@@ -93,15 +95,21 @@ TRACK_MIN_PERIOD_S = 1.0 / 15
 #: fastest it could run.
 TRACK_MAX_HZ = 15
 
-#: How long a goal stays a thing worth talking about. The celebration, the
-#: replay, the scorer's face and the restart all belong to a goal the state
-#: already holds, and on the same run four lines about one goal were rejected
-#: as phantom goals over the eighty seconds after it because the only
-#: question being asked was whether the board had moved *near the cursor*.
+#: The backstop on how long a goal stays a thing worth talking about, and
+#: only the backstop: what really ends it is play restarting.
 #:
-#: Measured from the cursor at which the state took the change in, which is
-#: when the scoreline in front of the viewer changed.
-GOAL_TALK_WINDOW_S = 45.0
+#: This was 45 seconds of cursor time and that was wrong in kind. A
+#: broadcaster spends 60 to 90 seconds after a goal on the celebration, the
+#: replays, the scorer's face and the walk back, and every line about the
+#: goal in that stretch is a line about something the state holds. On the
+#: second real run the celebration lines at 128.1 and 140.1 were rejected as
+#: phantom goals for being more than 45 s past a goal applied at 66.8 — while
+#: the picture was still showing it, and the kickoff was still 13 s away.
+#:
+#: The cap exists because the restart can be missed: no whistle in the audio,
+#: no kickoff line written. Past it the picture has moved on whatever the
+#: caller says.
+GOAL_TALK_CAP_S = 150.0
 
 
 @dataclass
@@ -201,6 +209,13 @@ class Runtime:
         #: Cursor time at which the state last took in a board goal — not the
         #: time of the board change itself. See ``_apply_due_board_changes``.
         self._last_goal_ts: float | None = None
+        #: Cursor time at which play was seen to restart after that goal, and
+        #: the end of talking about it. ``None`` until it is seen.
+        self._restart_ts: float | None = None
+        #: A whistle heard since that goal. On its own it is not a restart —
+        #: the referee whistles the goal too — but a whistle and then a live
+        #: picture is the game going again.
+        self._whistle_since_goal = False
         self._last_spoken_video_ts: float | None = None
         self._last_analyst_ts: float = 0.0
         self._recent_event: tuple[Event, float] | None = None
@@ -392,6 +407,8 @@ class Runtime:
             self.audio_ring.append(chunk)
             self.stats.audio_chunks += 1
             if self.whistle.feed(chunk) is not None:
+                if self._last_goal_ts is not None:
+                    self._whistle_since_goal = True
                 self._fire(Trigger.WHISTLE)
             if (roar := self.roar.feed(chunk)) is not None:
                 # Kept with its timestamp, not just as a trigger: the fact
@@ -472,6 +489,8 @@ class Runtime:
         # and the lines about the goal come after that, not after 62.7.
         if any(c.is_goal for c in due):
             self._last_goal_ts = cursor
+            self._restart_ts = None
+            self._whistle_since_goal = False
         for change in due:
             if change.is_goal and change.scoring_side is not None:
                 self.state.incidents.append(
@@ -621,6 +640,7 @@ class Runtime:
 
         self._publish(Topic.CALLER, cursor, line)
         self.state_tracker.apply_caller(line, cursor)
+        self._note_restart(line, cursor)
         if not line.speak or not line.line.strip():
             return
 
@@ -705,17 +725,42 @@ class Runtime:
         window = min(GOAL_GRAPHIC_LAG_S, self.settings.capture.delay_s)
         return cursor - 2.0 <= pending.first_ts <= cursor + window
 
+    def _note_restart(self, line: CallerLine, cursor: float) -> None:
+        """Has the game gone again since the goal the state is holding?
+
+        Two ways to see it, and the first of them wins. The caller writing a
+        kickoff is the plain one. The other is a whistle followed by a live
+        picture: the referee's whistle alone is not enough, because the goal
+        itself was whistled, but a whistle and then the caller reporting live
+        play is the restart whatever the caller called the event.
+        """
+        if self._last_goal_ts is None or self._restart_ts is not None:
+            return
+        if line.event is Event.KICKOFF or (
+            self._whistle_since_goal and line.scene is Scene.LIVE_PLAY
+        ):
+            self._restart_ts = cursor
+
     def _goal_already_in_the_state(self, cursor: float) -> bool:
         """Is this a line about a goal the state has already taken in?
 
-        The celebration, the replay, the scorer's face, the restart: all of
+        The celebration, the replay, the scorer's face, the walk back: all of
         them are lines about a goal, and none of them is near the moment the
         board moved. Asking only whether the board moved *at the cursor*
         rejected four correct lines about one goal over eighty seconds.
+
+        It runs until the game does. A fixed window cannot be the answer
+        because a broadcaster's celebration is not a fixed length — the
+        second real run lost two correct lines to a 45-second one while the
+        picture was still on the scorer — and the thing that ends it is not
+        a clock but the ball being kicked off again. The cap is for the
+        restart nobody saw.
         """
         if self._last_goal_ts is None:
             return False
-        return 0.0 <= cursor - self._last_goal_ts <= GOAL_TALK_WINDOW_S
+        if not 0.0 <= cursor - self._last_goal_ts <= GOAL_TALK_CAP_S:
+            return False
+        return self._restart_ts is None or cursor < self._restart_ts
 
     def _board_changed_near(self, cursor: float) -> bool:
         """Did the scoreboard move around the moment being called?

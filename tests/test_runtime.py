@@ -24,7 +24,7 @@ from commentary.config import (
 from commentary.grading import metrics, report
 from commentary.perception.players import Track
 from commentary.runtime import Runtime
-from commentary.schemas import Event, Side
+from commentary.schemas import CallerLine, Event, Scene, Side
 from commentary.sim import MatchSim, SimOracle, SimSource
 from commentary.trace import RunTrace
 from commentary.voice import LogSpeaker
@@ -271,10 +271,10 @@ async def test_the_lines_that_follow_a_goal_are_about_a_goal_the_state_holds(
 ) -> None:
     """The celebration, the replay and the scorer's face are not phantom goals."""
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
-    from commentary.runtime import GOAL_TALK_WINDOW_S
+    from commentary.runtime import GOAL_TALK_CAP_S
 
     runtime._last_goal_ts = 63.7
-    for cursor in (66.0, 76.0, 63.7 + GOAL_TALK_WINDOW_S):
+    for cursor in (66.0, 76.0, 130.0, 63.7 + GOAL_TALK_CAP_S):
         assert runtime._board_supports_goal(cursor) is True, f"rejected at cursor {cursor}"
 
 
@@ -285,7 +285,7 @@ async def test_a_goal_claim_long_after_the_last_one_still_fails(tmp_path: Path) 
     runtime._last_goal_ts = 100.0
     runtime.board_tracker._pending = None
     runtime._board_changes = []
-    assert runtime._board_supports_goal(200.0) is False
+    assert runtime._board_supports_goal(300.0) is False
 
 
 @pytest.mark.asyncio
@@ -300,25 +300,26 @@ async def test_applying_a_board_goal_starts_the_clock_on_talking_about_it(
     viewer's scoreboard had even changed.
     """
     from commentary.perception.board import BoardChange
-    from commentary.runtime import GOAL_TALK_WINDOW_S
+    from commentary.runtime import GOAL_TALK_CAP_S
 
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     runtime._last_goal_ts = None
     runtime._board_changes = [
         BoardChange(ts=63.7, home_score=2, away_score=0, clock=None, period=1, previous=(1, 0)),
     ]
-    runtime.buffer.append(Frame(ts=140.0, image=np.zeros((4, 4, 3), dtype=np.uint8)))
+    runtime.buffer.append(Frame(ts=300.0, image=np.zeros((4, 4, 3), dtype=np.uint8)))
     cursor = runtime.buffer.cursor_ts
-    assert cursor is not None and cursor > 63.7 + GOAL_TALK_WINDOW_S
+    assert cursor is not None and cursor > 63.7 + GOAL_TALK_CAP_S
 
     runtime._apply_due_board_changes()
     assert runtime._last_goal_ts == cursor
 
-    # A line about the goal, well over 45 s after the board first showed it
-    # and seconds after the state caught up, is a line about a goal we hold.
+    # A line about the goal, well over the cap past the board first showing
+    # it and seconds after the state caught up, is a line about a goal we
+    # hold: the cap runs from when the viewer's scoreline changed.
     runtime.board_tracker._pending = None
     assert runtime._board_supports_goal(cursor + 5.0) is True
-    assert runtime._board_supports_goal(cursor + GOAL_TALK_WINDOW_S + 1.0) is False
+    assert runtime._board_supports_goal(cursor + GOAL_TALK_CAP_S + 1.0) is False
 
 
 @pytest.mark.asyncio
@@ -468,3 +469,95 @@ async def test_what_a_slow_tracker_did_find_still_reaches_the_caller() -> None:
     tracked_ts = runtime._tracks[-1][0]
     assert runtime.tracks_for(tracked_ts + 0.3), "a third of a second is one pass at 3 Hz"
     assert runtime.tracks_for(tracked_ts + 5.0) == [], "the bodies have long since moved"
+
+
+# -- goal talk runs until the game does --------------------------------------
+#
+# Second real run, one goal: the state took it in at cursor 66.8, the caller
+# wrote a kickoff line at 153.5, and in between the broadcaster showed the
+# celebration, the replays and the scorer's face. The two lines about the
+# goal at 128.1 and 140.1 were rejected as phantom goals by a 45-second
+# window while the picture was still on it.
+
+
+def _goal_line(event: Event = Event.GOAL, scene: Scene = Scene.LIVE_PLAY) -> CallerLine:
+    return CallerLine(
+        scene=scene, event=event, confidence=0.8, speak=True, line="They are still celebrating."
+    )
+
+
+@pytest.mark.asyncio
+async def test_the_celebration_is_still_about_the_goal_until_play_restarts(
+    tmp_path: Path,
+) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime.board_tracker._pending = None
+    runtime._board_changes = []
+    runtime._last_goal_ts = 66.8
+
+    for cursor in (128.1, 140.1):
+        assert runtime._board_supports_goal(cursor) is True, f"rejected at cursor {cursor}"
+
+    runtime._note_restart(_goal_line(event=Event.KICKOFF), 153.5)
+    assert runtime._restart_ts == 153.5
+    assert runtime._board_supports_goal(170.0) is False
+
+    # The question is where the cursor is, not when the kickoff was noticed:
+    # a line about the goal from before the restart is still about the goal.
+    assert runtime._board_supports_goal(140.1) is True
+
+
+@pytest.mark.asyncio
+async def test_a_whistle_and_then_a_live_picture_is_a_restart(tmp_path: Path) -> None:
+    """The referee whistles the goal too, so the whistle alone is not enough."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime.board_tracker._pending = None
+    runtime._board_changes = []
+    runtime._last_goal_ts = 66.8
+
+    runtime._note_restart(_goal_line(scene=Scene.LIVE_PLAY), 100.0)
+    assert runtime._restart_ts is None, "a live picture with no whistle is not a restart"
+
+    runtime._whistle_since_goal = True
+    runtime._note_restart(_goal_line(scene=Scene.CLOSE_UP), 120.0)
+    assert runtime._restart_ts is None, "a whistle over a close-up is not a restart"
+
+    runtime._note_restart(_goal_line(scene=Scene.LIVE_PLAY), 150.0)
+    assert runtime._restart_ts == 150.0
+    assert runtime._board_supports_goal(160.0) is False
+
+
+@pytest.mark.asyncio
+async def test_a_restart_nobody_saw_is_what_the_cap_is_for(tmp_path: Path) -> None:
+    from commentary.runtime import GOAL_TALK_CAP_S
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime.board_tracker._pending = None
+    runtime._board_changes = []
+    runtime._last_goal_ts = 66.8
+
+    assert runtime._board_supports_goal(66.8 + GOAL_TALK_CAP_S) is True
+    assert runtime._board_supports_goal(66.8 + GOAL_TALK_CAP_S + 0.1) is False
+
+
+@pytest.mark.asyncio
+async def test_the_next_goal_starts_the_talking_over(tmp_path: Path) -> None:
+    """A restart belongs to the goal it followed, not to the one after it."""
+    from commentary.perception.board import BoardChange
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime.board_tracker._pending = None
+    runtime._last_goal_ts = 66.8
+    runtime._whistle_since_goal = True
+    runtime._note_restart(_goal_line(event=Event.KICKOFF), 153.5)
+    assert runtime._board_supports_goal(200.0) is False
+
+    runtime._board_changes = [
+        BoardChange(ts=190.0, home_score=3, away_score=0, clock=None, period=1, previous=(2, 0)),
+    ]
+    runtime.buffer.append(Frame(ts=200.0, image=np.zeros((4, 4, 3), dtype=np.uint8)))
+    runtime._apply_due_board_changes()
+
+    assert runtime._restart_ts is None
+    assert runtime._whistle_since_goal is False
+    assert runtime._board_supports_goal(runtime.cursor_ts + 30.0) is True

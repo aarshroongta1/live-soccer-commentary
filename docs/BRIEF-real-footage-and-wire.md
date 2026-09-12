@@ -307,6 +307,27 @@ Fix, in `runtime.py` and `perception/players.py`:
 5. One trace row per pass, topic `tracks`: ts, how many tracks, how many with
    a side, how many with a name, and the pass latency in ms.
 
+### A19. Goal talk runs until the game does
+
+Same run, same goal. The state took it in at cursor 66.8; the caller wrote a
+kickoff line at 153.5; in between the broadcaster showed the celebration, the
+replays and the scorer's face. The two lines about the goal at 128.1 and
+140.1 were rejected `unconfirmed_goal` because they were more than
+`GOAL_TALK_WINDOW_S` (45 s) past the goal being applied.
+
+A fixed window is wrong in kind. A broadcaster spends 60 to 90 seconds after
+a goal on exactly that material, the length of it is the broadcaster's
+choice, and every line about the goal in that stretch is a line about
+something the state holds. What ends it is not a clock, it is the ball being
+kicked off again.
+
+Fix: goal talk is allowed from the applied goal until play restarts. Play has
+restarted at the first of — the caller's next line with `event` KICKOFF, or a
+WHISTLE trigger since the goal followed by a line with a LIVE_PLAY scene (the
+whistle alone will not do; the referee whistles the goal too). `GOAL_TALK_CAP_S
+= 150.0` is the backstop for the restart nobody saw. A goal being applied
+starts it over: the restart belongs to the goal it followed.
+
 ### Measured on the run (for the README later)
 
 Opus 5 caller: 52 board reads, all confident, score and replay (bug absent 91-131 s)

@@ -161,6 +161,11 @@ names on the big moments, not pass-by-pass — is what is being tested.
   into caller lines — so what holds the score at 0-0 is the clip ending
   before three agreeing post-goal reads land, which is a race. Nothing to do
   with A16: eight runs of it after that change all passed.
+- **There is no fixed window on talking about a goal.** It runs from the
+  cursor the state applied it at until play restarts — a kickoff line, or a
+  whistle since the goal and then a live picture — with `GOAL_TALK_CAP_S`
+  (150 s) as the backstop. A test asserting that a celebration line expires
+  on a clock is asserting the bug that rejected two correct lines.
 - **The board tracker now believes a score change it saw before a replay.**
   A pending change survives absent reads and confirms whenever the bug comes
   back, stamped at the first read that saw it. Anything asserting the old
