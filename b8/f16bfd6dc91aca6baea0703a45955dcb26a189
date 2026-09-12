@@ -1,0 +1,35 @@
+src/commentary/prompts/analyst.py
+  s_53408140bf619f::t_c76c67d1cd83a2 78-84,109-112,115-123,133-135
+src/commentary/prompts/researcher.py
+  s_53408140bf619f::t_652fb249d1ac95 57-61
+src/commentary/prompts/caller.py
+  s_53408140bf619f::t_c76c67d1cd83a2 63-67
+src/commentary/agents/caller.py
+  s_53408140bf619f::t_a99e8091c79e7b 196,206-209
+src/commentary/schemas.py
+  s_53408140bf619f::t_00db053834acda 180-183
+tests/test_caller.py
+  s_53408140bf619f::t_a99e8091c79e7b 253-264
+src/commentary/gate.py
+  s_53408140bf619f::t_00db053834acda 178-182
+tests/test_gate.py
+  s_53408140bf619f::t_652fb249d1ac95 351-372
+src/commentary/config.py
+  s_53408140bf619f::t_c76c67d1cd83a2 82-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b8f16bfd6dc91aca6baea0703a45955dcb26a189",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
