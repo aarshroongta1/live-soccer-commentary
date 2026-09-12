@@ -82,7 +82,12 @@ class Sighting(BaseModel):
     shirt number, so the ambiguity is gone rather than argued with.
     """
 
-    mark: str = Field(description="The letter code printed in the tag above the player")
+    mark: str = Field(
+        description=(
+            "The letter in the tag above that player, copied exactly. "
+            "Required: a sighting with no letter cannot be used at all."
+        )
+    )
     number: int | None = Field(default=None, description="Shirt number, if legible")
     name: str | None = Field(default=None, description="Name on the shirt or a graphic")
 

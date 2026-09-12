@@ -410,6 +410,7 @@ class Runtime:
                 # The tags carrying a name, so a trace says how long one
                 # lasted, and the cut that ends every one of them.
                 names=[mark_of(t.id) for t in tracks if t.name is not None],
+                ids=[t.id for t in tracks],
                 cut=cut,
             )
             if tracks:

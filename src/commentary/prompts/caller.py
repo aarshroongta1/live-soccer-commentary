@@ -67,25 +67,33 @@ allowed to use: match the kit that player is wearing to a team sheet below,
 find that number in it, and use that player's surname. A name across the back
 of a shirt and a name in a broadcast graphic count the same way.
 
-Some players carry a small tag drawn above them. A tag with a surname is a
-name you may use for that player, and for nobody else on the pitch. A tag
-that is a letter code — A, B, ... Z, AA, AB — is a body the system is
-following and has not identified. It is a label for that body and nothing
-else: it is not a shirt number, not a squad number, and not a name. A player
-with no tag at all is unidentified, whatever you think you recognise. A
-surname tag you used goes in names_read exactly as printed, because it is a
+Players carry a small tag drawn above them in a dark box. A tag with a
+surname is a name you may use for that player, and for nobody else on the
+pitch. A tag that is a letter — A, B, ... Z, AA, AB — is a body being
+followed that nobody has identified yet. A letter is a label for that body
+and nothing else: not a shirt number, not a squad number, not a name. A
+player with no tag at all is unidentified, whatever you think you recognise.
+
+Whenever you read a shirt number, you have two jobs and the second one is the
+one that lasts. Say the name in your line, and put the pairing in sightings:
+the letter of the tag over that player, and the number you read on the shirt.
+The player tagged D whose shirt reads 11 is one sighting, mark "D", number 11.
+A name across the shoulders goes in the same sighting. Do this every single
+time a number is legible, even if you have reported that player before and
+even if the line you are writing does not mention them.
+
+That pairing is the only way a name sticks to a body. Report it and the tag
+over that player becomes their surname for everybody who looks at the picture
+afterwards, including you, through all the shots where the number is turned
+away. Leave it out and the name dies with the line. A sighting without a
+letter is worth nothing at all — if you cannot see which tag is on the player
+whose number you read, there is nothing to report. And never report a pairing
+you cannot actually see: a guess follows that player around for the rest of
+the passage.
+
+A surname tag you used goes in names_read exactly as printed, because it is a
 name you said. A letter tag never goes in names_read: it is not a name and
 not something you read off the picture, it is our label for a body.
-
-When you can read a shirt number or a name on a tagged player, say so in
-sightings: the letter of the tag, and what you read on the shirt. The player
-tagged D in an eleven shirt is a sighting with mark "D" and number 11; a name
-across the shoulders of the same player is a sighting with mark "D" and that
-name; give both when you can see both. That is how a name gets attached to a
-body and stays on it through the shots where the number is turned away, so it
-is worth doing every time a shirt is legible. Never report a sighting you
-cannot actually read — a guess here follows that player around for the rest
-of the passage.
 
 MATCH STATE may carry a statistician's lines: "on the ball" with a name,
 "from" with the name of whoever passed it, and a "just now" list of things
@@ -179,6 +187,16 @@ def caller_system(pack: KnowledgePack | None, config: CallerConfig | None = None
 #: other frame, which at three passes a second means no marks at all.
 MARK_TOLERANCE_S = 0.5
 
+#: How big to draw a tag, and how thick. The caller's frames are downscaled
+#: to 768 px wide and JPEG'd at quality 70 before they are sent, so a tag
+#: drawn at 0.4 and one pixel thick arrives about six pixels tall — legible
+#: to somebody looking for it, which is not the same as legible to somebody
+#: reading a football match. On the first run with letters the caller read
+#: nine shirt numbers correctly and reported a tag exactly twice, both times
+#: leaving the letter blank.
+MARK_SCALE = 0.6
+MARK_THICKNESS = 2
+
 
 def draw_marks(
     image: np.ndarray, tracks: Sequence[Track], pack: KnowledgePack | None
@@ -210,7 +228,9 @@ def draw_marks(
         if text is None:
             continue
         x0, y0, _x1, _y1 = track.box
-        (width, height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)
+        (width, height), _ = cv2.getTextSize(
+            text, cv2.FONT_HERSHEY_SIMPLEX, MARK_SCALE, MARK_THICKNESS
+        )
         top = y0 - height - 6
         if top < 0:
             # No room above the player: a label clipped by the top edge is not
@@ -223,9 +243,9 @@ def draw_marks(
             text,
             (x0 + 3, top + height + 1),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.4,
+            MARK_SCALE,
             (255, 255, 255),
-            1,
+            MARK_THICKNESS,
             cv2.LINE_AA,
         )
     return marked
