@@ -552,7 +552,21 @@ async def run_variant(
     # The truth and the notes handed to the grader are the sim's own, never the
     # variant's: worldcupvoice runs without a roster but is still judged
     # against one, exactly as it would be against a real match.
-    card = report.score(variant.name, path, truth, sim.knowledge_pack, duration_s=watched)
+    #
+    # The same truth doubles as the feed the names are scored against, which
+    # is the best this fixture can do and is a floor rather than the number:
+    # the sim's script names a player at a goal, a save, a foul, a card and a
+    # substitution and at nothing else, so a correct name said during an
+    # ordinary passage of play has nothing to be marked right against. On real
+    # footage this column is scored against StatsBomb, which names every touch.
+    card = report.score(
+        variant.name,
+        path,
+        truth,
+        sim.knowledge_pack,
+        duration_s=watched,
+        wire_events=ReplayWire.from_truth(truth, 0.0).events,
+    )
     card.watched_s = watched
     return card
 

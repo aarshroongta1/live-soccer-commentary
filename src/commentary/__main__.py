@@ -22,6 +22,7 @@ import numpy as np
 from commentary.capture import DelayBuffer, FileCapture, FrameSource, ScreenCapture
 from commentary.config import SETTINGS, Settings
 from commentary.llm.base import LLMBackend, LLMError
+from commentary.perception.players import VisionExtraMissing
 from commentary.runtime import Runtime, trace_path
 from commentary.trace import RunTrace
 from commentary.voice import LogSpeaker, Speaker, VoiceUnavailable
@@ -558,9 +559,10 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("\nstopped", file=sys.stderr)
         return 130
-    except (LLMError, VoiceUnavailable) as exc:
-        # A missing key is a thing to fix, not a thing to debug. The message
-        # already says what to do, so a traceback only buries it.
+    except (LLMError, VoiceUnavailable, VisionExtraMissing) as exc:
+        # A missing key or a missing optional extra is a thing to fix, not a
+        # thing to debug. The message already says what to do, so a traceback
+        # only buries it.
         print(str(exc), file=sys.stderr)
         return 2
 

@@ -26,7 +26,6 @@ from collections import deque
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-import cv2
 import numpy as np
 
 from commentary.capture.buffer import Frame
@@ -283,6 +282,8 @@ class PlayerTracker:
         scale = WORK_WIDTH / w if w > WORK_WIDTH else 1.0
         if scale < 1.0:
             size = (WORK_WIDTH, max(1, int(round(h * scale))))
+            import cv2
+
             small = cv2.resize(image, size, interpolation=cv2.INTER_AREA)
         else:
             # A copy even when nothing is resized, so a detector that writes on
@@ -501,6 +502,8 @@ class _Parseq:
 
     def read(self, crop: np.ndarray) -> tuple[str, float]:
         torch = importlib.import_module("torch")
+        import cv2
+
         resized = cv2.resize(crop, (128, 32), interpolation=cv2.INTER_CUBIC)[:, :, ::-1]
         tensor = torch.from_numpy(np.ascontiguousarray(resized)).permute(2, 0, 1)
         tensor = tensor.float().div(255.0).sub(0.5).div(0.5).unsqueeze(0)

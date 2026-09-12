@@ -64,6 +64,20 @@ or write the JSON by hand from the team sheet — shirt numbers matter more
 than anything else in it, and for a StatsBomb fixture the lineups file has
 them. Set each team's `kit` and `demonym` by hand either way.
 
+## 4b. Names from the picture
+
+Drawing names on the caller's frames needs the vision extra, and it is on by
+default for `--source file`:
+
+```
+uv sync --extra vision
+```
+
+That pulls torch and downloads model weights the first time it runs. To skip
+it entirely for a first run, pass `--no-marks` — the caller then works from
+the team sheet and the kit colours, which is the `no-marks` row of the
+ablation table.
+
 ## 5. Ten minutes first
 
 Never start on ninety. Cut ten minutes that contain something:
