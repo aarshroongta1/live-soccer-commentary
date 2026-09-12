@@ -4,7 +4,7 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `de26be1`, 35 commits on top of `c2ef18e`.
+**Head:** `f6c09ed`, 37 commits on top of `c2ef18e`.
 **Gates:** `uv run pytest` 477 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
@@ -176,6 +176,30 @@ where the roster check has no latitude, and four lines died as invented
 names. That half is fixed in `a40b27b`: the rules now say a letter tag never
 goes in `names_read`, and the gate no longer reads a short capitalised
 alphabetic token there as a name claim. **It has not been run since.**
+
+### The loop is blocked: close-up bodies have no tag
+
+Two runs into the definition-of-done loop, both 5/12, and the measurement
+that explains both (offline, no API, over the whole clip):
+
+- 9113 tracked bodies. **784 of them are 200 px tall or more** — a close-up,
+  which is the only place a shirt number is legible at 768 px.
+- **44 of those 784 carry a tag. Six per cent.**
+- None of the suppressions are the "no room above the player" rule. Every
+  one is `Side.UNKNOWN`: `_mark_text` draws nothing for a body the kit split
+  will not put in a team.
+
+The kit split is fitted on wide-shot crops — small, half grass — and a
+close-up crop is shirt and skin at a completely different scale. Its
+histogram sits outside `KIT_DISTANCE` of both centroids, so it is called a
+referee. The bodies whose numbers can be read are exactly the bodies the
+split refuses to classify, and C11 rule 3 says only a body with a side is
+tagged. So the caller reads a number off a player who has no tag, and there
+is nothing for it to report.
+
+That is why run 2 produced *fewer* sightings than run 1 rather than more: the
+sharper rules told it that a sighting with no letter is worth nothing, which
+correctly suppressed the two empty-mark ones and left nothing behind.
 
 ### The tag fix worked, and the caller will not use the tag
 
