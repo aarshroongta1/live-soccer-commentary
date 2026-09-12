@@ -88,22 +88,23 @@ against. Both need real footage.
 
 ## The gap, and it is the whole remaining gap
 
-**All three vision models have now been run on real footage, and what they
-say is not yet measured.** The `vision` extra installs, and on frames pulled
-out of the Argentina-France clip: RF-DETR nano finds 15 bodies on a wide
-shot and 1 to 3 on a close-up, at 92 ms a frame at 640 wide on MPS; SigLIP
-embeds fifteen crops in about a second; PARSeq reads a torso crop in 28 ms.
-What it does *not* yet have is a number off a shirt. Across eight frames of
-that clip, 50 person crops, six were the 110 px tall the number reader asks
-for, and PARSeq returned "Flick", "THE" and a 0.52-confidence "7" — all of
-them thrown away by the digit and confidence gates, correctly. A wide shot
-of a football match is not where shirt numbers live; the close-ups are, and
-this clip is three minutes with most of it wide.
+**The vision chain has been run on real footage, and it cost two of its three
+models.** A full `--marks` run on the Argentina-France clip (trace
+`scratchpad/run/runs/marks/`) said: 83 tracker passes in 175 s, median 1.6 s
+a pass, median 3 tracks a pass on footage with fifteen bodies in it, `named:
+0` on every pass, and `with_side` 0 on most — PARSeq confirmed no shirt
+number in three minutes and the kit split never gathered the 200 crops it
+wanted. In the same three minutes the caller read nine number-and-name pairs
+off the same frames, every one correct.
 
-So the A/B further up still measures what the marks do to *the writer*, not
-how well these three read a match. What a real run settles now is
-`name_rate` and `name_precision`, and the honest expectation in the README —
-names on the big moments, not pass-by-pass — is what is being tested.
+So PARSeq and SigLIP are gone (C11). The kit split is an HSV histogram, the
+caller reads the numbers and reports them against a `#id` tag drawn over each
+tracked body, and the tracker's job is the one a model looking at single
+frames cannot do: keep that name on that body while the camera stays on it.
+
+What a real run settles now is `name_rate` and `name_precision`, and the
+honest expectation in the README — names on the big moments, not pass-by-pass
+— is what is being tested.
 
 `scripts/first_real_run.md` is the order to do it in. Short version:
 
@@ -130,6 +131,9 @@ names on the big moments, not pass-by-pass — is what is being tested.
 - **`run --source file` has the marks on by default**, so on a machine without
   the `vision` extra it stops with a one-line message telling you to install
   it. That is deliberate; `--no-marks` is the other answer.
+- **A `#id` tag is not a shirt number.** It is a handle so the caller can say
+  which body it read a number off, and the caller prompt says so twice. If it
+  ever reads as a claim about a player, the marks are doing harm.
 - **The tracker runs in its own loop, on the newest frame, and skips the
   rest.** It is not a per-frame pipeline and must never become one again: one
   pass is 92 ms at best and frames arrive every 66 ms, so anything that

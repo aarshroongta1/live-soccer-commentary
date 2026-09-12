@@ -38,21 +38,26 @@ Research behind the design choices: [`docs/research/`](docs/research).
 
 ## Names
 
-Naming players is the hardest thing on that list, and the answer is not "ask the
-vision model who that is". It is five steps, and the first four are local:
+Naming players is the hardest thing on that list. The first answer here was a
+local chain — detect, cluster the kits with SigLIP, read the shirt with PARSeq,
+draw the name — and on three minutes of real broadcast it confirmed **no shirt
+number at all**, while Claude read nine correct number-and-name pairs off the
+very same frames. So the jobs swapped:
 
-1. Detect every body in the frame (RF-DETR, on a 640-wide copy).
-2. Track them, so an identity survives the next frame.
-3. Split them into two kits by clustering SigLIP embeddings of each crop;
-   anything far from both centroids is a referee, not a player.
-4. Read the shirt number off the torso when the crop is big enough (PARSeq),
-   keep it once two reads agree, and resolve (team, number) to a name from the
-   team sheet.
-5. **Draw the name on the frame**, so Claude reads it instead of guessing.
+1. Detect every body in the frame (RF-DETR nano, on a 640-wide copy).
+2. Track them, so a body keeps its identity while the camera stays on it.
+3. Split them into two kits by an HSV histogram of each torso; anything far
+   from both centroids is a referee, not a player.
+4. **Draw a tag above each body** — `#4`, a handle, not a claim about anybody.
+5. Claude reads the shirt and reports the pair: mark 4 is wearing 11. The
+   number is checked against the team sheet, and from then on the tag above
+   that body is the surname — through the shots where the number is turned
+   away, until the camera cuts.
 
-Every model in that chain is open-weights and runs locally, for free, behind a
-small Protocol with a fake in the tests — the suite needs no weights and no
-network. Claude stays the writer.
+One open-weights model, running locally for free, behind a small Protocol with
+a fake in the tests — the suite needs no weights and no network. Claude reads
+and writes; the tracker's contribution is the one Claude cannot make from
+single frames, which is knowing that this body is still that player.
 
 What that buys, honestly: names on the big moments — the shooter, the scorer,
 the fouled and the fouler, the booked player, the substitute — and names through
@@ -65,7 +70,7 @@ One clip, two runs, Claude Opus 5 calling both — the same 110 seconds of the
 same seeded *simulated* match, differing only in whether the marks were drawn.
 On the simulator the tracker reads the dots from the sim's own truth and the
 renderer's font size decides which numbers were legible, so this measures what
-the marks do to the writer, not how well RF-DETR and PARSeq read a broadcast:
+the marks do to the writer, not how well the detector reads a broadcast:
 
 | | lines | lines naming a player | names said | distinct players | wrong names |
 |---|---:|---:|---:|---:|---:|

@@ -57,10 +57,11 @@ Nothing else.
   └───────┬───────┘ └─────────────┬──────────────┘
           │                       │
   ┌───────┴───────┐               │
-  │ Player tracker│               │  RF-DETR + ByteTrack + SigLIP kit
-  │ local, open   │───────────────┤  clustering + PARSeq shirt numbers;
-  │ every 2nd     │               │  (team, number) -> name, drawn on a
-  │ frame, 640 px │               │  COPY of the caller's frames only
+  │ Player tracker│               │  RF-DETR nano + IoU tracking + HSV
+  │ local, open   │───────────────┤  kit split; a #id tag per body, the
+  │ own loop, on  │               │  surname once the caller reads the
+  │ the newest    │               │  shirt, drawn on a COPY of the
+  │ frame, 640 px │               │  caller's frames only
   └───────┬───────┘               │
           ▼                       ▼
   ┌──────────────────────────────────────────────┐
