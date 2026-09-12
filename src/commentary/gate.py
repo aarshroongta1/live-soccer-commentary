@@ -16,8 +16,11 @@ Four rules, in the order a sceptic would apply them.
   roster then the caller did not read a graphic, it imagined one, and the rest
   of that line is suspect with it.
 * A scoreline said out loud must match the board.
-* A goal is only a goal once the board changes or the lookahead frames show a
-  celebration. Nothing else gets to claim one.
+* A goal is only a goal once the board says so or the lookahead frames show a
+  celebration. Nothing else gets to claim one. "The board says so" is the
+  caller's own runtime's judgement and it is broader than a settled change:
+  a board part-way through agreeing counts, and so does a goal the state has
+  already taken in, which is what every line *about* a goal comes after.
 
 Where a line can be saved it is saved. Dropping a name the gate cannot verify
 and leaving "the cross comes in and the winger cuts inside" is better
@@ -345,7 +348,12 @@ class FactGate:
         board_changed: bool = False,
         lookahead_celebration: bool = False,
     ) -> GateVerdict:
-        """Pass, trim, or reject — and always say why."""
+        """Pass, trim, or reject — and always say why.
+
+        ``board_changed`` is whether the scoreboard supports a goal claimed
+        at this moment: a settled change near the cursor, a change the board
+        reader is still confirming, or a goal already in the state.
+        """
         verdict = self._judge(
             line,
             state,

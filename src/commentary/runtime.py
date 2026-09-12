@@ -20,6 +20,12 @@ answers by glancing up at the graphic.
 the buffer made the gate more permissive the longer we chose to wait, which
 is a strange thing for a safety check to do and undid most of what the delay
 was for.
+
+The glance is not only at the settled board. Confirmation takes three
+agreeing reads and lands well after the goal, so the gate also accepts a
+board change the tracker is still gathering evidence for, and accepts a goal
+the state has already taken in as cover for the lines that follow one. What
+the score itself is allowed to move on does not change: three reads.
 """
 
 from __future__ import annotations
@@ -60,7 +66,20 @@ from commentary.voice.speaker import LogSpeaker, Speaker
 #: catches up. A property of television, not of our buffer, which is the
 #: whole point: the window the gate will accept a board change in must not
 #: grow when we choose to wait longer.
-GOAL_GRAPHIC_LAG_S = 5.0
+#:
+#: Measured on the first run against real footage (Argentina v France 2022):
+#: the ball crossed the line at video 58 (StatsBomb 35:22) and the FIFA bug
+#: went 1-0 to 2-0 at video 63.7, 5.7 s later. At the old 5.0 the window
+#: [cursor - 2, cursor + 5] closed at 61.5 and missed it, and the caller's
+#: correct goal call was rejected as unconfirmed.
+GOAL_GRAPHIC_LAG_S = 10.0
+
+#: How long a goal stays a thing worth talking about. The celebration, the
+#: replay, the scorer's face and the restart all belong to a goal the state
+#: already holds, and on the same run four lines about one goal were rejected
+#: as phantom goals over the eighty seconds after it because the only
+#: question being asked was whether the board had moved *near the cursor*.
+GOAL_TALK_WINDOW_S = 45.0
 
 
 @dataclass
@@ -132,6 +151,7 @@ class Runtime:
         self._board_changes: list[BoardChange] = []
         self._roars: list[float] = []
         self._cuts: list[float] = []
+        self._last_goal_ts: float | None = None
         self._last_spoken_video_ts: float | None = None
         self._last_analyst_ts: float = 0.0
         self._recent_event: tuple[Event, float] | None = None
@@ -293,6 +313,9 @@ class Runtime:
         if not due:
             return
         self._board_changes = [c for c in self._board_changes if c.ts > cursor]
+        goals = [c.ts for c in due if c.is_goal]
+        if goals:
+            self._last_goal_ts = max(goals)
         self.state_tracker.apply_board(self.board_tracker)
         self._publish(Topic.STATE, cursor, self.state)
 
@@ -413,7 +436,7 @@ class Runtime:
             line,
             self.state,
             self.pack,
-            board_changed=self._board_changed_near(cursor),
+            board_changed=self._board_supports_goal(cursor),
             lookahead_celebration=self._celebration_ahead(cursor),
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
@@ -450,6 +473,56 @@ class Runtime:
         """
         ahead = [ts for ts in self._cuts if ts > cursor]
         return min(ahead) if ahead else None
+
+    def _board_supports_goal(self, cursor: float) -> bool:
+        """Is there anything on the scoreboard behind a goal claimed here?
+
+        Three things count, and they answer three different questions the
+        first real run asked in its first three minutes.
+        """
+        return (
+            self._board_changed_near(cursor)
+            or self._board_pending_near(cursor)
+            or self._goal_already_in_the_state(cursor)
+        )
+
+    def _board_pending_near(self, cursor: float) -> bool:
+        """Is the board *in the middle of* agreeing with this claim?
+
+        The tracker needs three agreeing reads and they land every three and
+        a half seconds, so on the real run a goal the bug showed at 63.7 was
+        not confirmed until 70.0 — thirteen seconds after the ball crossed
+        the line, which no delay we would run at covers.
+
+        One board read agreeing with a caller that has independently claimed
+        a goal is two sources, and that is what the gate wants. It is not
+        enough to move the score: the state still waits for three reads. The
+        difference matters because a single misread digit that corroborates
+        nothing decays away, while one that happens to line up with a real
+        claim was probably not a misread.
+        """
+        pending = self.board_tracker.pending
+        if pending is None:
+            return False
+        home, away = self.board_tracker.home_score, self.board_tracker.away_score
+        if home is None or away is None:
+            return False  # the first board we ever settle on is not a goal
+        if pending.home_score <= home and pending.away_score <= away:
+            return False
+        window = min(GOAL_GRAPHIC_LAG_S, self.settings.capture.delay_s)
+        return cursor - 2.0 <= pending.first_ts <= cursor + window
+
+    def _goal_already_in_the_state(self, cursor: float) -> bool:
+        """Is this a line about a goal the state has already taken in?
+
+        The celebration, the replay, the scorer's face, the restart: all of
+        them are lines about a goal, and none of them is near the moment the
+        board moved. Asking only whether the board moved *at the cursor*
+        rejected four correct lines about one goal over eighty seconds.
+        """
+        if self._last_goal_ts is None:
+            return False
+        return 0.0 <= cursor - self._last_goal_ts <= GOAL_TALK_WINDOW_S
 
     def _board_changed_near(self, cursor: float) -> bool:
         """Did the scoreboard move around the moment being called?

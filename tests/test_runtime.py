@@ -9,8 +9,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 
+from commentary.capture.buffer import Frame
 from commentary.config import (
     CallerConfig,
     CaptureConfig,
@@ -168,7 +170,7 @@ async def test_the_goal_confirmation_window_does_not_widen_with_the_buffer(
     from commentary.perception.board import BoardChange
     from commentary.runtime import GOAL_GRAPHIC_LAG_S
 
-    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=14.0)
     assert runtime.settings.capture.delay_s > GOAL_GRAPHIC_LAG_S, "test needs a deep buffer"
 
     def board_change_at(ts: float) -> BoardChange:
@@ -197,3 +199,92 @@ async def test_a_goal_is_never_announced_before_the_board_confirms_it(tmp_path: 
         assert any(line.video_ts >= goal - 2.0 for goal in goals), (
             f"a goal was called at {line.video_ts:.1f}s with no goal behind it"
         )
+
+
+# -- the goal the first real run got wrong -----------------------------------
+#
+# Argentina v France 2022, video 36:00-39:00, delay 8 s. The ball crossed the
+# line at video 58 (StatsBomb 35:22); the FIFA bug went 1-0 to 2-0 at video
+# 63.7; the tracker, needing three reads landing every ~3.5 s, confirmed it at
+# 70.0. The caller called the goal correctly at cursor 56.5 with the finish in
+# the lookahead and the gate rejected it, then rejected three more lines about
+# the same goal over the next eighty seconds.
+
+
+def _board_at(runtime: Runtime, home: int, away: int, ts: float, *, count: int = 1) -> None:
+    """Put the tracker part-way through agreeing that the score moved."""
+    from commentary.perception.board import BoardPending
+
+    runtime.board_tracker._confirmed = (1, 0, 1)
+    runtime.board_tracker._pending = BoardPending(
+        home_score=home, away_score=away, period=1, clock=None, count=count, first_ts=ts
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_board_still_agreeing_with_itself_corroborates_a_goal(
+    tmp_path: Path,
+) -> None:
+    """The read at 63.7 is evidence at cursor 56.5, thirteen seconds before it settles."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+
+    _board_at(runtime, 2, 0, 63.7)
+    assert runtime._board_supports_goal(56.5) is True
+
+    # One read agreeing with the caller is two sources; it is still not three
+    # reads, so nothing has moved the score.
+    assert runtime.board_tracker.home_score == 1
+
+
+@pytest.mark.asyncio
+async def test_a_pending_board_that_is_not_a_score_increase_is_not_a_goal(
+    tmp_path: Path,
+) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+
+    # The clock rolled into the second half: same score, new period.
+    _board_at(runtime, 1, 0, 63.7)
+    assert runtime._board_supports_goal(56.5) is False
+
+    # A score increase read far from the cursor is a different passage of play.
+    _board_at(runtime, 2, 0, 90.0)
+    assert runtime._board_supports_goal(56.5) is False
+
+
+@pytest.mark.asyncio
+async def test_the_lines_that_follow_a_goal_are_about_a_goal_the_state_holds(
+    tmp_path: Path,
+) -> None:
+    """The celebration, the replay and the scorer's face are not phantom goals."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    from commentary.runtime import GOAL_TALK_WINDOW_S
+
+    runtime._last_goal_ts = 63.7
+    for cursor in (66.0, 76.0, 63.7 + GOAL_TALK_WINDOW_S):
+        assert runtime._board_supports_goal(cursor) is True, f"rejected at cursor {cursor}"
+
+
+@pytest.mark.asyncio
+async def test_a_goal_claim_long_after_the_last_one_still_fails(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+
+    runtime._last_goal_ts = 100.0
+    runtime.board_tracker._pending = None
+    runtime._board_changes = []
+    assert runtime._board_supports_goal(200.0) is False
+
+
+@pytest.mark.asyncio
+async def test_applying_a_board_goal_starts_the_clock_on_talking_about_it(
+    tmp_path: Path,
+) -> None:
+    from commentary.perception.board import BoardChange
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime._last_goal_ts = None
+    runtime._board_changes = [
+        BoardChange(ts=63.7, home_score=2, away_score=0, clock=None, period=1, previous=(1, 0)),
+    ]
+    runtime.buffer.append(Frame(ts=80.0, image=np.zeros((4, 4, 3), dtype=np.uint8)))
+    runtime._apply_due_board_changes()
+    assert runtime._last_goal_ts == 63.7

@@ -8,6 +8,16 @@ from commentary.perception.board import (
     BoardTracker,
     crop_score_bug,
 )
+from commentary.perception.players import (
+    Detector,
+    Embedder,
+    NullTracker,
+    NumberReader,
+    PlayerTracker,
+    Track,
+    VisionExtraMissing,
+    default_tracker,
+)
 
 __all__ = [
     "BOARD_SYSTEM",
@@ -15,5 +25,13 @@ __all__ = [
     "BoardPending",
     "BoardReader",
     "BoardTracker",
+    "Detector",
+    "Embedder",
+    "NullTracker",
+    "NumberReader",
+    "PlayerTracker",
+    "Track",
+    "VisionExtraMissing",
     "crop_score_bug",
+    "default_tracker",
 ]
