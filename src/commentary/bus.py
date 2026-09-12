@@ -27,6 +27,7 @@ class Topic(StrEnum):
     PREEMPTED = "preempted"
     STATE = "state"
     BOARD = "board"
+    TRACKS = "tracks"
     CALLER = "caller"
     ANALYST = "analyst"
     GATE = "gate"

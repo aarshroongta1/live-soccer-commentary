@@ -7,6 +7,7 @@ written record of what actually happened to check it against.
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 
 import numpy as np
@@ -21,8 +22,9 @@ from commentary.config import (
     Settings,
 )
 from commentary.grading import metrics, report
+from commentary.perception.players import Track
 from commentary.runtime import Runtime
-from commentary.schemas import Event
+from commentary.schemas import Event, Side
 from commentary.sim import MatchSim, SimOracle, SimSource
 from commentary.trace import RunTrace
 from commentary.voice import LogSpeaker
@@ -370,3 +372,99 @@ async def test_the_default_runtime_loads_no_wire(tmp_path: Path) -> None:
     assert runtime.wire is None
     assert runtime._sync is None
     assert runtime._wire_confirms_goal(10.0) is False
+
+
+# -- the tracker must not hold up the frames ---------------------------------
+#
+# The first run with marks on real footage never started: the cursor sat at
+# 0.2 s for 195 seconds and the board reader read the same frame 55 times,
+# because _ingest_frames awaited tracker.update on every other frame and
+# detection is slower than ingestion. RF-DETR nano is 92 ms a frame at 640
+# wide on this machine before SigLIP and PARSeq are asked anything; frames
+# arrive every 66 ms.
+
+
+class _Pump:
+    """A source that hands over frames as fast as the loop will take them."""
+
+    def __init__(self, count: int, fps: float = 15.0) -> None:
+        self.count = count
+        self.fps = fps
+
+    async def __aenter__(self) -> _Pump:
+        return self
+
+    async def __aexit__(self, *exc: object) -> bool:
+        return False
+
+    async def frames(self):
+        import asyncio
+
+        for i in range(self.count):
+            # Paced, but far faster than the video it stands for: 100 frames
+            # is nearly seven seconds at 15 fps and a fifth of a second here.
+            await asyncio.sleep(0.002)
+            yield Frame(ts=i / self.fps, image=np.zeros((32, 32, 3), dtype=np.uint8))
+
+
+class _SlowTracker:
+    """A tracker that takes 50 ms a pass, which is faster than the real one."""
+
+    def __init__(self) -> None:
+        self.passes = 0
+
+    def update(self, frame: Frame) -> list[Track]:
+        import time as _time
+
+        _time.sleep(0.05)
+        self.passes += 1
+        return [Track(id=0, side=Side.HOME, box=(4, 12, 20, 30), number=11, name="Di María")]
+
+    def reset(self) -> None:
+        return None
+
+
+async def _pump_through(frames: int = 100) -> tuple[Runtime, _SlowTracker, float]:
+    import asyncio
+    import time as _time
+
+    from commentary.llm.fake import ScriptedBackend
+
+    tracker = _SlowTracker()
+    runtime = Runtime(
+        source=_Pump(frames),
+        backend=ScriptedBackend(),
+        settings=fast_settings(delay_s=1.0),
+        tracker=tracker,
+    )
+    task = asyncio.create_task(runtime._follow_players())
+    started = _time.perf_counter()
+    await runtime._ingest_frames()
+    elapsed = _time.perf_counter() - started
+    task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await task
+    return runtime, tracker, elapsed
+
+
+@pytest.mark.asyncio
+async def test_a_slow_tracker_does_not_hold_up_the_frames() -> None:
+    runtime, tracker, elapsed = await _pump_through(100)
+
+    assert runtime.stats.frames == 100
+    # Awaited in the frame loop, every other frame, this was 50 passes of
+    # 50 ms — two and a half seconds to ingest less than seven seconds of
+    # video, and the gap only ever widens.
+    assert elapsed < 1.0, f"100 frames took {elapsed:.2f}s behind a 50 ms tracker"
+    assert tracker.passes >= 1, "the tracker never ran at all"
+
+
+@pytest.mark.asyncio
+async def test_what_a_slow_tracker_did_find_still_reaches_the_caller() -> None:
+    """Skipped frames are fine; a mark that lands on no frame at all is not."""
+    runtime, _tracker, _elapsed = await _pump_through(100)
+
+    assert runtime._tracks, "the tracker ran but nothing was kept"
+    tracked_ts = runtime._tracks[-1][0]
+    assert runtime.tracks_for(tracked_ts + 0.3), "a third of a second is one pass at 3 Hz"
+    assert runtime.tracks_for(tracked_ts + 5.0) == [], "the bodies have long since moved"

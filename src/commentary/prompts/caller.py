@@ -160,9 +160,11 @@ def caller_system(pack: KnowledgePack | None, config: CallerConfig | None = None
 
 
 #: How far a mark may be from a frame's own timestamp and still be about it.
-#: Detection runs on every other frame, so the nearest tracked frame is at
-#: most a frame or two away; past this the bodies have moved.
-MARK_TOLERANCE_S = 0.2
+#: The tracker runs in a loop of its own, as fast as the models allow — three
+#: to ten passes a second with real weights — so the nearest tracked frame is
+#: a third of a second away at worst. It was 0.2 when detection ran on every
+#: other frame, which at three passes a second means no marks at all.
+MARK_TOLERANCE_S = 0.5
 
 
 def draw_marks(

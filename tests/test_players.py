@@ -80,7 +80,13 @@ class FakeDetector:
 class FakeEmbedder:
     """One fixed vector per kit, looked up by the crop's mean colour."""
 
+    def __init__(self) -> None:
+        self.calls = 0
+        self.crops = 0
+
     def embed(self, crops: list[np.ndarray]) -> np.ndarray:
+        self.calls += 1
+        self.crops += len(crops)
         vectors = []
         for crop in crops:
             mean = tuple(int(round(v)) for v in crop.reshape(-1, 3).mean(axis=0))
@@ -222,3 +228,41 @@ def test_the_null_tracker_sees_nobody():
 
     assert tracker.update(frame) == []
     assert tracker.reset() is None
+
+
+def test_a_track_keeps_its_kit_rather_than_being_embedded_every_frame():
+    """SigLIP is the slowest thing in the chain and a player keeps his shirt.
+
+    A second to embed fifteen crops on this machine, against 92 ms for the
+    detector, so embedding every body on every pass is the whole frame budget
+    spent deciding something that cannot have changed. A track is embedded
+    when it is new, and then carried for the next EMBED_EVERY passes.
+    """
+    from commentary.perception.players import EMBED_EVERY
+
+    frame, boxes = scene(SQUAD)
+    tracker, _ = build([boxes], [("", 0.0)])
+
+    tracker.update(frame)
+    assert tracker.embedder.calls == 1
+    assert tracker.embedder.crops == len(SQUAD)
+
+    for _ in range(EMBED_EVERY):
+        sides = [track.side for track in tracker.update(frame)]
+        assert sides[:4] == [Side.HOME] * 4, "a track lost its team between frames"
+    assert tracker.embedder.calls == 1, "the same bodies were embedded again"
+
+    tracker.update(frame)
+    assert tracker.embedder.calls == 2
+
+
+def test_a_cut_forgets_the_kit_embeddings_with_the_ids():
+    """New ids on a new camera, and a vector is worth nothing without its id."""
+    frame, boxes = scene(SQUAD)
+    tracker, _ = build([boxes], [("", 0.0)])
+
+    tracker.update(frame)
+    tracker.reset()
+    tracker.update(frame)
+
+    assert tracker.embedder.calls == 2

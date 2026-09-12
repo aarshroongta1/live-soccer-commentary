@@ -130,6 +130,11 @@ names on the big moments, not pass-by-pass — is what is being tested.
 - **`run --source file` has the marks on by default**, so on a machine without
   the `vision` extra it stops with a one-line message telling you to install
   it. That is deliberate; `--no-marks` is the other answer.
+- **The tracker runs in its own loop, on the newest frame, and skips the
+  rest.** It is not a per-frame pipeline and must never become one again: one
+  pass is 92 ms at best and frames arrive every 66 ms, so anything that
+  awaits it from `_ingest_frames` stalls the cursor outright. The `tracks`
+  rows in a trace say what rate it managed and how much it named.
 - **The simulator's timestamp strip is in the top-left corner**, and the
   oracle decodes it from the frames the caller was given — which now carry
   marks. `draw_marks` refuses to draw a label with no room above the player,

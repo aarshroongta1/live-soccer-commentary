@@ -52,6 +52,17 @@ NUMBER_MIN_CONFIDENCE = 0.8
 NUMBER_VOTES = 5
 NUMBER_AGREEMENTS = 2
 
+#: How many passes a track carries its kit embedding for before it is
+#: embedded again. SigLIP is the slowest thing in the chain by a factor of
+#: ten — a second to embed fifteen crops on this machine, against 92 ms for
+#: the detector — and a player does not change shirt between frames. So a
+#: track is embedded when it is new and every tenth pass after that, which
+#: takes the steady-state cost of a pass from a second to nothing.
+#:
+#: A track is embedded on the pass it first appears on, carried for the next
+#: ``EMBED_EVERY``, and embedded again after that.
+EMBED_EVERY = 10
+
 #: How far a unit-length kit embedding may sit from the nearer centroid and
 #: still belong to a team. Past it are the referee, the physio and the ball boy,
 #: who wear neither kit and must not be called as players.
@@ -221,6 +232,12 @@ class PlayerTracker:
         self._previous: list[tuple[int, tuple[int, int, int, int]]] = []
         self._live: dict[int, Track] = {}
         self._votes: dict[int, deque[int]] = {}
+        #: The last kit embedding of each live track, and how many passes ago
+        #: it was taken. Pruned to the tracks in the current frame, which is
+        #: all of them that can be continued: ids are matched against the
+        #: previous frame only, so an id that misses one frame never returns.
+        self._kit: dict[int, np.ndarray] = {}
+        self._since_embed: dict[int, int] = {}
         self._next_id = 0
 
     def update(self, frame: Frame) -> list[Track]:
@@ -232,8 +249,8 @@ class PlayerTracker:
             return []
 
         crops = [_crop(frame.image, box) for box in boxes]
-        sides = self._sides(crops, frame.ts)
         ids = self._assign_ids(boxes)
+        sides = self._sides(crops, ids, frame.ts)
 
         tracks: list[Track] = []
         live: dict[int, Track] = {}
@@ -272,6 +289,8 @@ class PlayerTracker:
         self._previous = []
         self._live = {}
         self._votes = {}
+        self._kit = {}
+        self._since_embed = {}
         self._next_id = 0
 
     def _detect(self, image: np.ndarray) -> list[tuple[int, int, int, int]]:
@@ -319,17 +338,40 @@ class PlayerTracker:
             ids.append(kept)
         return ids
 
-    def _sides(self, crops: list[np.ndarray], ts: float) -> list[Side]:
-        points = _unit(self.embedder.embed(crops))
-        colours = np.stack([crop.reshape(-1, 3).mean(axis=0) for crop in crops])
-        for point, colour in zip(points, colours, strict=True):
-            self._samples.append(point)
-            self._colours.append(colour)
+    def _sides(self, crops: list[np.ndarray], ids: list[int], ts: float) -> list[Side]:
+        """Which team each body is in, from a kit embedding it mostly keeps.
+
+        The embedder is asked only about tracks it has not seen, and tracks
+        it has not looked at for ``EMBED_EVERY`` passes. Everything else
+        carries the vector it already has, because a player does not change
+        shirt between frames and SigLIP costs more than the rest of the chain
+        put together.
+        """
+        due = [
+            i
+            for i, tid in enumerate(ids)
+            if self._since_embed.get(tid, EMBED_EVERY) >= EMBED_EVERY
+        ]
+        if due:
+            fresh = _unit(self.embedder.embed([crops[i] for i in due]))
+            for point, i in zip(fresh, due, strict=True):
+                self._kit[ids[i]] = point
+                self._since_embed[ids[i]] = 0
+                self._samples.append(point)
+                self._colours.append(crops[i].reshape(-1, 3).mean(axis=0))
+        for i, tid in enumerate(ids):
+            if i not in due:
+                self._since_embed[tid] = self._since_embed.get(tid, 0) + 1
+        # Only the tracks in this frame can be continued into the next one.
+        self._kit = {tid: self._kit[tid] for tid in ids if tid in self._kit}
+        self._since_embed = {tid: self._since_embed[tid] for tid in ids}
+
         if self._due(ts):
             self._fit(ts)
         if self._centroids is None:
             return [Side.UNKNOWN] * len(crops)
 
+        points = np.stack([self._kit[tid] for tid in ids])
         gaps = np.linalg.norm(points[:, None, :] - self._centroids[None, :, :], axis=2)
         sides: list[Side] = []
         for row in gaps:

@@ -58,6 +58,7 @@ from commentary.schemas import (
     Incident,
     KnowledgePack,
     MatchState,
+    Side,
     SpeakDecision,
     Trigger,
     Voice,
@@ -80,10 +81,17 @@ from commentary.wire import Wire, WireSync
 #: correct goal call was rejected as unconfirmed.
 GOAL_GRAPHIC_LAG_S = 10.0
 
-#: Detection runs on every other frame. Fifteen frames a second is more than
-#: identity needs — a body does not become a different body in 130 ms — and
-#: halving the rate halves what the executor thread has to do.
-TRACK_EVERY = 2
+#: The floor on how often the tracker looks, so its loop can never spin
+#: faster than frames arrive. It is only ever a floor: with real weights one
+#: pass is 90 ms and up, and the loop simply takes the newest frame whenever
+#: it comes free.
+TRACK_MIN_PERIOD_S = 1.0 / 15
+
+#: The ceiling used to size the store of recent tracks. The tracker's real
+#: rate is whatever the models manage — three to ten passes a second on this
+#: machine — and the store has to hold the buffer's whole reach at the
+#: fastest it could run.
+TRACK_MAX_HZ = 15
 
 #: How long a goal stays a thing worth talking about. The celebration, the
 #: replay, the scorer's face and the restart all belong to a goal the state
@@ -183,8 +191,13 @@ class Runtime:
         #: to the buffer's own reach: a mark is only ever drawn on a frame the
         #: caller is being shown, and those never come from further back.
         self._tracks: deque[tuple[float, list[Track]]] = deque(
-            maxlen=int((cap.delay_s + cap.history_s) * cap.fps / TRACK_EVERY) + 1
+            maxlen=int((cap.delay_s + cap.history_s) * TRACK_MAX_HZ) + 1
         )
+        #: A cut seen by the frame loop, for the tracker loop to act on. The
+        #: tracker is touched from one place only: ``reset`` from here while
+        #: ``update`` was running in the executor is two threads in the same
+        #: dictionaries.
+        self._cut_pending = False
         #: Cursor time at which the state last took in a board goal — not the
         #: time of the board change itself. See ``_apply_due_board_changes``.
         self._last_goal_ts: float | None = None
@@ -233,6 +246,7 @@ class Runtime:
                 recorder,
                 asyncio.create_task(self._ingest_frames(), name="frames"),
                 asyncio.create_task(self._read_board(), name="board"),
+                asyncio.create_task(self._follow_players(), name="tracks"),
                 asyncio.create_task(self._tick(), name="tick"),
                 asyncio.create_task(self.director.run(), name="director"),
             ]
@@ -289,47 +303,82 @@ class Runtime:
                 # caller, and only the second of those needs to know when.
                 self._cuts.append(cut.ts)
                 # A cut is a different camera on a different part of the
-                # pitch, so no body in it continues a body from before.
-                self.tracker.reset()
+                # pitch, so no body in it continues a body from before. The
+                # tracker loop does the resetting; see ``_cut_pending``.
+                self._cut_pending = True
                 self._fire(Trigger.CAMERA_CUT)
-            await self._track(frame)
         # The source ran out: a clip ended, or the stream died. Either way the
         # match is over as far as this process is concerned.
         self.stop()
 
-    async def _track(self, frame: Frame) -> None:
-        """Find the bodies, off the event loop.
+    async def _follow_players(self) -> None:
+        """Find the bodies, in a loop of its own, at whatever rate it manages.
 
-        Detection is tens of milliseconds of numpy and, with real weights, a
-        neural network; run inline it would stall the frame, audio and
-        caller loops that share this thread. In an executor it costs the
-        ingest loop only the hop.
+        This used to hang off the frame loop, awaited on every other frame,
+        and the first run with marks on real footage never started: the
+        cursor sat at 0.2 s for 195 seconds while the board reader looked at
+        the same frame fifty-five times. Detection is 90 ms and up at 640
+        wide before SigLIP and PARSeq are asked anything, frames arrive every
+        66 ms, and a loop that awaits something slower than its own input
+        stops being a loop.
+
+        So: a task of its own, always on the *newest* buffered frame, one
+        detection at a time, going round again the moment it finishes. Frames
+        it was too slow to see are skipped rather than queued, which is the
+        right answer — a track from four seconds ago is not worth catching up
+        on, the bodies have moved. Nothing else waits for it, and if it
+        manages three passes a second the marks are three a second.
         """
-        if self.stats.frames % TRACK_EVERY:
-            return
         loop = asyncio.get_running_loop()
-        tracks = await loop.run_in_executor(None, self.tracker.update, frame)
-        self.stats.tracked_frames += 1
-        if not tracks:
-            return
-        self._tracks.append((frame.ts, tracks))
-        # The registry is state, and state has one writer. The tracker's job
-        # ends at "that shirt says 11 and it is an Argentina shirt"; what
-        # that is worth ten minutes later is the registry's decay to decide.
-        for track in tracks:
-            if track.number is not None and track.name is not None:
-                self.state_tracker.registry.believe(
-                    track.number, track.name, frame.ts, side=track.side
-                )
+        last_ts: float | None = None
+        while True:
+            started = time.perf_counter()
+            live = self.buffer.live_ts
+            frame = None if live is None else self.buffer.nearest(live)
+            if frame is None or frame.ts == last_ts:
+                await asyncio.sleep(TRACK_MIN_PERIOD_S)
+                continue
+            last_ts = frame.ts
+            if self._cut_pending:
+                self._cut_pending = False
+                self.tracker.reset()
+            tracks = await loop.run_in_executor(None, self.tracker.update, frame)
+            elapsed = time.perf_counter() - started
+            self.stats.tracked_frames += 1
+            # One row per pass, so a trace says what rate the tracker actually
+            # ran at and how much of what it found it could put a name to.
+            self._publish(
+                Topic.TRACKS,
+                frame.ts,
+                tracks=len(tracks),
+                with_side=sum(1 for t in tracks if t.side is not Side.UNKNOWN),
+                named=sum(1 for t in tracks if t.name is not None),
+                ms=round(elapsed * 1000.0, 1),
+            )
+            if tracks:
+                self._tracks.append((frame.ts, tracks))
+                # The registry is state, and state has one writer. The
+                # tracker's job ends at "that shirt says 11 and it is an
+                # Argentina shirt"; what that is worth ten minutes later is
+                # the registry's decay to decide.
+                for track in tracks:
+                    if track.number is not None and track.name is not None:
+                        self.state_tracker.registry.believe(
+                            track.number, track.name, frame.ts, side=track.side
+                        )
+            # A pass that beat the frame rate waits out the difference; one
+            # that did not goes straight round again on the newest frame.
+            await asyncio.sleep(max(0.0, TRACK_MIN_PERIOD_S - elapsed))
 
     def tracks_for(self, ts: float) -> list[Track]:
         """Who was where when this frame was captured, for drawing on it.
 
-        Nearest tracked frame rather than an exact hit, because detection
-        runs on every other frame and the caller is shown whichever frames
-        the buffer sampled. Past the tolerance the bodies have moved and a
-        name would be drawn over the wrong player, which is the one failure
-        this whole chain exists to avoid.
+        Nearest tracked frame rather than an exact hit: the tracker runs in
+        its own loop at its own rate, and the caller is shown whichever
+        frames the buffer sampled, so the two almost never land on the same
+        one. Past the tolerance the bodies have moved and a name would be
+        drawn over the wrong player, which is the one failure this whole
+        chain exists to avoid.
         """
         best: tuple[float, list[Track]] | None = None
         for tracked_ts, tracks in self._tracks:

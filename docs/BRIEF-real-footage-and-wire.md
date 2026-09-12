@@ -279,6 +279,34 @@ variant: it is a deprecation proxy in current rfdetr and 355 MB of weights.
 `rfdetr` exports `RFDETRNano` (62 MB), which found the same fifteen bodies on
 the wide shots of the test clip at 640 wide.
 
+### A18. The tracker must not hold up the frames
+
+The first `--marks` run on the real clip stalled: the cursor sat at 0.2 s for
+195 seconds, one caller call, 55 board reads of the same frame.
+`_ingest_frames` awaited `tracker.update` on every other frame, and detection
+is slower than ingestion. Measured on this Mac at 640 wide, warm, MPS
+synchronised: RF-DETR nano 92 ms a frame (`RFDETRSmall` 144 ms), both finding
+15 bodies on a wide shot; SigLIP embedding fifteen crops 1007 ms on the CPU
+and 1103 ms on MPS; PARSeq 28 ms a crop on the CPU, 18 ms on MPS. Frames
+arrive every 66 ms. Nothing per-frame can be awaited in that loop.
+
+Fix, in `runtime.py` and `perception/players.py`:
+
+1. The tracker gets its own asyncio task, always on the *newest* buffered
+   frame, one detection at a time in a thread executor, round again as soon
+   as it finishes. `_ingest_frames` never awaits it and sets a flag for the
+   cut instead, so the tracker is touched from one place only. Tracks are
+   stored by the ts of the frame they were computed on; `MARK_TOLERANCE_S`
+   goes 0.2 -> 0.5, since at three passes a second 0.2 is no marks at all.
+2. `RFDETRNano`, not `RFDETRBase` (done in A17).
+3. rfdetr resolves its own device and picks MPS here, so nothing is passed.
+   SigLIP is left on the CPU: on MPS it was slower, measured above.
+4. A track is embedded when it is new and then carried for ten passes, which
+   is what takes a steady-state pass from a second to 92 ms. PARSeq still
+   only sees crops 110 px tall and up.
+5. One trace row per pass, topic `tracks`: ts, how many tracks, how many with
+   a side, how many with a name, and the pass latency in ms.
+
 ### Measured on the run (for the README later)
 
 Opus 5 caller: 52 board reads, all confident, score and replay (bug absent 91-131 s)
