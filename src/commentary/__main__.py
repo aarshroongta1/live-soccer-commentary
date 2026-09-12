@@ -181,7 +181,7 @@ def _tracker(
         return SimTracker(sim, sim_source.renderer, pack=sim.knowledge_pack)
     from commentary.perception.players import default_tracker
 
-    return default_tracker(pack, None)
+    return default_tracker(pack)
 
 
 def _wire(

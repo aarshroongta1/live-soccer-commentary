@@ -30,7 +30,6 @@ import numpy as np
 
 from commentary.capture.buffer import Frame
 from commentary.schemas import KnowledgePack, Side
-from commentary.state import EntityRegistry
 
 log = logging.getLogger(__name__)
 
@@ -203,7 +202,6 @@ class PlayerTracker:
         reader: NumberReader,
         *,
         pack: KnowledgePack | None = None,
-        registry: EntityRegistry | None = None,
         fit_samples: int = 200,
         refit_s: float = 300.0,
     ) -> None:
@@ -211,7 +209,6 @@ class PlayerTracker:
         self.embedder = embedder
         self.reader = reader
         self.pack = pack
-        self.registry = registry
         self.fit_samples = fit_samples
         #: Kits change at half time and light changes all match, so the split
         #: is re-fitted rather than decided once at kickoff.
@@ -408,8 +405,6 @@ class PlayerTracker:
 
         track.number = number
         track.name = self._name_for(number, track.side)
-        if track.name is not None and self.registry is not None:
-            self.registry.believe(number, track.name, ts, side=track.side)
 
     def _name_for(self, number: int, side: Side) -> str | None:
         """The squad's name for that number, or none and the caller says "#14"."""
@@ -514,7 +509,7 @@ class _Parseq:
 
 
 def default_tracker(
-    pack: KnowledgePack | None = None, registry: EntityRegistry | None = None
+    pack: KnowledgePack | None = None,
 ) -> PlayerTracker:
     """The real models, imported here and nowhere else.
 
@@ -534,5 +529,4 @@ def default_tracker(
         _SigLip(siglip.eval(), preprocess),
         _Parseq(torch.hub.load("baudm/parseq", "parseq", pretrained=True).eval()),
         pack=pack,
-        registry=registry,
     )

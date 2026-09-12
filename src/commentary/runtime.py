@@ -305,8 +305,17 @@ class Runtime:
         loop = asyncio.get_running_loop()
         tracks = await loop.run_in_executor(None, self.tracker.update, frame)
         self.stats.tracked_frames += 1
-        if tracks:
-            self._tracks.append((frame.ts, tracks))
+        if not tracks:
+            return
+        self._tracks.append((frame.ts, tracks))
+        # The registry is state, and state has one writer. The tracker's job
+        # ends at "that shirt says 11 and it is an Argentina shirt"; what
+        # that is worth ten minutes later is the registry's decay to decide.
+        for track in tracks:
+            if track.number is not None and track.name is not None:
+                self.state_tracker.registry.believe(
+                    track.number, track.name, frame.ts, side=track.side
+                )
 
     def tracks_for(self, ts: float) -> list[Track]:
         """Who was where when this frame was captured, for drawing on it.

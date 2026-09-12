@@ -21,7 +21,6 @@ from commentary.perception.players import Track
 from commentary.schemas import KnowledgePack, Side
 from commentary.sim.match import MatchSim
 from commentary.sim.render import NUMBER_LEGIBLE_RADIUS, BroadcastRenderer
-from commentary.state import EntityRegistry
 
 
 class SimTracker:
@@ -33,12 +32,10 @@ class SimTracker:
         renderer: BroadcastRenderer,
         *,
         pack: KnowledgePack | None = None,
-        registry: EntityRegistry | None = None,
     ) -> None:
         self.sim = sim
         self.renderer = renderer
         self.pack = pack if pack is not None else sim.knowledge_pack
-        self.registry = registry
         self._ids: dict[tuple[Side, int], int] = {}
         self._read: set[tuple[Side, int]] = set()
 
@@ -53,8 +50,6 @@ class SimTracker:
             legible = key in self._read
             number = dot.number if legible else None
             name = self._name_for(dot.side, dot.number) if legible else None
-            if name is not None and self.registry is not None:
-                self.registry.believe(dot.number, name, frame.ts, side=dot.side)
             tracks.append(
                 Track(
                     id=self._id_for(key),
@@ -69,9 +64,9 @@ class SimTracker:
     def reset(self) -> None:
         """New ids after a cut, and the shirts have to be read again.
 
-        A number already believed stays in the registry, which is the point of
-        keeping the two apart: the identity survives the cut, the track does
-        not.
+        A name already learned stays in the registry the runtime owns, which
+        is the point of keeping the two apart: the identity survives the cut,
+        the track does not.
         """
         self._ids = {}
         self._read = set()

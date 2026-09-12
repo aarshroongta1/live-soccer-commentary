@@ -103,8 +103,6 @@ class FakeNumberReader:
 def build(
     script: list[list[Box]],
     reads: list[tuple[str, float]],
-    *,
-    registry: EntityRegistry | None = None,
 ) -> tuple[PlayerTracker, FakeNumberReader]:
     reader = FakeNumberReader(reads)
     tracker = PlayerTracker(
@@ -112,10 +110,21 @@ def build(
         FakeEmbedder(),
         reader,
         pack=PACK,
-        registry=registry,
         fit_samples=len(script[0]),
     )
     return tracker, reader
+
+
+def believe(registry: EntityRegistry, tracks: list, ts: float) -> None:
+    """What the runtime does with what the tracker found.
+
+    The tracker perceives and the registry remembers, and the runtime is the
+    one place that joins them — so the tests join them the same way rather
+    than handing the tracker a registry it would be the second writer of.
+    """
+    for track in tracks:
+        if track.number is not None and track.name is not None:
+            registry.believe(track.number, track.name, ts, side=track.side)
 
 
 def test_the_kits_split_in_two_and_the_referee_belongs_to_neither():
@@ -165,10 +174,10 @@ def test_a_confirmed_number_is_believed_as_a_name():
     registry = EntityRegistry()
     first_frame, boxes = scene(SQUAD, ts=1.0)
     second_frame, _ = scene(SQUAD, ts=2.0)
-    tracker, _ = build([boxes], [("7", 0.95)], registry=registry)
+    tracker, _ = build([boxes], [("7", 0.95)])
 
-    tracker.update(first_frame)
-    tracker.update(second_frame)
+    believe(registry, tracker.update(first_frame), 1.0)
+    believe(registry, tracker.update(second_frame), 2.0)
 
     assert registry.name_for(7, Side.HOME) == "Bukayo Saka"
     assert registry.on_pitch(2.0) == {"7": "Bukayo Saka"}
@@ -190,11 +199,12 @@ def test_a_cut_starts_the_ids_again_but_the_registry_keeps_the_names():
     second_frame, _ = scene(SQUAD, ts=2.0)
     joined_frame, joined_boxes = scene([*SQUAD, ("blue", SHORT)], ts=3.0)
     after_frame, _ = scene(SQUAD, ts=40.0)
-    tracker, _ = build([boxes, boxes, joined_boxes, boxes], [("7", 0.95)], registry=registry)
+    tracker, _ = build([boxes, boxes, joined_boxes, boxes], [("7", 0.95)])
 
-    tracker.update(first_frame)
-    tracker.update(second_frame)
+    believe(registry, tracker.update(first_frame), 1.0)
+    believe(registry, tracker.update(second_frame), 2.0)
     joined = tracker.update(joined_frame)
+    believe(registry, joined, 3.0)
     assert max(track.id for track in joined) == 9
 
     tracker.reset()
