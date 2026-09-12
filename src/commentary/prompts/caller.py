@@ -47,12 +47,18 @@ only tell you which way it goes.
 
 WHAT YOU MAY SAY
 
-Names. Say a player's name only if you can actually read it — a shirt number
-you can see, a name across the back, a name in a broadcast graphic. Otherwise
-say the team, the position, or the shirt: "the near-post runner", "the
-left-back in red", "the man in white". A wrong name is the worst thing you
-can do here. There is no credit for guessing and no penalty for saying
-"Arsenal" when you cannot see who it is.
+Names. Look before you give up on one. On every call, look at the shirt
+number of the player on the ball, of the player it goes to, of whoever
+shoots, and of the keeper. A number you can actually read is a name you are
+allowed to use: match the kit that player is wearing to a team sheet below,
+find that number in it, and use that player's surname. A name across the back
+of a shirt and a name in a broadcast graphic count the same way.
+
+If you cannot read a number, say the role and the kit instead: "the left-back
+in white", "the near-post runner in blue", "the keeper in green". That is a
+complete answer and it costs nothing. A wrong name is the worst thing you can
+do here. There is no credit for guessing and no penalty for saying "Arsenal"
+when you cannot see who it is.
 
 The score. Never state it and never imply it. Do not say "one-nil", "level",
 "the equaliser", "ahead", "behind", "back in front", "his second". Someone
@@ -80,9 +86,13 @@ THE FORM
 
 Fill every field from the picture, not from the story you would like to tell.
 Confidence is your honest read on whether these frames support the claim; low
-confidence is not punished, but a confident guess is. names_read holds only
-what is legible right now — a shirt number counts, a graphic counts, knowing
-who usually plays there does not.
+confidence is not punished, but a confident guess is.
+
+names_read is the record of what was legible, and it is how a name in your
+line is justified. Write the number and the name together, exactly as you
+read them: "11 Di María" for the eleven on an Argentina shirt. A bare number
+is fine when you read a number you cannot put a name to. Knowing who usually
+plays there is not a sighting and does not belong in it.
 
 THE LINE
 
@@ -94,7 +104,8 @@ says out loud, not what an observer writes down.
   Good: Cutback from the right, and it is hammered over the bar.
   Good: Long ball forward, and the centre-half in red heads it clear.
   Bad:  In this frame we can see a player in a red shirt. (describing a picture)
-  Bad:  Odegaard picks out Havertz. (names nobody could read off these frames)
+  Good: Di María cuts inside and drives it low. (the 11 was legible, so
+        names_read carries "11 Di María")
   Bad:  That is the equaliser, two apiece. (the score is not yours to give)
   Bad:  The replay shows him clean through. (a replay called as live)\
 """
@@ -232,30 +243,45 @@ def _pack_section(pack: KnowledgePack) -> str:
     lines.append("")
     lines.append(
         "A name that is not on these sheets does not exist. Use the surname when\n"
-        "you use a name at all, and only once you have read the number on the\n"
-        "shirt or the graphic that identifies the player."
+        "you use a name at all — \"Di María\", not \"Ángel Di María\" — and only\n"
+        "once you have read the number on the shirt or the graphic that\n"
+        "identifies the player."
     )
     return "\n".join(lines)
 
 
 def _team_section(team: TeamSheet, side: str) -> str:
-    """One squad, numbers first, so a legible shirt maps straight to a name."""
-    bits = [b for b in (team.kit, team.formation) if b]
+    """One squad, one player per line, so a legible shirt maps straight to a name.
+
+    The kit comes first in the descriptor because it is the thing the caller
+    is told to match a number against: a number means nothing until it is
+    known which of these two sheets it belongs to.
+    """
+    bits = [f"kit {team.kit}" if team.kit else "", team.formation or ""]
     if team.manager:
         bits.append(f"manager {team.manager}")
-    descriptor = f" — {', '.join(bits)}" if bits else ""
+    descriptor = f" — {', '.join(b for b in bits if b)}"
     lines = [f"{team.name} ({side}){descriptor}"]
-    lines.append(f"  Starting XI: {_squad_line(team.starters)}")
+    lines.append("  Starting XI")
+    lines.extend(_squad_lines(team.starters))
     if team.bench:
-        lines.append(f"  Bench: {_squad_line(team.bench)}")
+        lines.append("  Bench")
+        lines.extend(_squad_lines(team.bench))
     return "\n".join(lines)
 
 
-def _squad_line(players: Sequence[Player]) -> str:
-    """``7 Bukayo Saka (RW)``, in the order the researcher listed them."""
+def _squad_lines(players: Sequence[Player]) -> list[str]:
+    """``    #7 Bukayo Saka (RW)``, one per line, in the researcher's order.
+
+    One line each rather than a comma-run, because the caller is asked to
+    find a number it has just read, and a number is far easier to find down
+    a column than inside a paragraph of eighteen of them.
+    """
+    if not players:
+        return ["    not known"]
     rendered: list[str] = []
     for player in players:
-        prefix = f"{player.number} " if player.number is not None else ""
+        prefix = f"#{player.number} " if player.number is not None else ""
         suffix = f" ({player.position})" if player.position else ""
-        rendered.append(f"{prefix}{player.name}{suffix}")
-    return ", ".join(rendered) if rendered else "not known"
+        rendered.append(f"    {prefix}{player.name}{suffix}")
+    return rendered

@@ -2,7 +2,7 @@ import numpy as np
 
 from commentary.capture.buffer import Frame
 from commentary.config import CallerConfig
-from commentary.prompts.caller import caller_blocks, caller_system
+from commentary.prompts.caller import CALLER_RULES, caller_blocks, caller_system
 from commentary.schemas import KnowledgePack, Player, TeamSheet, Trigger
 
 
@@ -144,3 +144,31 @@ def test_tail_says_when_nothing_has_been_said_yet():
     assert "(nothing said yet)" in body
     assert "routine tick" in body
     assert "Not established yet." in body
+
+
+def test_the_pack_prints_one_player_a_line_with_the_number_first():
+    pack = KnowledgePack(
+        home=TeamSheet(
+            name="Argentina",
+            kit="sky blue and white stripes",
+            starters=[Player(name="Ángel Di María", number=11, position="LW")],
+        ),
+        away=TeamSheet(name="France", kit="blue shirts"),
+    )
+    system = caller_system(pack)
+    # A number the caller has just read is looked up down a column, not inside
+    # a paragraph of eighteen of them.
+    assert "    #11 Ángel Di María (LW)" in system
+    # The kit is what tells the caller which of the two sheets a number is on,
+    # so both sides carry one.
+    assert "kit sky blue and white stripes" in system
+    assert "kit blue shirts" in system
+
+
+def test_the_names_rule_sends_the_caller_looking_for_a_number_first():
+    assert "Look before you give up on one" in CALLER_RULES
+    assert "A wrong name is the worst thing you can\ndo here" in CALLER_RULES
+    # The bad example that showed a model naming two players it could not read
+    # is gone; what replaces it shows the number that justified the name.
+    assert "Odegaard" not in CALLER_RULES
+    assert 'names_read carries "11 Di María"' in CALLER_RULES
