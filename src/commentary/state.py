@@ -103,7 +103,7 @@ class ConfirmedBoard(Protocol):
     """The part of a board tracker that match state is allowed to read.
 
     Stated structurally so state does not import perception: the dependency
-    runs the other way, and a test can hand in any object with these four
+    runs the other way, and a test can hand in any object with these five
     attributes.
     """
 
@@ -118,6 +118,9 @@ class ConfirmedBoard(Protocol):
 
     @property
     def in_replay(self) -> bool: ...
+
+    @property
+    def bug_missing(self) -> bool: ...
 
 
 @dataclass(frozen=True)
@@ -293,6 +296,7 @@ class MatchStateTracker:
             if period is not None:
                 self.state.period = period
         self.state.in_replay = in_replay
+        self.state.bug_visible = not source.bug_missing
 
     def apply_caller(self, line: CallerLine, ts: float | None = None) -> None:
         """Take possession, events and name sightings from the caller.
@@ -331,6 +335,10 @@ class MatchStateTracker:
         lines.append(f"{clock} ({PERIOD_NAMES.get(state.period, f'period {state.period}')})")
         if state.in_replay:
             lines.append("screen: replay, not live play")
+        elif not state.bug_visible:
+            # Said plainly rather than left as a silent replay, because a
+            # caller told it is watching a replay says nothing at all.
+            lines.append("screen: no score bug visible, so the score and clock may be stale")
         if state.possession is not Side.UNKNOWN:
             holder = state.home if state.possession is Side.HOME else state.away
             lines.append(f"possession: {holder}")

@@ -8,6 +8,11 @@ anything is believed. One hallucinated digit should never invent a goal.
 The absence of the bug is information too. Broadcasters pull the score bug
 during replays, and that is how the system knows not to call a replay as live
 play — no replay detector, just a graphic that went away.
+
+But only for as long as a replay lasts. A bug that is absent for minutes is
+not a very long replay, it is a broadcast that does not carry one or a crop
+pointed at the wrong corner, and reading that as a replay tells the caller to
+stay quiet for the rest of the match.
 """
 
 from __future__ import annotations
@@ -21,6 +26,12 @@ from commentary.config import BOARD_MODEL, SETTINGS, BoardConfig
 from commentary.llm.base import Block, LLMBackend, encode_frame, image_block, text_block
 from commentary.schemas import BoardRead
 from commentary.state import period_for_clock
+
+#: Longer than any replay a broadcast cuts to. Past this the bug is not
+#: pulled, it is not there: the wrong crop, or a feed that carries no score
+#: graphic at all. The two call for opposite behaviour, so they are not
+#: allowed to share a flag.
+BUG_GONE_S = 30.0
 
 BOARD_SYSTEM = """\
 You read the score bug on a live soccer broadcast: the small graphic, usually \
@@ -166,6 +177,8 @@ class BoardTracker:
         self._pending: BoardPending | None = None
         self._clock: str | None = None
         self._absent_run = 0
+        self._absent_since: float | None = None
+        self._last_ts = 0.0
         self.last_change: BoardChange | None = None
 
     @property
@@ -186,7 +199,19 @@ class BoardTracker:
 
     @property
     def in_replay(self) -> bool:
-        return self._absent_run >= self.replay_reads
+        """The bug has been pulled, the way it is pulled for a replay."""
+        return self._absent_run >= self.replay_reads and not self.bug_missing
+
+    @property
+    def bug_missing(self) -> bool:
+        """The bug has been gone longer than any replay lasts.
+
+        Measured from the first absent read rather than counted in reads, so
+        a slower board interval does not move the threshold.
+        """
+        if self._absent_since is None:
+            return False
+        return self._last_ts - self._absent_since >= BUG_GONE_S
 
     @property
     def pending(self) -> BoardPending | None:
@@ -203,15 +228,19 @@ class BoardTracker:
         """
         if read.confidence < self.config.min_confidence:
             return None
+        self._last_ts = ts
 
         if not read.bug_visible:
             self._absent_run += 1
+            if self._absent_since is None:
+                self._absent_since = ts
             # A replay interrupts the evidence: the half-formed score we were
             # accumulating belongs to a board we can no longer see.
             self._pending = None
             return None
 
         self._absent_run = 0
+        self._absent_since = None
         if read.clock is not None:
             self._clock = read.clock
         if read.home_score is None or read.away_score is None:

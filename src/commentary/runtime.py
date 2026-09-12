@@ -266,15 +266,18 @@ class Runtime:
             if change is not None:
                 self._board_changes.append(change)
                 self._fire(Trigger.BOARD_CHANGE)
-            self._note_replay()
+            self._note_screen()
 
     def _live_frame(self) -> Frame | None:
         live = self.buffer.live_ts
         return self.buffer.nearest(live) if live is not None else None
 
-    def _note_replay(self) -> None:
-        if self.board_tracker.in_replay != self.state.in_replay:
-            self.state_tracker.apply_board(self.board_tracker)
+    def _note_screen(self) -> None:
+        """Push a change in what the board looks like, replay or gone entirely."""
+        tracker = self.board_tracker
+        seen = (tracker.in_replay, not tracker.bug_missing)
+        if seen != (self.state.in_replay, self.state.bug_visible):
+            self.state_tracker.apply_board(tracker)
             self._publish(Topic.STATE, self.cursor_ts, self.state)
 
     def _apply_due_board_changes(self) -> None:

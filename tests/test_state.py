@@ -28,6 +28,7 @@ class StubBoard:
     away_score: int | None = None
     clock: str | None = None
     in_replay: bool = False
+    bug_missing: bool = False
 
 
 def pack() -> KnowledgePack:
@@ -234,3 +235,11 @@ def test_names_the_caller_reads_off_a_graphic_reach_the_registry():
     assert tracker.registry.name_for(53, side=Side.HOME) == "Ethan Nwaneri"
     assert tracker.registry.confidence(53, 4000.0, side=Side.HOME) == pytest.approx(1.0)
     assert tracker.state.on_pitch["53"] == "Ethan Nwaneri"
+
+
+def test_summary_says_when_the_bug_is_gone_rather_than_calling_it_a_replay():
+    tracker = MatchStateTracker("Arsenal", "Madrid")
+    tracker.apply_board(StubBoard(clock="10:00", in_replay=False, bug_missing=True))
+    summary = tracker.summary()
+    assert "no score bug visible" in summary
+    assert "replay" not in summary

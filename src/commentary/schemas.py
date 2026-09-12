@@ -222,6 +222,9 @@ class MatchState(BaseModel):
     clock_s: float | None = Field(default=None, description="Clock parsed to seconds played")
     period: int = 1
     in_replay: bool = False
+    #: False once the score bug has been gone longer than any replay lasts:
+    #: the wrong crop, or a broadcast that carries no bug at all.
+    bug_visible: bool = True
     last_events: list[Event] = Field(default_factory=list)
     possession: Side = Side.UNKNOWN
     on_pitch: dict[str, str] = Field(

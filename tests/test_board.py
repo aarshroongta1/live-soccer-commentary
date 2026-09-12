@@ -217,3 +217,51 @@ def test_first_half_stoppage_time_is_still_the_first_half():
     tracker = BoardTracker(CONFIG)
     settle(tracker, read(0, 0, clock="45+1"))
     assert tracker.period == 1
+
+
+def test_a_bug_that_never_comes_back_stops_being_a_replay():
+    """The checkpoint's unverified claim, verified: it was true.
+
+    Two minutes of absent reads used to leave ``in_replay`` set, so every
+    prompt for the rest of the match carried "screen: replay, not live play"
+    — and the caller is told never to call a replay as live, so it went
+    quiet. A bug missing for longer than any replay lasts is a crop pointed
+    at the wrong corner or a broadcast with no bug at all, which is a
+    different thing and calls for the opposite behaviour.
+    """
+    from commentary.perception.board import BUG_GONE_S
+    from commentary.state import MatchStateTracker
+
+    tracker = BoardTracker(CONFIG)
+    state = MatchStateTracker("Arsenal", "Madrid")
+    absent = read(None, None, clock=None, visible=False)
+
+    tracker.update(absent, 0.0)
+    tracker.update(absent, CONFIG.interval_s)
+    assert tracker.in_replay and not tracker.bug_missing
+    state.apply_board(tracker)
+    assert "replay" in state.summary()
+
+    ts = 2 * CONFIG.interval_s
+    while ts <= BUG_GONE_S:
+        tracker.update(absent, ts)
+        ts += CONFIG.interval_s
+
+    assert tracker.bug_missing
+    assert not tracker.in_replay
+    state.apply_board(tracker)
+    summary = state.summary()
+    assert "no score bug visible" in summary
+    assert "replay" not in summary
+
+
+def test_the_bug_coming_back_after_a_long_absence_clears_both_flags():
+    tracker = BoardTracker(CONFIG)
+    absent = read(None, None, clock=None, visible=False)
+    for i in range(40):
+        tracker.update(absent, i * CONFIG.interval_s)
+    assert tracker.bug_missing
+
+    tracker.update(read(0, 0), 80.0)
+    assert not tracker.bug_missing
+    assert not tracker.in_replay
