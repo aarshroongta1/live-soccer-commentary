@@ -901,6 +901,61 @@ runtime never loads one. PLAN.md: one paragraph under section 6.
 
 ---
 
+## Definition of done on the three-minute clip
+
+The user's instruction (2026-09-12): keep iterating on the three-minute
+clip (`clips/argfra-dimaria.mp4`, Argentina v France 2022, video 36:00 to
+39:00, first-half offset +96 s) until it produces good commentary with
+names and events. "Good" is this list, measured on one run of the clip
+with the standard command (`--backend anthropic --pack
+clips/pack-argfra-2022.json --seconds 195 --delay 8 --marks`) and graded
+against `clips/statsbomb-events-3869685.json`. All of it, on the same run:
+
+**Events**
+1. Di María's goal (StatsBomb 35:22, video ≈58 s) is spoken as a goal,
+   with his name, within 6 s of cursor 58, and the line reaches the voice
+   intact (no trimmed word, no mangled opener).
+2. The throw-in at 35:01 and the clearance/break before the goal get a
+   line each within 10 s (event recall on the clip's non-goal events ≥ 70%).
+3. Zero phantom events: no goal, card, penalty or foul spoken that is not
+   in StatsBomb within 12 s.
+4. Zero `unconfirmed_goal` rejections of a line about the real goal or its
+   celebration until play restarts.
+
+**Names**
+5. `name_precision` = 100%: every player named in a spoken line is the
+   `player` or `recipient` of a StatsBomb event within 3 s, or is visibly
+   the subject of a close-up (checked by hand against the frame at that ts
+   for celebration lines).
+6. `name_rate` ≥ 60% of caller lines in live play name at least one player.
+7. At least 3 distinct players named during open play (not celebration
+   close-ups), at least one of them named from a mark the tracker carried,
+   proven by the trace: a sighting bound to a track and a later line using
+   that name while the same track id is alive.
+8. Sightings bound / sightings made ≥ 50%, and no sighting ever binds a
+   wrong player (checked against StatsBomb as in 5).
+
+**Voice**
+9. No silence longer than 20 s while the scene is live play; silence
+   through replays (no spoken line while the board reader has the bug
+   absent and the caller's scene is replay).
+10. Analyst: at most one line per 40 s, ≤ 30 words, nothing false against
+    the clock or the score.
+11. No line states or implies the scoreline (the caller rule), no
+    repetition above the existing threshold.
+
+**Cost and health**
+12. ≤ $1.20 per run; zero `error` rows; tracker ≥ 5 passes/s; median track
+    life ≥ 2.5 s.
+
+Loop: run, read the trace against this list, fix the highest-value miss,
+commit, run again. Report after every run with the list as a checklist
+(pass/fail per item, one line each, the spoken lines, and the cost).
+Hard cap on the loop: **10 runs (~$10)** before stopping to report,
+whatever the state. Stop early to ask when a miss needs a design change
+rather than a fix (a change to a rule in the brief, a new model, a new
+dependency, or anything touching the thesis).
+
 ## Report back
 
 Commits; the A6 finding and the test that shows it; the ablation table re-run

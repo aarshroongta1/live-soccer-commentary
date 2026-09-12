@@ -48,7 +48,7 @@ from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate, fold
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
-from commentary.perception.players import NullTracker, Track, Tracker, id_of
+from commentary.perception.players import NullTracker, Track, Tracker, id_of, mark_of
 from commentary.predictor import SpeakPredictor
 from commentary.prompts.caller import MARK_TOLERANCE_S
 from commentary.schemas import (
@@ -389,7 +389,8 @@ class Runtime:
             if frame is None or frame.ts == last_ts:
                 await asyncio.sleep(TRACK_MIN_PERIOD_S)
                 continue
-            if last_ts is not None and any(last_ts < cut <= frame.ts for cut in self._cuts):
+            cut = last_ts is not None and any(last_ts < c <= frame.ts for c in self._cuts)
+            if cut:
                 # A cut is a different camera on a different part of the
                 # pitch, so no body after it continues a body from before.
                 self.tracker.reset()
@@ -406,6 +407,10 @@ class Runtime:
                 with_side=sum(1 for t in tracks if t.side is not Side.UNKNOWN),
                 named=sum(1 for t in tracks if t.name is not None),
                 ms=round(elapsed * 1000.0, 1),
+                # The tags carrying a name, so a trace says how long one
+                # lasted, and the cut that ends every one of them.
+                names=[mark_of(t.id) for t in tracks if t.name is not None],
+                cut=cut,
             )
             if tracks:
                 self._tracks.append((frame.ts, tracks))
@@ -780,21 +785,31 @@ class Runtime:
         """
         if not line.sightings:
             return
-        bound: list[str] = []
-        dropped: list[str] = []
+        seen: list[dict[str, Any]] = []
         for sighting in line.sightings:
             mark = id_of(sighting.mark)
             found = None if mark is None else self._roster_check(sighting, mark, cursor)
-            if mark is None or found is None:
-                dropped.append(f"{sighting.mark} {sighting.number} {sighting.name}")
-                continue
-            side, number, name = found
-            self.tracker.identify(mark, side, number, name, cursor)
-            self.state_tracker.registry.believe(number, name, cursor, side=side)
-            bound.append(f"{sighting.mark} {number} {name}")
-        self.stats.sightings += len(bound)
-        self.stats.sightings_dropped += len(dropped)
-        self._publish(Topic.SIGHTING, cursor, bound=bound, dropped=dropped)
+            # Whether the tag still meant a body by the time the line came
+            # back. Offline the id survives the round trip 42% of the time;
+            # this is the same number measured in the loop it has to hold in.
+            live = mark is not None and any(t.id == mark for t in self.tracks_for(cursor))
+            row: dict[str, Any] = {
+                "mark": sighting.mark,
+                "number": sighting.number,
+                "name": sighting.name,
+                "live": live,
+                "bound": found is not None,
+            }
+            if found is not None and mark is not None:
+                side, number, name = found
+                self.tracker.identify(mark, side, number, name, cursor)
+                self.state_tracker.registry.believe(number, name, cursor, side=side)
+                row["as"] = f"{number} {name}"
+                self.stats.sightings += 1
+            else:
+                self.stats.sightings_dropped += 1
+            seen.append(row)
+        self._publish(Topic.SIGHTING, cursor, sightings=seen)
 
     def _roster_check(
         self, sighting: Sighting, mark: int, cursor: float
