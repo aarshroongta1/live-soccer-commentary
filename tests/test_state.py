@@ -17,6 +17,8 @@ from commentary.schemas import (
 from commentary.state import (
     EntityRegistry,
     MatchStateTracker,
+    parse_clock,
+    period_for_clock,
 )
 
 
@@ -55,6 +57,116 @@ def caller(**kwargs: object) -> CallerLine:
     }
     fields.update(kwargs)
     return CallerLine.model_validate(fields)
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("37:12", 2232.0),
+        ("00:00", 0.0),
+        ("90:00", 5400.0),
+        ("45", 2700.0),
+        ("45+2", 2820.0),
+        ("45+2:13", 2833.0),
+        ("90+3", 5580.0),
+        ("67'", 4020.0),
+        (" 12:05 ", 725.0),
+    ],
+)
+def test_parse_clock_reads_the_forms_a_broadcast_actually_prints(text, expected):
+    assert parse_clock(text) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["", "   ", "HT", "half time", "1-0", "12:99", "999:00", "45+99", "abc", "12:3a", None],
+)
+def test_parse_clock_returns_none_for_rubbish(text):
+    assert parse_clock(text) is None
+
+
+@pytest.mark.parametrize(
+    ("text", "period"),
+    [
+        ("00:12", 1),
+        ("44:59", 1),
+        ("45+2", 1),
+        ("45:00", 2),
+        ("89:59", 2),
+        ("90+3", 2),
+        ("90:00", 3),
+        ("105+1", 3),
+        ("106:00", 4),
+        ("nonsense", None),
+    ],
+)
+def test_period_is_read_from_the_clock_including_the_plus(text, period):
+    assert period_for_clock(text) == period
+
+
+def test_the_board_moves_the_score():
+    tracker = MatchStateTracker("Arsenal", "Chelsea")
+    tracker.apply_board(StubBoard(home_score=1, away_score=0, clock="23:40"))
+
+    assert tracker.state.scoreline == "Arsenal 1-0 Chelsea"
+    assert tracker.state.clock_s == pytest.approx(1420.0)
+    assert tracker.state.period == 1
+
+
+def test_the_caller_cannot_move_the_score():
+    tracker = MatchStateTracker("Arsenal", "Chelsea")
+    tracker.apply_board(StubBoard(home_score=1, away_score=0, clock="23:40"))
+
+    tracker.apply_caller(caller(event=Event.GOAL, side=Side.AWAY, line="It's in!"))
+
+    assert (tracker.state.home_score, tracker.state.away_score) == (1, 0)
+    assert tracker.state.last_events == [Event.GOAL]
+    assert tracker.state.possession is Side.AWAY
+
+
+def test_the_replay_flag_comes_from_the_board():
+    tracker = MatchStateTracker("Arsenal", "Chelsea")
+    tracker.apply_board(StubBoard(home_score=0, away_score=0, clock="10:00", in_replay=True))
+    assert tracker.state.in_replay
+
+    tracker.apply_caller(caller(scene=Scene.LIVE_PLAY))
+    assert tracker.state.in_replay
+
+    tracker.apply_board(StubBoard(home_score=0, away_score=0, clock="10:04"))
+    assert not tracker.state.in_replay
+
+
+def test_replays_do_not_add_events_or_possession():
+    tracker = MatchStateTracker("Arsenal", "Chelsea")
+    tracker.apply_caller(caller(scene=Scene.REPLAY, event=Event.GOAL, side=Side.HOME))
+    assert tracker.state.last_events == []
+    assert tracker.state.possession is Side.UNKNOWN
+
+
+def test_recent_events_stay_bounded():
+    tracker = MatchStateTracker("Arsenal", "Chelsea", max_events=3)
+    for event in (Event.CORNER, Event.SHOT, Event.SAVE, Event.FOUL):
+        tracker.apply_caller(caller(event=event))
+    assert tracker.state.last_events == [Event.SHOT, Event.SAVE, Event.FOUL]
+
+
+def test_summary_is_short_and_carries_the_state():
+    tracker = MatchStateTracker("Arsenal", "Chelsea")
+    tracker.apply_board(StubBoard(home_score=2, away_score=1, clock="67:14"))
+    tracker.apply_caller(caller(event=Event.SAVE, side=Side.HOME))
+
+    summary = tracker.summary()
+    assert "Arsenal 2-1 Chelsea" in summary
+    assert "67:14" in summary
+    assert "second half" in summary
+    assert "save" in summary
+    assert len(summary.splitlines()) <= 5
+
+
+def test_summary_says_when_the_screen_is_a_replay():
+    tracker = MatchStateTracker("Arsenal", "Chelsea")
+    tracker.apply_board(StubBoard(home_score=0, away_score=0, clock="5:00", in_replay=True))
+    assert "replay" in tracker.summary()
 
 
 def test_registry_confidence_decays_with_time_since_the_sighting():
