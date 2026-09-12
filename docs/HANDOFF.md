@@ -4,7 +4,7 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `04139f3`, 41 commits on top of `c2ef18e`.
+**Head:** `300c2ba`, 44 commits on top of `c2ef18e`.
 **Gates:** `uv run pytest` 426 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
@@ -176,6 +176,43 @@ where the roster check has no latitude, and four lines died as invented
 names. That half is fixed in `a40b27b`: the rules now say a letter tag never
 goes in `names_read`, and the gate no longer reads a short capitalised
 alphabetic token there as a name claim. **It has not been run since.**
+
+### Where the definition-of-done loop stopped: 9 of 12
+
+Five runs, $4.90, and the user's cap is $5. Run 5 (`300c2ba`, trace
+`scratchpad/run/runs/r5/`) passes everything except items 1, 6 and 7's
+margins:
+
+| item | |
+|---|---|
+| 1 events | goal named twice in the window; **one line trimmed** — the gate cut "Rosario" and "World Cup" out of "a final goal for the man from Rosario" |
+| 2, 3, 4 | all pass: event recall 3/3, no phantom, **no gate rejection in 28 judged lines** |
+| 5 names | 8/8 names correct against StatsBomb |
+| 6 | name_rate **40%**, wants 60% |
+| 7 | 3 distinct players in open play, 12 sightings bound |
+| 8 | 12 of 20 sightings bound, 7 on a live tag |
+| 9, 10, 11 | no silence over 20 s in live play, analyst behaving, no scoreline |
+| 12 | $0.99, no errors, 7.0 passes/s, **median track life 2.57 s** |
+
+What moved it, in order of how much: deleting `names_read` so there is one
+field to put a read in (0 sightings to 21); tagging every tracked body rather
+than only the ones the kit split places (the close-ups had no tags at all);
+the lost-track buffer at sixty passes so a name outlasts the line that earned
+it (median identity 1.8 s to 2.6 s).
+
+**What to fix next, in order.**
+
+1. **Item 1.** The gate trims true words that are not people: "Rosario",
+   "World Cup". `_roster_of` adds competition and venue tokens of four
+   letters or more, so "Cup" is dropped and the pair fails as a run. The
+   pack's storylines are not in the roster at all.
+2. **Item 6.** 40% against 60%. Every name said was correct, so this is
+   reach and not precision: the caller names a player when it can see the
+   shirt or a surname tag and says "Argentina" otherwise. More of the tags
+   carrying names for longer is the lever, which is C10 — the per-match
+   gallery, approved and not built.
+3. **Item 7** passes but thinly (exactly 3), and no line yet uses a name that
+   was carried on a mark across a cut. That is C10 again.
 
 ### Run 3: the loop works, and it named the wrong man once
 
