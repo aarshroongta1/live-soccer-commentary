@@ -1,0 +1,48 @@
+src/commentary/runtime.py
+  s_afc8d3126874f1::t_0326c953773c0a 69,216-219,459,519,593,599-611
+  s_afc8d3126874f1::t_fa7c8abd422225 612
+tests/test_predictor.py
+  s_afc8d3126874f1::t_d972059601463d 10-11,117-128,130-134,137-210
+  s_afc8d3126874f1::t_8d4531e686bdf2 129,135-136
+src/commentary/grading/metrics.py
+  s_afc8d3126874f1::t_109de53428e064 318-319,323
+  s_afc8d3126874f1::t_14e1f1aa2dd0c2 320-322,324,382-386
+  s_afc8d3126874f1::t_8eecbe2b0f53e5 387
+tests/test_caller.py
+  s_afc8d3126874f1::t_8d4531e686bdf2 269-274,276-277
+  s_afc8d3126874f1::t_d972059601463d 237-268,275,278-281
+src/commentary/gate.py
+  s_afc8d3126874f1::t_14e1f1aa2dd0c2 262,300-305,321-330
+  s_afc8d3126874f1::t_3658437017436a 283,664
+src/commentary/agents/caller.py
+  s_afc8d3126874f1::t_1c2c45d7a36d4d 146-147,160-167,173-175
+src/commentary/config.py
+  s_afc8d3126874f1::t_cf3642ba5b4a8d 65-67,69-77,80-88
+src/commentary/grading/baselines.py
+  s_afc8d3126874f1::t_0c2c5e53e5d7a8 134,138-140
+src/commentary/predictor.py
+  s_afc8d3126874f1::t_c1530acb0a5933 7-16,63-73,81,102-103,119
+tests/test_gate.py
+  s_afc8d3126874f1::t_3658437017436a 548,571,636
+  s_afc8d3126874f1::t_14e1f1aa2dd0c2 519-533,538-546
+  s_afc8d3126874f1::t_9fa486399e263c 534-537
+tests/test_grading.py
+  s_afc8d3126874f1::t_3658437017436a 249,369-374
+  s_afc8d3126874f1::t_14e1f1aa2dd0c2 358-368,375-379
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "193ab260de5490b9e3d6b345754c6b02e017340a",
+  "prompts": {},
+  "sessions": {
+    "s_afc8d3126874f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d85f9692-fb3b-44fd-9cad-bdf46a255d94",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
