@@ -10,7 +10,8 @@ gitignored — the clips are 26 MB each and the traces are somebody's API spend.
 **Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
 `uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`
 extra, mypy reports nine import errors in `mcp_server.py` that are the missing
-package and not the code. There is no `vision` extra any more; see section 7.
+package and not the code. There is no `vision` or `audio` extra any more;
+sections 7 and 8 say why. HEAD as of 13 Sep 2026 is `31b6a88`, pushed.
 
 ## 1. What runs
 
@@ -25,6 +26,8 @@ uv run python -m commentary grade runs/<name>/*.jsonl \
 ```
 
 Opus 5 calls, Haiku 4.5 reads the board, Opus 5 on the analyst (`.env`).
+`CALLER_FRAME_WIDTH` (default 768) is the width the caller's frames go out
+at; 1280 costs 1.75x and two clips could not tell it from noise (section 9).
 **About $0.30 a minute of video**: a three-minute clip costs $0.95 to $1.07, a
 forty-five-second clip $0.15 to $0.25. On Haiku for the caller and analyst a
 forty-five-second clip is $0.04 to $0.06. Nothing runs locally but ffmpeg,
@@ -59,7 +62,7 @@ the score** 13 times out of 13, and a 2018 bug with the clock on the right
 perfectly, having never seen either. What did not: naming a player in open
 play.
 
-## 3. What changed in this pass
+## 3. What changed in the pass before this one
 
 | commit | |
 |---|---|
@@ -74,46 +77,122 @@ play.
 | `9bda1db` | "and it is in" written out, which unifying the goal definitions had lost. |
 | `clips/build_pack.py` | `NAME_FIXES`: StatsBomb's nickname field calls Randal Kolo Muani "Randal Kolo", and two true lines died of it. |
 
+## 3b. What changed on 13 September
+
+Six commits, all on the strength of traces already on disk or a run under
+$1.20. Sections 7, 8 and 9 carry the numbers.
+
+| commit | |
+|---|---|
+| `99dc36c` | The player tracker, the gallery, the kit split and the marks are gone, with torch. A real-clip ablation: without them the caller named 20 distinct players against 8 with them, and bound 96% of sightings against 30%. Section 7. |
+| `2b96b44` | The whistle and roar detectors and the audio pipeline are gone. Whistle fired once in 58 runs; roar fired every five seconds regardless and missed the tuned clip's goal nine runs out of nine; it was also holding the goal gate open half the time when the board was unreadable. Section 8. |
+| `f43d5ed` | `CALLER_FRAME_WIDTH`. Two clips at 1280 went one up, one down, at 1.75x the cost. Default stays 768. |
+| `e1166e0` | The caller's examples are real broadcast lines; "one sentence" is gone from the rules; the three "use the name" paragraphs are one. And a gate bug: the minimum-words rule applied to every line, not only to trimmed ones, so any line under three words died. |
+| `193ab26` | The rate cap is earned by the last line's length (floor 1.5 s, cap 4 s). Two trims the new multi-sentence lines exposed: a capitalised word opening a second sentence was read as a name, and a plural demonym ("Argentines") was off-roster to the grader. Both fixed in gate and grader. |
+| `31b6a88` | The similarity veto on repeats is gone from both voices. Zero firings in 63 runs and 1,062 calls; the prompt's "last five lines" is what stops a repeat. The analyst's echo check against the caller stays. |
+
 ## 4. Known gaps
 
-- **Open-play naming.** `name_rate` in live play across the three-minute
-  clips: 33%, 18%, 0%, 33%, 73%, 38%. The 73% is the shootout, which is all
-  close-ups. The system names players when the camera is close enough to read
-  a shirt, and open play is where a listener most wants a name.
-- **A call refused just before the kick.** Mbappé's penalty was missed because
-  the call that would have covered it was refused one tenth of a second under
-  the rate cap, when nothing — board, caller, lookahead — knew a goal was
-  coming. `dd85151` does not fix this and its message says so.
-- **StatsBomb's card timestamp is not when the card is shown.** e06's yellow is
-  stamped 89:05 and the frame at 89:07 is live play with no referee in it. It
-  cost two card clips.
-- **Shootouts have no board.** Three shootout clips on two matches: zero
-  usable readings in all three.
-- **The e01 rerun is inconclusive.** It produced no goal line at all, which is
-  variance rather than regression — the carry worked elsewhere in the same run
-  — but one run of something this variable proves nothing.
-- **`name_withheld` is new.** Only the three reruns have it in their traces;
-  counting it across the older ones will find nothing.
+- **Open-play naming, and what it actually is.** Across 208 live-play caller
+  lines on Opus, 57% had no sighting at all — nothing legible in the frame —
+  10% had sightings that bound to nobody, and 33% had a bound name. Of those
+  69, 45 said the name and 24 withheld it, mostly correctly (the bound name
+  was van Dijk on the edge while Messi took the penalty). So the gap is
+  pixels, not prompt: a shirt number in a wide shot at 768 wide is four
+  pixels tall. 1280 did not settle it in two runs (section 9). The carry
+  rule and the registry are the room that is left.
+- **A call refused just before the kick.** Still open. The board reader runs
+  eight seconds ahead of the cursor but only fires a trigger on the third
+  agreeing read; firing on the *first* differing read would land as the
+  cursor reaches the kick, and the caller's lookahead would show the ball in.
+  Deterministic, no model call, one unit test. Not done yet.
+- **Fragments do not come.** With real fragment examples in the prompt and a
+  cadence that rewards short lines, the Opus caller wrote no line under seven
+  words on the Mbappé clip. Three gates stood in front of the style; two are
+  open now (section 9); the third is the caller's own choice.
+- **No run longer than 3.5 minutes.** Nothing has shown the state, the cost
+  cap, the goal-talk cap or the analyst's spacing over a half.
+- **Live capture and voice have never been switched on.** `ScreenCapture`
+  and `ElevenLabsSpeaker` are built and unit-tested; every result in this
+  file came from `--source file` with `--voice log`.
+- **Shootouts.** The FIFA feed shows a tally strip at the bottom centre,
+  intermittently, outside the board reader's crop. A second crop would read
+  it. Decided not to build it; a league match has no shootout and a live
+  wire is the likelier answer if it ever matters.
+- **StatsBomb's card timestamp is not when the card is shown.** Unchanged;
+  it cost two card clips.
+- **Grading a 2026 fixture.** StatsBomb open data is historical. The ESPN
+  feed adapter (`commentary feed`) exists and is unverified against a
+  current match. The Opus judge can score a trace without a feed.
 
 ## 5. Next steps, in this order
 
-1. **Open-play naming.** Start free: count `name_withheld` across traces to
-   split "never identified" from "identified and not used" — the Messi penalty
-   was the second, and that is a different problem from the first. The
-   tracker is not the answer (section 7); the carry rule and the registry are
-   where the room is.
-2. **Use the eight-second lookahead before refusing a call.** The director
-   should scan the lookahead frames for a celebration or a board change before
-   the rate cap says no. It covers the Mbappé case and also the card shown
-   after the referee's decision.
-3. **One fifteen-minute run on an unseen match, $5-6**, as the gate before
-   anything goes live.
-4. **A live source** — yt-dlp or capture — with measured end-to-end
-   latency.
-5. **A Sonnet-versus-Opus caller A/B** over a fifteen-minute segment, once
-   naming is stable.
+The target moved: not October, a Premier League or La Liga match in the
+next two or three days, then finish. Roughly three days and $40.
 
-Leave the gate, the grader and the wire alone.
+**Today, from clips on disk, no match needed.**
+
+1. **Live capture smoke test.** Play a clip full-screen in a video player and
+   run `--source screen`. Get moment-to-spoken lag and whether the watch
+   page's delayed video holds sync. This path has never been run.
+2. **Voice on a real clip.** `--voice elevenlabs` on the Di María clip: two
+   voices, the goal preempting the analyst mid-sentence, synthesis lag on top
+   of the buffer. Needs ElevenLabs credit; pennies.
+3. **Fire the board trigger on the first differing read** (gap 2 above).
+   Then rerun `clips/mbappe.mp4` once, $1.10, and look for the penalty called
+   as it happens.
+4. **Sonnet versus Opus**, six short clips on Sonnet, about $1, against the
+   Opus runs on disk. Haiku already showed the floor is real (4 of 22 events);
+   if Sonnet holds, a match is $11 instead of $27.
+
+**Once the match is picked.**
+
+5. **Which app or site the broadcast plays in** decides the capture device
+   and whether the picture is capturable at all. Ask before anything else.
+6. **Build the pack with the researcher** for the real fixture and check the
+   numbers and kits by hand. A wrong number here is a wrong name on air.
+7. **Set the score-bug crop** for that broadcaster with `commentary crop` on
+   any recent frame of its feed. The reader read three unfamiliar layouts
+   perfectly; the crop still has to point at the corner.
+8. **One 20-minute dry run** of a recent match off the same broadcaster if a
+   recording is obtainable, about $6. First run past four minutes.
+
+**Match day.**
+
+9. **The live run**: `MAX_USD_PER_MATCH` set, trace on, screen-record the
+   watch page with audio for the demo. Fallback if capture fails: record the
+   broadcast and run it as a file twenty minutes behind; the demo survives.
+
+**After.**
+
+10. **Demo video, README numbers, this file.** README has the clip results;
+    it needs the live lag, the cost, the demo, and the honest line about
+    what was not graded. Judge the trace with `commentary grade` sans feed
+    and the Opus judge.
+
+Skip: grading the live match against a feed; the shootout crop; anything
+tracker-shaped; more work on fragments; the simulator ablation table.
+
+## 6. Do not do these again
+
+- **No batch scripts that cannot be interrupted.** Five runs fired from one
+  script before a change of plan landed, and $4.90 went on clips that had just
+  been deprioritised.
+- **`--seconds` must be the clip length plus at least twenty.** The cursor is
+  pinned at the live edge minus the delay, so the last eight seconds of a clip
+  are never narrated whatever you pass, and the caller needs another twelve on
+  top to write about what it saw. `--seconds 50` on a 45 s clip lost a goal
+  that the trace shows the system had already called internally.
+- **Do not centre a card clip on the StatsBomb timestamp.** Check the frame
+  first; the broadcaster shows the card later, often after the ball goes out.
+- **Do not take a simulator A/B as evidence about vision or audio.** The sim
+  oracle decodes a timestamp and never reads a pixel or hears a sound. The
+  marks A/B in the old README was 12 lines on the sim and it was the whole
+  case for a stack that lost on real clips.
+- **Ask the traces before building.** The tracker, the whistle, the roar and
+  the repetition veto were each answered from `runs/` for nothing before any
+  code moved. `runs/readtrace.py` prints a trace; the trigger, sighting,
+  gate and spoken rows carry everything needed.
 
 ## 7. The tracker is gone
 
@@ -185,20 +264,48 @@ matters: a Haiku yes-or-no on the two lookahead frames, "is this a goal
 celebration", as the independent second source the roar was pretending to
 be — well under a cent a claim.
 
-## 6. Do not do these again
+## 9. The prompt, the cadence, and what did not happen
 
-- **No batch scripts that cannot be interrupted.** Five runs fired from one
-  script before a change of plan landed, and $4.90 went on clips that had just
-  been deprioritised.
-- **`--seconds` must be the clip length plus at least twenty.** The cursor is
-  pinned at the live edge minus the delay, so the last eight seconds of a clip
-  are never narrated whatever you pass, and the caller needs another twelve on
-  top to write about what it saw. `--seconds 50` on a 45 s clip lost a goal
-  that the trace shows the system had already called internally.
-- **Do not centre a card clip on the StatsBomb timestamp.** Check the frame
-  first; the broadcaster shows the card later, often after the ball goes out.
+**Real commentary, measured.** From the 2022 final's YouTube captions
+(`clips/argfra-dimaria.en.json3`) and local Whisper transcripts of three
+short clips; the analysis with thirty quoted lines is in
+`runs/prompt-name/REAL_COMMENTARY.md`. Ten windows of live open play, 115
+utterances: median 5 words, 24% two words or fewer, 19% a bare surname,
+longest 28 (the existing cap). Whole match: median gap between utterances
+2.4 s, 78% of gaps under 4 s. This system's floor was 4 s between lines.
 
----
+**What was done with that.** The caller's Good examples are now real lines
+("De Paul." / "Messi, Álvarez." / "Save. The deflection off Varane flies
+wide."); "one sentence" is gone; the subject is the player on the ball,
+named if read. The rate cap is earned by the last line (words over
+`WORDS_PER_SECOND` plus 0.8 s, floored at 1.5, capped at 4.0). The
+minimum-words gate rule now applies only after a trim. The similarity veto
+is gone.
+
+**What happened: nothing.** Two short clips with the new prompt, then the
+Mbappé clip with the new cadence as well, all Opus: no line under seven
+words. Every rate-cap refusal printed the 4.0 s cap because no line was
+short enough to earn less. Naming did not move on the two short clips (1 of
+5 to 1 of 4; 1 of 3 to 1 of 3). The Mbappé run named players in 50% of live
+lines against 33% and called 6 of 9 events against 3 of 8, including the
+penalty the old run missed — but that baseline is three code generations
+back and proves nothing about cadence.
+
+**What the new style did break, both fixed with tests.** Two-sentence lines
+put a capitalised word after a full stop, and the gate read it as a name:
+"Everything in this final waits on him" went out as "in this final waits on
+him". Any word that opens a sentence in the line is now exempt, in the gate
+and the grader. And "the Argentines" was an off-roster name to the grader;
+demonym plurals are team words now.
+
+**1280.** Corner clip: 7 sightings and 1 of 5 lines named at 768; 17 and 3
+of 5 at 1280. Offside clip: 13 and 2 of 4 at 768; 10 and 0 of 3 at 1280 —
+that run read four names in one call and used none. 1.75x the cost. Six
+clips twice each, about $4, would settle it; not worth it before the live
+run.
+
+Traces for all of this: `runs/abl/`, `runs/w1280/`, `runs/prompt-name/`,
+`runs/cadence/`.
 
 ## Things the next person will trip over
 
@@ -217,7 +324,9 @@ be — well under a cent a claim.
   does. Left as is rather than rewriting history.
 - **The brief's opening line points at a worktree that no longer exists.**
   Left as the user wrote it; this file has the current layout.
-- **The openers list is gone and so is the position-zero trim** (`40e8040`).
+- **The openers list is gone and so is the position-zero trim** (`40e8040`),
+  and since `193ab26` the same exemption covers a word that opens any
+  sentence inside the line.
   Anything that reintroduces "strip an ordinary word off the front of a line"
   is reintroducing nineteen damaged lines for zero catches.
 - **`tests/test_baselines.py::test_only_the_wire_can_put_a_lied_about_score_right`
