@@ -50,8 +50,16 @@ MIN_BODY_PX = 90
 #: Both are cosine similarity between unit vectors. The pair is the whole
 #: safety argument: the threshold says "this is one of the players we have
 #: seen", the margin says "and it is not the other ten".
+#:
+#: The margin is set from the clip rather than from taste. Fifty-seven
+#: classifications on the first gallery run came out sharply bimodal: a
+#: confident cluster from 0.76 to 0.86 and an ambiguous one from 0.001 to
+#: 0.141, with nothing in between. 0.35 sits in that gap with a doubling of
+#: headroom on each side, which keeps every confident match and drops every
+#: near-tie. A near-tie is two players of a build in one kit, and the answer
+#: there is silence.
 MATCH_THRESHOLD = 0.75
-MATCH_MARGIN = 0.08
+MATCH_MARGIN = 0.35
 
 #: Crops embedded on one classification pass. The embedder is the slowest
 #: thing available to this system — about 70 ms a crop — and the tracker's
@@ -88,7 +96,13 @@ class Match:
 
 @dataclass
 class Decision:
-    """One classification, hit or miss, for the trace to report."""
+    """One classification, hit or miss, for the trace to report.
+
+    Both numbers, not only the one that decided it: the margin says whether
+    two players were told apart and ``best`` says whether the body looked
+    like anybody at all, and a gallery with two people in it can produce a
+    wide margin on a stranger.
+    """
 
     best: float
     margin: float
@@ -182,6 +196,7 @@ class Gallery:
             "classified": len(made),
             "hits": len(hits),
             "margins": [d.margin for d in made],
+            "best": [d.best for d in made],
             "named": [d.matched for d in hits],
         }
 
