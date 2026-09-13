@@ -83,84 +83,14 @@ _STOPWORD_TEXT = """
 #: had "Play" counted as a person.
 STOPWORDS = frozenset(_STOPWORD_TEXT.split())
 
-#: Words that open a commentary sentence and are grammar, not people.
+#: The trim used to drop an ordinary word from the front of a line, on the
+#: theory that an invented surname would most often be put first. Nineteen
+#: firings across nine runs on six clips — Tears, Hands, Arms, Fist, Ice,
+#: Thousands, Whole, Pure, Emotion, Sky, Restart, Round, Grimacing — and not
+#: one of them was a name the caller invented. A rule that has never once
+#: caught what it is for, and has cost about two true lines a run, is not a
+#: rule. Removed; a capitalised first word is just a word.
 #:
-#: The one place a capital letter carries no information is at the start of a
-#: line, and a capitalised ordinary word there is the gate's worst trim: the
-#: second real run lost "Round the keeper and rolled in at the far post — Di
-#: María finishes off a breakaway of real beauty!" to "The keeper and rolled
-#: in at the far post — ...", because "around" was a stopword and "round" was
-#: not. That list can never be finished one word at a time, so the rule is
-#: positional: a run that *starts the line* is not a name if its first word is
-#: an ordinary English opener.
-#:
-#: ``grading/metrics.py`` imports this rather than keeping its own copy. The
-#: two had separate lists and the grader's was the fuller one, so the gate
-#: trimmed names the grader would have allowed. One list, and the grading
-#: wall stays intact because it only ever points this way.
-#:
-#: The body and kit nouns are the second batch, and they came off real runs:
-#: "Arms wrapped around each other" reached the voice as "Wrapped around each
-#: other" and "Fist clenched, jaw trembling" as "Clenched, jaw trembling". A
-#: celebration is described with the parts of a body, every one of them a
-#: capitalised common noun at the front of a sentence, and each one was read
-#: as an invented surname. The list can never be finished — that is why the
-#: bare word "goal" came off the goal-claim patterns — but the words a
-#: commentator actually opens with are a short list, and each one added here
-#: is one the clip produced.
-_OPENER_TEXT = """
-    round over under back up off in out through into onto past across along down
-    inside outside forward square deep wide long high short straight low
-    brilliant great good lovely superb poor well terrible fine smart
-    what here there oh yes no still again almost nearly surely just never always
-    away first second half time full free corner goal penalty offside
-    saved blocked cleared another plenty nothing everything both
-    one two three four five whoever whatever whenever
-    everyone everybody nobody somebody someone neither either
-    red blue white black green yellow orange purple claret navy maroon gold grey amber
-    arms arm fist fists hands hand head heads feet foot boot boots chest knee
-    shoulder shoulders face faces eyes tears shirt shirts legs body bodies
-    ball crowd noise silence bench flag stripes
-"""
-OPENERS = frozenset(_OPENER_TEXT.split())
-
-#: How long a word has to be before its ending is taken as grammar.
-_PARTICIPLE_MIN = 6
-_PARTICIPLES = ("ing", "ed", "ly")
-#: A plural at the front of a line is a thing, not a person: "Tears in the
-#: stands", "Hands on heads all over Lusail", "Thousands of French
-#: supporters". Nine runs produced five of these and no invented name.
-_PLURAL_MIN = 5
-
-
-def opens_a_sentence(word: str) -> bool:  # noqa: D401
-    """Is this capital at the start of a line grammar rather than a name?
-
-    Two answers. The list above, which is the words the clips actually
-    produced — and a rule, because the list kept losing. Four runs on four
-    different clips each mangled a line on a word nobody had thought of:
-    "Arms wrapped around each other" became "Wrapped around each other",
-    "Fist clenched, jaw trembling" became "Clenched, jaw trembling", and
-    "Grimacing, and France get on with it" lost its first word outright.
-    Every one of them is a participle, which is how a commentator opens a
-    sentence about a player they are already describing.
-
-    So a long word ending in -ing, -ed or -ly at position zero is grammar,
-    and so is a plural — "Tears in the stands", "Hands on heads all over
-    Lusail", "Thousands of French supporters on their feet".
-    The length floor keeps "Reed" and "Fred" out of it. A real player whose
-    name ends that way is on the roster and is never trimmed in the first
-    place; what this gives up is an invented six-letter name in the
-    participle form at the front of a line, and nothing has ever produced
-    one.
-    """
-    folded = fold(word)
-    if folded in OPENERS:
-        return True
-    if len(folded) >= _PARTICIPLE_MIN and folded.endswith(_PARTICIPLES):
-        return True
-    return len(folded) >= _PLURAL_MIN and folded.endswith("s") and not folded.endswith("ss")
-
 #: Prepositions left dangling by a trim ("comes in from  and the winger"), so
 #: they go with the name rather than staying behind as debris.
 _DANGLERS = "from|by|to|for|off|with|of|onto|into|at|on|through|past"
@@ -375,17 +305,23 @@ def _candidates(line: str) -> list[_Candidate]:
     Runs rather than single words, so "Jude Bellingham" is checked against the
     roster as one person instead of as two unknown halves.
 
-    A run that starts the line loses an ordinary opener off the front of it
-    first. At position 0 the capital is grammar, and the word after a full
-    stop is the one place where an everyday word — "Round the keeper", "Wide
-    of the post", "Off the bar" — looks exactly like a surname.
+    Nothing special happens at position 0 any more. The rule that stripped an
+    ordinary word off the front of a line never caught an invented name in
+    nine runs and cost nineteen true words; the roster check on the run
+    itself is what stops a name nobody is called, wherever it sits.
     """
     runs: list[_Candidate] = []
     current: list[re.Match[str]] = []
 
     def flush() -> None:
-        if current and current[0].start() == 0 and opens_a_sentence(current[0].group()):
-            current.pop(0)
+        # A run that starts the line is not a name claim at all. The rule that
+        # stripped an ordinary word off the front fired nineteen times in nine
+        # runs and never once caught an invented name, so the trim there is
+        # gone rather than made cleverer — and with it goes any checking of
+        # that run, which is the same decision stated the other way round.
+        if current and current[0].start() == 0:
+            current.clear()
+            return
         while current and fold(current[0].group()) in STOPWORDS:
             current.pop(0)
         while current and fold(current[-1].group()) in STOPWORDS:

@@ -22,7 +22,6 @@ from pathlib import Path
 from typing import Any
 
 from commentary.gate import STOPWORDS as GATE_WORDS
-from commentary.gate import opens_a_sentence
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, WireEvent
 from commentary.trace import read_trace, rows_of
 from commentary.voice.speaker import WORDS_PER_SECOND
@@ -357,13 +356,18 @@ def factual_errors(
         lowered = normalise(line.text)
 
         for word in re.findall(r"\b[A-ZÁÉÍÓÚÄÖÜÑ][a-zá-ü]+\b", line.text):
+            # The gate stopped reading the first word of a line as a name, so
+            # the grader stops marking it as one. A grader stricter than the
+            # gate scores a system that is not the one running.
+            if line.text.strip().startswith(word):
+                continue
             candidate = normalise(word)
             # The gate's list, not the short one above: a word the gate allows
             # and the grader calls a name is the table scoring a system that
             # is not the one running.
             if candidate in known or candidate in GATE_WORDS:
                 continue
-            if _is_team_word(candidate, pack) or _is_ordinary_opener(line.text, word):
+            if _is_team_word(candidate, pack):
                 continue
             errors.append(FactualError(line.video_ts, "name_off_roster", word, line.text))
 
@@ -410,22 +414,6 @@ def _is_team_word(candidate: str, pack: KnowledgePack) -> bool:
         if label and candidate in normalise(label).split():
             return True
     return False
-
-
-def _is_ordinary_opener(text: str, word: str) -> bool:
-    """A capital at the start of a sentence may be grammar rather than a name.
-
-    This is a heuristic and it is biased towards flagging: a name the system
-    invented and then put first in the sentence is the error that matters
-    most, so anything not recognisably an ordinary opener is treated as a
-    name claim. The model judge is what settles the genuinely ambiguous ones.
-
-    The test lives in the gate, which applies the same one to the same words.
-    A grader with its own copy marks names the gate has already trimmed, or
-    lets through words the gate cut — either way the table stops describing
-    the system it is scoring.
-    """
-    return text.strip().startswith(word) and opens_a_sentence(word)
 
 
 # -- naming players ------------------------------------------------------

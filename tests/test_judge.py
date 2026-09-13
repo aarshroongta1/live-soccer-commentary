@@ -234,7 +234,7 @@ async def test_the_report_keeps_the_two_error_rates_apart(pack, truth) -> None:
     backend.register("judge_factuality", verdicts(Kowalczyk=Verdict.FALSE))
     backend.register("judge_pairwise", always(Choice.TIE))
     run = run_of(
-        (61.0, "Kowalczyk turns and shoots"),
+        (61.0, "And there is Kowalczyk turning to shoot"),
         (62.0, "Arsenal keep it moving"),
     )
 

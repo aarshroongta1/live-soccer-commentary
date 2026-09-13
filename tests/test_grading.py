@@ -96,7 +96,9 @@ def test_lines_near_events_count_as_recall(tmp_path: Path, truth, pack) -> None:
 
 
 def test_an_invented_name_is_counted_as_a_factual_error(tmp_path: Path, truth, pack) -> None:
-    path = write_trace(tmp_path, [spoken(31.0, "Kowalczyk turns and shoots")])
+    # Mid-line: the first word of a line is no longer read as a name by
+    # either the gate or the grader.
+    path = write_trace(tmp_path, [spoken(31.0, "And there is Kowalczyk turning to shoot")])
     run = metrics.load_run(path)
     errors = metrics.factual_errors(run, truth, pack)
     assert [e.kind for e in errors] == ["name_off_roster"]

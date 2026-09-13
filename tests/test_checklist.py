@@ -321,7 +321,7 @@ def test_a_name_nobody_in_the_match_is_called_fails_the_precision_item(
     pack, wire, tmp_path: Path
 ) -> None:
     rows = a_good_run()
-    rows += [caller(100.0), gate(100.0), spoken(100.0, "Kowalczyk turns and shoots")]
+    rows += [caller(100.0), gate(100.0), spoken(100.0, "And there is Kowalczyk turning to shoot")]
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert not items[5].ok
