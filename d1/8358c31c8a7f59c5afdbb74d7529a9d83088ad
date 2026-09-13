@@ -1,0 +1,25 @@
+tests/test_checklist.py
+  s_071588aa9615d3::t_88b3371b2a6c2d 667-685
+src/commentary/schemas.py
+  s_071588aa9615d3::t_88b3371b2a6c2d 42-47
+src/commentary/prompts/caller.py
+  s_071588aa9615d3::t_88b3371b2a6c2d 127-130
+src/commentary/grading/checklist.py
+  s_071588aa9615d3::t_88b3371b2a6c2d 62-64,123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d18358c31c8a7f59c5afdbb74d7529a9d83088ad",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
