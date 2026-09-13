@@ -28,6 +28,35 @@ Seven of ten events called, an eighth written and killed before it could be
 spoken, **zero phantoms in any clip, and not one wrong name in the set.**
 $1.96 for the ten, $2.20 including a discarded first attempt.
 
+### The twelve, and the three rerun after the fixes
+
+| clip | event | match | called | named | cost |
+|---|---|---|---|---|---:|
+| e01 | counter-attack goal | NED-ARG WC22 | yes, -0.6 s | no (Molina) | $0.16 |
+| e02 | penalty scored | NED-ARG WC22 | yes, -4.6 s | no (Messi) | $0.20 |
+| e03 | shootout winner | NED-ARG WC22 | yes, -4.5 s | **yes** | $0.24 |
+| e04 | penalty save | NED-ARG WC22 | yes | keeper only | $0.20 |
+| e05 | shootout miss | MOR-ESP WC22 | yes | **both** | $0.22 |
+| e06 | yellow card | MOR-ESP WC22 | no — never shown | — | $0.20 |
+| e07 | direct free-kick goal | POR-ESP WC18 | written, **cut** | — | $0.20 |
+| e08 | penalty scored | POR-ESP WC18 | yes, -0.1 s | **yes** | $0.16 |
+| e09 | offside | CRO-ENG WC18 | yes, -3.5 s | no (Sterling) | $0.23 |
+| e10 | offside | ARG-COL Copa | no | — | $0.15 |
+| e11 | corner taken | CRO-ENG WC18 | yes, -7.4 s | no (Modrić) | $0.20 |
+| e12 | foul, no card | ARG-COL Copa | no | — | $0.24 |
+
+**After the fixes**, the same clips run once more:
+
+| clip | before | after |
+|---|---|---|
+| e01 counter | called -0.6 s, Molina unnamed | **no goal line at all** — the run spent the window on the build-up. Run-to-run variance, not a regression: the carry did work elsewhere in it ("Molina bursts away down the right with Blind chasing"). |
+| e02 penalty | called, **Messi unnamed** while `10 Messi` sat in the same call's sightings | **"Messi steps up, strikes it low to the keeper's right, and it is in — Argentina have their second."** Named twice, in the build-up and at the strike. 8 of 12 to 9 of 12. |
+| e07 free kick | written with his name, tagged `free_kick`, **killed by the camera cut**, never spoken | **spoken**: "Ronaldo takes his steps back, whips it up and over the wall, and it flies into the top corner!" plus a second line naming him again. The trace shows the beat tagged `event=goal`, `preemptable=False`. **9 of 12 to 11 of 12, the best score of the exercise.** |
+
+Two of the three changed exactly what they were built to change. The third
+says nothing either way, which is what one run of a thing with this much
+variance is worth.
+
 ### What the short clips settled
 
 - **The board reader generalises to layouts it has never seen.** The Copa
