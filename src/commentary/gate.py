@@ -217,6 +217,11 @@ def fold(text: str) -> str:
     """
     decomposed = unicodedata.normalize("NFKD", text)
     plain = "".join(c for c in decomposed if not unicodedata.combining(c))
+    # The possessive goes as a unit, before the apostrophe is dropped. "De
+    # Gea's right" folded to "de geas" and matched nobody, so the gate trimmed
+    # the goalkeeper's name out of a penalty being scored past him — twice in
+    # one clip. Whose right it was is the possessive; who it was is the name.
+    plain = re.sub(r"['’]s\b", "", plain)
     plain = plain.replace("'", "").replace("’", "")
     return " ".join(re.sub(r"[^0-9A-Za-z]+", " ", plain).lower().split())
 

@@ -649,3 +649,18 @@ def test_an_event_nobody_mentions_is_not_called(pack, wire, tmp_path: Path) -> N
     )
     made = {call.event: call for call in checklist.calls(state)}
     assert not made[Event.THROW_IN].said
+
+
+def test_a_flag_going_up_is_an_offside(pack, wire, tmp_path: Path) -> None:
+    """"The shot is worked away, and the flag goes up against the runner."
+
+    None of "offside", "flag is up", "linesman" or "assistant's flag" caught
+    that, and the clip was scored as never having mentioned it. A flag going
+    up in football is an offside; there is nothing else it can be.
+    """
+    from commentary.schemas import Event as E
+
+    line = checklist.Line(
+        ts=1.0, voice="caller", text="and the flag goes up against the runner", event="shot"
+    )
+    assert checklist._calls_it(line, E.OFFSIDE)

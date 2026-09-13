@@ -67,6 +67,12 @@ GOAL_CLAIMS: tuple[str, ...] = (
     "it home",
     "empty net",
     "keeper the wrong way",
+    # The short clips said it four more ways: "curls it over the wall and
+    # into the top corner", "it squirms in", "wheels away in delight".
+    "squirms in",
+    "top corner",
+    "wheels away",
+    "in the net",
 )
 
 _SUFFIXES = ("ing", "edly", "ed", "es", "s")

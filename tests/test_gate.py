@@ -552,3 +552,26 @@ def test_a_plural_at_the_front_of_a_line_is_a_thing_not_a_person() -> None:
 
     assert all(opens_a_sentence(w) for w in ("Tears", "Hands", "Thousands"))
     assert not opens_a_sentence("Messi")
+
+
+def test_a_possessive_is_not_part_of_the_name() -> None:
+    """"He strikes it low to De Gea's right" lost the goalkeeper, twice.
+
+    `fold` dropped the apostrophe and glued the s on, so "De Gea's" became
+    "de geas", matched nobody on either roster, and the gate trimmed a real
+    name out of a penalty being scored past him.
+    """
+    from commentary.gate import fold
+
+    assert fold("De Gea's right") == "de gea right"
+    assert fold("Di María") == "di maria"
+
+
+def test_the_keepers_name_survives_a_possessive(pack, state) -> None:
+    gate = FactGate()
+    keeper = pack.away.squad[0].name
+    verdict = gate.judge(
+        call(f"He strikes it low to {keeper}'s right and it squirms in"), state, pack=pack
+    )
+    assert verdict.passed
+    assert keeper in verdict.line, verdict.reasons

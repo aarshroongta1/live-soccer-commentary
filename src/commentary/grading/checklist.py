@@ -95,7 +95,12 @@ SPELLED_SCORE = re.compile(
 #: scored offside 1/1 on a line about a corner that happened to be nearby,
 #: and nothing in three minutes ever said the word.
 SAYS: dict[Event, tuple[str, ...]] = {
-    Event.OFFSIDE: ("offside", "flag is up", "linesman", "assistant's flag"),
+    # "the flag goes up against the runner" is how the Croatia clip called
+    # one, and none of the first four phrasings caught it. A flag going up in
+    # football is an offside; there is nothing else it can be.
+    Event.OFFSIDE: (
+        "offside", "flag", "linesman", "assistant", "called back", "pulled back",
+    ),
     Event.CARD: ("yellow", "red card", "booked", "booking", "card", "sent off"),
     Event.PENALTY: ("penalty", "the spot", "twelve yards"),
     Event.SUBSTITUTION: (
