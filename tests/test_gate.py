@@ -514,3 +514,41 @@ def test_a_short_word_that_happens_to_end_in_ed_is_still_a_name() -> None:
 
     assert not opens_a_sentence("Reed")
     assert not opens_a_sentence("Fred")
+
+
+@pytest.mark.parametrize(
+    ("said", "full", "same"),
+    [
+        ("T. Hernández", "Theo Hernández", True),
+        ("L. Martínez", "Lautaro Martínez", True),
+        ("L. Martínez", "Theo Hernández", False),
+        ("E. Martínez", "Lautaro Martínez", False),
+        ("Mac Allister", "Alexis MacAllister", True),
+        ("MacAllister", "Alexis Mac Allister", True),
+        ("Di María", "Ángel Di María", True),
+        ("María", "Ángel Di María", True),
+        ("ister", "Alexis Mac Allister", False),
+        ("Alexis", "Alexis MacAllister", False),
+        ("Zaltimore", "Lionel Messi", False),
+    ],
+)
+def test_a_name_read_off_a_shirt_or_a_graphic_finds_its_player(
+    said: str, full: str, same: bool
+) -> None:
+    """Five lines on the real clips died between these two spellings.
+
+    A broadcast graphic writes "T. Hernández"; a shirt reads MAC ALLISTER and
+    the team sheet says "MacAllister". Each was a correct read, and each was
+    rejected as a sighting whose number and name disagreed.
+    """
+    from commentary.gate import is_the_same_name
+
+    assert is_the_same_name(said, full) is same
+
+
+def test_a_plural_at_the_front_of_a_line_is_a_thing_not_a_person() -> None:
+    """"Tears in the stands", "Hands on heads", "Thousands of supporters"."""
+    from commentary.gate import opens_a_sentence
+
+    assert all(opens_a_sentence(w) for w in ("Tears", "Hands", "Thousands"))
+    assert not opens_a_sentence("Messi")

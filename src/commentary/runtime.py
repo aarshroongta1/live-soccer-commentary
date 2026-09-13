@@ -45,7 +45,7 @@ from commentary.capture.audio import CutDetector, RoarDetector, WhistleDetector
 from commentary.capture.buffer import AudioRing, DelayBuffer, Frame
 from commentary.config import SETTINGS, Settings
 from commentary.director import Director, next_beat_id
-from commentary.gate import FactGate, fold
+from commentary.gate import FactGate, fold, is_the_same_name
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.perception.gallery import GALLERY_STRENGTH
@@ -118,21 +118,17 @@ GOAL_TALK_CAP_S = 150.0
 def _player_named(pack: KnowledgePack, name: str) -> tuple[Side, Player] | None:
     """Which player on either sheet this is, if it is one of them.
 
-    Folded, and matched on the full name, the surname, or a suffix of the
-    full name on a word boundary — the last of those because "Di María" is
-    not the surname ``rsplit`` derives and is exactly what a caller reads off
-    a shirt. The gate makes the same three allowances for the same reason.
+    One matcher, shared with the gate: a read the gate accepts and the
+    runtime refuses to bind is a name in a line with nothing holding it up.
     """
-    wanted = fold(name)
-    if not wanted:
+    if not fold(name):
         return None
     for side in (Side.HOME, Side.AWAY):
         sheet = pack.team(side)
         if sheet is None:
             continue
         for player in sheet.squad:
-            full = fold(player.name)
-            if wanted in (full, fold(player.surname)) or full.endswith(f" {wanted}"):
+            if is_the_same_name(name, player.name):
                 return side, player
     return None
 

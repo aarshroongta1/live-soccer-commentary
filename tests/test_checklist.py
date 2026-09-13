@@ -285,14 +285,31 @@ def test_a_goal_called_where_there_was_none_is_a_phantom(pack, wire, tmp_path: P
 def test_an_unconfirmed_goal_rejection_is_reported_with_the_line_it_killed(
     pack, wire, tmp_path: Path
 ) -> None:
-    """The gate writes no text on a rejection, so the caller row is the evidence."""
-    rows = a_good_run()
+    """A line about a goal that really happened, refused. The gate writes no
+    text on a rejection, so the caller row beside it is the only evidence."""
+    # Watched from 88:00, so the fixture's own goal at 88:12 is in the window
+    # and the rejected line twenty seconds later is about it.
+    rows = [
+        (
+            Topic.BOARD,
+            ts,
+            {
+                "bug_visible": True,
+                "home_score": 2,
+                "away_score": 0,
+                "clock": f"{int(ts + 5280) // 60}:{int(ts + 5280) % 60:02d}",
+                "confidence": 0.95,
+            },
+        )
+        for ts in (2.0, 40.0, 90.0)
+    ]
     rows += [
-        (Topic.CALLER, 100.0, {"scene": "live_play", "event": "goal", "line": "Messi scores!"}),
-        gate(100.0, passed=False, reasons=["unconfirmed_goal: no board change"]),
+        (Topic.CALLER, 32.0, {"scene": "replay", "event": "goal", "line": "Messi scores!"}),
+        gate(32.0, passed=False, reasons=["unconfirmed_goal: no board change"]),
+        (Topic.COST, 90.0, {"total_usd": 0.5}),
     ]
     path = write_trace(tmp_path, rows)
-    _, items = graded(path, pack, wire)
+    _, items = graded(path, pack, wire, watched_s=100.0)
     assert not items[4].ok
     assert "Messi scores!" in items[4].evidence
 
@@ -560,3 +577,22 @@ def test_half_a_compound_surname_is_still_that_player(pack, wire, tmp_path: Path
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert items[8].ok, items[8].evidence
+
+
+def test_rejecting_a_goal_nobody_scored_is_the_gate_working(pack, wire, tmp_path: Path) -> None:
+    """The offside clip invented a goal at 31:15 and the gate killed it.
+
+    Item 4 is about lines the gate wrongly refused — a line about the real
+    goal or its celebration. A rejection of a goal that never happened is the
+    single thing the gate exists for, and counting it as a failure scores the
+    system for succeeding.
+    """
+    rows = a_good_run()
+    rows += [
+        (Topic.CALLER, 100.0, {"scene": "live_play", "event": "goal", "line": "It is in!"}),
+        gate(100.0, passed=False, reasons=["unconfirmed_goal: no board change"]),
+    ]
+    path = write_trace(tmp_path, rows)
+    _, items = graded(path, pack, wire)
+    assert items[4].ok
+    assert "never happened" in items[4].evidence

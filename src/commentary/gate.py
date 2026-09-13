@@ -127,9 +127,13 @@ OPENERS = frozenset(_OPENER_TEXT.split())
 #: How long a word has to be before its ending is taken as grammar.
 _PARTICIPLE_MIN = 6
 _PARTICIPLES = ("ing", "ed", "ly")
+#: A plural at the front of a line is a thing, not a person: "Tears in the
+#: stands", "Hands on heads all over Lusail", "Thousands of French
+#: supporters". Nine runs produced five of these and no invented name.
+_PLURAL_MIN = 5
 
 
-def opens_a_sentence(word: str) -> bool:
+def opens_a_sentence(word: str) -> bool:  # noqa: D401
     """Is this capital at the start of a line grammar rather than a name?
 
     Two answers. The list above, which is the words the clips actually
@@ -141,7 +145,9 @@ def opens_a_sentence(word: str) -> bool:
     Every one of them is a participle, which is how a commentator opens a
     sentence about a player they are already describing.
 
-    So a long word ending in -ing, -ed or -ly at position zero is grammar.
+    So a long word ending in -ing, -ed or -ly at position zero is grammar,
+    and so is a plural — "Tears in the stands", "Hands on heads all over
+    Lusail", "Thousands of French supporters on their feet".
     The length floor keeps "Reed" and "Fred" out of it. A real player whose
     name ends that way is on the roster and is never trimmed in the first
     place; what this gives up is an invented six-letter name in the
@@ -151,7 +157,9 @@ def opens_a_sentence(word: str) -> bool:
     folded = fold(word)
     if folded in OPENERS:
         return True
-    return len(folded) >= _PARTICIPLE_MIN and folded.endswith(_PARTICIPLES)
+    if len(folded) >= _PARTICIPLE_MIN and folded.endswith(_PARTICIPLES):
+        return True
+    return len(folded) >= _PLURAL_MIN and folded.endswith("s") and not folded.endswith("ss")
 
 #: Prepositions left dangling by a trim ("comes in from  and the winger"), so
 #: they go with the name rather than staying behind as debris.
@@ -213,21 +221,52 @@ def fold(text: str) -> str:
     return " ".join(re.sub(r"[^0-9A-Za-z]+", " ", plain).lower().split())
 
 
-def _is_that_player(pack: KnowledgePack, number: int, name: str) -> bool:
-    """Do the number and the name on one sighting describe the same person?
+def is_the_same_name(said: str, full_name: str) -> bool:
+    """Is what was read off the picture this player's name?
 
-    Folded, and generous about which part of the name was read: a shirt shows
-    a surname and a graphic shows whatever it likes.
+    Folded, and generous about which part was read, because a shirt shows a
+    surname, a graphic shows whatever it likes, and neither agrees with a
+    team sheet about spacing or diacritics. Four forms count, and the last
+    two are here because five lines on the real clips were killed by them:
+
+    - the whole name, or the surname alone;
+    - a suffix of the whole name on a word boundary, so "Di María" matches
+      even though ``rsplit`` calls the surname "María";
+    - **the initial form.** A graphic writes "T. Hernández", and matched
+      against "Theo Hernández" that is neither the surname nor a suffix. The
+      initial has to be the initial: "L. Martínez" is not Theo.
+    - **the same name spaced differently.** The shirt reads MAC ALLISTER and
+      the team sheet says "MacAllister"; three lines went for that one.
     """
-    wanted = fold(name)
-    for sheet in (pack.home, pack.away):
-        for player in sheet.squad:
-            if player.number != number:
-                continue
-            full = fold(player.name)
-            if wanted in (full, fold(player.surname)) or full.endswith(f" {wanted}"):
-                return True
-    return False
+    wanted, full = fold(said), fold(full_name)
+    if not wanted:
+        return False
+    if _is_tail_of(wanted, full):
+        return True
+    head, _, rest = wanted.partition(" ")
+    return len(head) == 1 and bool(rest) and full.startswith(head) and _is_tail_of(rest, full)
+
+
+def _is_tail_of(said: str, full: str) -> bool:
+    """Is this the whole name or any run of words ending it, spacing aside?
+
+    Spacing aside because a shirt reads MAC ALLISTER and a team sheet says
+    "MacAllister"; word by word rather than character by character, so
+    "ister" is not a match for anybody.
+    """
+    words = full.split()
+    tails = {" ".join(words[i:]) for i in range(len(words))}
+    return said in tails or said.replace(" ", "") in {t.replace(" ", "") for t in tails}
+
+
+def _is_that_player(pack: KnowledgePack, number: int, name: str) -> bool:
+    """Do the number and the name on one sighting describe the same person?"""
+    return any(
+        is_the_same_name(name, player.name)
+        for sheet in (pack.home, pack.away)
+        for player in sheet.squad
+        if player.number == number
+    )
 
 
 def _similar(a: str, b: str) -> float:

@@ -303,7 +303,7 @@ def _phantoms(state: Watched) -> Item:
 
 
 def _unconfirmed_goal(state: Watched) -> Item:
-    title = "zero unconfirmed_goal rejections"
+    title = "zero unconfirmed_goal rejections of a line about a real goal"
     # A rejected line is written empty on the gate row — nothing reached a
     # voice — so the line it killed has to come off the caller row beside it.
     proposed = {
@@ -320,11 +320,26 @@ def _unconfirmed_goal(state: Watched) -> Item:
     ]
     if not hits:
         return Item(4, title, True, "none")
+    # A rejection of a goal nobody scored is the gate doing its job, and the
+    # offside clip produced one: the caller wrote a goal at 31:15 with the
+    # score 2-0 and unchanged. Counting that as a failure scores the system
+    # for the one thing it is built to do.
+    goals = [e.video_ts for e in state.truth if e.event is Event.GOAL]
+    real = [
+        (ts, line)
+        for ts, line in hits
+        if any(-PHANTOM_WINDOW_S <= ts - g <= metrics.GOAL_TALK_S for g in goals)
+    ]
+    invented = len(hits) - len(real)
+    if not real:
+        return Item(
+            4, title, True, f"none; {invented} rejected a goal that never happened, correctly"
+        )
     return Item(
         4,
         title,
         False,
-        f"{len(hits)}: " + "; ".join(f'{ts:.0f}s "{line}"' for ts, line in hits[:3]),
+        f"{len(real)}: " + "; ".join(f'{ts:.0f}s "{line}"' for ts, line in real[:3]),
     )
 
 
