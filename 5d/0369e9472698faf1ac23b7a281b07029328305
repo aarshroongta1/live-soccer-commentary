@@ -1,0 +1,52 @@
+src/commentary/gate.py
+  s_071588aa9615d3::t_331f64edf0354e 246-252,254-260
+src/commentary/sim/tracker.py
+  s_071588aa9615d3::t_6dd99cc9e46724 20,87-90
+  s_071588aa9615d3::t_62eef1531b84a6 91
+src/commentary/bus.py
+  s_071588aa9615d3::t_12453f99e350cf 32
+src/commentary/perception/gallery.py
+  s_071588aa9615d3::t_12453f99e350cf 173,190
+  s_071588aa9615d3::t_cb0ba9c49db0e7 1-172,174-189,191-196
+src/commentary/perception/players.py
+  s_071588aa9615d3::t_1292c5e43a5ca1 35,137-139,160-163,307,313-317,374-375,378-404,420-428,600-603,626-643,705-717
+src/commentary/runtime.py
+  s_071588aa9615d3::t_12453f99e350cf 51,417-419,428-430,432-436
+tests/test_gallery.py
+  s_071588aa9615d3::t_6ff8dbee89446d 1-126,128-146
+  s_071588aa9615d3::t_bf3bfb59364905 127
+tests/test_runtime.py
+  s_071588aa9615d3::t_5e8250b9c9dfdc 427-430,607-609
+  s_071588aa9615d3::t_e678af495e9665 610
+tests/test_players.py
+  s_071588aa9615d3::t_76928187e255fe 247-337
+src/commentary/prompts/caller.py
+  s_071588aa9615d3::t_331f64edf0354e 277-286,307-314
+  s_071588aa9615d3::t_a8b24c2352ba94 315-316
+docs/BRIEF-real-footage-and-wire.md
+  s_32d0d992e7f070::t_20487b7e950dfd 524-532
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5d0369e9472698faf1ac23b7a281b07029328305",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_32d0d992e7f070": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-agatefix-a5e6cb566c3fd0aa",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
