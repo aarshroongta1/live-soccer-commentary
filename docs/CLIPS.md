@@ -12,6 +12,7 @@ comeback, a shootout — run once each with the same command, and graded by the
 same machine rather than by eye:
 
 ```
+cd /Users/Aarsh/Desktop/commentary
 uv run python -m commentary run --source file --path clips/<clip>.mp4 \
     --backend anthropic --pack clips/pack-argfra-2022.json \
     --seconds 195 --delay 8 --marks --out runs/<clip>
@@ -20,6 +21,12 @@ uv run python -m commentary grade runs/<clip>/*.jsonl \
     --statsbomb clips/statsbomb-events-3869685.json \
     --lineups clips/statsbomb-lineups-3869685.json
 ```
+
+`clips/` and `runs/` are in the repo and gitignored: the clips are 26 MB each
+and the traces are somebody's API spend, so neither belongs in a commit, and
+both belong where the command that reads them runs. `runs/run_all.sh` does
+the five that are left, in order, and skips any that already has a directory.
+`--seconds` is 195 for a three-minute clip and 215 for the two that are 3.5.
 
 ## The video clock
 

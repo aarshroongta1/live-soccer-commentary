@@ -10,7 +10,10 @@ next, including me.
 
 **The layout changed on 2026-09-13.** `sprint/days-2-12` was fast-forwarded
 into `main` and deleted, and the worktree under `.claude/worktrees/sprint` is
-gone; work happens in `/Users/Aarsh/Desktop/commentary` on `main`. The brief's
+gone; work happens in `/Users/Aarsh/Desktop/commentary` on `main`, and the
+clips and every trace ever made came with it — `clips/` and `runs/` in the
+repo, both gitignored, which is why the trace paths below say `runs/` and not
+the scratchpad they were written in. The brief's
 opening line still points at the old worktree and is left as the user wrote
 it. `uv run mypy` needs the `tools` extra to be clean — without it
 `mcp_server.py` reports nine import errors that are the missing package, not
@@ -109,7 +112,7 @@ against. Both need real footage.
 
 **The vision chain has been run on real footage, and it cost two of its three
 models.** A full `--marks` run on the Argentina-France clip (trace
-`scratchpad/run/runs/marks/`) said: 83 tracker passes in 175 s, median 1.6 s
+`runs/marks/`) said: 83 tracker passes in 175 s, median 1.6 s
 a pass, median 3 tracks a pass on footage with fifteen bodies in it, `named:
 0` on every pass, and `with_side` 0 on most — PARSeq confirmed no shirt
 number in three minutes and the kit split never gathered the 200 crops it
@@ -123,7 +126,7 @@ frames cannot do: keep that name on that body while the camera stays on it.
 
 ### C11 was run on the clip, and half of it works
 
-`--marks` on the same clip at `067428d` (trace `scratchpad/run/runs/c11/`,
+`--marks` on the same clip at `067428d` (trace `runs/c11/`,
 $0.96). Against the run that motivated C11:
 
 | | before | after |
@@ -174,7 +177,7 @@ the cheaper fix than more words.
 
 ### C12 fixed the tracking and the naming loop still does not close
 
-`ccaba63`, same clip, $0.99 (trace `scratchpad/run/runs/c12/`).
+`ccaba63`, same clip, $0.99 (trace `runs/c12/`).
 
 | | C11 | C12 |
 |---|---:|---:|
@@ -237,7 +240,7 @@ of a celebration close-up.
 ### Where the earlier loop stopped: 9 of 12
 
 Five runs, $4.90, and the user's cap is $5. Run 5 (`300c2ba`, trace
-`scratchpad/run/runs/r5/`) passes everything except items 1, 6 and 7's
+`runs/r5/`) passes everything except items 1, 6 and 7's
 margins:
 
 | item | |
@@ -273,7 +276,7 @@ it (median identity 1.8 s to 2.6 s).
 
 ### Run 3: the loop works, and it named the wrong man once
 
-`0eb2c4b`, $0.96 (trace `scratchpad/run/runs/r3/`). **21 sightings made, 16
+`0eb2c4b`, $0.96 (trace `runs/r3/`). **21 sightings made, 16
 bound** — the first run where the naming loop did anything at all. What made
 the difference was not the prompt: it was deleting `names_read`, so there is
 one field to put a read in.
@@ -320,7 +323,7 @@ correctly suppressed the two empty-mark ones and left nothing behind.
 
 ### The tag fix worked, and the caller will not use the tag
 
-`de26be1`, same clip, $1.02 (trace `scratchpad/run/runs/c12b/`).
+`de26be1`, same clip, $1.02 (trace `runs/c12b/`).
 
 | | C12 | C12 + the tag fix |
 |---|---:|---:|
