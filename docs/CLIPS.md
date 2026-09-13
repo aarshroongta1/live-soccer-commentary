@@ -109,22 +109,81 @@ fitted, nothing checked` above every number it then produces.
 
 ## Budget
 
-$10, hard, across every run on this page.
+$10 across every run on this page; $9.00 was the cap from the moment the key
+was topped up.
 
 | run | cost | running total |
 |---|---:|---:|
-| penalty1 | $0.72 | $0.72 |
+| penalty1 (partial — the credit ran out at cursor 131 of 202) | $0.72 | $0.72 |
+| subs | $0.96 | $1.67 |
+| card | $0.99 | $2.66 |
+| mbappe | $1.07 | $3.73 |
+| shootout | $0.94 | $4.67 |
+| offside | $0.95 | **$5.61** |
 
-**The runs stopped here.** At cursor 131 s of the first clip every model call
-started coming back `400 invalid_request_error: Your credit balance is too low
-to access the Anthropic API` — 175 of them (95 caller, 44 analyst, 36 board)
-from there to the end of the run. The budget was not what stopped it: $9.28 of
-the $10 is unspent. Clips b to f are downloaded, their offsets are measured and
-their crops are checked, and they run the moment the key has credit.
+Six clips, one run each, no rerun for tuning. Every number below is the first
+and only run of that footage.
+
+## The table
+
+Graded with `commentary grade` against the pack, StatsBomb's events and the
+lineups. "Bar" is the twelve-item definition of done.
+
+| clip | new event types | bar | events called vs StatsBomb | names right / wrong / unnamed | phantoms | cost |
+|---|---|---:|---|---|---:|---:|
+| penalty1 | penalty won, penalty scored | 7/12 | 4/6 (goal 1/1, penalty 1/1, foul 1/1, tackle 1/1; missed a clearance and a kickoff after the credit died) | 6 right, 0 wrong, **the penalty scorer unnamed** | 0 | $0.72 |
+| subs | two substitutions | **10/12** | 8/11 (subs 2/2, fouls 3/3, free kicks 3/3; missed 2 tackles and a clearance) | 6 right, 0 wrong | 0 | $0.96 |
+| card | yellow card, injury stoppage, second half | 8/12 | 7/8 (card 1/1, clearances 3/3, foul 1/1, interception, throw-in) | 5 right, 0 wrong, **the booked player unnamed** | 2 (both artefacts — below) | $0.99 |
+| mbappe | second penalty, two goals in 95 s | 9/12 | **8/8 — everything** (goals 2/2, penalty 1/1, foul, tackle, throw-in, clearance, kickoff) | 6 right, 0 wrong, **the penalty goal not called at all** | 0 | $1.07 |
+| shootout | a shootout: no clock, a tally | **10/12** | 7/7 (goals 3/3, the saved kick, the card, a clearance, a tackle) | **12 right, 0 wrong**, one kick called a save that was a goal | 0 | $0.94 |
+| offside | offside | **10/12** | **8/8 — everything** (offside 1/1, corner, free kick, throw-in, clearances 2/2, interception, tackle) | 12 right, 0 wrong | 0 | $0.95 |
+
+**47 distinct players named across 119 spoken lines on footage the system had
+never seen, and not one of them was the wrong man.** Zero off-roster words in
+any clip once the grader stopped disagreeing with the gate. Zero factual
+errors by the machine's own reckoning on five of the six.
+
+## What generalised from the tuned clip
+
+- **Events.** Recall is 100% on two clips and 73%-88% on the rest. Every new
+  event type was called: a penalty as a penalty, both substitutions, a yellow
+  card, an offside, a shootout kick. Nothing about the event vocabulary was
+  specific to Di María's goal.
+- **The gate.** 148 lines judged across the five full runs, one wrongful
+  rejection and one correct one. The goal-confirmation work from A8/A16 — the
+  thing that took the most tuning on the original clip — handled a penalty
+  goal, an open-play goal 95 seconds later and a shootout with no score bug
+  at all, with zero `unconfirmed_goal` rejections of a real goal anywhere.
+- **The board reader.** Three different halves, three different offsets, and
+  the alignment fitted itself from the trace's own readings every time:
+  residual 0.20-0.33 s on all five clips that have a clock. Nobody typed an
+  offset except for the shootout, which has none to read.
+- **Naming, once the caller was asked which kit.** Sightings bound went from
+  47% on penalty1 to 82%, 92%, 98%, 77% and 83%. On the shootout and the
+  offside clip twelve distinct players were named correctly in three minutes.
+- **Cost and speed.** $0.94-$1.07 a clip, tracker 4.8-6.7 passes a second.
+
+## What did not
+
+- **Naming in open play.** `name_rate` in live play: 33%, 18%, **0%**, 33%,
+  73%, 38%. The one clip that clears 60% is the shootout, which is nothing
+  but close-ups. The card clip named nobody at all in live play while naming
+  five people in stoppages and close-ups. The system names players when the
+  camera is close enough to read a shirt, and open play is where a listener
+  most wants a name.
+- **The biggest moment is where the name goes missing.** penalty1 called the
+  penalty goal "He steps up ... and buries it" having bound `10 Messi` five
+  times in the previous minute. The card clip booked "the France midfielder"
+  rather than Rabiot. It is not a precision problem — nothing was wrong — it
+  is that the close-up of a man about to strike a penalty shows no number.
+- **Track life.** Median 1.93-2.77 s against a bar of 2.5 s, failing on three
+  of five. The tuned clip sat at 2.53-2.77 s; footage with more cutting sits
+  below it.
+- **The rate cap can swallow a goal.** Below.
 
 ## Per-clip reports
 
-### a. penalty1 — match 20:30-24:00, video 22:06-25:36
+### a. penalty1 — match 20:30-24:00, video 22:06-25:36 — 7 of 12
 
 New event types: **a penalty won and converted** (Dembélé fouls Di María 20:53,
 Messi scores from the spot 22:24), and with it the first long dead-ball
@@ -196,6 +255,135 @@ touchline, which is where the camera was.
   Same shape as the A19 goal-talk bug. Each claimable event now has the tail
   its coverage really runs to.
 
+### b. subs — match 39:45-42:45, video 41:21-44:21 — 10 of 12
+
+New event types: **two substitutions** (Dembélé off for Kolo Muani 40:32,
+Giroud off for Thuram 41:01), read off the board graphic rather than the play.
+
+Both were called, both correctly: "Thuram jogs on and Giroud's afternoon is
+over, the number nine trudging past Deschamps towards the bench." Recall 2/2
+on the substitutions and 8/11 overall; zero phantoms; 37 of 45 sightings
+bound. Failing: name_rate 18% in live play, and the tracker at 4.8 passes/s,
+just under the bar.
+
+**The registry picked the substitutes up from the graphics, and the team
+sheet was what let it down.** The caller read "12 KOLO MUANI" off the
+substitution board — the right number and the right name — and the gate
+killed two lines with `sighting_disagrees: Kolo Muani is not number 12`,
+because the pack was built from StatsBomb's `player_nickname`, which for him
+is the truncated "Randal Kolo". A commentator's notes had the wrong name in
+them and two true lines died of it. Fixed in the pack (a gitignored input,
+so there is no commit); subs was run before the fix and is scored after it,
+which is why its report reads better than its run did.
+
+### c. card — match 53:00-56:00, video 1:02:59-1:05:59 — 8 of 12
+
+New event types: **a yellow card** (Rabiot 54:12) and **an injury stoppage**
+(54:52), on the **second half** — the first time any offset but the first
+half's was used.
+
+**The second-half offset aligned itself.** The grader fitted h2 -3180.1 s from
+43 board reads with a residual of 0.27 s, without being told anything. The
+same is true of the mbappé clip (h2 -4680.1, residual 0.20) and the offside
+clip (h1 -1710.2, residual 0.27). Nothing about the alignment was tuned to
+the first clip.
+
+The card was called within the window — "The referee holds the yellow high
+for the France midfielder after that challenge by the touchline" — and
+**Rabiot was not named**. Recall 7/8, the best of the five until mbappé.
+
+Two failures that are the grader, not the run, and one that is real:
+
+- Item 3 flags two lines about De Paul lying injured as **phantom fouls**.
+  Neither line claims a foul; the caller tagged them `event: foul` because
+  the vocabulary has no word for an injury stoppage, and the grader reads
+  the tag. A missing event word, listed below rather than added mid-run.
+- Item 7 reads **0 distinct players in open play**, which is true and is the
+  headline failure of this clip: five people named, every one of them in a
+  stoppage or a close-up, nobody named while the ball was moving.
+
+### d. mbappe — match 78:00-81:30, video 1:27:59-1:31:29 — 9 of 12
+
+New event types: **a second penalty**, **two goals in 95 seconds**, and the
+score moving 2-0 to 2-2 — the first clip where the match changes hands.
+
+**The best run of the six on everything except naming.** Event recall 8/8 —
+every goal, the penalty, the foul, the tackle, the throw-in, the clearance,
+the kickoff. Zero gate rejections in 28 judged lines. Zero factual errors.
+40 of 41 sightings bound, 21 of them on a live tag. And item 7 passed the way
+it was meant to for the first time: **Mbappé was bound to mark BX at 18 s and
+named off that mark at 66 s**, 48 seconds later, through a camera change.
+
+The open-play goal is as good as this system gets: "It is in! Mbappé stabs it
+home from close range and France have life in Lusail!", 0.2 s from the event.
+
+**And the penalty goal was missed entirely.** Not mis-called — never spoken.
+The trace says why, and it is the sharpest finding of the five clips:
+
+```
+80.0  should_call=True   camera_cut 0.35, 4.5s since last line
+83.9  should_call=False  rate_cap: scheduled 0.20 but 3.9s since last line, min gap 4.0s
+91.1  should_call=True   board_change 1.00, 7.2s since last line
+```
+
+Mbappé struck the penalty at 84 s. The call that would have covered it was
+refused **one tenth of a second under the four-second minimum gap**, and by
+the time the next call came the broadcaster had cut to the crowd — so the
+caller, looking at the dignitaries in the stand, wrote about Deschamps still
+waiting for the spot-kick eleven seconds after it had gone in. Nothing knew
+the kick was important at 83.9: the board had not moved yet, so the urgency
+was 0.20. This is the rate cap doing exactly what it is specified to do.
+
+### e. shootout — video 2:30:30-2:33:30 — 10 of 12
+
+New event types: **a penalty shootout**. No running clock, no score bug, a
+tally graphic at the bottom of the frame that nothing in the system looks at.
+
+**Every assumption about the board broke, and the run was one of the two
+best.** 53 of 54 board reads came back with no bug at all; the one that did
+not produced a clock from somewhere and the grader, fitting an alignment from
+a single reading, said `alignment SUSPECT` and **refused to grade**. That
+refusal is the right answer and it is why `--offset` exists.
+
+What the caller did with a board that never said anything:
+
+- **name_rate 73% in live play, 12 distinct players named, none wrong.** The
+  best naming of any run this project has done. A shootout is all close-ups,
+  which is exactly where this system can read a shirt.
+- Every kick called: Tchouaméni's miss at cursor 0.1, Paredes' goal at 50.6
+  ("sends the keeper the wrong way — buried"), Montiel walking up alone.
+- No scoreline stated in fifteen lines, with the tally on screen the whole
+  time and the score entirely unknown to the system.
+
+Three things it got wrong:
+
+- **A goal called as a save.** "The keeper in green flings himself to his
+  left as the penalty is struck — and he gets across it" is Kolo Muani's
+  kick, and he scored: the stadium tally in the frame twenty seconds later
+  reads 3-2. No name in the line and no event the feed can contradict, so
+  **no machine check catches this one** — it was found by eye.
+- **Montiel's winner is not in the run.** The last caller line is at 148 s
+  and the kick is at about 152 s.
+- The hand-measured offset was twenty seconds out, which is what the ±20 s
+  on it meant. Refitted to **-7405 s** from the run's own lines against
+  StatsBomb's kick times, which is the only anchor a shootout offers.
+
+### f. offside — match 28:30-31:30, video 30:06-33:06 — 10 of 12
+
+New event types: **an offside** (Messi 29:06).
+
+Event recall 8/8 — the offside, the corner, the free kick, the throw-in, both
+clearances, the interception, the tackle. 12 distinct players named, none
+wrong. 38 of 46 sightings bound.
+
+**The gate caught a hallucinated goal.** At 31:15, with the score 2-0 and the
+board unmoved, the caller wrote "It's worked across the six-yard box and slid
+in at the far post, Argentina break away in delight, Di María wheeling to the
+corner flag!" — a goal that did not happen, in a match where Di María had
+scored one an hour earlier. `unconfirmed_goal` killed it. That is the single
+thing the gate exists for, and it is the only time in nine runs it has had to
+do it.
+
 ## Decided
 
 Both of penalty1's open questions came back with an answer, and both are in
@@ -231,6 +419,58 @@ Two prompt additions went in beside them, off the same clip:
   taker, a scorer's caption, a substitution board — with the name filled in,
   no number, and the tag of the body in the close-up it is over.
 
+## Bugs the clips exposed, and the commits
+
+Every one is a rule that fired where it should not have, or a check that was
+measuring something other than the system.
+
+| commit | what the clip showed |
+|---|---|
+| `3c9674c` | Five lines about the ball sitting on the penalty spot came back as **phantom penalties**: StatsBomb stamps the award as an instant and the broadcast spends ninety-one seconds on it. Each claimable event now has the tail its coverage really runs to. |
+| `8da34a7` | "Play breaks down by the touchline" — the gate has "play" in its stopwords and passed the line; the grader kept **its own shorter list** and called "Play" an invented name. One list now. Also: a sighting's name matches any word of a squad name, so a correct read of KOLO MUANI written as "Kolo" stopped being a contradiction. |
+| `e64e8b0` | "Grimacing, and France get on with it" lost its first word. **A participle at the front of a line is grammar**, and the openers list was being finished one word at a time. |
+| `3a9e065` | Five lines killed by `sighting_disagrees` on reads that were right: a graphic writes "T. Hernández", a shirt reads MAC ALLISTER. **One name matcher**, shared by the gate and the bind, that reads the forms a broadcast uses. Plus plurals in the openers rule, and item 4 no longer counting the gate killing a hallucinated goal as a failure. |
+| `f766bd1` | Three correctly called goals scored as "no goal line within 6 s", because none of them says "scores": "sends the keeper the wrong way — buried", "stabs it home", "rolls it into the empty net". |
+| `ec01fa5` | (before these clips) `Sighting.side`, which took sightings bound from 47% to 77-98%. |
+
+One more fix is in a gitignored input rather than a commit: the pack called
+Randal Kolo Muani "Randal Kolo", because it was built from StatsBomb's
+`player_nickname` field, which truncates him. Two true lines died of it.
+
 ## Needs a decision
 
-*(nothing open. New items land here as the clips run.)*
+1. **The position-zero name trim has never once worked, and it has damaged
+   nineteen lines.** Across nine runs the gate has trimmed a name from the
+   front of a line nineteen times: Tears, Hands, Arms, Fist, Ice, Thousands,
+   Whole, Pure, Emotion, Sky, Restart, Round, Grimacing. **Every one is an
+   ordinary English word and not one is a name the caller invented.** The
+   rule exists to catch a hallucinated surname at the start of a sentence and
+   in nine runs it has caught none. Two of the nineteen are now covered by
+   the participle rule and five by the plural rule; the rest need a
+   dictionary the project does not have. The question is whether the trim
+   should apply at position zero at all. Removing it risks an invented name
+   opening a line, which has never happened; keeping it costs about two true
+   lines a run. That is a change to A15, so it is not mine.
+2. **The minimum gap between lines can swallow a goal.** Mbappé's penalty
+   went in 0.1 s after a scheduled call was refused by the four-second rate
+   cap, and the next call came seven seconds later with the camera on the
+   crowd. Nothing knew the kick mattered: the board had not moved yet. A
+   rule that let a call through when the *lookahead* frames contain a
+   celebration — which the gate already computes for goal confirmation — or
+   a shorter gap while the caller's last scene was a penalty, would have
+   caught it. Both are new rules.
+3. **The caller has no word for an injury stoppage**, so it writes `foul`,
+   and the grader reads the tag and counts a phantom foul. Two lines on the
+   card clip. Adding `INJURY` to the event vocabulary is small but it is a
+   schema change and a prompt change.
+4. **The gate and the grader have drifted apart on what a goal claim is.**
+   The grader now knows "buries it", "stabs it home" and "into the empty
+   net"; the gate does not. Unifying them makes the gate stricter — every
+   "buries it" line would need the board to have moved, and on the shootout
+   the board is absent for all three minutes, which would have silenced the
+   best-naming run of the six. Worth doing, worth doing with a run behind it.
+5. **Naming in open play is the gap, and it is the same gap the handoff has.**
+   `name_rate` in live play across the five: 33%, 18%, 0%, 33%, 73%, 38%. The
+   73% is the shootout, which is all close-ups. Nothing here is a new
+   problem; the clips confirm that the lever is tracks surviving and the
+   gallery carrying a name out of the close-up that earned it.
