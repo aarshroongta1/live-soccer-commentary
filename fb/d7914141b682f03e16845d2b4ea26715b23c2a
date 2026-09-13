@@ -1,0 +1,21 @@
+docs/CLIPS.md
+  s_071588aa9615d3::t_980c53be782ce8 46-71
+docs/HANDOFF.md
+  s_071588aa9615d3::t_1714fe8e9b36e5 7-8,11-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fbd7914141b682f03e16845d2b4ea26715b23c2a",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
