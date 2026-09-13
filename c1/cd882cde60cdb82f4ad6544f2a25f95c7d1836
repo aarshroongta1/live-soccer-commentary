@@ -1,0 +1,28 @@
+docs/HANDOFF.md
+  s_afc8d3126874f1::t_7a5c8f28015ecc 13-14,29-30,65,80-93,96-126,130-195,267-308
+  s_071588aa9615d3::t_1fc50e87142292 327-329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c1cd882cde60cdb82f4ad6544f2a25f95c7d1836",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_afc8d3126874f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d85f9692-fb3b-44fd-9cad-bdf46a255d94",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
