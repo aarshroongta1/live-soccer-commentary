@@ -27,8 +27,9 @@ What did not generalise is naming in open play — 0% to 38% outside the
 shootout — and five bugs the clips exposed are fixed with their commits
 listed there. The twelve-item definition of done is decided by machine rather
 than by eye now: `commentary grade <trace> --pack --statsbomb
---lineups`. That page carries the per-period video offsets, the six clips, and
-the one clip that got to run.
+--lineups`, which aligns the feed from the trace's own board readings and
+refuses to grade an alignment it cannot trust. That page also carries the
+per-period video offsets, which are different in every half.
 
 The key ran out of credit 131 seconds into the first of those runs, which is
 why penalty1 is a partial; it was topped up and the other five are complete.
