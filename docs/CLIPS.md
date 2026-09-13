@@ -43,6 +43,31 @@ The shootout has no clock to measure against: StatsBomb stamps the kicks
 The offset above is fitted from one frame (the tally at 1-1 with Coman already
 saved, so between 121:42 and 122:27) and is good to about twenty seconds.
 
+## Calibrating the grader against the runs that were read by hand
+
+Every trace the handoff describes, put through `commentary grade` with the
+same command:
+
+| trace | by hand | by machine |
+|---|---:|---:|
+| r3 | 5 of 12 | **5 of 12** |
+| r4 | — | 8 of 12 |
+| r5 | 9 of 12 | **9 of 12** |
+| c12b | — | 6 of 12 |
+| gallery A | 10 of 12 | 8 of 12 |
+| gallery B | 9 of 12 | 7 of 12 |
+
+The ordering is the same and the two that read lower do so for two reasons,
+both of them the machine being stricter than the eye and both visible in the
+evidence lines. Item 2's truth now contains the restarts — a throw-in, a
+kickoff, a free kick in three minutes — which nothing was counting before,
+and the runs miss most of them. And item 5 fails on words the *gate* left
+behind: "Arms wrapped around each other" reached the voice as "Wrapped around
+each other", and a capitalised "Wrapped" is a name off the roster to
+`factual_errors`. That is a real defect in the spoken line, so the item is
+right to fail; the openers list has since been given the body nouns, and no
+run has been made after that to see it.
+
 ## The clips
 
 Six, all pulled with `yt-dlp --download-sections` at 720p, all checked frame
