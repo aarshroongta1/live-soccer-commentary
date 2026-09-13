@@ -69,6 +69,12 @@ the run will show whether a caller told the board is stale can still call a
 shootout. The tally itself is unreadable by anything in the system: nothing
 looks at the bottom of the frame.
 
+It also cannot be graded the ordinary way: with no clock on any board read
+there is nothing to fit an alignment to, and `grade` refuses rather than
+inventing one. So `--offset -1645` — the number measured off the tally frame
+above — is the escape hatch, and it prints `alignment BY HAND: nothing
+fitted, nothing checked` above every number it then produces.
+
 ## Budget
 
 $10, hard, across every run on this page.

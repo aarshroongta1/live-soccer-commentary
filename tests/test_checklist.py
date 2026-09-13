@@ -480,3 +480,38 @@ def test_a_penalty_claimed_before_anybody_won_one_is_still_a_phantom(
     _, items = graded(path, pack, wire)
     assert not items[3].ok
     assert "penalty" in items[3].evidence
+
+
+def test_a_clip_with_no_clock_on_screen_can_be_graded_from_a_measured_offset(
+    pack, tmp_path: Path, capsys
+) -> None:
+    """A shootout shows a tally, not a clock, so there is nothing to fit.
+
+    Without this the grader refuses and the one clip most worth grading — the
+    one where every assumption about the score bug is wrong — cannot be
+    graded at all.
+    """
+    from commentary.__main__ import main
+
+    pack_path = tmp_path / "pack.json"
+    pack_path.write_text(pack.model_dump_json(), encoding="utf-8")
+    rows = [(Topic.BOARD, ts, {"bug_visible": False, "confidence": 0.9}) for ts in (2.0, 20.0)]
+    path = write_trace(tmp_path, rows + a_good_run()[5:])
+    code = main(
+        [
+            "grade",
+            str(path),
+            "--pack",
+            str(pack_path),
+            "--statsbomb",
+            str(FIXTURES / "statsbomb-wire-events.json"),
+            "--lineups",
+            str(FIXTURES / "statsbomb-lineups.json"),
+            "--offset",
+            "-3600",
+        ]
+    )
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "alignment BY HAND: -3600.0s, nothing fitted, nothing checked" in out
+    assert "Definition of done:" in out

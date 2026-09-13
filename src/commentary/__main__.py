@@ -498,14 +498,24 @@ def _grade_fully(path: Path, args: argparse.Namespace) -> int:
 
     rows = read_trace(path)
     run = metrics.load_run(path)
-    alignment = feed.align(
-        feed.from_wire(wire), rows_of(rows, "board"), tolerance_s=args.tolerance
-    )
     print(f"== {path}")
-    print(alignment.summary())
-    if not alignment.ok:
-        print("refusing to grade: fix the alignment first, every number below it is fiction")
-        return 1
+    if args.offset is not None:
+        # A shootout has no clock on the screen at all — the bug is replaced
+        # by a tally — so there is nothing to fit and the offset has to be
+        # measured off a frame by hand. Said out loud, because an offset
+        # somebody typed is not an offset anything checked.
+        alignment = feed.Alignment(offsets={p: args.offset for p in range(1, 6)}, n=0)
+        alignment.events = feed.shift(feed.from_wire(wire), args.offset)
+        print(f"alignment BY HAND: {args.offset:+.1f}s, nothing fitted, nothing checked")
+    else:
+        alignment = feed.align(
+            feed.from_wire(wire), rows_of(rows, "board"), tolerance_s=args.tolerance
+        )
+        print(alignment.summary())
+        if not alignment.ok:
+            print("refusing to grade: fix the alignment first, every number below it is fiction")
+            print("(if the broadcast shows no clock at all, measure it off a frame and --offset)")
+            return 1
 
     stamped = feed.stamp(wire, alignment)
     watched_s = args.watched or max((float(r.get("ts", 0.0)) for r in rows), default=0.0)
@@ -639,6 +649,12 @@ def build_parser() -> argparse.ArgumentParser:
     grade.add_argument("--watched", type=float, default=None, help="seconds of clip watched")
     grade.add_argument(
         "--tolerance", type=float, default=2.0, help="alignment residual to still grade at"
+    )
+    grade.add_argument(
+        "--offset",
+        type=float,
+        default=None,
+        help="video_ts - match_clock_s, measured by hand; for a clip whose board has no clock",
     )
     grade.set_defaults(func=cmd_grade)
 
