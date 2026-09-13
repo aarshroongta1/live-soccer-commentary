@@ -4,8 +4,8 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `ec01fa5` on `main`, 57 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 515 passed · `uv run ruff check .` clean ·
+**Head:** `5544219` on `main`, 63 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 539 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
 **The layout changed on 2026-09-13.** `sprint/days-2-12` was fast-forwarded
@@ -19,16 +19,19 @@ it. `uv run mypy` needs the `tools` extra to be clean — without it
 `mcp_server.py` reports nine import errors that are the missing package, not
 the code — so `uv sync --all-extras --dev` before trusting a red gate.
 
-**Read `docs/CLIPS.md` before anything else.** The system has now been run on
-footage it was not tuned on, and the twelve-item definition of done is decided
-by machine rather than by eye: `commentary grade <trace> --pack --statsbomb
+**Read `docs/CLIPS.md` before anything else.** Six clips, one run each, $5.61:
+a penalty, two substitutions, a card, a two-goal comeback, a shootout and an
+offside. Bar scores 7, 10, 8, 9, 10, 10 of 12. **47 distinct players named
+across 119 lines on footage nobody tuned on, and not one was the wrong man.**
+What did not generalise is naming in open play — 0% to 38% outside the
+shootout — and five bugs the clips exposed are fixed with their commits
+listed there. The twelve-item definition of done is decided by machine rather
+than by eye now: `commentary grade <trace> --pack --statsbomb
 --lineups`. That page carries the per-period video offsets, the six clips, and
 the one clip that got to run.
 
-**The Anthropic key ran out of credit** 131 seconds into the first of those
-runs, and five clips are downloaded, offset-measured, crop-checked and unrun.
-$0.72 of a $10 budget is spent. Nothing is wrong with the code; the account
-needs credit.
+The key ran out of credit 131 seconds into the first of those runs, which is
+why penalty1 is a partial; it was topped up and the other five are complete.
 
 ---
 
