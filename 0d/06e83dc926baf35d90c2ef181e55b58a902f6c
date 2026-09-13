@@ -1,0 +1,21 @@
+pyproject.toml
+  s_071588aa9615d3::t_9617d9f7fc3b3d 25-29,32
+uv.lock
+  s_071588aa9615d3::t_47922741f8e9b2 458,488,868-879,2157-2175,3307-3322,3674-3682
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0d06e83dc926baf35d90c2ef181e55b58a902f6c",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
