@@ -4,8 +4,8 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `300c2ba`, 44 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 426 passed · `uv run ruff check .` clean ·
+**Head:** `4b70faa`, 50 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 481 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
 
 ---
@@ -177,7 +177,45 @@ names. That half is fixed in `a40b27b`: the rules now say a letter tag never
 goes in `names_read`, and the gate no longer reads a short capitalised
 alphabetic token there as a name claim. **It has not been run since.**
 
-### Where the definition-of-done loop stopped: 9 of 12
+### The gallery runs (C10), and where it stopped: 10 of 12
+
+Two runs, $1.88. Run A (`0d06e83`, `runs/A/`, $1.03) is **10 of 12** and the
+best the clip has produced: name_rate 53%, 10 of 10 names correct, three
+distinct players in open play, no phantom, no silence, median track life
+2.53 s. Run B (`0e10c3b`, `runs/B/`, $0.86) is 9 of 12 — the margin was
+raised and the run named fewer people, but the fall is mostly run-to-run
+variance in what the caller chooses to say.
+
+**The gallery works and is thinner than it looks.** Run A: 57
+classifications, 19 hits, two players in the gallery, margins sharply
+bimodal — confident 0.76 to 0.86, ambiguous 0.001 to 0.141, nothing in
+between — so the margin went to 0.35, in the gap with headroom either side.
+Run B then held **one** player and named five different bodies after him,
+because with one centroid there is no second best and the margin is the
+similarity under another name. Fixed in `4b70faa`: two in the set before
+anything is recognised. No gallery name reached a voice in either run.
+
+**Why the gallery is thin, and it is the same problem in its last form.** It
+learns only through `identify`, `identify` needs a mark, and **twelve of run
+B's thirteen bound sightings had no mark** — the body the number was read off
+carried no tag. Tagging every body took close-up coverage from 6% to 75%, and
+the missing quarter is bodies clipped by the top of the frame, which is most
+of a celebration close-up.
+
+**What to fix next, in order.**
+
+1. **Attribute a markless read to the only body in shot.** When a sighting
+   binds with no mark and exactly one tracked body is big enough to embed,
+   the read is about that body. That is what fills the gallery, and it needs
+   a rule decision because it is an inference rather than something read.
+2. **name_rate.** 53% on run A against 60%, and 25% on run B with the same
+   code, so the variance is larger than the gap. More runs would measure the
+   variance rather than close it; more names carried is what closes it.
+3. **The `error` row on run B was an `APITimeoutError` on one caller call.**
+   Transient. Item 12 counts it as a health failure, which is right, but it
+   is not a defect to chase.
+
+### Where the earlier loop stopped: 9 of 12
 
 Five runs, $4.90, and the user's cap is $5. Run 5 (`300c2ba`, trace
 `scratchpad/run/runs/r5/`) passes everything except items 1, 6 and 7's
