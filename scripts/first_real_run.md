@@ -66,17 +66,11 @@ them. Set each team's `kit` and `demonym` by hand either way.
 
 ## 4b. Names from the picture
 
-Drawing names on the caller's frames needs the vision extra, and it is on by
-default for `--source file`:
-
-```
-uv sync --extra vision
-```
-
-That pulls torch and downloads model weights the first time it runs. To skip
-it entirely for a first run, pass `--no-marks` — the caller then works from
-the team sheet and the kit colours, which is the `no-marks` row of the
-ablation table.
+Nothing to install. The caller reads shirt numbers and graphics itself and
+checks them against the team sheet, so the `kit` strings in the pack are what
+let it say which side a number is on. There used to be a local tracker
+drawing tags on the frames; it was removed after a real-clip ablation (see
+`docs/HANDOFF.md`, section 7).
 
 ## 5. Ten minutes first
 

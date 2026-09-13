@@ -20,7 +20,6 @@ what makes the delay invisible.
 
 ```
 screen capture ─► delay buffer ─┬─► board reader (score bug)
-                                ├─► player tracker (kits, shirt numbers)
                                 ├─► caller (vision, structured output)
                                 └─► analyst (lulls, match-state tools)
                                         │
@@ -38,50 +37,43 @@ Research behind the design choices: [`docs/research/`](docs/research).
 
 ## Names
 
-Naming players is the hardest thing on that list. The first answer here was a
-local chain — detect, cluster the kits with SigLIP, read the shirt with PARSeq,
-draw the name — and on three minutes of real broadcast it confirmed **no shirt
-number at all**, while Claude read nine correct number-and-name pairs off the
-very same frames. So the jobs swapped:
+Naming players is the hardest thing on that list, and the answer is smaller
+than it was. The first attempt was a local chain — detect, cluster the kits
+with SigLIP, read the shirt with PARSeq — and on three minutes of real
+broadcast it confirmed **no shirt number at all**, while Claude read nine
+correct number-and-name pairs off the very same frames. The second attempt
+kept a detector and a tracker (RF-DETR, ByteTrack, an HSV kit split, a SigLIP
+gallery for re-identification) purely to draw a letter tag over each body, so
+that a number Claude read could ride that body through the frames where it
+turned away.
 
-1. Detect every body in the frame (RF-DETR nano, on a 640-wide copy).
-2. Track them, so a body keeps its identity while the camera stays on it.
-3. Split them into two kits by an HSV histogram of each torso; anything far
-   from both centroids is a referee, not a player.
-4. **Draw a tag above each body** — `#4`, a handle, not a claim about anybody.
-5. Claude reads the shirt and reports the pair: mark 4 is wearing 11. The
-   number is checked against the team sheet, and from then on the tag above
-   that body is the surname — through the shots where the number is turned
-   away, until the camera cuts.
+That was measured on real footage and it lost. Six 45-second clips from three
+matches, two runs each, tags on against tags off, Haiku 4.5 calling both arms:
 
-One open-weights model, running locally for free, behind a small Protocol with
-a fake in the tests — the suite needs no weights and no network. Claude reads
-and writes; the tracker's contribution is the one Claude cannot make from
-single frames, which is knowing that this body is still that player.
+| | tags on | tags off |
+|---|---:|---:|
+| spoken lines | 40 | 45 |
+| lines naming a roster player | 26 | 43 |
+| distinct players named | 8 | 20 |
+| sightings bound to the roster | 70 of 235 | 115 of 120 |
+| wrong or off-roster names | 0 | 0 |
 
-What that buys, honestly: names on the big moments — the shooter, the scorer,
-the fouled and the fouler, the booked player, the substitute — and names through
-a sustained shot once a number has been read. After a cut it is role and kit
-again until the next legible number. Not pass-by-pass naming from a wide shot;
-a wide shot does not contain the pixels. The `named` and `name prec` columns of
-the results table are what that claim is worth against StatsBomb.
+The tags cost the caller names rather than buying them: it named Ronaldo,
+Messi and Henderson — the close-ups — and little else, and reported letter
+tags as sightings that bound to nobody. The median track lived about 2.5 s,
+which is no longer than the caller's own frame window. So the vision extra is
+gone, torch with it, and there is no detector, tracker or OCR anywhere in the
+runtime.
 
-One clip, two runs, Claude Opus 5 calling both — the same 110 seconds of the
-same seeded *simulated* match, differing only in whether the marks were drawn.
-On the simulator the tracker reads the dots from the sim's own truth and the
-renderer's font size decides which numbers were legible, so this measures what
-the marks do to the writer, not how well the detector reads a broadcast:
-
-| | lines | lines naming a player | names said | distinct players | wrong names |
-|---|---:|---:|---:|---:|---:|
-| marks on | 12 | 11 (92%) | 24 | 12 | 0 |
-| marks off | 11 | 6 (55%) | 6 | 4 | 0 |
-
-Four times as many names, three times as many distinct players, and every one
-of them a real member of that squad. Without the marks the caller falls back
-to exactly what it is told to — "the blue shirts crowd it out", "the left-back
-in red" — which is not wrong, just anonymous. Twelve lines a run is a small
-sample and one clip is one clip; the direction is not subtle.
+What holds a name now is the registry and a carry rule: a number the caller
+reads is checked against the team sheet and believed for that player, and a
+name spoken on the ball stays on it for eight seconds in the same phase of
+play, so the next line may keep it without re-reading a shirt that has turned
+away. Names arrive when the camera is close enough to read one — the shooter,
+the scorer, the fouled and the fouler, the taker — and it is role and kit
+until then. The `named` and `name prec` columns of the results table are what
+that claim is worth against StatsBomb; the per-clip evidence is in
+[`docs/CLIPS.md`](docs/CLIPS.md).
 
 ## Quickstart
 
@@ -148,7 +140,6 @@ see resolve:
 | no-delay | 24 | 8.3% | 100% | 60.4% | 0.0 / 0.0 | 56% | 8.3% | 8% | 100% |
 | no-gate | 30 | 70.0% | 100% | 0.0% | 8.0 / 8.0 | 40% | 10.0% | 7% | 100% |
 | single-voice | 23 | 8.7% | 100% | 48.9% | 8.0 / 8.0 | 64% | 8.7% | 13% | 100% |
-| no-marks | 28 | 14.3% | 100% | 45.5% | 8.0 / 8.0 | 45% | 14.3% | 7% | 50% |
 | wire-10s | 23 | 8.7% | 100% | 43.2% | 8.0 / 8.0 | 58% | 8.7% | 13% | 100% |
 
 Variants called slightly different stretches — 142 to 150 s of match — so recall
@@ -161,14 +152,10 @@ sits at 66.7%, which is what an ungated caller with no state and no roster does
 — 5 invented names, 4 goals that never happened, 1 wrong scoreline in fifteen
 lines.
 
-**Two rows here cannot show what they are named after, and it is worth being
-plain about which.** The stand-in oracle writes its lines from the simulator's
-script; it decodes a timestamp out of the frame and never reads the picture. So
-`no-marks` cannot measure what the marks buy — nothing in this harness reads
-them — and the row is here to show that the substitution runs and produces a
-comparable trace. What the marks actually do to a writer is the Opus 5 A/B in
-[Names](#names) above. For the same reason the `named` and `name prec` columns
-are near-meaningless here: the simulator's ground truth names a player at a
+**Two columns here cannot show what they are named after, and it is worth
+being plain about which.** The stand-in oracle writes its lines from the
+simulator's script; it decodes a timestamp out of the frame and never reads
+the picture. So the `named` and `name prec` columns are near-meaningless here: the simulator's ground truth names a player at a
 goal, a save, a foul, a card and a substitution and nowhere else — about thirty
 moments in ten minutes, with no passes at all — so a correct name said during
 ordinary play has nothing to be marked right against. Those two columns need
@@ -277,7 +264,7 @@ central claim structural rather than promised.
 Measured per run: factual error rate, event recall, fact-gate rejection rate by
 reason, lag p50/p95, silence ratio, repetition, name rate, name precision, and
 cost. The ablations — worldcupvoice's loop reproduced, no delay, no fact gate,
-single voice, no marks on the frames, and the play-by-play wire as a ceiling —
+single voice, and the play-by-play wire as a ceiling —
 run from one command, and the headline chart is factual error rate against
 delay depth.
 
@@ -321,19 +308,12 @@ The whole suite runs offline. No test makes a model call.
 Days 1–12 of the two-week sprint in [`PLAN.md`](PLAN.md) are built and tested
 against the simulator, and the pipeline has now been run end to end against the
 real Anthropic API — Haiku 4.5 reading the score bug, Opus 5 calling, through a
-video file with its audio, through the fact gate, with the marks on and off and
-with a wire. About $2 of calls; the numbers from those runs are in
-[Names](#names).
-
-What has **not** happened yet is the run that matters: real broadcast footage.
-Everything is in place for it — `crop` to check the score-bug box, `captions`
-for the human transcript, `feed` for the StatsBomb ground truth, and
-[`scripts/first_real_run.md`](scripts/first_real_run.md) for the order to do it
-in — but a rendered pitch of coloured dots is not a football match, and no
-number here should be read as though it were. In particular the detector, the
-kit clustering and the shirt-number reader have never been pointed at a real
-broadcast: on the simulator their place is taken by a tracker reading the sim's
-own truth.
+video file with its audio, through the fact gate, and with a wire. Since then
+it has been run on eighteen clips of real broadcast from six matches and four
+broadcasters, graded against StatsBomb; that evidence is in
+[`docs/CLIPS.md`](docs/CLIPS.md) and the current state of the project is in
+[`docs/HANDOFF.md`](docs/HANDOFF.md). What has **not** happened yet is a live
+source: everything so far is recorded clips.
 
 ## Rights
 

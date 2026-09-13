@@ -7,8 +7,8 @@ written record of what actually happened to check it against.
 
 from __future__ import annotations
 
-import contextlib
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -22,7 +22,6 @@ from commentary.config import (
     Settings,
 )
 from commentary.grading import metrics, report
-from commentary.perception.players import Track
 from commentary.runtime import Runtime
 from commentary.schemas import CallerLine, Event, Scene, Side, Sighting
 from commentary.sim import MatchSim, SimOracle, SimSource
@@ -375,106 +374,6 @@ async def test_the_default_runtime_loads_no_wire(tmp_path: Path) -> None:
     assert runtime._wire_confirms_goal(10.0) is False
 
 
-# -- the tracker must not hold up the frames ---------------------------------
-#
-# The first run with marks on real footage never started: the cursor sat at
-# 0.2 s for 195 seconds and the board reader read the same frame 55 times,
-# because _ingest_frames awaited tracker.update on every other frame and
-# detection is slower than ingestion. RF-DETR nano is 92 ms a frame at 640
-# wide on this machine before SigLIP and PARSeq are asked anything; frames
-# arrive every 66 ms.
-
-
-class _Pump:
-    """A source that hands over frames as fast as the loop will take them."""
-
-    def __init__(self, count: int, fps: float = 15.0) -> None:
-        self.count = count
-        self.fps = fps
-
-    async def __aenter__(self) -> _Pump:
-        return self
-
-    async def __aexit__(self, *exc: object) -> bool:
-        return False
-
-    async def frames(self):
-        import asyncio
-
-        for i in range(self.count):
-            # Paced, but far faster than the video it stands for: 100 frames
-            # is nearly seven seconds at 15 fps and a fifth of a second here.
-            await asyncio.sleep(0.002)
-            yield Frame(ts=i / self.fps, image=np.zeros((32, 32, 3), dtype=np.uint8))
-
-
-class _SlowTracker:
-    """A tracker that takes 50 ms a pass, which is faster than the real one."""
-
-    def __init__(self) -> None:
-        self.passes = 0
-
-    def update(self, frame: Frame) -> list[Track]:
-        import time as _time
-
-        _time.sleep(0.05)
-        self.passes += 1
-        return [Track(id=0, side=Side.HOME, box=(4, 12, 20, 30), number=11, name="Di María")]
-
-    def reset(self) -> None:
-        return None
-
-    @property
-    def gallery(self) -> None:
-        return None
-
-
-async def _pump_through(frames: int = 100) -> tuple[Runtime, _SlowTracker, float]:
-    import asyncio
-    import time as _time
-
-    from commentary.llm.fake import ScriptedBackend
-
-    tracker = _SlowTracker()
-    runtime = Runtime(
-        source=_Pump(frames),
-        backend=ScriptedBackend(),
-        settings=fast_settings(delay_s=1.0),
-        tracker=tracker,
-    )
-    task = asyncio.create_task(runtime._follow_players())
-    started = _time.perf_counter()
-    await runtime._ingest_frames()
-    elapsed = _time.perf_counter() - started
-    task.cancel()
-    with contextlib.suppress(asyncio.CancelledError):
-        await task
-    return runtime, tracker, elapsed
-
-
-@pytest.mark.asyncio
-async def test_a_slow_tracker_does_not_hold_up_the_frames() -> None:
-    runtime, tracker, elapsed = await _pump_through(100)
-
-    assert runtime.stats.frames == 100
-    # Awaited in the frame loop, every other frame, this was 50 passes of
-    # 50 ms — two and a half seconds to ingest less than seven seconds of
-    # video, and the gap only ever widens.
-    assert elapsed < 1.0, f"100 frames took {elapsed:.2f}s behind a 50 ms tracker"
-    assert tracker.passes >= 1, "the tracker never ran at all"
-
-
-@pytest.mark.asyncio
-async def test_what_a_slow_tracker_did_find_still_reaches_the_caller() -> None:
-    """Skipped frames are fine; a mark that lands on no frame at all is not."""
-    runtime, _tracker, _elapsed = await _pump_through(100)
-
-    assert runtime._tracks, "the tracker ran but nothing was kept"
-    tracked_ts = runtime._tracks[-1][0]
-    assert runtime.tracks_for(tracked_ts + 0.3), "a third of a second is one pass at 3 Hz"
-    assert runtime.tracks_for(tracked_ts + 5.0) == [], "the bodies have long since moved"
-
-
 # -- goal talk runs until the game does --------------------------------------
 #
 # Second real run, one goal: the state took it in at cursor 66.8, the caller
@@ -567,7 +466,7 @@ async def test_the_next_goal_starts_the_talking_over(tmp_path: Path) -> None:
     assert runtime._board_supports_goal(runtime.cursor_ts + 30.0) is True
 
 
-# -- the caller reads the shirt, the tracker holds the body ------------------
+# -- the caller reads the shirt, the registry keeps the name ------------------
 #
 # On the real clip the local number reader confirmed nothing in three minutes
 # and the caller read nine correct number-and-name pairs off the same frames.
@@ -589,36 +488,26 @@ def _sighting_line(*sightings: Sighting) -> CallerLine:
 
 
 class _Binder:
-    """A tracker that remembers what it was told, and which side each body is."""
+    """Records what the registry was told to believe, and by which side."""
 
-    def __init__(self, sides: dict[int, Side]) -> None:
-        self.sides = sides
-        self.bound: list[tuple[int, Side, int, str]] = []
-
-    def update(self, frame: Frame) -> list[Track]:
-        return [Track(id=tid, side=side, box=(0, 0, 10, 20)) for tid, side in self.sides.items()]
-
-    def reset(self) -> None:
-        return None
-
-    def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
-        self.bound.append((mark, side, number, name))
-
-    @property
-    def gallery(self) -> None:
-        return None
+    def __init__(self) -> None:
+        self.bound: list[tuple[Side, int, str]] = []
 
 
-async def _with_sightings(
-    tmp_path: Path, *sightings: Sighting, sides: dict[int, Side] | None = None
-) -> tuple[Runtime, _Binder]:
+async def _with_sightings(tmp_path: Path, *sightings: Sighting) -> tuple[Runtime, _Binder]:
     runtime, sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
-    binder = _Binder(sides if sides is not None else {4: Side.HOME})
-    runtime.tracker = binder
+    binder = _Binder()
+    registry = runtime.state_tracker.registry
+    original = registry.believe
+
+    def spy(number: int, name: str, ts: float, *, side: Side = Side.UNKNOWN, **kw: Any) -> None:
+        binder.bound.append((side, number, name))
+        original(number, name, ts, side=side, **kw)
+
+    registry.believe = spy  # type: ignore[method-assign]
     # The sim run above binds sightings of its own; the counters here are
     # about the ones this test hands over.
     runtime.stats.sightings = runtime.stats.sightings_dropped = 0
-    runtime._tracks.append((runtime.cursor_ts, binder.update(Frame(ts=0.0, image=np.zeros(1)))))
     runtime._bind_sightings(_sighting_line(*sightings), runtime.cursor_ts)
     return runtime, binder
 
@@ -636,9 +525,9 @@ async def test_a_sighting_names_the_track_and_is_believed(tmp_path: Path) -> Non
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     number, name = _home_number(runtime)
 
-    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=number, name=name))
+    runtime, binder = await _with_sightings(tmp_path, Sighting(number=number, name=name))
 
-    assert binder.bound == [(4, Side.HOME, number, name)]
+    assert binder.bound == [(Side.HOME, number, name)]
     assert runtime.state_tracker.registry.name_for(number, Side.HOME) == name
     assert runtime.stats.sightings == 1
 
@@ -664,11 +553,11 @@ async def test_a_number_alone_names_somebody_only_if_one_squad_wears_it(
     if only_home:
         number = only_home[0]
         name = next(p.name for p in runtime.pack.home.squad if p.number == number)
-        _runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=number))
-        assert binder.bound == [(4, Side.HOME, number, name)]
+        _runtime, binder = await _with_sightings(tmp_path, Sighting(number=number))
+        assert binder.bound == [(Side.HOME, number, name)]
 
     if shared:
-        _runtime, both = await _with_sightings(tmp_path, Sighting(mark="E", number=shared[0]))
+        _runtime, both = await _with_sightings(tmp_path, Sighting(number=shared[0]))
         assert both.bound == [], "two players wear it and the caller did not say which kit"
 
 
@@ -694,9 +583,9 @@ async def test_the_caller_says_which_kit_and_a_shared_number_binds(tmp_path: Pat
     for side, sheet in ((Side.HOME, runtime.pack.home), (Side.AWAY, runtime.pack.away)):
         name = next(p.name for p in sheet.squad if p.number == number)
         _runtime, binder = await _with_sightings(
-            tmp_path, Sighting(mark="E", number=number, side=side)
+            tmp_path, Sighting(number=number, side=side)
         )
-        assert binder.bound == [(4, side, number, name)]
+        assert binder.bound == [(side, number, name)]
 
 
 @pytest.mark.asyncio
@@ -717,8 +606,8 @@ async def test_a_side_the_number_contradicts_is_dropped(tmp_path: Path) -> None:
         away=TeamSheet(name="France", kit="navy", starters=[Player(name="Thuram", number=9)]),
     )
 
-    assert runtime._roster_check(Sighting(mark="E", number=26, side=Side.AWAY), 4, 0.0) is None
-    assert runtime._roster_check(Sighting(mark="E", number=26, side=Side.HOME), 4, 0.0) == (
+    assert runtime._roster_check(Sighting(number=26, side=Side.AWAY), 0.0) is None
+    assert runtime._roster_check(Sighting(number=26, side=Side.HOME), 0.0) == (
         Side.HOME,
         26,
         "Molina",
@@ -732,27 +621,14 @@ async def test_a_name_and_a_kit_that_disagree_are_dropped(tmp_path: Path) -> Non
     number, name = _home_number(runtime)
 
     _runtime, binder = await _with_sightings(
-        tmp_path, Sighting(mark="E", number=number, name=name, side=Side.AWAY)
+        tmp_path, Sighting(number=number, name=name, side=Side.AWAY)
     )
     assert binder.bound == []
 
 
 @pytest.mark.asyncio
-async def test_a_mark_that_is_a_word_is_not_a_tag(tmp_path: Path) -> None:
-    """A real run reported a mark of "Thuram", which parsed to a track id."""
-    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
-    number, name = _home_number(runtime)
-
-    _runtime, binder = await _with_sightings(
-        tmp_path, Sighting(mark="Thuram", number=number, name=name)
-    )
-
-    assert binder.bound == [], "a word is not a tag, so there is no body to bind to"
-
-
-@pytest.mark.asyncio
 async def test_a_number_not_in_the_squad_is_dropped(tmp_path: Path) -> None:
-    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", number=98))
+    runtime, binder = await _with_sightings(tmp_path, Sighting(number=98))
 
     assert binder.bound == []
     assert runtime.stats.sightings_dropped == 1
@@ -760,7 +636,7 @@ async def test_a_number_not_in_the_squad_is_dropped(tmp_path: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_a_name_on_no_roster_is_dropped(tmp_path: Path) -> None:
-    _runtime, binder = await _with_sightings(tmp_path, Sighting(mark="E", name="Zaltimore"))
+    _runtime, binder = await _with_sightings(tmp_path, Sighting(name="Zaltimore"))
     assert binder.bound == []
 
 
@@ -771,33 +647,20 @@ async def test_a_sighting_whose_number_and_name_disagree_is_dropped(tmp_path: Pa
     number, name = _home_number(runtime)
 
     _runtime, binder = await _with_sightings(
-        tmp_path, Sighting(mark="E", number=number + 40, name=name)
+        tmp_path, Sighting(number=number + 40, name=name)
     )
     assert binder.bound == []
 
 
 @pytest.mark.asyncio
-async def test_a_mark_that_is_not_a_tag_is_dropped(tmp_path: Path) -> None:
-    """A digit is the caller reading the shirt into the wrong field."""
-    runtime, binder = await _with_sightings(tmp_path, Sighting(mark="11", number=11))
-
-    assert binder.bound == []
-    assert runtime.stats.sightings_dropped == 1
-
-
-@pytest.mark.asyncio
-async def test_a_read_with_no_tag_is_still_believed(tmp_path: Path) -> None:
-    """A close-up of a player nobody is tracking is still worth reporting.
-
-    It cannot be tied to a body — there is no body to tie it to — but the name
-    and the number are a real reading and the registry should have them.
-    """
+async def test_a_read_is_believed_by_the_registry(tmp_path: Path) -> None:
+    """A name and a number the caller read are what the registry is for."""
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     number, name = _home_number(runtime)
 
     runtime, binder = await _with_sightings(tmp_path, Sighting(number=number, name=name))
 
-    assert binder.bound == [], "nothing to bind it to"
+    assert binder.bound == [(Side.HOME, number, name)]
     assert runtime.state_tracker.registry.name_for(number, Side.HOME) == name
     assert runtime.stats.sightings == 1
 

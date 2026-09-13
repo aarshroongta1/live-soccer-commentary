@@ -38,7 +38,6 @@ from commentary.director import Director
 from commentary.gate import FactGate
 from commentary.grading import report
 from commentary.grading.report import Scorecard
-from commentary.perception.players import NullTracker
 from commentary.predictor import SpeakPredictor
 from commentary.runtime import Runtime
 from commentary.schemas import (
@@ -51,7 +50,7 @@ from commentary.schemas import (
     Trigger,
     Voice,
 )
-from commentary.sim import MatchSim, SimOracle, SimSource, SimTracker
+from commentary.sim import MatchSim, SimOracle, SimSource
 from commentary.sim.oracle import DEFAULT_OUTCOME_GUESS_ERROR
 from commentary.trace import RunTrace
 from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker
@@ -293,9 +292,6 @@ class Variant:
     match_state_in_prompt: bool = True
     #: False runs with no pre-match notes at all, as the naive loop does.
     knowledge_pack: bool = True
-    #: False substitutes a :class:`NullTracker`, so no names are drawn on the
-    #: frames the caller sees. This is the row that says what they buy.
-    marks: bool = True
     #: A number here gives the run a statistician's feed at that modelled
     #: latency. ``None`` everywhere but the ceiling row: the default runtime
     #: never loads one, and the README's claim does not depend on it.
@@ -394,15 +390,6 @@ def wire(base: Settings = SETTINGS) -> Variant:
     )
 
 
-def no_marks(base: Settings = SETTINGS) -> Variant:
-    return Variant(
-        name="no-marks",
-        settings=base,
-        marks=False,
-        note="full system with no names drawn on the frames the caller sees",
-    )
-
-
 def standard_variants(base: Settings = SETTINGS) -> list[Variant]:
     """The runs of PLAN section 9, in the order the table wants them."""
     return [
@@ -411,7 +398,6 @@ def standard_variants(base: Settings = SETTINGS) -> list[Variant]:
         no_delay(base),
         no_gate(base),
         single_voice(base),
-        no_marks(base),
         wire(base),
     ]
 
@@ -470,14 +456,11 @@ class BaselineRuntime(Runtime):
                 self.settings.predictor,
                 self.settings.caller,
             )
-        if not self.variant.marks:
-            self.tracker = NullTracker()
         if not self.variant.match_state_in_prompt:
             self.caller = StatelessCaller(
                 self.backend,
                 config=self.settings.caller,
                 pack=self.pack,
-                tracks_for=self.tracks_for,
             )
         if not self.variant.analyst:
             self.director = CallerOnlyDirector(
@@ -531,7 +514,6 @@ async def run_variant(
             speaker=speaker_for(speed),
             trace=trace,
             with_analyst=variant.analyst,
-            tracker=SimTracker(sim, inner.renderer, pack=sim.knowledge_pack),
             wire=(
                 None
                 if variant.wire_latency_s is None

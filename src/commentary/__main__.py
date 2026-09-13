@@ -22,7 +22,6 @@ import numpy as np
 from commentary.capture import DelayBuffer, FileCapture, FrameSource, ScreenCapture
 from commentary.config import SETTINGS, Settings
 from commentary.llm.base import LLMBackend, LLMError
-from commentary.perception.players import VisionExtraMissing
 from commentary.runtime import Runtime, trace_path
 from commentary.trace import RunTrace
 from commentary.voice import LogSpeaker, Speaker, VoiceUnavailable
@@ -30,9 +29,8 @@ from commentary.voice import LogSpeaker, Speaker, VoiceUnavailable
 if TYPE_CHECKING:
     # Imported for types only: the simulator pulls in the renderer and cv2,
     # and `commentary capture` should not pay for either.
-    from commentary.perception.players import Tracker
     from commentary.schemas import KnowledgePack
-    from commentary.sim import MatchSim, SimSource
+    from commentary.sim import MatchSim
     from commentary.wire import Wire
 
 # -- capture ------------------------------------------------------------
@@ -157,33 +155,6 @@ def _backend(args: argparse.Namespace, sim: MatchSim | None) -> LLMBackend:
     return default_backend()
 
 
-def _tracker(
-    args: argparse.Namespace,
-    sim: MatchSim | None,
-    sim_source: SimSource | None,
-    pack: KnowledgePack | None,
-) -> Tracker:
-    """Who is on the pitch, or nobody.
-
-    On a real broadcast this is open models running locally and it needs the
-    vision extra; on the simulator RF-DETR would find no dots, so the sim's
-    own tracker reads them off the truth and the renderer decides what is
-    legible. Both are the same type, which is what lets the no-marks ablation
-    be a substitution rather than a branch in the match loop.
-    """
-    from commentary.perception.players import NullTracker
-
-    if not args.marks:
-        return NullTracker()
-    if sim is not None and sim_source is not None:
-        from commentary.sim import SimTracker
-
-        return SimTracker(sim, sim_source.renderer, pack=sim.knowledge_pack)
-    from commentary.perception.players import default_tracker
-
-    return default_tracker(pack)
-
-
 def _wire(
     args: argparse.Namespace, sim: MatchSim | None, pack: KnowledgePack | None
 ) -> Wire | None:
@@ -246,7 +217,6 @@ async def cmd_run(args: argparse.Namespace) -> int:
 
         pack = load_pack(Path(args.pack))
 
-    tracker = _tracker(args, sim, sim_source, pack)
     wire = _wire(args, sim, pack)
 
     out = Path(args.out)
@@ -261,7 +231,6 @@ async def cmd_run(args: argparse.Namespace) -> int:
             settings=settings,
             speaker=_speaker(args),
             trace=trace,
-            tracker=tracker,
             wire=wire,
         )
         server_task = asyncio.create_task(_serve(runtime, args.port)) if args.serve else None
@@ -599,12 +568,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--error-rate", type=float, default=0.0, help="oracle lie rate")
     run.add_argument("--seed", type=int, default=11)
-    run.add_argument(
-        "--marks",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="draw the names vision has read onto the caller's frames",
-    )
     run.add_argument("--wire", help="StatsBomb events JSON: the ablation's ceiling row")
     run.add_argument("--lineups", help="StatsBomb lineups JSON, for the names the feed uses")
     run.add_argument(
@@ -675,7 +638,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("\nstopped", file=sys.stderr)
         return 130
-    except (LLMError, VoiceUnavailable, VisionExtraMissing) as exc:
+    except (LLMError, VoiceUnavailable) as exc:
         # A missing key or a missing optional extra is a thing to fix, not a
         # thing to debug. The message already says what to do, so a traceback
         # only buries it.

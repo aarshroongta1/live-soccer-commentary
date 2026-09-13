@@ -10,14 +10,14 @@ gitignored — the clips are 26 MB each and the traces are somebody's API spend.
 **Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
 `uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`
 extra, mypy reports nine import errors in `mcp_server.py` that are the missing
-package and not the code.
+package and not the code. There is no `vision` extra any more; see section 7.
 
 ## 1. What runs
 
 ```
 uv run python -m commentary run --source file --path clips/<clip>.mp4 \
     --backend anthropic --pack clips/pack-<match>.json \
-    --seconds 65 --delay 8 --marks --out runs/<name>
+    --seconds 65 --delay 8 --out runs/<name>
 uv run python -m commentary grade runs/<name>/*.jsonl \
     --pack clips/pack-<match>.json \
     --statsbomb clips/statsbomb-events-<match>.json \
@@ -26,9 +26,9 @@ uv run python -m commentary grade runs/<name>/*.jsonl \
 
 Opus 5 calls, Haiku 4.5 reads the board, Opus 5 on the analyst (`.env`).
 **About $0.30 a minute of video**: a three-minute clip costs $0.95 to $1.07, a
-forty-five-second clip $0.15 to $0.25. The tracker runs 5-7 passes a second
-in-run on this Mac (10/s idle) with weights cached in `~/.roboflow` and the
-HuggingFace hub; nothing downloads at run time.
+forty-five-second clip $0.15 to $0.25. On Haiku for the caller and analyst a
+forty-five-second clip is $0.04 to $0.06. Nothing runs locally but ffmpeg,
+OpenCV and numpy; nothing downloads at run time.
 
 `grade` aligns StatsBomb onto video time from the trace's own board readings
 and **refuses to grade an alignment it cannot trust**. A shootout has no clock
@@ -99,8 +99,9 @@ play.
 
 1. **Open-play naming.** Start free: count `name_withheld` across traces to
    split "never identified" from "identified and not used" — the Messi penalty
-   was the second, and that is a different problem from the first. Then tracker
-   life and gallery re-identification.
+   was the second, and that is a different problem from the first. The
+   tracker is not the answer (section 7); the carry rule and the registry are
+   where the room is.
 2. **Use the eight-second lookahead before refusing a call.** The director
    should scan the lookahead frames for a celebration or a board change before
    the rate cap says no. It covers the Mbappé case and also the card shown
@@ -113,6 +114,43 @@ play.
    naming is stable.
 
 Leave the gate, the grader and the wire alone.
+
+## 7. The tracker is gone
+
+The local vision stack — RF-DETR, ByteTrack, the HSV kit split and the SigLIP
+gallery, the whole `vision` extra with torch under it — was removed after a
+real-clip ablation, not on taste. Six 45 s clips (e01, e02, e07, e08, e09,
+e11), two runs each, tags on versus tags off, Haiku 4.5 as caller and analyst
+in both arms, $1.15 all in. Traces, driver and table are in `runs/abl/`.
+
+| | tags on | tags off |
+|---|---:|---:|
+| runs | 12 | 12 |
+| spoken lines | 40 | 45 |
+| lines naming a roster player | 26 | 43 |
+| distinct players named | 8 | 20 |
+| sightings bound / made | 70 / 235 | 115 / 120 |
+| wrong or off-roster names | 0 | 0 |
+| grader factual errors | 1 | 0 |
+
+With tags the caller named the close-ups (Ronaldo, Messi, Henderson) and
+little else, and filed letter tags as sightings that bound to nobody, which
+is the "tag looks like a claim" failure this file already described. The
+median track lived 2 to 2.8 s, no longer than the caller's own frame window,
+and the kit split had already been measured discarding 94% of close-ups. The
+only evidence ever in its favour was a 12-line simulator A/B that the README
+itself said could not measure marks, and one Mbappé anecdote.
+
+What replaced it is nothing new: the caller reads shirts, `_bind_sightings`
+checks the read against the team sheet and tells the registry, and the
+eight-second carry rule (`012c232`) keeps a spoken name on the ball. That is
+the "tags off" arm above. `Sighting.mark`, `Topic.TRACKS`, `Topic.GALLERY`,
+`--marks`, the `no-marks` baseline, checklist item 7's "carried on a mark"
+and item 12's tracker rate are gone with it; the `tracks` and `gallery` rows
+in older traces are history.
+
+Untested and worth $1.20 if anyone cares: the same six clips on Opus with
+tags off, to see whether an Opus caller alone clears the 60% naming bar.
 
 ## 6. Do not do these again
 
@@ -131,25 +169,9 @@ Leave the gate, the grader and the wire alone.
 
 ## Things the next person will trip over
 
-- **`run --source file` has the marks on by default**, so on a machine without
-  the `vision` extra it stops with a one-line message telling you to install
-  it. That is deliberate; `--no-marks` is the other answer.
-- **A tag is a letter, and it is neither a shirt number nor a name.** It is a
-  label so the caller can say which body it read a number off. Both failures
-  have now happened on real footage: with digits the caller reported the tag
-  as the shirt number, and with letters it filed the tags in the flat name
-  field, where the gate killed the lines. Anything that makes a tag look like a
-  claim about a player is the marks doing harm.
-- **The tracker runs in its own loop, on the newest frame, and skips the
-  rest.** It is not a per-frame pipeline and must never become one again: one
-  pass is 92 ms at best and frames arrive every 66 ms, so anything that
-  awaits it from `_ingest_frames` stalls the cursor outright. The `tracks`
-  rows in a trace say what rate it managed and how much it named.
 - **The simulator's timestamp strip is in the top-left corner**, and the
-  oracle decodes it from the frames the caller was given — which now carry
-  marks. `draw_marks` refuses to draw a label with no room above the player,
-  which keeps labels out of that corner. If you move the strip, check that
-  still holds.
+  oracle decodes it from the frames the caller is given. Nothing draws on
+  those frames any more; if that changes, keep that corner clear.
 - **Three runtime tests are timing-sensitive** because the sim runs flat out
   against wall-clock loops: `test_a_goal_is_never_announced_before_the_board_confirms_it`,
   `test_only_the_wire_can_put_a_lied_about_score_right`, and anything

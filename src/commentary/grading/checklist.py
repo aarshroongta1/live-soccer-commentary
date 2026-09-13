@@ -24,7 +24,6 @@ score and the clock, not the argument.
 from __future__ import annotations
 
 import re
-import statistics
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -55,8 +54,6 @@ ANALYST_EVERY_S = 40.0
 ANALYST_WORDS = 30
 #: Item 12.
 COST_CAP_USD = 1.20
-PASSES_PER_S = 5.0
-TRACK_LIFE_S = 2.5
 
 #: Events a line can claim that the feed can be asked about (item 3).
 #: `stoppage` is deliberately absent: it asserts that the game has stopped,
@@ -227,11 +224,9 @@ class Sighting:
     """One reported read of a shirt, as the runtime resolved it."""
 
     ts: float
-    mark: str | None
     number: int | None
     name: str | None
     bound: bool
-    live: bool
     side: str = ""
 
 
@@ -284,11 +279,9 @@ def watched(
     sightings = [
         Sighting(
             ts=float(row.get("ts", 0.0)),
-            mark=_text_or_none(entry.get("mark")),
             number=entry.get("number") if isinstance(entry.get("number"), int) else None,
             name=_text_or_none(entry.get("name")),
             bound=bool(entry.get("bound")),
-            live=bool(entry.get("live")),
             side=str(entry.get("side") or ""),
         )
         for row in rows_of(rows, "sighting")
@@ -495,15 +488,13 @@ def _name_rate(state: Watched) -> Item:
 
 
 def _open_play_names(state: Watched) -> Item:
-    title = f"{OPEN_PLAY_PLAYERS}+ distinct players in open play, one carried on a mark"
+    title = f"{OPEN_PLAY_PLAYERS}+ distinct players named in open play"
     distinct: set[str] = set()
     for line in state.lines:
         if line.scene == "live_play":
             distinct.update(metrics.named_in(line.text, state.wire))
-    carried = _carried_on_a_mark(state)
-    ok = len(distinct) >= OPEN_PLAY_PLAYERS and carried is not None
+    ok = len(distinct) >= OPEN_PLAY_PLAYERS
     detail = f"{len(distinct)} in open play ({', '.join(sorted(distinct)) or 'none'})"
-    detail += f"; carried on a mark: {carried}" if carried else "; nothing carried on a mark"
     return Item(7, title, ok, detail)
 
 
@@ -515,10 +506,7 @@ def _sightings(state: Watched) -> Item:
     bound = [s for s in state.sightings if s.bound]
     wrong = [f"{s.number} {s.name} at {s.ts:.0f}s" for s in bound if _contradicts_roster(state, s)]
     rate = len(bound) / made
-    detail = (
-        f"{len(bound)}/{made} = {rate:.0%} bound, "
-        f"{sum(1 for s in bound if s.mark)} on a mark"
-    )
+    detail = f"{len(bound)}/{made} = {rate:.0%} bound"
     if wrong:
         detail += "; contradicts the roster: " + ", ".join(wrong)
     return Item(8, title, rate >= BIND_RATE_TARGET and not wrong, detail)
@@ -591,42 +579,16 @@ def _scoreline(state: Watched) -> Item:
 
 
 def _health(state: Watched) -> Item:
-    title = (
-        f"<= ${COST_CAP_USD:.2f}, zero errors, tracker >= {PASSES_PER_S:.0f}/s, "
-        f"median track life >= {TRACK_LIFE_S:.1f}s"
-    )
+    title = f"<= ${COST_CAP_USD:.2f}, zero errors"
     errors = rows_of(state.rows, "error")
-    rate, life = _tracker(state.rows)
-    ok = (
-        state.run.cost_usd <= COST_CAP_USD
-        and not errors
-        and rate >= PASSES_PER_S
-        and life >= TRACK_LIFE_S
-    )
-    detail = (
-        f"${state.run.cost_usd:.2f}, {len(errors)} errors, {rate:.1f} passes/s, "
-        f"median track life {life:.2f}s"
-    )
+    ok = state.run.cost_usd <= COST_CAP_USD and not errors
+    detail = f"${state.run.cost_usd:.2f}, {len(errors)} errors"
     if errors:
         detail += f"; first error {errors[0].get('where')}: {str(errors[0].get('detail'))[:60]}"
     return Item(12, title, ok, detail)
 
 
 # -- the small print -----------------------------------------------------
-
-
-def _tracker(rows: list[dict[str, Any]]) -> tuple[float, float]:
-    """Passes a second, and the median life of a track id, from the trace."""
-    passes = rows_of(rows, "tracks")
-    if len(passes) < 2:
-        return 0.0, 0.0
-    span = float(passes[-1].get("ts", 0.0)) - float(passes[0].get("ts", 0.0))
-    seen: dict[int, list[float]] = {}
-    for row in passes:
-        for track_id in row.get("ids", []):
-            seen.setdefault(int(track_id), []).append(float(row.get("ts", 0.0)))
-    lives = [stamps[-1] - stamps[0] for stamps in seen.values()]
-    return (len(passes) / span if span > 0 else 0.0, statistics.median(lives) if lives else 0.0)
 
 
 def _claims_goal(line: Line) -> bool:
@@ -683,24 +645,6 @@ def _uncorroborated(state: Watched) -> list[str]:
             if name not in near
         )
     return out
-
-
-def _carried_on_a_mark(state: Watched) -> str | None:
-    """A sighting bound on a live mark whose name a later line then said."""
-    for sighting in state.sightings:
-        if not (sighting.bound and sighting.mark):
-            continue
-        name = sighting.name or _roster_name(state.pack, sighting.number)
-        if not name:
-            continue
-        surname = _surname(name)
-        for line in state.lines:
-            if line.ts >= sighting.ts and surname and surname in _words(line.text):
-                return (
-                    f"{name} (mark {sighting.mark} at {sighting.ts:.0f}s, "
-                    f"said at {line.ts:.0f}s)"
-                )
-    return None
 
 
 def _contradicts_roster(state: Watched, sighting: Sighting) -> bool:

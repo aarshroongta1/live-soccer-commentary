@@ -33,7 +33,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import time
-from collections import deque
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -48,10 +47,7 @@ from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate, claims_goal, fold, is_the_same_name
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
-from commentary.perception.gallery import GALLERY_STRENGTH
-from commentary.perception.players import NullTracker, Track, Tracker, id_of, mark_of
 from commentary.predictor import SpeakPredictor
-from commentary.prompts.caller import MARK_TOLERANCE_S
 from commentary.schemas import (
     Beat,
     BoardRead,
@@ -85,18 +81,6 @@ from commentary.wire import Wire, WireSync
 #: [cursor - 2, cursor + 5] closed at 61.5 and missed it, and the caller's
 #: correct goal call was rejected as unconfirmed.
 GOAL_GRAPHIC_LAG_S = 10.0
-
-#: The floor on how often the tracker looks, so its loop can never spin
-#: faster than frames arrive. It is only ever a floor: with real weights one
-#: pass is 90 ms and up, and the loop simply takes the newest frame whenever
-#: it comes free.
-TRACK_MIN_PERIOD_S = 1.0 / 15
-
-#: The ceiling used to size the store of recent tracks. The tracker's real
-#: rate is whatever the models manage — three to ten passes a second on this
-#: machine — and the store has to hold the buffer's whole reach at the
-#: fastest it could run.
-TRACK_MAX_HZ = 15
 
 #: The backstop on how long a goal stays a thing worth talking about, and
 #: only the backstop: what really ends it is play restarting.
@@ -153,7 +137,6 @@ def _player_numbered(pack: KnowledgePack, side: Side, number: int) -> Player | N
 @dataclass
 class RuntimeStats:
     frames: int = 0
-    tracked_frames: int = 0
     audio_chunks: int = 0
     board_reads: int = 0
     caller_calls: int = 0
@@ -184,10 +167,6 @@ class Runtime:
     #: The second voice. Off by one flag, because "single voice" is one of the
     #: ablations the results table has to report.
     with_analyst: bool = True
-    #: Who is on the pitch, read off the picture. A :class:`NullTracker` by
-    #: default: naming players from vision is opt-in, and the no-marks row of
-    #: the ablation table is this same field with the null one in it.
-    tracker: Tracker = field(default_factory=NullTracker)
     #: A statistician's feed. ``None`` in the default runtime and in every
     #: row of the results table but one: the thesis is the picture, the sound
     #: and notes, and this is here to say what a feed would have bought.
@@ -215,7 +194,6 @@ class Runtime:
             self.backend,
             config=self.settings.caller,
             pack=self.pack,
-            tracks_for=self.tracks_for,
         )
         self.analyst = Analyst(
             self.backend,
@@ -235,13 +213,6 @@ class Runtime:
         self._board_changes: list[BoardChange] = []
         self._roars: list[float] = []
         self._cuts: list[float] = []
-        #: Tracks by the video time of the frame they were read from, bounded
-        #: to the buffer's own reach: a mark is only ever drawn on a frame the
-        #: caller is being shown, and those never come from further back.
-        self._tracks: deque[tuple[float, list[Track]]] = deque(
-            maxlen=int((cap.delay_s + cap.history_s) * TRACK_MAX_HZ) + 1
-        )
-
         #: Cursor time at which the state last took in a board goal — not the
         #: time of the board change itself. See ``_apply_due_board_changes``.
         self._last_goal_ts: float | None = None
@@ -305,7 +276,6 @@ class Runtime:
                 recorder,
                 asyncio.create_task(self._ingest_frames(), name="frames"),
                 asyncio.create_task(self._read_board(), name="board"),
-                asyncio.create_task(self._follow_players(), name="tracks"),
                 asyncio.create_task(self._tick(), name="tick"),
                 asyncio.create_task(self.director.run(), name="director"),
             ]
@@ -365,107 +335,6 @@ class Runtime:
         # The source ran out: a clip ended, or the stream died. Either way the
         # match is over as far as this process is concerned.
         self.stop()
-
-    async def _follow_players(self) -> None:
-        """Find the bodies, in a loop of its own, at whatever rate it manages.
-
-        This used to hang off the frame loop, awaited on every other frame,
-        and the first run with marks on real footage never started: the
-        cursor sat at 0.2 s for 195 seconds while the board reader looked at
-        the same frame fifty-five times. Detection is 90 ms and up at 640
-        wide before SigLIP and PARSeq are asked anything, frames arrive every
-        66 ms, and a loop that awaits something slower than its own input
-        stops being a loop.
-
-        So: a task of its own, one detection at a time, going round again the
-        moment it finishes. Frames it was too slow to see are skipped rather
-        than queued, which is the right answer — a track from four seconds ago
-        is not worth catching up on, the bodies have moved. Nothing else waits
-        for it, and if it manages three passes a second the marks are three a
-        second.
-
-        On the frame at the *cursor*, not the live edge. The caller is the
-        only thing that reads tracks and the caller lives at the cursor, so
-        that is where a tag has to mean something: a body the caller points at
-        has to still be there when its line comes back a few seconds later,
-        and with the tracker eight seconds ahead the id had to survive the
-        delay on top of that. The cut reset moves with it, off the live edge's
-        cut detector and onto the cursor crossing the same timestamps.
-        """
-        loop = asyncio.get_running_loop()
-        last_ts: float | None = None
-        while True:
-            started = time.perf_counter()
-            cursor = self.buffer.cursor_ts
-            frame = None if cursor is None else self.buffer.nearest(cursor)
-            if frame is None or frame.ts == last_ts:
-                await asyncio.sleep(TRACK_MIN_PERIOD_S)
-                continue
-            cut = last_ts is not None and any(last_ts < c <= frame.ts for c in self._cuts)
-            if cut:
-                # A cut is a different camera on a different part of the
-                # pitch, so no body after it continues a body from before.
-                self.tracker.reset()
-            last_ts = frame.ts
-            tracks = await loop.run_in_executor(None, self.tracker.update, frame)
-            elapsed = time.perf_counter() - started
-            self.stats.tracked_frames += 1
-            # One row per pass, so a trace says what rate the tracker actually
-            # ran at and how much of what it found it could put a name to.
-            self._publish(
-                Topic.TRACKS,
-                frame.ts,
-                tracks=len(tracks),
-                with_side=sum(1 for t in tracks if t.side is not Side.UNKNOWN),
-                named=sum(1 for t in tracks if t.name is not None),
-                ms=round(elapsed * 1000.0, 1),
-                # The tags carrying a name, so a trace says how long one
-                # lasted, and the cut that ends every one of them.
-                names=[mark_of(t.id) for t in tracks if t.name is not None],
-                ids=[t.id for t in tracks],
-                cut=cut,
-            )
-            gallery = self.tracker.gallery
-            if gallery is not None:
-                self._publish(Topic.GALLERY, frame.ts, **gallery.drain())
-            if tracks:
-                self._tracks.append((frame.ts, tracks))
-                # The registry is state, and state has one writer. The
-                # tracker's job ends at "that shirt says 11 and it is an
-                # Argentina shirt"; what that is worth ten minutes later is
-                # the registry's decay to decide.
-                for track in tracks:
-                    if track.number is not None and track.name is not None:
-                        # A gallery match is believed more weakly than a shirt
-                        # somebody read, so a later read overrides it rather
-                        # than arguing with it.
-                        self.state_tracker.registry.believe(
-                            track.number,
-                            track.name,
-                            frame.ts,
-                            side=track.side,
-                            strength=GALLERY_STRENGTH if track.from_gallery else 1.0,
-                        )
-            # A pass that beat the frame rate waits out the difference; one
-            # that did not goes straight round again on the newest frame.
-            await asyncio.sleep(max(0.0, TRACK_MIN_PERIOD_S - elapsed))
-
-    def tracks_for(self, ts: float) -> list[Track]:
-        """Who was where when this frame was captured, for drawing on it.
-
-        Nearest tracked frame rather than an exact hit: the tracker runs in
-        its own loop at its own rate, and the caller is shown whichever
-        frames the buffer sampled, so the two almost never land on the same
-        one. Past the tolerance the bodies have moved and a name would be
-        drawn over the wrong player, which is the one failure this whole
-        chain exists to avoid.
-        """
-        best: tuple[float, list[Track]] | None = None
-        for tracked_ts, tracks in self._tracks:
-            gap = abs(tracked_ts - ts)
-            if gap <= MARK_TOLERANCE_S and (best is None or gap < best[0]):
-                best = (gap, tracks)
-        return [] if best is None else best[1]
 
     async def _ingest_audio(self) -> None:
         async for chunk in self.source.audio():
@@ -802,46 +671,27 @@ class Runtime:
         return cursor - 2.0 <= pending.first_ts <= cursor + window
 
     def _bind_sightings(self, line: CallerLine, cursor: float) -> None:
-        """Put the numbers the caller read onto the bodies it read them off.
+        """Put the numbers and names the caller read into the registry.
 
-        The caller can read a shirt in a frame; the tracker can hold a body
-        across frames; neither does the other's job. This is the joint, and
-        the team sheets are the check on it — a number has to be in that
-        side's squad and a name has to be on the roster, because a hallucinated
-        pair here would not just be one wrong line, it would follow that
-        player around until the next cut. A mark that is not a tag we could
-        have drawn is dropped on the same grounds.
-
-        Both writes happen together on purpose: the track so the tag says the
-        surname from now on, the registry so the name survives the cut that
-        kills the track.
+        The team sheets are the check: a number has to be in that side's
+        squad and a name has to be on the roster, because a hallucinated pair
+        here would not just be one wrong line, it would be carried into the
+        next one. What survives goes to the registry, which is what a later
+        line reads a name back out of.
         """
         if not line.sightings:
             return
-        drawn = self.tracks_for(cursor)
-        tagged = {t.id for t in drawn if t.side is not Side.UNKNOWN}
         seen: list[dict[str, Any]] = []
         for sighting in line.sightings:
-            mark = id_of(sighting.mark) if sighting.mark else None
-            found = self._roster_check(sighting, mark, cursor)
+            found = self._roster_check(sighting, cursor)
             row: dict[str, Any] = {
-                "mark": sighting.mark,
                 "number": sighting.number,
                 "name": sighting.name,
                 "side": sighting.side.value,
-                # Whether that tag still meant a body by the time the line came
-                # back, and whether there was a tag on it at all when the
-                # frame was drawn. The two failures look identical from the
-                # outside and want opposite fixes.
-                "live": mark is not None and any(t.id == mark for t in drawn),
-                "tagged": mark in tagged if mark is not None else None,
-                "tags_on_frame": len(tagged),
                 "bound": found is not None,
             }
             if found is not None:
                 side, number, name = found
-                if mark is not None:
-                    self.tracker.identify(mark, side, number, name, cursor)
                 self.state_tracker.registry.believe(number, name, cursor, side=side)
                 row["as"] = f"{number} {name}"
                 self.stats.sightings += 1
@@ -850,9 +700,7 @@ class Runtime:
             seen.append(row)
         self._publish(Topic.SIGHTING, cursor, sightings=seen)
 
-    def _roster_check(
-        self, sighting: Sighting, mark: int | None, cursor: float
-    ) -> tuple[Side, int, str] | None:
+    def _roster_check(self, sighting: Sighting, cursor: float) -> tuple[Side, int, str] | None:
         """The player this sighting is about, or None if it does not stand up.
 
         A name settles which side it is and which number goes with it, so a

@@ -403,11 +403,9 @@ class BroadcastRenderer:
     ) -> list[tuple[Dot, tuple[int, int], int]]:
         """Every player the camera can see, as ``(dot, centre, radius)``.
 
-        Shared with the simulator's player tracker rather than copied into it.
-        The tracker's whole job is to know what is legible in the picture, and
-        legibility here is decided by this projection and this radius — two
-        implementations of it would drift apart and the ablation would then be
-        measuring the drift.
+        Legibility is decided by this projection and this radius, so anything
+        that needs to know what the picture shows asks here rather than
+        keeping a second copy that would drift.
         """
         world = [(d.x, d.y) for d in state.players]
         view = self.to_view(world)

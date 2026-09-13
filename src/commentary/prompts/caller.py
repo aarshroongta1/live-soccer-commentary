@@ -11,24 +11,12 @@ match state, what has just been said, and why the system is asking now.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-
-import numpy as np
+from collections.abc import Sequence
 
 from commentary.capture.buffer import Frame
 from commentary.config import CallerConfig
 from commentary.llm.base import Block, encode_frame, image_block, text_block
-from commentary.perception.players import Track, mark_of
 from commentary.schemas import KnowledgePack, Player, TeamSheet, Trigger
-
-#: Tracks known at a moment of video time. The runtime keeps the store; this
-#: module only asks it what was on the pitch when this frame was captured.
-TracksFor = Callable[[float], list[Track]]
-
-
-def no_tracks(ts: float) -> list[Track]:
-    """The substitution that turns the marks off, rather than a flag to check."""
-    return []
 
 #: The rules. ``{max_words}`` is the only substitution, and it comes from
 #: config so a sweep of the word cap changes the prompt with it.
@@ -67,22 +55,13 @@ allowed to use: match the kit that player is wearing to a team sheet below,
 find that number in it, and use that player's surname. A name across the back
 of a shirt and a name in a broadcast graphic count the same way.
 
-Players carry a small tag drawn above them in a dark box. A tag with a
-surname is a name you may use for that player, and for nobody else on the
-pitch — and when that player is involved in what you are describing, use it.
-That is what the tags are for. "Tagliafico knocks it infield" is the same
-line as "Argentina knock it infield" with the one thing a listener wants
-added to it. A tag that is a letter — A, B, ... Z, AA, AB — is a body being
-followed that nobody has identified yet. A letter is a label for that body
-and nothing else: not a shirt number, not a squad number, not a name. A
-player with no tag at all is unidentified, whatever you think you recognise.
+"Tagliafico knocks it infield" is the same line as "Argentina knock it
+infield" with the one thing a listener wants added to it, so when a name is
+legible, use it.
 
 Everything you read off the picture goes in sightings, one entry per player.
 A shirt number you can read, a name across the shoulders, a name in a
-graphic: that is a sighting. Add the letter of the tag over that player
-whenever they are wearing one, and leave the mark null when they are not —
-a close-up of a player with no tag is still worth reporting, it just cannot
-be tied to a body afterwards.
+graphic: that is a sighting.
 
 Every sighting with a number needs a side. Both squads wear a 5, a 7, a 10
 and an 11, so a number on its own names nobody at all — it is thrown away.
@@ -92,33 +71,30 @@ it is, leave side unknown and expect the number to be discarded; do not
 guess, because a number put on the wrong squad names the wrong man.
 
 Do it every time a number is legible, even for a player you have reported
-before and even when the line you are writing does not mention them. The
-player tagged D whose shirt reads 11 in the white and blue stripes is one
-sighting: mark "D", number 11, side home. A tagged player whose name you can
-read across the shoulders is the same sighting with the name filled in too.
+before and even when the line you are writing does not mention them. A
+shirt reading 11 in the white and blue stripes is one sighting: number 11,
+side home. A player whose name you can read across the shoulders is the
+same sighting with the name filled in too.
 
 A name on a broadcast graphic is a sighting too — a lower third naming the
 taker before a penalty, a scorer's caption, a substitution board. Put the
-name in, leave the number null, and give it the tag of the body in the
-close-up it is over if there is one, so the name goes onto that body.
+name in and leave the number null.
 
-The tag is what makes a name last. Report a number against a tag and that
-tag becomes the player's surname for everybody who looks at the picture
-afterwards, including you, through all the shots where the number is turned
-away. Leave the tag out and the name dies with your line. And never report
-something you cannot actually see: a guess here follows that player around
-for the rest of the passage.
+A name you have read stays with that player through the next few seconds of
+the same passage, so you may keep it while they are on the ball even when
+the number has turned away. Never report something you cannot actually see:
+a guess here follows that player around for the rest of the passage.
 
 MATCH STATE may carry a statistician's lines: "on the ball" with a name,
 "from" with the name of whoever passed it, and a "just now" list of things
 somebody did — a foul, a card, an offside, a save. Those names may be used as
 given, for exactly the thing the statistician says that player did and for
 nothing else. They are the only names you may use without a legible number, a
-name on a shirt, a graphic or a tag. A foul in the picture with "foul by
+name on a shirt or a graphic. A foul in the picture with "foul by
 Rabiot on Messi" in the state is called with both names; a foul with nothing
 in the state is called by kit and role.
 
-If you cannot read a number and there is no surname tag, say the role and the kit
+If you cannot read a number or a name, say the role and the kit
 instead: "the left-back in white", "the near-post runner in blue", "the keeper
 in green". That is a complete answer and it costs nothing. A wrong name is the
 worst thing you can do here. There is no credit for guessing and no penalty
@@ -192,8 +168,8 @@ Confidence is your honest read on whether these frames support the claim; low
 confidence is not punished, but a confident guess is.
 
 sightings is the record of what was legible, and it is how a name in your
-line is justified. One entry per player: the tag letter if they have one,
-the number if you can read it, the name if you can read that. Knowing who
+line is justified. One entry per player: the number if you can read it, the
+name if you can read that, and which kit it was on. Knowing who
 usually plays there is not a sighting and does not belong in it.
 
 THE LINE
@@ -207,8 +183,7 @@ says out loud, not what an observer writes down.
   Good: Long ball forward, and the centre-half in red heads it clear.
   Bad:  In this frame we can see a player in a red shirt. (describing a picture)
   Good: Di María cuts inside and drives it low. (the 11 was legible on the
-        player tagged D in the striped kit, so sightings carries mark "D",
-        number 11, side home)
+        striped kit, so sightings carries number 11, side home)
   Bad:  That is the equaliser, two apiece. (the score is not yours to give)
   Bad:  The replay shows him clean through. (a replay called as live)\
 """
@@ -228,168 +203,12 @@ def caller_system(pack: KnowledgePack | None, config: CallerConfig | None = None
     return "\n\n".join(parts)
 
 
-#: How far a mark may be from a frame's own timestamp and still be about it.
-#: The tracker runs in a loop of its own, as fast as the models allow — three
-#: to ten passes a second with real weights — so the nearest tracked frame is
-#: a third of a second away at worst. It was 0.2 when detection ran on every
-#: other frame, which at three passes a second means no marks at all.
-MARK_TOLERANCE_S = 0.5
-
-#: How tall a tag has to be *as the caller receives it*, and the width it is
-#: received at. Frames go out through ``encode_frame``, which downscales to
-#: 768 px and JPEGs at quality 70, so a tag drawn at cv2's scale 0.4 arrives
-#: about six pixels tall — legible to somebody looking for it, which is not
-#: the same as legible to somebody reading a football match. Twenty-two
-#: pixels is the height of ordinary body text on that image.
-MARK_ENCODED_PX = 22
-ENCODED_WIDTH = 768
-
-#: Cap height of FONT_HERSHEY_SIMPLEX at scale 1.0, which is what turns a
-#: height in pixels into a cv2 font scale.
-_SIMPLEX_CAP_PX = 22.0
-
-#: Padding inside the dark box behind the text.
-MARK_PAD = 4
-
-#: How many times a tag may be moved up to clear another before it is dropped.
-MARK_NUDGES = 2
-
-
-def mark_font(width: int) -> tuple[float, int]:
-    """Font scale and stroke for a tag on a frame this wide.
-
-    Derived rather than fixed, so the tag is the same size in the picture the
-    model sees whether the capture is 720p or 1080p — the only thing that
-    matters is how many pixels survive the downscale to ``ENCODED_WIDTH``.
-    """
-    scale = (MARK_ENCODED_PX / _SIMPLEX_CAP_PX) * max(1.0, width / ENCODED_WIDTH)
-    return scale, max(2, int(round(scale * 1.5)))
-
-
-def draw_marks(
-    image: np.ndarray, tracks: Sequence[Track], pack: KnowledgePack | None
-) -> np.ndarray:
-    """A small tag above each body being followed, on a COPY.
-
-    This is the whole point of the vision chain, and what it is for changed
-    once it was measured. It was "the local models read the shirt and the
-    language model reads the name off the picture"; the local models read no
-    shirt in three minutes and the language model read nine. So the tag is a
-    handle: ``#4`` says "this body, the one I am following", and the caller
-    that can read its shirt reports the pair. From then on the tag is that
-    player's surname, and the name stays on the body through the shots where
-    the number is turned away.
-
-    Never on a frame in the buffer. The board reader and the analyst get the
-    picture as it was broadcast, and a mark drawn over the score bug would be
-    a system writing its own evidence.
-    """
-    import cv2
-
-    marked = image.copy()
-    scale, stroke = mark_font(image.shape[1])
-    placed: list[tuple[int, int, int, int]] = []
-    for track in tracks:
-        text = _mark_text(track, pack)
-        if text is None:
-            continue
-        x0, y0, _x1, _y1 = track.box
-        (width, height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, stroke)
-        box_w, box_h = width + 2 * MARK_PAD, height + 2 * MARK_PAD
-        top = y0 - box_h - 2
-        # Two tags on top of each other are one unreadable smudge, and a tag
-        # that cannot be read is worse than no tag: the caller is asked to
-        # copy it exactly. Walk up to clear another tag — but only twice. A
-        # tag nudged further than that has left the player it names, and a
-        # label floating over somebody else is the one thing worse than none.
-        for _ in range(MARK_NUDGES):
-            here = (x0, top, x0 + box_w, top + box_h)
-            if not any(_overlaps(here, other) for other in placed):
-                break
-            top -= box_h + 2
-        else:
-            if any(
-                _overlaps((x0, top, x0 + box_w, top + box_h), other) for other in placed
-            ):
-                continue
-        if top < 0:
-            # No room above the player, which on a close-up is most of them:
-            # the body fills the frame and its box starts off the top of it.
-            # Put the tag inside the box at its top instead — still on that
-            # body, still readable, which a label clipped by the frame edge
-            # is not.
-            top = max(0, y0) + 2
-        if _overlaps((x0, top, x0 + box_w, top + box_h), _corner(image.shape)):
-            # Except in the top-left corner, where the broadcaster keeps the
-            # score bug and the simulator keeps the timestamp strip its
-            # oracle reads back out of these very frames.
-            continue
-        placed.append((x0, top, x0 + box_w, top + box_h))
-        cv2.rectangle(marked, (x0, top), (x0 + box_w, top + box_h), (20, 20, 20), -1)
-        cv2.putText(
-            marked,
-            text,
-            (x0 + MARK_PAD, top + box_h - MARK_PAD),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            scale,
-            (255, 255, 255),
-            stroke,
-            cv2.LINE_AA,
-        )
-    return marked
-
-
-def _overlaps(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
-    return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
-
-
-def _corner(shape: tuple[int, ...]) -> tuple[int, int, int, int]:
-    """The top-left box nothing may be drawn in.
-
-    Wide enough for the simulator's timestamp strip, which is a fraction of
-    the frame width, and tall enough for one of its blocks.
-    """
-    height, width = shape[0], shape[1]
-    return (0, 0, int(width * 0.42), int(height * 0.07))
-
-
-def _mark_text(track: Track, pack: KnowledgePack | None) -> str | None:
-    """What to print above a body: who it is, or which body it is.
-
-    An unnamed body gets a letter, which is not a claim about anybody — it is
-    a label, so the caller can say "the number I read is on that one" and be
-    understood. It is letters rather than the track id printed as "#4"
-    because that is what the caller did with a digit: three of six sightings
-    on the real clip came back with the mark equal to the number read.
-
-    Every tracked body, including the ones the kit split will not put in a
-    team. That rule cost 94% of the close-ups: of 784 bodies tall enough for
-    a shirt number to be legible, 44 carried a tag, and the rest were called
-    referees because a close-up crop looks nothing like the wide-shot crops
-    the split was fitted on. The bodies whose numbers can be read were
-    exactly the bodies with nothing to read them against. A letter over the
-    referee is a letter over the referee; nobody reports a shirt number off
-    him, and if they did the roster would throw it out.
-    """
-    if track.name is not None:
-        return track.name.rsplit(" ", 1)[-1]
-    return mark_of(track.id)
-
-
-def _marked_block(frame: Frame, tracks_for: TracksFor, pack: KnowledgePack | None) -> Block:
-    tracks = tracks_for(frame.ts)
-    image = draw_marks(frame.image, tracks, pack) if tracks else frame.image
-    return image_block(encode_frame(image))
-
-
 def caller_blocks(
     cursor_frames: Sequence[Frame],
     lookahead_frames: Sequence[Frame],
     state_summary: str,
     recent_lines: Sequence[str],
     triggers: Sequence[Trigger],
-    tracks_for: TracksFor = no_tracks,
-    pack: KnowledgePack | None = None,
 ) -> list[Block]:
     """One call's content: the moment, the near future, then the volatile tail.
 
@@ -416,7 +235,7 @@ def caller_blocks(
         offset = origin - frame.ts
         when = "this is now" if offset < 0.05 else f"{offset:.1f} s before now"
         blocks.append(text_block(f"Frame {i} of {len(cursor_frames)} — {when}."))
-        blocks.append(_marked_block(frame, tracks_for, pack))
+        blocks.append(image_block(encode_frame(frame.image)))
 
     if lookahead_frames:
         blocks.append(
@@ -436,7 +255,7 @@ def caller_blocks(
                     "the moment you are calling. Outcome check only."
                 )
             )
-            blocks.append(_marked_block(frame, tracks_for, pack))
+            blocks.append(image_block(encode_frame(frame.image)))
     else:
         blocks.append(
             text_block(

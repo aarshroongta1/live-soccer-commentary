@@ -2,7 +2,7 @@
 
 Every fixture here is a file on disk and nothing reaches the network. The
 trace is written the way the runtime writes one — board reads with a clock on
-them, caller rows, gate rows, sightings, tracker passes — because the whole
+them, caller rows, gate rows, sightings — because the whole
 point of the command is that it reads a real trace, and a test that feeds it
 a convenient shape would not notice when the trace changes.
 """
@@ -102,14 +102,8 @@ def gate(ts: float, passed: bool = True, reasons: list[str] | None = None):
     return (Topic.GATE, ts, {"passed": passed, "reasons": reasons or [], "line": ""})
 
 
-def tracks(ts: float, ids: list[int]):
-    payload = {"tracks": len(ids), "with_side": 0, "named": 0, "ms": 100.0, "ids": ids}
-    return (Topic.TRACKS, ts, payload)
-
-
 def sighting(
     ts: float,
-    mark: str | None,
     number: int | None,
     name: str | None,
     bound: bool,
@@ -121,11 +115,9 @@ def sighting(
         {
             "sightings": [
                 {
-                    "mark": mark,
                     "number": number,
                     "name": name,
                     "bound": bound,
-                    "live": bool(mark),
                     "side": side,
                 }
             ]
@@ -155,7 +147,6 @@ def a_good_run() -> list[tuple[Topic, float, dict]]:
         "Upamecano steps out and heads the cross away from the near post.",
     ]
     rows: list[tuple[Topic, float, dict]] = [board(ts) for ts in (2.0, 20.0, 60.0, 120.0, 170.0)]
-    rows += [tracks(float(t) / 10.0, [1, 2, 3]) for t in range(0, 1800)]
     said = {
         2.0: "De Paul takes the throw quickly and Messi has it on the turn.",
         30.0: "Di María drives at Upamecano down the left, looking for the overlap.",
@@ -172,8 +163,8 @@ def a_good_run() -> list[tuple[Topic, float, dict]]:
             spoken(ts, text, event="foul" if ts == 150.0 else "none"),
         ]
     rows += [
-        sighting(30.0, "B", 11, "Di María", True),
-        sighting(90.0, "C", 10, "Messi", True),
+        sighting(30.0, 11, "Di María", True),
+        sighting(90.0, 10, "Messi", True),
         (Topic.COST, 170.0, {"total_usd": 0.88}),
     ]
     return rows
@@ -332,7 +323,7 @@ def test_a_sighting_binding_a_number_the_named_player_does_not_wear_is_caught(
     pack, wire, tmp_path: Path
 ) -> None:
     rows = a_good_run()
-    rows.append(sighting(100.0, "D", 18, "Messi", True))
+    rows.append(sighting(100.0, 18, "Messi", True))
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert not items[8].ok
@@ -342,19 +333,10 @@ def test_a_sighting_binding_a_number_the_named_player_does_not_wear_is_caught(
 def test_a_number_both_squads_wear_is_not_a_contradiction(pack, wire, tmp_path: Path) -> None:
     """Two elevens on a pitch, and which one it was is settled at bind time."""
     rows = a_good_run()
-    rows.append(sighting(100.0, "D", 11, "Di María", True))
+    rows.append(sighting(100.0, 11, "Di María", True))
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert items[8].ok, items[8].evidence
-
-
-def test_a_name_carried_from_a_mark_into_a_later_line_is_what_item_seven_wants(
-    pack, wire, tmp_path: Path
-) -> None:
-    path = write_trace(tmp_path, a_good_run())
-    _, items = graded(path, pack, wire)
-    assert "carried on a mark" in items[7].evidence
-    assert "mark B" in items[7].evidence or "mark C" in items[7].evidence
 
 
 def test_half_a_minute_of_live_play_with_nobody_talking_fails(
@@ -554,7 +536,7 @@ def test_a_number_bound_to_the_kit_the_caller_did_not_read_it_off_is_caught(
     says it read 18 off the striped kit is a read that cannot be right.
     """
     rows = a_good_run()
-    rows.append(sighting(100.0, "D", 18, None, True, side="home"))
+    rows.append(sighting(100.0, 18, None, True, side="home"))
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert not items[8].ok
@@ -563,7 +545,7 @@ def test_a_number_bound_to_the_kit_the_caller_did_not_read_it_off_is_caught(
 
 def test_the_same_number_on_the_kit_that_wears_it_is_fine(pack, wire, tmp_path: Path) -> None:
     rows = a_good_run()
-    rows.append(sighting(100.0, "D", 18, None, True, side="away"))
+    rows.append(sighting(100.0, 18, None, True, side="away"))
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert items[8].ok, items[8].evidence
@@ -576,7 +558,7 @@ def test_half_a_compound_surname_is_still_that_player(pack, wire, tmp_path: Path
     sighting bound to the wrong man.
     """
     rows = a_good_run()
-    rows.append(sighting(100.0, "D", 11, "María", True, side="home"))
+    rows.append(sighting(100.0, 11, "María", True, side="home"))
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert items[8].ok, items[8].evidence

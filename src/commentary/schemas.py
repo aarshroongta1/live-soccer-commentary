@@ -74,24 +74,19 @@ class BoardRead(BaseModel):
 
 
 class Sighting(BaseModel):
-    """A shirt number or a name, read off a body the tracker is holding.
+    """A shirt number or a name the caller could actually read in the picture.
 
-    The tag drawn above a player is what makes this possible: without it the
-    caller can say it read "11" somewhere in the frame, and nothing can tell
-    which of the twenty-two bodies that was. With it the read is attached to
-    a track, so the name can ride that body through the frames where the
-    number is turned away.
-
-    The tag is letters. It was the track id printed as "#4", and on the real
-    clip three of six sightings came back with the mark equal to the number
-    read — the caller reporting the tag as the shirt. A letter cannot be a
-    shirt number, so the ambiguity is gone rather than argued with.
-
-    This is also the only record of what the caller read. There used to be a
+    This is the only record of what the caller read. There used to be a
     second one, ``names_read``, a list of free text, and given two places to
     put a read the caller put everything in that one and left this empty —
-    thirteen lines to two on the run that measured it. One field, and the
-    tag is a field in it rather than a competing habit.
+    thirteen lines to two on the run that measured it. One field.
+
+    There used to be a ``mark`` here too: a letter tag a local player tracker
+    drew over each body, so a read could be tied to a track. The tracker is
+    gone — on real clips the caller named more than twice as many players
+    without it and bound nearly every sighting, against a third with it —
+    and what carries a name from one line to the next is the registry and
+    the eight-second carry rule in the runtime, not a body on the picture.
 
     ``side`` is here because a number on its own names nobody. Both squads
     wear a 5, a 7, a 10 and an 11, and on the penalty clip that cost 18 of 34
@@ -102,13 +97,6 @@ class Sighting(BaseModel):
     the kit strings it needs are in the team sheets it already has.
     """
 
-    mark: str | None = Field(
-        default=None,
-        description=(
-            "The letter tag drawn on that body, e.g. GA; required whenever "
-            "the body wears a tag; null only if it wears none"
-        ),
-    )
     number: int | None = Field(default=None, description="Shirt number, if legible")
     name: str | None = Field(default=None, description="Name on the shirt or a graphic")
     side: Side = Field(

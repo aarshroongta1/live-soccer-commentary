@@ -22,27 +22,9 @@ voice = ["elevenlabs>=1.9"]
 tools = [
     "mcp>=1.2",
 ]
-# A detector, the tracking it needs, and one embedder. PARSeq was here and
-# read no shirt number in three minutes of real broadcast; the caller reads
-# the numbers now and this finds the bodies to hang them on. SigLIP came out
-# with it and went back in for the gallery (C10), which is a different job —
-# telling two people apart, a few crops a second, off the detection pass.
-vision = [
-    "torch>=2.4",
-    "open_clip_torch>=2.29",
-    "rfdetr>=1.0",
-    # ByteTrack lives here. Pinned below 0.31, where supervision removes it in
-    # favour of ByteTrackTracker in a separate `trackers` package — the same
-    # algorithm from the same authors, and the move to make when the pin bites.
-    "supervision>=0.24,<0.31",
-]
 
 [dependency-groups]
 dev = [
-    # The tracker's id association is ByteTrack, so the suite needs it. It
-    # brings no weights and touches no network; it is in the vision extra as
-    # well, which is how a run that is not a test gets it.
-    "supervision>=0.24,<0.31",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "ruff>=0.7",

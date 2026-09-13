@@ -22,7 +22,7 @@ from collections import Counter, deque
 from commentary.capture.buffer import DelayBuffer
 from commentary.config import CALLER_MODEL, CallerConfig
 from commentary.llm.base import LLMBackend, LLMError
-from commentary.prompts.caller import TracksFor, caller_blocks, caller_system, no_tracks
+from commentary.prompts.caller import caller_blocks, caller_system
 from commentary.schemas import CallerLine, KnowledgePack, Scene, Trigger
 
 #: Openers a model reaches for when it forgets it is talking, not writing.
@@ -194,15 +194,11 @@ class Caller:
         model: str = CALLER_MODEL,
         max_tokens: int = 512,
         effort: str = "low",
-        tracks_for: TracksFor = no_tracks,
     ) -> None:
         self.backend = backend
         self.config = config or CallerConfig()
         self.pack = pack
         self.model = model
-        #: Where the marks come from. ``no_tracks`` is the substitution that
-        #: turns them off, which is what the no-marks ablation runs with.
-        self.tracks_for = tracks_for
         #: Small on purpose. The answer is a form and one sentence; the only
         #: reason it is not smaller is that adaptive thinking spends from the
         #: same budget, and a truncated response is a dropped line.
@@ -249,8 +245,6 @@ class Caller:
             state_summary,
             self.gate.recent,
             triggers,
-            self.tracks_for,
-            self.pack,
         )
 
         try:
