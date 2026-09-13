@@ -28,6 +28,7 @@ import statistics
 from dataclasses import dataclass, field
 from typing import Any
 
+from commentary import gate
 from commentary.grading import metrics
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, WireEvent
 from commentary.trace import rows_of
@@ -625,10 +626,9 @@ def _tracker(rows: list[dict[str, Any]]) -> tuple[float, float]:
 
 
 def _claims_goal(line: Line) -> bool:
-    lowered = metrics.normalise(line.text)
     if line.event == Event.GOAL.value:
         return True
-    return any(phrase in lowered for phrase in metrics.GOAL_CLAIMS)
+    return gate.claims_goal(line.text)
 
 
 def _claims(line: Line) -> set[Event]:

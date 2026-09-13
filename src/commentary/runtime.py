@@ -45,7 +45,7 @@ from commentary.capture.audio import CutDetector, RoarDetector, WhistleDetector
 from commentary.capture.buffer import AudioRing, DelayBuffer, Frame
 from commentary.config import SETTINGS, Settings
 from commentary.director import Director, next_beat_id
-from commentary.gate import FactGate, fold, is_the_same_name
+from commentary.gate import FactGate, claims_goal, fold, is_the_same_name
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.perception.gallery import GALLERY_STRENGTH
@@ -709,6 +709,12 @@ class Runtime:
             return
 
         self.caller.gate.accept(verdict.line)
+        # What the line says outranks what the caller filed it under. Ronaldo's
+        # free kick was called correctly — "curls it over the wall and into the
+        # top corner" — tagged `free_kick`, and dropped by the director on the
+        # camera cut that every broadcaster makes the instant a goal goes in.
+        # A goal is a goal whatever put the ball there.
+        event = Event.GOAL if claims_goal(verdict.line, line.event) else line.event
         beat = Beat(
             id=next_beat_id(),
             voice=Voice.CALLER,
@@ -716,9 +722,9 @@ class Runtime:
             video_ts=cursor,
             created_ts=time.monotonic(),
             live_ts=self.live_ts,
-            event=line.event,
+            event=event,
             triggers=triggers,
-            preemptable=line.event not in (Event.GOAL, Event.PENALTY),
+            preemptable=event not in (Event.GOAL, Event.PENALTY),
         )
         self.director.submit(beat)
         self._last_spoken_video_ts = cursor

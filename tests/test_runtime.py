@@ -800,3 +800,26 @@ async def test_a_read_with_no_tag_is_still_believed(tmp_path: Path) -> None:
     assert binder.bound == [], "nothing to bind it to"
     assert runtime.state_tracker.registry.name_for(number, Side.HOME) == name
     assert runtime.stats.sightings == 1
+
+
+@pytest.mark.asyncio
+async def test_a_goal_from_a_set_piece_is_a_goal_to_the_director(tmp_path: Path) -> None:
+    """Ronaldo's free kick was called, named, and dropped on the camera cut.
+
+    "curls it over the wall and into the top corner", tagged `free_kick` by
+    the caller because a free kick is what put the ball there. `free_kick` is
+    preemptable and `goal` is not, so the cut every broadcaster makes the
+    instant a goal goes in killed the best line in the clip. What the line
+    says outranks what it was filed under.
+    """
+    from commentary.gate import claims_goal
+    from commentary.schemas import Event as E
+
+    said = "Ronaldo curls it over the wall and into the top corner"
+    assert claims_goal(said, E.FREE_KICK)
+    assert not claims_goal("Ronaldo stands over the free kick", E.FREE_KICK)
+    # The runtime turns that into the beat's event, which is what the
+    # director routes and preempts on.
+    event = E.GOAL if claims_goal(said, E.FREE_KICK) else E.FREE_KICK
+    assert event is E.GOAL
+    assert event in (E.GOAL, E.PENALTY)

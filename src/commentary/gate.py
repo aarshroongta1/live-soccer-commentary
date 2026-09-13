@@ -394,6 +394,49 @@ def _stated_scores(line: str) -> list[tuple[int, int]]:
     return found
 
 
+#: Every way the real clips have said a goal, on top of the patterns the
+#: confirmation rule uses. This is the *broad* reading, and it has two
+#: consumers: the grader, which must not miss a goal that was called, and the
+#: runtime, which needs to know a line is about a goal so the director cannot
+#: drop it on a camera cut.
+#:
+#: It is deliberately not the list the `unconfirmed_goal` rule below uses.
+#: The two want opposite errors. A claim detector that misses a goal hides a
+#: real call from the table and lets a cut kill it; a confirmation rule that
+#: over-fires silences a true line, and on the shootout clip — where the score
+#: bug is absent for three minutes — that would have silenced the best-naming
+#: run of the set. Narrow to decide whether the board must agree, broad to
+#: decide what the line is about.
+_SAID_A_GOAL = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bburie[sd]\b",
+        r"\bsquirms?\s+in\b",
+        r"\bit\s+home\b",
+        r"\b(?:top|bottom)\s+corner\b",
+        r"\bempty\s+net\b",
+        r"\bwheels?\s+away\b",
+        r"\bkeeper\s+the\s+wrong\s+way\b",
+        # The confirmation rule wants a digit here; a commentator says the
+        # number out loud, and the broad reading has to hear it.
+        rf"\bmakes?\s+it\s+(?:\d|{_WORD_ALT})\b",
+    )
+)
+
+
+def claims_goal(text: str, event: Event | None = None) -> bool:
+    """Does this line say a goal was scored, in the form or in the words?
+
+    The one definition. The grader asks it so the table counts a goal that
+    was called however the commentator phrased it, and the runtime asks it so
+    a goal arriving from a free kick or a penalty is treated as a goal by the
+    director whatever the caller wrote in the event field.
+    """
+    if event is Event.GOAL:
+        return True
+    return any(p.search(text) for p in (*_GOAL_CLAIMS, *_SAID_A_GOAL))
+
+
 def _claims_goal(line: CallerLine) -> bool:
     """Whether this line asserts that a goal has been scored, form or prose.
 

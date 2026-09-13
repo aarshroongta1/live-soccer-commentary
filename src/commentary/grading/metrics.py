@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from commentary.gate import STOPWORDS as GATE_WORDS
+from commentary.gate import claims_goal
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, WireEvent
 from commentary.trace import read_trace, rows_of
 from commentary.voice.speaker import WORDS_PER_SECOND
@@ -34,45 +35,6 @@ _STOPWORD_TEXT = (
 )
 STOPWORDS = frozenset(_STOPWORD_TEXT.split(" "))
 
-
-#: Ways a line can claim a goal. The first version listed "goal", "scores"
-#: and "it's in", and therefore missed "It is in! ... has scored" entirely —
-#: so phantom goals in that phrasing were counted nowhere and every factual
-#: error rate was understated. A commentator has many ways to say it and a
-#: checker that only knows three is measuring its own vocabulary.
-#:
-#: The bare word "goal" came off the list for the opposite reason. "Back
-#: towards their own goal" is not a claim that one was scored, and the
-#: trace's ``event`` field says outright whether the caller thought it was.
-#: The second batch came off the shootout and the Mbappé clip, where three
-#: correctly called goals were scored as "no goal line within 6 s": "Paredes
-#: takes a breath, runs up, and sends the keeper the wrong way — buried",
-#: "Mbappé stabs it home from close range", "rolls it into the empty net".
-#: None of them says "scores", and a shootout kick is filed under `penalty`
-#: rather than `goal`, so nothing in the trace said a goal had been called.
-GOAL_CLAIMS: tuple[str, ...] = (
-    "scores",
-    "scored",
-    "it's in",
-    "it is in",
-    "finds the net",
-    "back of the net",
-    "makes it",
-    "puts them ahead",
-    "levels it",
-    "equaliser",
-    "buries it",
-    "buried",
-    "it home",
-    "empty net",
-    "keeper the wrong way",
-    # The short clips said it four more ways: "curls it over the wall and
-    # into the top corner", "it squirms in", "wheels away in delight".
-    "squirms in",
-    "top corner",
-    "wheels away",
-    "in the net",
-)
 
 _SUFFIXES = ("ing", "edly", "ed", "es", "s")
 
@@ -353,8 +315,6 @@ def factual_errors(
     errors: list[FactualError] = []
 
     for line in run.lines:
-        lowered = normalise(line.text)
-
         for word in re.findall(r"\b[A-ZÁÉÍÓÚÄÖÜÑ][a-zá-ü]+\b", line.text):
             # The gate stopped reading the first word of a line as a name, so
             # the grader stops marking it as one. A grader stricter than the
@@ -385,17 +345,24 @@ def factual_errors(
                     )
                 )
 
-        claims_goal = line.event == Event.GOAL.value or any(
-            phrase in lowered for phrase in GOAL_CLAIMS
-        )
+        # One definition of a goal claim, and it lives in the gate.
+        said_a_goal = claims_goal(line.text, _event_of(line))
         # Asymmetric on purpose: a claim ahead of the goal is the system
         # inventing one, a claim behind it is the celebration.
-        if claims_goal and not any(
+        if said_a_goal and not any(
             -goal_window_s <= line.video_ts - g <= GOAL_TALK_S for g in goals
         ):
             errors.append(FactualError(line.video_ts, "phantom_goal", "no goal nearby", line.text))
 
     return errors
+
+
+def _event_of(line: SpokenLine) -> Event | None:
+    """The trace's event word as an ``Event``, or None if it is not one."""
+    try:
+        return Event(line.event)
+    except ValueError:
+        return None
 
 
 def _is_team_word(candidate: str, pack: KnowledgePack) -> bool:
