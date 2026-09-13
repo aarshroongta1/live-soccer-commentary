@@ -19,7 +19,13 @@ it. `uv run mypy` needs the `tools` extra to be clean — without it
 `mcp_server.py` reports nine import errors that are the missing package, not
 the code — so `uv sync --all-extras --dev` before trusting a red gate.
 
-**Read `docs/CLIPS.md` before anything else.** Six clips, one run each, $5.61:
+**Read `docs/CLIPS.md` before anything else.** Sixteen clips, one run each,
+$7.10 all in. Ten of them are 45-second single-event clips from five matches
+across three broadcasters — a Copa América bug with the clock on a second row,
+a 2018 bug with it on the right — and they answer the question the first six
+could not: **seven of ten events called, zero phantoms, and not one wrong name
+in the set**, on squads and kits and graphics nothing had been tuned on. The
+first six were:
 a penalty, two substitutions, a card, a two-goal comeback, a shootout and an
 offside. Bar scores 7, 10, 8, 9, 10, 10 of 12. **47 distinct players named
 across 119 lines on footage nobody tuned on, and not one was the wrong man.**
