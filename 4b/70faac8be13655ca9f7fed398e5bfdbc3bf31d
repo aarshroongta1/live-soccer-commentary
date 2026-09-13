@@ -1,0 +1,21 @@
+src/commentary/perception/gallery.py
+  s_071588aa9615d3::t_18e038fe4ec52f 64-69,176-181
+tests/test_gallery.py
+  s_071588aa9615d3::t_18e038fe4ec52f 147-164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4b70faac8be13655ca9f7fed398e5bfdbc3bf31d",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
