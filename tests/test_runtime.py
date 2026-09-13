@@ -220,6 +220,49 @@ async def test_a_board_still_agreeing_with_itself_corroborates_a_goal(
 
 
 @pytest.mark.asyncio
+async def test_the_first_read_that_shows_a_goal_prompts_the_caller(tmp_path: Path) -> None:
+    """The trigger fires on the first differing read, once, and again on confirmation.
+
+    On the Mbappé penalty the bug flipped at live 86.1 and the caller was not
+    prompted until the third agreeing read, at cursor 87.9 — seven seconds
+    after the kick. The first read lands at the cursor as the ball is struck,
+    with the finish in the lookahead, so that is when to ask.
+    """
+    from commentary.schemas import BoardRead, Trigger
+
+    def board(home: int, away: int, *, visible: bool = True) -> BoardRead:
+        return BoardRead(
+            bug_visible=visible, home_score=home, away_score=away, clock="79:26", confidence=0.95
+        )
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime.board_tracker._confirmed = (2, 0, 1)
+    runtime.board_tracker._pending = None
+    runtime._drain_triggers()
+
+    runtime._take_board_read(board(2, 1), 86.1)
+    assert runtime._drain_triggers() == [Trigger.BOARD_CHANGE]
+    assert runtime.board_tracker.away_score == 0  # evidence, not belief
+
+    # The second agreeing read is more evidence and no news.
+    runtime._take_board_read(board(2, 1), 89.5)
+    assert runtime._drain_triggers() == []
+
+    # An absent read in the middle changes nothing either way.
+    runtime._take_board_read(board(2, 1, visible=False), 91.0)
+    assert runtime._drain_triggers() == []
+
+    # The third confirms, moves the score, and fires as it always has.
+    runtime._take_board_read(board(2, 1), 93.2)
+    assert runtime._drain_triggers() == [Trigger.BOARD_CHANGE]
+    assert runtime.board_tracker.away_score == 1
+
+    # A read that is not a score increase prompts nobody.
+    runtime._take_board_read(board(2, 0), 96.0)
+    assert runtime._drain_triggers() == []
+
+
+@pytest.mark.asyncio
 async def test_a_pending_board_that_is_not_a_score_increase_is_not_a_goal(
     tmp_path: Path,
 ) -> None:

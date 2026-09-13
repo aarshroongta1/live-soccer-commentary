@@ -235,6 +235,22 @@ class BoardTracker:
         """What the tracker is gathering evidence for right now, if anything."""
         return self._pending
 
+    @property
+    def pending_goal(self) -> BoardPending | None:
+        """The half-believed board, if believing it would mean a goal.
+
+        A score higher than the settled one on either side. The first board
+        ever settled on is not a goal, and neither is a new period at the
+        same score, so both answer None here.
+        """
+        pending = self._pending
+        if pending is None or self._confirmed is None:
+            return None
+        home, away, _period = self._confirmed
+        if pending.home_score <= home and pending.away_score <= away:
+            return None
+        return pending
+
     def update(self, read: BoardRead, ts: float) -> BoardChange | None:
         """Feed one read taken from the frame at video time ``ts``.
 

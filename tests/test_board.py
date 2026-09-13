@@ -302,3 +302,25 @@ def test_the_bug_coming_back_after_a_long_absence_clears_both_flags():
     tracker.update(read(0, 0), 80.0)
     assert not tracker.bug_missing
     assert not tracker.in_replay
+
+
+def test_pending_goal_is_a_score_increase_and_nothing_else():
+    tracker = BoardTracker(CONFIG)
+    # Nothing settled yet: the first board ever seen is not a goal.
+    tracker.update(read(1, 0), 0.0)
+    assert tracker.pending is not None
+    assert tracker.pending_goal is None
+
+    settle(tracker, read(1, 0), 10.0)
+    # A new period at the same score is pending, but not a goal.
+    tracker.update(read(1, 0, clock="46:01"), 20.0)
+    assert tracker.pending is not None
+    assert tracker.pending_goal is None
+    # A read that lowers a score is a misread, not a goal.
+    tracker.update(read(0, 0), 24.0)
+    assert tracker.pending_goal is None
+    # One read with the score up is a goal in the making.
+    tracker.update(read(1, 1), 28.0)
+    assert tracker.pending_goal is not None
+    assert tracker.pending_goal.count == 1
+    assert tracker.pending_goal.first_ts == 28.0
