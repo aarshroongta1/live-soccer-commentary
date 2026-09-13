@@ -174,6 +174,15 @@ touchline, which is where the camera was.
   of a number two players wear: 5, 7, 9, 10, 11, 13, 14, 18, 20, 22. The rule
   is deliberate (run 3 bound France's Thuram to Argentina's Molina off a bare
   26), but on this clip it is throwing away half of what the caller reads.
+- **The caller invents a tag about a fifth of the time.** 19 of the 34
+  sightings carried a mark; 11 of those marks were really drawn on the frame
+  the line was written about, 4 bound anyway on a mark that was not, and 2
+  named a tag on a frame that had **no tags on it at all**. Nothing goes wrong
+  downstream — the bind is made on the number and the name against the roster,
+  and `identify` on a track that does not exist names nothing — but the
+  `tagged` and `tags_on_frame` columns in the trace are the only reason
+  anybody knows, and a mark is supposed to be the evidence that the read came
+  off a real body.
 - **The grader was wrong about the build-up and is fixed.** Five lines over the
   ball on the spot were scored as phantom penalties, because StatsBomb stamps
   the award as an instant and the broadcast spends a minute and a half on it.
