@@ -245,6 +245,7 @@ class Caller:
             state_summary,
             self.gate.recent,
             triggers,
+            frame_width=self.config.frame_width,
         )
 
         try:

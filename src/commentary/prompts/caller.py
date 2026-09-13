@@ -209,6 +209,8 @@ def caller_blocks(
     state_summary: str,
     recent_lines: Sequence[str],
     triggers: Sequence[Trigger],
+    *,
+    frame_width: int = 768,
 ) -> list[Block]:
     """One call's content: the moment, the near future, then the volatile tail.
 
@@ -235,7 +237,7 @@ def caller_blocks(
         offset = origin - frame.ts
         when = "this is now" if offset < 0.05 else f"{offset:.1f} s before now"
         blocks.append(text_block(f"Frame {i} of {len(cursor_frames)} — {when}."))
-        blocks.append(image_block(encode_frame(frame.image)))
+        blocks.append(image_block(encode_frame(frame.image, max_width=frame_width)))
 
     if lookahead_frames:
         blocks.append(
@@ -255,7 +257,7 @@ def caller_blocks(
                     "the moment you are calling. Outcome check only."
                 )
             )
-            blocks.append(image_block(encode_frame(frame.image)))
+            blocks.append(image_block(encode_frame(frame.image, max_width=frame_width)))
     else:
         blocks.append(
             text_block(

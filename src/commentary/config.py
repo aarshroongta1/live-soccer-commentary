@@ -69,6 +69,11 @@ class CallerConfig:
     recent_lines: int = 5
     max_words: int = 28
     min_confidence: float = 0.35
+    #: Width the caller's frames are sent at. 768 is the point past which a
+    #: wide shot costs tokens without adding anything; the question is
+    #: whether a shirt number at 1280 is legible where it was four pixels
+    #: tall at 768, which is what open-play naming is bounded by.
+    frame_width: int = int(os.getenv("CALLER_FRAME_WIDTH", "768"))
 
 
 @dataclass(frozen=True)
