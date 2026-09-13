@@ -1,5 +1,83 @@
 # Clips: what happens on footage the system was never tuned on
 
+Two passes. The first ran five three-minute clips from the one broadcast
+everything had been tuned on (below, from "Calibrating the grader"). The
+second — this section — dropped that for variety: **ten forty-five-second
+clips, one event type each, from five matches across three broadcasters**, to
+see whether anything learned on Argentina v France was about football or about
+that afternoon.
+
+## The short clips: ten events, five matches, three score bugs
+
+Each clip is 45 s with the event at about 25 s, run with `--seconds 65`.
+
+| clip | event | match | called? | on time | named | phantom | bar | cost |
+|---|---|---|---|---|---|---|---|---:|
+| e01 | counter-attack goal | NED-ARG WC22 | **yes** | -0.6 s | no (Molina) | 0 | 10/12 | $0.16 |
+| e02 | penalty scored | NED-ARG WC22 | **yes** | -4.6 s | no (Messi) | 0 | 8/12 | $0.20 |
+| e03 | shootout winner | NED-ARG WC22 | **yes** | -4.5 s | **yes** (Lautaro) | 0 | 9/12 | $0.24 |
+| e04 | penalty save | NED-ARG WC22 | **yes** | on it | keeper yes, taker no | 0 | — | $0.20 |
+| e05 | shootout miss | MOR-ESP WC22 | **yes** | on it | **both** (Sarabia, Bounou) | 0 | — | $0.22 |
+| e06 | yellow card | MOR-ESP WC22 | no | — | — | 0 | 10/12 | $0.20 |
+| e07 | direct free-kick goal | POR-ESP WC18 | written, **cut** | — | (Ronaldo) | 0 | 9/12 | $0.20 |
+| e08 | penalty scored | POR-ESP WC18 | **yes** | -0.1 s | **yes** (Ronaldo) | 0 | 10/12 | $0.16 |
+| e09 | offside | CRO-ENG WC18 | **yes** | -3.5 s | no (Sterling) | 0 | 9/12 | $0.23 |
+| e10 | offside | ARG-COL Copa24 | no | — | — | 0 | 10/12 | $0.15 |
+
+Seven of ten events called, an eighth written and killed before it could be
+spoken, **zero phantoms in any clip, and not one wrong name in the set.**
+$1.96 for the ten, $2.20 including a discarded first attempt.
+
+### What the short clips settled
+
+- **The board reader generalises to layouts it has never seen.** The Copa
+  América bug puts the clock on a *second row* underneath the score, and it
+  was read 13 times out of 13 with the right clock and the right score. The
+  WC2018 bug puts the clock on the right of the bar instead of the left: read
+  perfectly on both clips. One of the Copa reads was ten minutes out and the
+  median-based alignment absorbed it exactly as it was designed to.
+- **A shootout has no board, on any broadcast.** Three shootout clips across
+  two matches: zero usable board readings in all three, the grader refused to
+  align all three, and `--offset` measured by hand was the only way in. This
+  is now a property of the competition, not a quirk of one upload.
+- **The offside was called.** "England get in behind again, the shot is worked
+  away by Subašić, and the flag goes up against the runner." The three-minute
+  offside clip on Argentina v France never mentioned one; a different match on
+  a different broadcast got it.
+- **Naming at the moment depends on the shot holding, not on the shot type.**
+  Ronaldo's penalty and Lautaro's shootout winner were both named as they were
+  struck, and in both the camera stayed on the taker through the whole
+  build-up so the name was still the subject of the sentence. Molina, Messi
+  and Mbappé were all unnamed at the moment, and in each the broadcaster cut
+  away and came back. That is a sharper account of the naming gap than
+  "close-ups only".
+- **A goal from a set piece is not tagged as a goal.** Ronaldo's free kick was
+  called, correctly, with his name — *"curls it over the wall and into the top
+  corner"* — and the director dropped it `reason=cut, urgency=0.0`, because
+  the caller had tagged the line `free_kick`. `free_kick` is not in
+  BIG_EVENTS, so a camera cut could kill it; `goal` could not have been.
+- **StatsBomb's card timestamp is not when the card is shown.** e06's yellow
+  is stamped 89:05 and the frame at 89:07 is live play with no referee in it.
+  A 45 s window centred on the feed's timestamp can miss the picture
+  entirely, and did, twice — the red card in e03 too.
+
+### The clips, and how each was found
+
+The binding constraint is footage, not data: FIFA only uploads FULL MATCH for
+knockout and marquee games, so several red cards in the open data have no
+video at all. Every offset below was read off a score bug in a probe frame
+and then confirmed against the cut clip's own first frame.
+
+| match | id | bug | kits | offsets (video - match) |
+|---|---|---|---|---|
+| Netherlands v Argentina, WC22 QF | 3869321 | FIFA 2022 | orange v sky-blue stripes | h1 +155, h2 +630, ET +1523, shootout +1662 |
+| Morocco v Spain, WC22 R16 | 3869220 | FIFA 2022 | **red v light blue, red crowd** | h1 -249, h2 -146 |
+| Portugal v Spain, WC18 | 7576 | **FIFA 2018**, clock right | red v white | h1 +168, h2 +276 |
+| Croatia v England, WC18 SF | 8656 | FIFA 2018 | **red-white checks v all white** | h1 +173 |
+| Argentina v Colombia, Copa 2024 final | 3943077 | **CONMEBOL, two rows** | white v yellow | h1 +375, h2 +577 |
+
+
+
 Everything before this was one three-minute clip — Argentina v France 2022,
 video 36:00 to 39:00, Di María's goal — run and re-run until it produced good
 commentary. Every rule in the gate, every number in `perception`, and the
@@ -27,6 +105,13 @@ and the traces are somebody's API spend, so neither belongs in a commit, and
 both belong where the command that reads them runs. `runs/run_all.sh` does
 the five that are left, in order, and skips any that already has a directory.
 `--seconds` is 195 for a three-minute clip and 215 for the two that are 3.5.
+
+## The first pass: five three-minute clips from one broadcast
+
+Dropped part-way for variety, at the user's request — more Argentina v France
+was testing the same afternoon over again. penalty1 and the four that followed
+stay here as the one same-broadcast data point, and everything below this line
+is that pass.
 
 ## The video clock
 
@@ -465,6 +550,9 @@ measuring something other than the system.
 | `3a9e065` | Five lines killed by `sighting_disagrees` on reads that were right: a graphic writes "T. Hernández", a shirt reads MAC ALLISTER. **One name matcher**, shared by the gate and the bind, that reads the forms a broadcast uses. Plus plurals in the openers rule, and item 4 no longer counting the gate killing a hallucinated goal as a failure. |
 | `f766bd1` | Three correctly called goals scored as "no goal line within 6 s", because none of them says "scores": "sends the keeper the wrong way — buried", "stabs it home", "rolls it into the empty net". |
 | `ec01fa5` | (before these clips) `Sighting.side`, which took sightings bound from 47% to 77-98%. |
+| `4703547` | Recall counts a line landing near an event; it says nothing about whether the event was called. `grade` now answers both. |
+| `0dc6035` | "He strikes it low to **De Gea's** right" reached the voice as "low to right" — `fold` glued the possessive s onto the name and matched nobody. Twice in one 45 s clip. |
+| `228a768` | "The **Dutchman** steps up" lost its subject twice: the demonym was a team word and the noun a commentator says was not. |
 
 One more fix is in a gitignored input rather than a commit: the pack called
 Randal Kolo Muani "Randal Kolo", because it was built from StatsBomb's
@@ -502,7 +590,14 @@ Randal Kolo Muani "Randal Kolo", because it was built from StatsBomb's
    "buries it" line would need the board to have moved, and on the shootout
    the board is absent for all three minutes, which would have silenced the
    best-naming run of the six. Worth doing, worth doing with a run behind it.
-5. **Naming in open play is the gap, and it is the same gap the handoff has.**
+5. **A goal that arrives from a set piece is not tagged `goal`.** Ronaldo's
+   free kick was called correctly and with his name and then dropped by the
+   director on a camera cut, because the line was tagged `free_kick`, which is
+   not in BIG_EVENTS and is therefore preemptable. One sentence in the caller
+   prompt — if your line says the ball went in, the event is `goal`, whatever
+   put it there — is the cheapest high-value fix this whole exercise found. It
+   is a prompt change, so it is yours, and it wants a run behind it.
+6. **Naming in open play is the gap, and it is the same gap the handoff has.**
    `name_rate` in live play across the five: 33%, 18%, 0%, 33%, 73%, 38%. The
    73% is the shootout, which is all close-ups. Nothing here is a new
    problem; the clips confirm that the lever is tracks surviving and the
