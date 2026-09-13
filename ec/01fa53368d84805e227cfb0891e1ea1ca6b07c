@@ -1,0 +1,35 @@
+src/commentary/prompts/caller.py
+  s_071588aa9615d3::t_84147af8793629 87-93,96-103,127-132,190-191
+tests/test_prompts.py
+  s_071588aa9615d3::t_0158df462c9d01 174
+  s_071588aa9615d3::t_7ed2d7c36db670 175-196
+src/commentary/schemas.py
+  s_071588aa9615d3::t_caa84e6d2c1719 89-96,108-113
+tests/test_runtime.py
+  s_071588aa9615d3::t_3acc4f75c7267b 672-703,712,719,725-737
+  s_071588aa9615d3::t_d1990817c525f6 704-711,713-718,720-724
+tests/test_checklist.py
+  s_071588aa9615d3::t_b0156709ba592c 110-117,129,526-549
+src/commentary/runtime.py
+  s_071588aa9615d3::t_b03ffdd806d0ca 810,840-850,863-866,870-872
+docs/CLIPS.md
+  s_071588aa9615d3::t_8567b8aa61224c 192-226,229
+src/commentary/grading/checklist.py
+  s_071588aa9615d3::t_d664490379460a 132,189,592-596,598-601
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ec01fa53368d84805e227cfb0891e1ea1ca6b07c",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
