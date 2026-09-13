@@ -45,6 +45,12 @@ STOPWORDS = frozenset(_STOPWORD_TEXT.split(" "))
 #: The bare word "goal" came off the list for the opposite reason. "Back
 #: towards their own goal" is not a claim that one was scored, and the
 #: trace's ``event`` field says outright whether the caller thought it was.
+#: The second batch came off the shootout and the Mbappé clip, where three
+#: correctly called goals were scored as "no goal line within 6 s": "Paredes
+#: takes a breath, runs up, and sends the keeper the wrong way — buried",
+#: "Mbappé stabs it home from close range", "rolls it into the empty net".
+#: None of them says "scores", and a shootout kick is filed under `penalty`
+#: rather than `goal`, so nothing in the trace said a goal had been called.
 GOAL_CLAIMS: tuple[str, ...] = (
     "scores",
     "scored",
@@ -56,6 +62,11 @@ GOAL_CLAIMS: tuple[str, ...] = (
     "puts them ahead",
     "levels it",
     "equaliser",
+    "buries it",
+    "buried",
+    "it home",
+    "empty net",
+    "keeper the wrong way",
 )
 
 _SUFFIXES = ("ing", "edly", "ed", "es", "s")

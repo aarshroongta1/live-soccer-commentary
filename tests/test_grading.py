@@ -387,3 +387,30 @@ def test_the_short_list_is_still_what_repetition_is_measured_on(tmp_path: Path) 
     """
     assert "play" not in metrics.STOPWORDS
     assert metrics.tokens("Play breaks down by the touchline") != metrics.tokens("Play resumes")
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Saka runs up and sends the keeper the wrong way — buried",
+        "Saka stabs it home from close range",
+        "Saka takes it round the keeper and rolls it into the empty net",
+    ],
+)
+def test_the_ways_the_real_clips_said_a_goal_are_goal_claims(
+    tmp_path: Path, truth, pack, line: str
+) -> None:
+    """Three correctly called goals were scored as "no goal line within 6 s".
+
+    None of them says "scores", and a shootout kick is filed under `penalty`
+    rather than `goal`, so nothing in the trace said a goal had been called
+    at all. A checker that knows three phrasings is measuring its vocabulary.
+    """
+    path = write_trace(tmp_path, [spoken(62.0, line)])
+    run = metrics.load_run(path)
+    # The truth has a goal on 60, so these are claims about a real one and
+    # must not be errors — what is being tested is that they register.
+    assert metrics.factual_errors(run, truth, pack) == []
+    path = write_trace(tmp_path, [spoken(400.0, line)])
+    run = metrics.load_run(path)
+    assert "phantom_goal" in {e.kind for e in metrics.factual_errors(run, truth, pack)}
