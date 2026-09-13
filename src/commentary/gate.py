@@ -410,6 +410,9 @@ def _stated_scores(line: str) -> list[tuple[int, int]]:
 _SAID_A_GOAL = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
+        # The confirmation rule's pattern is the contraction only, and the
+        # caller writes it out: "and it is in — Argentina have their second".
+        r"\bit\s+is\s+in\b",
         r"\bburie[sd]\b",
         r"\bsquirms?\s+in\b",
         r"\bit\s+home\b",

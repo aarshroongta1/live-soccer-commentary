@@ -596,3 +596,16 @@ def test_a_name_the_caller_did_say_is_not_logged_as_withheld(pack, state) -> Non
     )
     verdict = gate.judge(line, state, pack)
     assert not any(r.startswith("name_withheld:") for r in verdict.reasons)
+
+
+def test_the_long_way_of_saying_it_is_in_is_a_goal_claim() -> None:
+    """"Messi steps up ... and it is in" was scored as no goal at all.
+
+    The confirmation rule's pattern is the contraction, `it's in`, and the
+    caller writes it out. Unifying the two definitions inherited the gap.
+    """
+    from commentary.gate import claims_goal
+
+    assert claims_goal("Messi steps up, strikes it low, and it is in")
+    assert claims_goal("it's in!")
+    assert not claims_goal("the ball is in the corner and he waits")
