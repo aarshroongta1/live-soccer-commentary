@@ -65,6 +65,23 @@ CLAIMABLE: dict[str, Event] = {
     "foul": Event.FOUL,
 }
 
+#: How long after the feed's row a line may still be about it, per event.
+#:
+#: The feed stamps an instant and a broadcast spends much longer than an
+#: instant on it, so a flat window scores the coverage as a phantom. A goal
+#: gets the celebration and the replays (the same number the gate uses). A
+#: penalty is the longest of the lot: the award and the kick were ninety-one
+#: seconds apart on the clip this came off, and every line between them —
+#: the wall clearing, the keeper alone, the ball on the spot — is about a
+#: penalty that is really happening. A card is the walk over and the replay,
+#: a foul is however long the free kick takes to set.
+TAIL_S: dict[Event, float] = {
+    Event.GOAL: metrics.GOAL_TALK_S,
+    Event.PENALTY: 150.0,
+    Event.CARD: 45.0,
+    Event.FOUL: 20.0,
+}
+
 #: A scoreline in words, for item 11. The digits are caught by the gate's own
 #: regex; a caller that has been told not to say "2-0" says "two-nil" next.
 SPELLED_SCORE = re.compile(
@@ -513,16 +530,14 @@ def _feed_has(wire: list[WireEvent], kind: Event, ts: float) -> bool:
     A penalty is two rows in StatsBomb — the award and the kick — and the kick
     arrives as a goal or a shot, so either answers a penalty claim.
 
-    A goal gets the long tail the gate gives it: the celebration, the replays
-    and the scorer's face are all lines about a goal that happened, and a
-    checker that only looks twelve seconds either way calls the whole
-    celebration a phantom. Ahead of the event the window stays short, because
-    that is the direction inventing one looks like.
+    Behind the event each kind gets the tail its coverage really runs to
+    (:data:`TAIL_S`). Ahead of it the window stays short for all of them,
+    because ahead is the direction inventing an event looks like.
     """
     kinds = {kind}
     if kind is Event.PENALTY:
         kinds |= {Event.GOAL, Event.SHOT}
-    behind = metrics.GOAL_TALK_S if kind is Event.GOAL else PHANTOM_WINDOW_S
+    behind = TAIL_S.get(kind, PHANTOM_WINDOW_S)
     return any(
         event.event in kinds
         and event.video_ts is not None

@@ -444,3 +444,39 @@ def test_a_feed_and_a_trace_together_are_still_two_files_and_no_network(tmp_path
     source = (Path(__file__).parent.parent / "src/commentary/grading/checklist.py").read_text()
     assert "http" not in source
     assert json.loads((FIXTURES / "statsbomb-lineups.json").read_text())
+
+
+def test_the_penalty_build_up_is_not_a_phantom_penalty(pack, wire, tmp_path: Path) -> None:
+    """Ninety seconds pass between the award and the kick, and they are covered.
+
+    On the clip this came off, the referee pointed to the spot at 20:53 and
+    Messi struck it at 22:24. Every line in between — the wall clearing, the
+    keeper alone on his line, the ball sitting on the spot — was scored as a
+    penalty that never happened, because the feed stamps the award as an
+    instant and the broadcast does not.
+    """
+    rows = a_good_run()
+    # The fixture's penalty award is at video 150; the kick would be later.
+    rows += [
+        caller(170.0),
+        gate(170.0),
+        spoken(170.0, "The area empties, the keeper alone on his line.", event="penalty"),
+    ]
+    path = write_trace(tmp_path, rows)
+    _, items = graded(path, pack, wire, watched_s=200.0)
+    assert items[3].ok, items[3].evidence
+
+
+def test_a_penalty_claimed_before_anybody_won_one_is_still_a_phantom(
+    pack, wire, tmp_path: Path
+) -> None:
+    rows = a_good_run()
+    rows += [
+        caller(20.0),
+        gate(20.0),
+        spoken(20.0, "The referee points to the spot!", event="penalty"),
+    ]
+    path = write_trace(tmp_path, rows)
+    _, items = graded(path, pack, wire)
+    assert not items[3].ok
+    assert "penalty" in items[3].evidence
