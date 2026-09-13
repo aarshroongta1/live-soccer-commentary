@@ -4,9 +4,20 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `4b70faa`, 50 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 481 passed · `uv run ruff check .` clean ·
+**Head:** `3c9674c`, 53 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 506 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
+
+**Read `docs/CLIPS.md` before anything else.** The system has now been run on
+footage it was not tuned on, and the twelve-item definition of done is decided
+by machine rather than by eye: `commentary grade <trace> --pack --statsbomb
+--lineups`. That page carries the per-period video offsets, the six clips, and
+the one clip that got to run.
+
+**The Anthropic key ran out of credit** 131 seconds into the first of those
+runs, and five clips are downloaded, offset-measured, crop-checked and unrun.
+$0.72 of a $10 budget is spent. Nothing is wrong with the code; the account
+needs credit.
 
 ---
 

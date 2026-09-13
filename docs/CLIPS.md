@@ -43,6 +43,32 @@ The shootout has no clock to measure against: StatsBomb stamps the kicks
 The offset above is fitted from one frame (the tally at 1-1 with Coman already
 saved, so between 121:42 and 122:27) and is good to about twenty seconds.
 
+## The clips
+
+Six, all pulled with `yt-dlp --download-sections` at 720p, all checked frame
+by frame before a run: the first frame's score bug says the match clock the
+offset predicted, and the default crop `0,0,0.42,0.16` holds the whole bug.
+
+| clip | match | video | length | first frame reads | new event types |
+|---|---|---|---|---|---|
+| penalty1 | 20:30-24:00 | 22:06-25:36 | 210 s | 20:35 ✓ | penalty won, penalty scored |
+| subs | 39:45-42:45 | 41:21-44:21 | 180 s | 39:50 ✓ | two substitutions |
+| card | 53:00-56:00 | 1:02:59-1:05:59 | 180 s | 53:05 ✓ | yellow card, injury stoppage, second half |
+| mbappe | 78:00-81:30 | 1:27:59-1:31:29 | 210 s | 78:05 ✓ | second penalty, two goals in 95 s, a comeback |
+| shootout | shootout | 2:30:30-2:33:30 | 180 s | **no bug at all** | a shootout: no clock, a tally, a miss, a winner |
+| offside | 28:30-31:30 | 30:06-33:06 | 180 s | 29:30 at +60 s ✓ | offside |
+
+**The shootout clip has no score bug in the crop, and none anywhere.** The
+broadcaster replaces it with a bottom-centre bar — `ARGENTINA 2 ◆ 1 FRANCE`
+with a row of green and red diamonds for the kicks taken — and the only thing
+in the top-left corner is the stadium's own screen behind the crowd. So the
+board reader will read an absent bug for three minutes, `BUG_GONE_S` will fire
+at 30 s, and the summary will say the score and clock may be stale for the
+rest of the run. That is the A6 fix doing exactly what it was built for, and
+the run will show whether a caller told the board is stale can still call a
+shootout. The tally itself is unreadable by anything in the system: nothing
+looks at the bottom of the frame.
+
 ## Budget
 
 $10, hard, across every run on this page.
