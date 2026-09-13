@@ -161,7 +161,10 @@ def a_good_run() -> list[tuple[Topic, float, dict]]:
         30.0: "Di María drives at Upamecano down the left, looking for the overlap.",
         150.0: "Rabiot brings down Di María and the referee points to the spot!",
     }
-    for i, ts in enumerate(float(t) for t in range(2, 172, 15)):
+    # 150 is in the list on purpose: it is the feed's penalty, and without a
+    # line actually on it the fixture only ever tested proximity.
+    when = [2.0, 17.0, 32.0, 47.0, 62.0, 77.0, 92.0, 107.0, 122.0, 137.0, 150.0, 165.0]
+    for i, ts in enumerate(when):
         text = said.get(ts, filler[i % len(filler)])
         rows += [
             caller(ts),
@@ -596,3 +599,53 @@ def test_rejecting_a_goal_nobody_scored_is_the_gate_working(pack, wire, tmp_path
     _, items = graded(path, pack, wire)
     assert items[4].ok
     assert "never happened" in items[4].evidence
+
+
+def test_a_line_that_lands_near_an_event_has_not_called_it(pack, wire, tmp_path: Path) -> None:
+    """Recall is proximity and the two questions are not the same one.
+
+    The offside clip scored "offside 1/1" on a line about a corner four
+    seconds earlier, and nothing in three minutes ever said the word. The
+    checklist's item 2 measures what the brief asked for; this measures what
+    a listener would have heard.
+    """
+    rows = a_good_run()
+    path = write_trace(tmp_path, rows)
+    rows_read = read_trace(path)
+    run = metrics.load_run(path)
+    alignment = feed.align(feed.from_wire(wire), rows_of(rows_read, "board"))
+    truth = [
+        e
+        for e in alignment.events
+        if e.event not in (Event.PASS, Event.CARRY) and 0.0 <= e.video_ts <= 180.0
+    ]
+    state = checklist.watched(
+        rows_read, run, truth, feed.stamp(wire, alignment), pack, watched_s=180.0
+    )
+    made = {call.event: call for call in checklist.calls(state)}
+    # "De Paul takes the throw quickly" says it; the penalty line says it.
+    assert made[Event.THROW_IN].said
+    assert made[Event.PENALTY].said
+
+
+def test_an_event_nobody_mentions_is_not_called(pack, wire, tmp_path: Path) -> None:
+    rows = [
+        (t, ts, dict(p, spoken="Argentina keep it, patient now.") if ts == 2.0 else p)
+        if t is Topic.SPOKEN
+        else (t, ts, p)
+        for t, ts, p in a_good_run()
+    ]
+    path = write_trace(tmp_path, rows)
+    rows_read = read_trace(path)
+    run = metrics.load_run(path)
+    alignment = feed.align(feed.from_wire(wire), rows_of(rows_read, "board"))
+    truth = [
+        e
+        for e in alignment.events
+        if e.event not in (Event.PASS, Event.CARRY) and 0.0 <= e.video_ts <= 180.0
+    ]
+    state = checklist.watched(
+        rows_read, run, truth, feed.stamp(wire, alignment), pack, watched_s=180.0
+    )
+    made = {call.event: call for call in checklist.calls(state)}
+    assert not made[Event.THROW_IN].said

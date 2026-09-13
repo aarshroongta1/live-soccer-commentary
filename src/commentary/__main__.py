@@ -546,6 +546,12 @@ def _grade_fully(path: Path, args: argparse.Namespace) -> int:
     items = checklist.check(state)
     print(checklist.report(items))
     print()
+    made = checklist.calls(state)
+    spoke = sum(1 for call in made if call.said)
+    print(f"== events called ({spoke} of {len(made)} said, not merely near)")
+    for call in made:
+        print(call.row())
+    print()
     print("== spoken")
     offset = -alignment.offset_for(1)
     for line in state.lines:

@@ -89,6 +89,99 @@ SPELLED_SCORE = re.compile(
 )
 
 
+#: What a line says when it is calling this event, beyond the caller's own
+#: ``event`` tag. Recall measures whether a line landed near an event, which
+#: is what the brief asked for and is not the same question: the offside clip
+#: scored offside 1/1 on a line about a corner that happened to be nearby,
+#: and nothing in three minutes ever said the word.
+SAYS: dict[Event, tuple[str, ...]] = {
+    Event.OFFSIDE: ("offside", "flag is up", "linesman", "assistant's flag"),
+    Event.CARD: ("yellow", "red card", "booked", "booking", "card", "sent off"),
+    Event.PENALTY: ("penalty", "the spot", "twelve yards"),
+    Event.SUBSTITUTION: (
+        "substitut", "comes on", "coming on", "off for", "replaced", "jogs on",
+        "board goes up", "fourth official", "afternoon is over", "makes a change",
+    ),
+    Event.CORNER: ("corner",),
+    Event.FREE_KICK: ("free kick", "free-kick"),
+    Event.THROW_IN: ("throw",),
+    Event.SAVE: ("save", "saved", "gets across it", "beats it away", "palms"),
+    Event.FOUL: ("foul", "free kick", "brings him down", "pulls him back", "challenge"),
+    Event.SHOT: ("shot", "effort", "strikes it", "drives it", "fires"),
+    Event.CLEARANCE: ("clear", "hacked away", "heads it away"),
+    Event.TACKLE: ("tackle", "wins it back", "dispossess"),
+    Event.KICKOFF: ("kick off", "kickoff", "restart", "under way", "underway"),
+    Event.INTERCEPTION: ("intercept", "cuts it out", "reads it"),
+}
+
+
+@dataclass(frozen=True)
+class Call:
+    """One thing that happened, and what the run did about it."""
+
+    event: Event
+    video_ts: float
+    player: str | None
+    said: bool
+    named: bool
+    lag_s: float | None
+    line: str
+
+    def row(self) -> str:
+        if not self.said:
+            verdict = "NOT CALLED"
+        elif self.player and not self.named:
+            verdict = f"called, {self.player.rsplit(' ', 1)[-1]} not named"
+        else:
+            verdict = "called"
+        when = f"{self.lag_s:+.1f}s" if self.lag_s is not None else "   -  "
+        return (
+            f"  {self.event.value:<13} {self.video_ts:6.1f}s  {when:>7}  "
+            f"{verdict:<28} {self.line[:60]}"
+        )
+
+
+def calls(state: Watched, *, window_s: float = RECALL_WINDOW_S) -> list[Call]:
+    """Was each event actually called, by name, and how late?
+
+    Distinct from recall, which asks only whether a line landed nearby. A
+    line about a corner four seconds before an offside counts for recall and
+    tells the listener nothing about the offside.
+    """
+    out: list[Call] = []
+    for event in state.truth:
+        near = [
+            line for line in state.lines if abs(line.ts - event.video_ts) <= window_s
+        ]
+        spoke = [line for line in near if _calls_it(line, event.event)]
+        surname = _surname(event.player)
+        named = [line for line in spoke if surname and surname in _words(line.text)]
+        found = named or spoke
+        best = found[0] if found else None
+        out.append(
+            Call(
+                event=event.event,
+                video_ts=event.video_ts,
+                player=event.player,
+                said=bool(spoke),
+                named=bool(named),
+                lag_s=best.ts - event.video_ts if best else None,
+                line=best.text if best else "",
+            )
+        )
+    return out
+
+
+def _calls_it(line: Line, event: Event) -> bool:
+    """Does this line call that event — by its tag or in as many words?"""
+    if line.event == event.value:
+        return True
+    if event is Event.GOAL:
+        return _claims_goal(line)
+    lowered = metrics.normalise(line.text)
+    return any(word in lowered for word in SAYS.get(event, ()))
+
+
 @dataclass(frozen=True)
 class Item:
     """One of the twelve, decided, with the evidence that decided it."""
