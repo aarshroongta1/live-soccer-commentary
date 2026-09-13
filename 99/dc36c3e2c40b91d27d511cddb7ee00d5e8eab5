@@ -1,0 +1,51 @@
+src/commentary/sim/render.py
+  s_afc8d3126874f1::t_4462c227164841 406-408
+src/commentary/agents/caller.py
+  s_afc8d3126874f1::t_3345a5cbd5e2f0 25
+tests/test_prompts.py
+  s_afc8d3126874f1::t_8857be7cfea927 174
+tests/test_checklist.py
+  s_afc8d3126874f1::t_074a1c6d515ca9 166-167,326,336,539,548,561
+  s_afc8d3126874f1::t_eb420036e0e2f5 5
+src/commentary/runtime.py
+  s_afc8d3126874f1::t_0e870565e77b38 674-680,686,703
+src/commentary/schemas.py
+  s_afc8d3126874f1::t_fcdfbea9c16234 77,79,82-89
+tests/test_runtime.py
+  s_afc8d3126874f1::t_4462c227164841 469
+  s_afc8d3126874f1::t_71dc35c6754991 491,493-494,497-501,503-505,507,609-610,656-657,663
+  s_afc8d3126874f1::t_074a1c6d515ca9 11,528,530,556-557,560,586,588,624,631,639,650
+docs/HANDOFF.md
+  s_afc8d3126874f1::t_c2e7f7aa44690b 13,20,29-31,102-104,118-154,173-174
+src/commentary/grading/baselines.py
+  s_afc8d3126874f1::t_b1854037c5cfd3 53
+scripts/first_real_run.md
+  s_afc8d3126874f1::t_45dd56b8e0df2b 69-73
+src/commentary/__main__.py
+  s_afc8d3126874f1::t_4462c227164841 33
+  s_afc8d3126874f1::t_b1854037c5cfd3 641
+src/commentary/grading/checklist.py
+  s_afc8d3126874f1::t_0e870565e77b38 491,496,509,582,584-585
+src/commentary/prompts/caller.py
+  s_afc8d3126874f1::t_3345a5cbd5e2f0 14,58-60,64,74-77,81,83-86,93,97,171-172,186,238,258
+README.md
+  s_afc8d3126874f1::t_e1deca6e83d7df 40-76,155-158,267,311-316
+uv.lock
+  s_afc8d3126874f1::t_0ed57f069bd307 461
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "99dc36c3e2c40b91d27d511cddb7ee00d5e8eab5",
+  "prompts": {},
+  "sessions": {
+    "s_afc8d3126874f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d85f9692-fb3b-44fd-9cad-bdf46a255d94",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
