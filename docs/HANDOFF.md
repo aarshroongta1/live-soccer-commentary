@@ -1,402 +1,131 @@
 # Handoff
 
-State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
-(`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
-next, including me.
+Start here, then read `docs/CLIPS.md`. This file is the state; that one is the
+evidence.
 
-**Head:** `5544219` on `main`, 63 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 539 passed · `uv run ruff check .` clean ·
-`uv run mypy` clean. All three were green after every commit.
+**HEAD:** `main` in `/Users/Aarsh/Desktop/commentary`. One repo, one branch, no
+worktrees, no PRs. `.env` at the root. `clips/` and `runs/` are in the repo and
+gitignored — the clips are 26 MB each and the traces are somebody's API spend.
 
-**The layout changed on 2026-09-13.** `sprint/days-2-12` was fast-forwarded
-into `main` and deleted, and the worktree under `.claude/worktrees/sprint` is
-gone; work happens in `/Users/Aarsh/Desktop/commentary` on `main`, and the
-clips and every trace ever made came with it — `clips/` and `runs/` in the
-repo, both gitignored, which is why the trace paths below say `runs/` and not
-the scratchpad they were written in. The brief's
-opening line still points at the old worktree and is left as the user wrote
-it. `uv run mypy` needs the `tools` extra to be clean — without it
-`mcp_server.py` reports nine import errors that are the missing package, not
-the code — so `uv sync --all-extras --dev` before trusting a red gate.
+**Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
+`uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`
+extra, mypy reports nine import errors in `mcp_server.py` that are the missing
+package and not the code.
 
-**Read `docs/CLIPS.md` before anything else.** Sixteen clips, one run each,
-$7.10 all in. Ten of them are 45-second single-event clips from five matches
-across three broadcasters — a Copa América bug with the clock on a second row,
-a 2018 bug with it on the right — and they answer the question the first six
-could not: **seven of ten events called, zero phantoms, and not one wrong name
-in the set**, on squads and kits and graphics nothing had been tuned on. The
-first six were:
-a penalty, two substitutions, a card, a two-goal comeback, a shootout and an
-offside. Bar scores 7, 10, 8, 9, 10, 10 of 12. **47 distinct players named
-across 119 lines on footage nobody tuned on, and not one was the wrong man.**
-What did not generalise is naming in open play — 0% to 38% outside the
-shootout — and five bugs the clips exposed are fixed with their commits
-listed there. The twelve-item definition of done is decided by machine rather
-than by eye now: `commentary grade <trace> --pack --statsbomb
---lineups`, which aligns the feed from the trace's own board readings and
-refuses to grade an alignment it cannot trust. That page also carries the
-per-period video offsets, which are different in every half.
+## 1. What runs
 
-The key ran out of credit 131 seconds into the first of those runs, which is
-why penalty1 is a partial; it was topped up and the other five are complete.
+```
+uv run python -m commentary run --source file --path clips/<clip>.mp4 \
+    --backend anthropic --pack clips/pack-<match>.json \
+    --seconds 65 --delay 8 --marks --out runs/<name>
+uv run python -m commentary grade runs/<name>/*.jsonl \
+    --pack clips/pack-<match>.json \
+    --statsbomb clips/statsbomb-events-<match>.json \
+    --lineups clips/statsbomb-lineups-<match>.json
+```
 
----
+Opus 5 calls, Haiku 4.5 reads the board, Opus 5 on the analyst (`.env`).
+**About $0.30 a minute of video**: a three-minute clip costs $0.95 to $1.07, a
+forty-five-second clip $0.15 to $0.25. The tracker runs 5-7 passes a second
+in-run on this Mac (10/s idle) with weights cached in `~/.roboflow` and the
+HuggingFace hub; nothing downloads at run time.
 
-## What is true now that was not before
+`grade` aligns StatsBomb onto video time from the trace's own board readings
+and **refuses to grade an alignment it cannot trust**. A shootout has no clock
+on any broadcast, so those need `--offset <seconds>` measured off a frame by
+hand, and the output says so above every number.
 
-Parts A, C and B of the brief are all implemented, in that order.
+## 2. Where it got to
 
-**A — a match can be run from a file.** `--source file` carries audio through a
-second ffmpeg process, so the whistle and roar detectors fire on a clip for the
-first time (verified: 1 whistle, 3 roars on a 110 s run that would have had
-zero). New commands: `crop` draws the score-bug box on one frame so it can be
-checked by eye, `captions` turns yt-dlp's `.en.json3` into the human
-transcript, `feed` turns StatsBomb's event file into the grading feed. The gate
-fixes from the first real traces all landed — compound surnames, sightings
-written as `"11 Di María"`, "towards their own goal", demonyms, and the
-goal-confirmation rework. A second real run added two more (A15, A16): an
-ordinary word opening a line is no longer read as a name, and the evidence
-for a score change now survives the replay the broadcaster cuts to after
-every goal.
+Twenty-one runs on eighteen clips from six matches and four broadcasters:
+**182 spoken lines, 124 player namings, and not one wrong name.** No trace in
+the set contains a word that is off the roster. Zero phantom events in any
+clip. **$8.90 all in** ($8.19 of it after the key was topped up mid-way).
 
-**C — vision names the players.** Detect → track → split by kit → read the
-shirt number → draw the name on a copy of the caller's frames. Every model
-sits behind a Protocol with a fake, so the suite runs with no weights and no
-network. `state.identified` carries the same names in text, which survives a
-camera cut when the labels do not.
+| pass | clips | events called | detail |
+|---|---|---|---|
+| the tuned clip | 1 (re-run many times) | goal called and named | best run 10 of 12, `runs/A` |
+| same broadcast | 5 × 3 min | 5 of 6 headline events | `CLIPS.md`, "The first pass" |
+| unseen matches | 12 × 45 s | 8 of 12, 9 counting e01's first run | `CLIPS.md`, "The short clips" |
+| after the fixes | 3 reruns | e07 and e02 fixed, e01 inconclusive | `CLIPS.md`, "The twelve, and the three rerun" |
 
-**B — the wire.** A statistician's feed, off by default, as the ceiling row of
-the ablation table. The two-clock rule is implemented and tested: an event is
-*known* at `video_ts + latency_s` and *applied* at `video_ts`, so a correction
-lands at `video_ts + max(0, latency_s - delay_s)`.
+I cannot reproduce a 15-of-20 count; by headline event per clip it is 13 or 14
+of 18 depending on whether e01 is scored on its first run or its rerun. The
+per-clip tables in `CLIPS.md` are the source.
 
----
+What generalised from the tuned clip: the event vocabulary, the gate, and the
+board reader — which read a **two-row CONMEBOL bug with the clock underneath
+the score** 13 times out of 13, and a 2018 bug with the clock on the right
+perfectly, having never seen either. What did not: naming a player in open
+play.
 
-## The A6 finding, since it was the open question
+## 3. What changed in this pass
 
-**The checkpoint's unverified claim was true.** A permanently absent score bug
-left `in_replay` set, so every prompt carried "screen: replay, not live play"
-— and the caller, told never to call a replay as live, went quiet for the rest
-of the match. Two minutes of absent reads was enough.
-
-Fixed: past `BUG_GONE_S` (30 s) the tracker calls it a missing bug rather than
-a replay, and the summary says "no score bug visible, so the score and clock
-may be stale", which the caller can work around. Test:
-`tests/test_board.py::test_a_bug_that_never_comes_back_stops_being_a_replay`.
-
----
-
-## What was measured, and what those numbers are worth
-
-### Against the real API (~$2.20 of calls)
-
-Opus 5 calling, Haiku 4.5 on the board, through a rendered clip with audio.
-The marks A/B — same 110 s, same seed, only difference is whether the names
-were drawn on the caller's frames:
-
-| | lines | naming a player | names said | distinct | wrong |
-|---|---:|---:|---:|---:|---:|
-| marks on | 12 | 11 (92%) | 24 | 12 | 0 |
-| marks off | 11 | 6 (55%) | 6 | 4 | 0 |
-
-Every name a real member of that squad. Also run and working end to end: a
-file source with audio (14 lines judged, 14 passed, where the brief's trace
-had 5 of 8 rejected), and a wire run producing live corrections.
-
-### The ablation table
-
-`uv run python -m commentary.grading.baselines --duration 600 --seconds 150
---error-rate 0.3 --speed 1`, re-run in full; the table is in the README.
-Headline: the fact gate takes factual error rate from 70.0% to 16.0%.
-
-**Two columns and one row do not measure what their names suggest, and the
-README says so.** The stand-in oracle never reads the picture, so `no-marks`
-cannot show what the marks buy — it is there to prove the substitution runs.
-And the sim's ground truth names a player at about thirty moments in ten
-minutes with no passes at all, so `name prec` has almost nothing to mark
-against. Both need real footage.
-
----
-
-## The gap, and it is the whole remaining gap
-
-**The vision chain has been run on real footage, and it cost two of its three
-models.** A full `--marks` run on the Argentina-France clip (trace
-`runs/marks/`) said: 83 tracker passes in 175 s, median 1.6 s
-a pass, median 3 tracks a pass on footage with fifteen bodies in it, `named:
-0` on every pass, and `with_side` 0 on most — PARSeq confirmed no shirt
-number in three minutes and the kit split never gathered the 200 crops it
-wanted. In the same three minutes the caller read nine number-and-name pairs
-off the same frames, every one correct.
-
-So PARSeq and SigLIP are gone (C11). The kit split is an HSV histogram, the
-caller reads the numbers and reports them against a `#id` tag drawn over each
-tracked body, and the tracker's job is the one a model looking at single
-frames cannot do: keep that name on that body while the camera stays on it.
-
-### C11 was run on the clip, and half of it works
-
-`--marks` on the same clip at `067428d` (trace `runs/c11/`,
-$0.96). Against the run that motivated C11:
-
-| | before | after |
-|---|---:|---:|
-| tracker passes | 83 in 175 s (0.5/s) | 1039 in 179 s (**5.8/s**) |
-| median ms a pass | 1635 | **130** |
-| median tracks a pass | 3 | **13** |
-| median tracks with a side | 0 | **10** |
-| passes with a named track | 0 of 83 | **0 of 1039** |
-
-Five sightings bound and one was dropped, the roster check did its job, and
-the registry ended the run holding six players. **But no track was ever
-named**, and the reason is not in C11 at all.
-
-**Track ids do not live long enough to be bound.** Measured offline on the
-same clip at the same rate, no API: 300 passes, **1966 distinct ids, 1539 of
-them lasting a single pass**, median lifetime 0.00 s, two ids alive for 8 s.
-`_assign_ids` is greedy IoU >= 0.3 against the previous pass only, and its
-own docstring has always said it is the simple version standing in for the
-ByteTrack that C2 specified. On a panning broadcast camera at 5.8 Hz it
-almost never matches. So the mark the caller reports is, nearly always, a
-body that no longer exists by the time the sighting comes back.
-
-Two things would fix it, and both were measured on the same detections:
-
-- **Give the tracker a memory.** A lost track kept for 30 passes and matched
-  at IoU 0.2 gives 836 ids (median life 0.92 s, 76 alive at 8 s); at IoU 0.1,
-  568 ids and 89 alive at 8 s. Ten lines, no dependency. The loose gate is
-  the risk: a different body inheriting a dead id inherits its name, and a
-  wrong name is the thing this system exists not to do. ByteTrack via
-  `supervision` — in the vision extra since C1 and never wired up — scored
-  296 ids, median 1.67 s, 16 alive at 8 s: far better than today, worse than
-  the memory, and it brings matplotlib and scipy.
-- **Track the cursor, not the live edge.** Nothing but the caller consumes
-  tracks and the caller lives at the cursor, so a mark has to survive from
-  the cursor frame it was drawn on to the moment the line comes back — about
-  twelve seconds of frame time with the tracker eight seconds ahead, about
-  four with it on the cursor. The cut reset would have to move with it: it
-  is fired by the frame loop at the live edge and would otherwise wipe the
-  ids eight seconds early.
-
-**The caller also reads the tag as a shirt number.** Of six sightings, three
-said mark 11 wearing number 11 and one said mark 1 wearing number 7, and one
-came back as `#916` with neither a number nor a name. The rules say twice
-that a tag is not a shirt number; on this evidence they are not enough, and
-a tag that cannot be confused with a number — a letter, a colour — may be
-the cheaper fix than more words.
-
-### C12 fixed the tracking and the naming loop still does not close
-
-`ccaba63`, same clip, $0.99 (trace `runs/c12/`).
-
-| | C11 | C12 |
-|---|---:|---:|
-| passes a second | 5.8 | **7.8** |
-| median ms a pass | 130 | **114** |
-| id survives the 4 s round trip (offline) | 3 % | **42 %** |
-| sightings bound | 5 | **0** |
-| passes with a named track | 0 of 1039 | **0 of 1343** |
-
-The tracking is fixed: ByteTrack at 0.9 with a 30-pass buffer turns 1966 ids
-in 300 passes into 202, and takes the chance that a body the caller points at
-still carries its id four seconds later from 3 % to 42 %. Measured offline on
-the clip's own detections, so it is not an estimate.
-
-**But the run made only one sighting, and it was unusable** — mark `KE` with
-no number and no name. And the caller put seven tag letters in `names_read`,
-where the roster check has no latitude, and four lines died as invented
-names. That half is fixed in `a40b27b`: the rules now say a letter tag never
-goes in `names_read`, and the gate no longer reads a short capitalised
-alphabetic token there as a name claim. **It has not been run since.**
-
-### The gallery runs (C10), and where it stopped: 10 of 12
-
-Two runs, $1.88. Run A (`0d06e83`, `runs/A/`, $1.03) is **10 of 12** and the
-best the clip has produced: name_rate 53%, 10 of 10 names correct, three
-distinct players in open play, no phantom, no silence, median track life
-2.53 s. Run B (`0e10c3b`, `runs/B/`, $0.86) is 9 of 12 — the margin was
-raised and the run named fewer people, but the fall is mostly run-to-run
-variance in what the caller chooses to say.
-
-**The gallery works and is thinner than it looks.** Run A: 57
-classifications, 19 hits, two players in the gallery, margins sharply
-bimodal — confident 0.76 to 0.86, ambiguous 0.001 to 0.141, nothing in
-between — so the margin went to 0.35, in the gap with headroom either side.
-Run B then held **one** player and named five different bodies after him,
-because with one centroid there is no second best and the margin is the
-similarity under another name. Fixed in `4b70faa`: two in the set before
-anything is recognised. No gallery name reached a voice in either run.
-
-**Why the gallery is thin, and it is the same problem in its last form.** It
-learns only through `identify`, `identify` needs a mark, and **twelve of run
-B's thirteen bound sightings had no mark** — the body the number was read off
-carried no tag. Tagging every body took close-up coverage from 6% to 75%, and
-the missing quarter is bodies clipped by the top of the frame, which is most
-of a celebration close-up.
-
-**What to fix next, in order.**
-
-1. **Attribute a markless read to the only body in shot.** When a sighting
-   binds with no mark and exactly one tracked body is big enough to embed,
-   the read is about that body. That is what fills the gallery, and it needs
-   a rule decision because it is an inference rather than something read.
-2. **name_rate.** 53% on run A against 60%, and 25% on run B with the same
-   code, so the variance is larger than the gap. More runs would measure the
-   variance rather than close it; more names carried is what closes it.
-3. **The `error` row on run B was an `APITimeoutError` on one caller call.**
-   Transient. Item 12 counts it as a health failure, which is right, but it
-   is not a defect to chase.
-
-### Where the earlier loop stopped: 9 of 12
-
-Five runs, $4.90, and the user's cap is $5. Run 5 (`300c2ba`, trace
-`runs/r5/`) passes everything except items 1, 6 and 7's
-margins:
-
-| item | |
+| commit | |
 |---|---|
-| 1 events | goal named twice in the window; **one line trimmed** — the gate cut "Rosario" and "World Cup" out of "a final goal for the man from Rosario" |
-| 2, 3, 4 | all pass: event recall 3/3, no phantom, **no gate rejection in 28 judged lines** |
-| 5 names | 8/8 names correct against StatsBomb |
-| 6 | name_rate **40%**, wants 60% |
-| 7 | 3 distinct players in open play, 12 sightings bound |
-| 8 | 12 of 20 sightings bound, 7 on a live tag |
-| 9, 10, 11 | no silence over 20 s in live play, analyst behaving, no scoreline |
-| 12 | $0.99, no errors, 7.0 passes/s, **median track life 2.57 s** |
+| `4703547` | `grade` answers "was the event called", not just "did a line land near it". Recall read 67-100%; called read 17-75%. |
+| `0dc6035` | `fold` glued a possessive s onto the name — "De Gea's" became "de geas" — and trimmed the keeper out of a penalty, twice. |
+| `228a768` | "the Dutchman" read as an invented surname; the demonym's -man form goes in beside it. |
+| `40e8040` | The position-zero name trim is gone. Nineteen firings in nine runs, zero catches. The trade is real and a test asserts it: an invented surname put first now reaches the microphone. |
+| `1a54a3a` | One goal-claim definition in the gate, and the runtime asks it: a goal from a set piece is a goal to the director whatever the caller tagged. |
+| `dd85151` | A line that claimed a goal lifts the four-second rate cap for the next call. |
+| `d18358c` | `stoppage` in the event vocabulary, so a player lying injured is not a phantom foul. |
+| `012c232` | Carry rule: a name stays on the ball for eight seconds, same phase, same side. Plus `name_withheld` logged when a line says "the taker" and its own sightings name him. |
+| `9bda1db` | "and it is in" written out, which unifying the goal definitions had lost. |
+| `clips/build_pack.py` | `NAME_FIXES`: StatsBomb's nickname field calls Randal Kolo Muani "Randal Kolo", and two true lines died of it. |
 
-What moved it, in order of how much: deleting `names_read` so there is one
-field to put a read in (0 sightings to 21); tagging every tracked body rather
-than only the ones the kit split places (the close-ups had no tags at all);
-the lost-track buffer at sixty passes so a name outlasts the line that earned
-it (median identity 1.8 s to 2.6 s).
+## 4. Known gaps
 
-**What to fix next, in order.**
+- **Open-play naming.** `name_rate` in live play across the three-minute
+  clips: 33%, 18%, 0%, 33%, 73%, 38%. The 73% is the shootout, which is all
+  close-ups. The system names players when the camera is close enough to read
+  a shirt, and open play is where a listener most wants a name.
+- **A call refused just before the kick.** Mbappé's penalty was missed because
+  the call that would have covered it was refused one tenth of a second under
+  the rate cap, when nothing — board, caller, lookahead — knew a goal was
+  coming. `dd85151` does not fix this and its message says so.
+- **StatsBomb's card timestamp is not when the card is shown.** e06's yellow is
+  stamped 89:05 and the frame at 89:07 is live play with no referee in it. It
+  cost two card clips.
+- **Shootouts have no board.** Three shootout clips on two matches: zero
+  usable readings in all three.
+- **The e01 rerun is inconclusive.** It produced no goal line at all, which is
+  variance rather than regression — the carry worked elsewhere in the same run
+  — but one run of something this variable proves nothing.
+- **`name_withheld` is new.** Only the three reruns have it in their traces;
+  counting it across the older ones will find nothing.
 
-1. **Item 1.** The gate trims true words that are not people: "Rosario",
-   "World Cup". `_roster_of` adds competition and venue tokens of four
-   letters or more, so "Cup" is dropped and the pair fails as a run. The
-   pack's storylines are not in the roster at all.
-2. **Item 6.** 40% against 60%. Every name said was correct, so this is
-   reach and not precision: the caller names a player when it can see the
-   shirt or a surname tag and says "Argentina" otherwise. More of the tags
-   carrying names for longer is the lever, which is C10 — the per-match
-   gallery, approved and not built.
-3. **Item 7** passes but thinly (exactly 3), and no line yet uses a name that
-   was carried on a mark across a cut. That is C10 again.
+## 5. Next steps, in this order
 
-### Run 3: the loop works, and it named the wrong man once
+1. **Open-play naming.** Start free: count `name_withheld` across traces to
+   split "never identified" from "identified and not used" — the Messi penalty
+   was the second, and that is a different problem from the first. Then tracker
+   life and gallery re-identification.
+2. **Use the eight-second lookahead before refusing a call.** The director
+   should scan the lookahead frames for a celebration or a board change before
+   the rate cap says no. It covers the Mbappé case and also the card shown
+   after the referee's decision.
+3. **One fifteen-minute run on an unseen match, $5-6**, as the gate before
+   anything goes live.
+4. **A live source** — yt-dlp or capture — with real-time audio and measured
+   end-to-end latency.
+5. **A Sonnet-versus-Opus caller A/B** over a fifteen-minute segment, once
+   naming is stable.
 
-`0eb2c4b`, $0.96 (trace `runs/r3/`). **21 sightings made, 16
-bound** — the first run where the naming loop did anything at all. What made
-the difference was not the prompt: it was deleting `names_read`, so there is
-one field to put a read in.
+Leave the gate, the grader and the wire alone.
 
-Two failures worth keeping in mind, both fixed in `04139f3`:
+## 6. Do not do these again
 
-- **A wrong name.** "26" read off a body the kit split had put on France
-  bound as Marcus Thuram, through a passage StatsBomb has Argentina playing
-  all of. The body was Molina, Argentina's 26. A number alone now names
-  somebody only when one squad wears it, and the kit split is out of the
-  naming path entirely.
-- **A mark of "Thuram".** `id_of` took any alphabetic string, so a name in
-  the mark field parsed to a track id in the millions. A tag is at most three
-  letters now, which is all we ever draw.
-
-Still open after run 3: only 1 of 21 sightings carried a real tag, because
-the close-ups where a number is legible still have no tags on them (below).
-So nothing was ever carried on a mark, item 7 fails, and `name_rate` is 14%
-— the caller reads players constantly and writes lines about the crowd.
-
-### The loop is blocked: close-up bodies have no tag
-
-Two runs into the definition-of-done loop, both 5/12, and the measurement
-that explains both (offline, no API, over the whole clip):
-
-- 9113 tracked bodies. **784 of them are 200 px tall or more** — a close-up,
-  which is the only place a shirt number is legible at 768 px.
-- **44 of those 784 carry a tag. Six per cent.**
-- None of the suppressions are the "no room above the player" rule. Every
-  one is `Side.UNKNOWN`: `_mark_text` draws nothing for a body the kit split
-  will not put in a team.
-
-The kit split is fitted on wide-shot crops — small, half grass — and a
-close-up crop is shirt and skin at a completely different scale. Its
-histogram sits outside `KIT_DISTANCE` of both centroids, so it is called a
-referee. The bodies whose numbers can be read are exactly the bodies the
-split refuses to classify, and C11 rule 3 says only a body with a side is
-tagged. So the caller reads a number off a player who has no tag, and there
-is nothing for it to report.
-
-That is why run 2 produced *fewer* sightings than run 1 rather than more: the
-sharper rules told it that a sighting with no letter is worth nothing, which
-correctly suppressed the two empty-mark ones and left nothing behind.
-
-### The tag fix worked, and the caller will not use the tag
-
-`de26be1`, same clip, $1.02 (trace `runs/c12b/`).
-
-| | C12 | C12 + the tag fix |
-|---|---:|---:|
-| passes a second | 7.8 | **9.0** |
-| judged / passed / rejected | 13 / 9 / 4 | **17 / 16 / 1** |
-| `name_read_not_on_roster` rejections | 7 | **0** |
-| spoken lines | 12 | **14** |
-| sightings made / bound | 1 / 0 | 2 / 0 |
-| passes with a named track | 0 of 1343 | **0 of 1538** |
-
-The rejection half is fixed outright: the only line lost in three minutes was
-an unconfirmed goal, and that was the pre-existing lag.
-
-**The naming loop is now blocked on one thing, and it is not the tracker.**
-Tags are drawn on 82% of tracked bodies (9424 of 11476) and at least one is
-on screen in 900 of 1538 passes, so there is a tag to point at. The caller
-reads shirts constantly and correctly — thirteen lines carried a read in
-`names_read`, every one of them right: `3 Tagliafico`, `24 Enzo Fernandez`,
-`11 Di María` six times, `7 De Paul` three times, `10 Messi`, `18
-Upamecano`, `5 Koundé`, `1 Lloris`. And it filled `sightings` twice, both
-times with the right player and **an empty `mark`**.
-
-So: it reads the number, it writes it in the field it has always written it
-in, and it will not tie it to a tag. Nothing downstream can work until it
-does. What has not been tried is making `sightings` the only place a read
-goes, or refusing a sighting without a mark at the schema, instead of asking
-for both in prose and hoping.
-
-The in-loop version of the 42% survival number is still unmeasured, because
-a mark that is an empty string never resolves to anything. The trace carries
-it (`live` on every sighting row) the moment a mark arrives.
-
-Two things that are not regressions, so nobody re-investigates them:
-
-- **Tracks a pass looks worse (13 to 4) and is mostly footage.** The tracker
-  is at the cursor now, so it never sees the last eight seconds of the clip,
-  which is the wide restart; and the middle two minutes of this clip are
-  celebration close-ups with one to three people in frame. In the first
-  thirty seconds, which is wide play in both runs, it is 14 and 13.
-- **The cut detector fires 16 times in 180 s of this clip**, not hundreds, so
-  the reset is not what keeps the track count down.
-
-What a real run settles once the loop closes is `name_rate` and
-`name_precision`, and the honest expectation in the README — names on the big
-moments, not pass-by-pass — is what is being tested.
-
-`scripts/first_real_run.md` is the order to do it in. Short version:
-
-1. `.env` with a key and `CALLER_MODEL`, plus a real `MAX_USD_PER_MATCH`.
-2. `yt-dlp -f "bv*[height<=720]+ba" --merge-output-format mp4
-   --write-auto-subs --sub-lang en --sub-format json3 <url>` — video and
-   captions in one call. Downloading is the user's call; the repo has no
-   downloader.
-3. `commentary captions <name>.en.json3` for the transcript.
-4. `commentary crop --path <name>.mp4 --at 300` and adjust the four fractions
-   until the score and clock fill the right-hand panel. **Do not skip this.**
-   A box that is half a bug reads as an unreadable board for ninety minutes
-   with nothing in the trace to say so.
-5. A pack: `commentary research`, or hand-written. Set `kit` and `demonym` by
-   hand either way — the gate reads both.
-6. `uv sync --extra vision` if you want the marks, or `--no-marks` if not.
-7. Ten minutes first, never ninety: `ffmpeg -ss 00:20:00 -t 00:10:00 -c copy`.
-8. `commentary feed <events.json> --home X --away Y` and grade it.
+- **No batch scripts that cannot be interrupted.** Five runs fired from one
+  script before a change of plan landed, and $4.90 went on clips that had just
+  been deprioritised.
+- **`--seconds` must be the clip length plus at least twenty.** The cursor is
+  pinned at the live edge minus the delay, so the last eight seconds of a clip
+  are never narrated whatever you pass, and the caller needs another twelve on
+  top to write about what it saw. `--seconds 50` on a 45 s clip lost a goal
+  that the trace shows the system had already called internally.
+- **Do not centre a card clip on the StatsBomb timestamp.** Check the frame
+  first; the broadcaster shows the card later, often after the ball goes out.
 
 ---
 
@@ -408,8 +137,8 @@ moments, not pass-by-pass — is what is being tested.
 - **A tag is a letter, and it is neither a shirt number nor a name.** It is a
   label so the caller can say which body it read a number off. Both failures
   have now happened on real footage: with digits the caller reported the tag
-  as the shirt number, and with letters it filed the tags in `names_read`
-  where the gate killed the lines. Anything that makes a tag look like a
+  as the shirt number, and with letters it filed the tags in the flat name
+  field, where the gate killed the lines. Anything that makes a tag look like a
   claim about a player is the marks doing harm.
 - **The tracker runs in its own loop, on the newest frame, and skips the
   rest.** It is not a per-frame pipeline and must never become one again: one
@@ -431,9 +160,11 @@ moments, not pass-by-pass — is what is being tested.
   `perception/players.py` swept in by a broad `git add` while a parallel agent
   was still writing it. That one commit does not pass mypy on its own. HEAD
   does. Left as is rather than rewriting history.
-- **`docs/BRIEF-real-footage-and-wire.md` is modified in the working tree.**
-  That edit is the user's, not this session's. It is where A15 and A16 came
-  from; the brief in the last commit does not have them.
+- **The brief's opening line points at a worktree that no longer exists.**
+  Left as the user wrote it; this file has the current layout.
+- **The openers list is gone and so is the position-zero trim** (`40e8040`).
+  Anything that reintroduces "strip an ordinary word off the front of a line"
+  is reintroducing nineteen damaged lines for zero catches.
 - **`tests/test_baselines.py::test_only_the_wire_can_put_a_lied_about_score_right`
   failed once in about fifteen runs**, and only while a second full suite was
   running against the same machine. `blind` came back 1-1 rather than 0-0.
