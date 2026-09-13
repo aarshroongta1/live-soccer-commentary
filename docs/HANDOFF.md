@@ -4,9 +4,17 @@ State of the branch `sprint/days-2-12` after the real-footage-and-wire brief
 (`docs/BRIEF-real-footage-and-wire.md`). Written for whoever picks this up
 next, including me.
 
-**Head:** `3c9674c`, 53 commits on top of `c2ef18e`.
-**Gates:** `uv run pytest` 506 passed · `uv run ruff check .` clean ·
+**Head:** `ec01fa5` on `main`, 57 commits on top of `c2ef18e`.
+**Gates:** `uv run pytest` 515 passed · `uv run ruff check .` clean ·
 `uv run mypy` clean. All three were green after every commit.
+
+**The layout changed on 2026-09-13.** `sprint/days-2-12` was fast-forwarded
+into `main` and deleted, and the worktree under `.claude/worktrees/sprint` is
+gone; work happens in `/Users/Aarsh/Desktop/commentary` on `main`. The brief's
+opening line still points at the old worktree and is left as the user wrote
+it. `uv run mypy` needs the `tools` extra to be clean — without it
+`mcp_server.py` reports nine import errors that are the missing package, not
+the code — so `uv sync --all-extras --dev` before trusting a red gate.
 
 **Read `docs/CLIPS.md` before anything else.** The system has now been run on
 footage it was not tuned on, and the twelve-item definition of done is decided
