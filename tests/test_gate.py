@@ -484,3 +484,33 @@ def test_a_name_that_opens_the_line_still_has_to_be_on_the_roster():
     verdict = FactGate().judge(line, state, pack)
     assert "Zaltimore" not in verdict.line
     assert any(r.startswith("name_not_on_roster: Zaltimore") for r in verdict.reasons)
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Grimacing, and France get on with it as play restarts around him.",
+        "Wrapped around each other in a huddle, Argentina in no hurry.",
+        "Clenched fists, and he salutes his corner of Lusail.",
+        "Sprinting back, the full-back gets there just in time.",
+    ],
+)
+def test_a_participle_opening_a_line_is_grammar_not_a_name(line: str) -> None:
+    """Four clips, four mangled lines, four words nobody had put on a list.
+
+    "Arms wrapped around each other" reached the voice as "Wrapped around
+    each other" and "Grimacing, and France get on with it" lost its first
+    word. A list of openers can never be finished; the form of the word can.
+    """
+    from commentary.gate import opens_a_sentence
+
+    first = line.split(",")[0].split()[0]
+    assert opens_a_sentence(first), f"{first!r} should read as grammar"
+
+
+def test_a_short_word_that_happens_to_end_in_ed_is_still_a_name() -> None:
+    """The floor is what keeps Reed and Fred out of the rule."""
+    from commentary.gate import opens_a_sentence
+
+    assert not opens_a_sentence("Reed")
+    assert not opens_a_sentence("Fred")

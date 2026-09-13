@@ -21,8 +21,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from commentary.gate import OPENERS
 from commentary.gate import STOPWORDS as GATE_WORDS
+from commentary.gate import opens_a_sentence
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, WireEvent
 from commentary.trace import read_trace, rows_of
 from commentary.voice.speaker import WORDS_PER_SECOND
@@ -403,12 +403,12 @@ def _is_ordinary_opener(text: str, word: str) -> bool:
     most, so anything not recognisably an ordinary opener is treated as a
     name claim. The model judge is what settles the genuinely ambiguous ones.
 
-    The list lives in the gate, which applies the same rule to the same
-    words. A grader with its own copy marks names the gate has already
-    trimmed, or lets through words the gate cut — either way the table stops
-    describing the system it is scoring.
+    The test lives in the gate, which applies the same one to the same words.
+    A grader with its own copy marks names the gate has already trimmed, or
+    lets through words the gate cut — either way the table stops describing
+    the system it is scoring.
     """
-    return text.strip().startswith(word) and normalise(word) in OPENERS
+    return text.strip().startswith(word) and opens_a_sentence(word)
 
 
 # -- naming players ------------------------------------------------------

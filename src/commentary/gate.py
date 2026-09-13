@@ -124,6 +124,35 @@ _OPENER_TEXT = """
 """
 OPENERS = frozenset(_OPENER_TEXT.split())
 
+#: How long a word has to be before its ending is taken as grammar.
+_PARTICIPLE_MIN = 6
+_PARTICIPLES = ("ing", "ed", "ly")
+
+
+def opens_a_sentence(word: str) -> bool:
+    """Is this capital at the start of a line grammar rather than a name?
+
+    Two answers. The list above, which is the words the clips actually
+    produced — and a rule, because the list kept losing. Four runs on four
+    different clips each mangled a line on a word nobody had thought of:
+    "Arms wrapped around each other" became "Wrapped around each other",
+    "Fist clenched, jaw trembling" became "Clenched, jaw trembling", and
+    "Grimacing, and France get on with it" lost its first word outright.
+    Every one of them is a participle, which is how a commentator opens a
+    sentence about a player they are already describing.
+
+    So a long word ending in -ing, -ed or -ly at position zero is grammar.
+    The length floor keeps "Reed" and "Fred" out of it. A real player whose
+    name ends that way is on the roster and is never trimmed in the first
+    place; what this gives up is an invented six-letter name in the
+    participle form at the front of a line, and nothing has ever produced
+    one.
+    """
+    folded = fold(word)
+    if folded in OPENERS:
+        return True
+    return len(folded) >= _PARTICIPLE_MIN and folded.endswith(_PARTICIPLES)
+
 #: Prepositions left dangling by a trim ("comes in from  and the winger"), so
 #: they go with the name rather than staying behind as debris.
 _DANGLERS = "from|by|to|for|off|with|of|onto|into|at|on|through|past"
@@ -305,7 +334,7 @@ def _candidates(line: str) -> list[_Candidate]:
     current: list[re.Match[str]] = []
 
     def flush() -> None:
-        if current and current[0].start() == 0 and fold(current[0].group()) in OPENERS:
+        if current and current[0].start() == 0 and opens_a_sentence(current[0].group()):
             current.pop(0)
         while current and fold(current[0].group()) in STOPWORDS:
             current.pop(0)
