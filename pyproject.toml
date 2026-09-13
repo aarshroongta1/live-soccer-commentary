@@ -22,11 +22,14 @@ voice = ["elevenlabs>=1.9"]
 tools = [
     "mcp>=1.2",
 ]
-# One detector and the tracking it needs. PARSeq and SigLIP were here and
-# read no shirt number in three minutes of real broadcast between them; the
-# caller reads the numbers now, and this finds the bodies to hang them on.
+# A detector, the tracking it needs, and one embedder. PARSeq was here and
+# read no shirt number in three minutes of real broadcast; the caller reads
+# the numbers now and this finds the bodies to hang them on. SigLIP came out
+# with it and went back in for the gallery (C10), which is a different job —
+# telling two people apart, a few crops a second, off the detection pass.
 vision = [
     "torch>=2.4",
+    "open_clip_torch>=2.29",
     "rfdetr>=1.0",
     # ByteTrack lives here. Pinned below 0.31, where supervision removes it in
     # favour of ByteTrackTracker in a separate `trackers` package — the same
