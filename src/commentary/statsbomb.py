@@ -33,6 +33,18 @@ CARD_COLOURS = {
     "red card": "red",
 }
 
+#: A StatsBomb pass type that is a restart, and the event it really is. A
+#: throw-in is a throw-in before it is a pass, and a commentator is graded on
+#: saying so — the grader's truth for a clip is largely made of these. The
+#: pass types not here (Recovery, Interception, Goal Kick) are not restarts a
+#: commentator calls, so they stay passes.
+RESTARTS = {
+    "Throw-in": Event.THROW_IN,
+    "Corner": Event.CORNER,
+    "Free Kick": Event.FREE_KICK,
+    "Kick Off": Event.KICKOFF,
+}
+
 
 def read(events_path: Path, lineups_path: Path, home: str, away: str) -> list[WireEvent]:
     """The wire's events for one match, from the two files StatsBomb publish.
@@ -139,6 +151,11 @@ def _mapped(
         recipient = _person(row, "pass", "recipient", names=names)
         if name_at(row, "pass", "outcome") == "Pass Offside":
             return [(Event.OFFSIDE, side, player, recipient, "")]
+        restart = RESTARTS.get(name_at(row, "pass", "type"))
+        if restart is not None:
+            # A restart is the event, not a pass that happens to be one: it
+            # is named from the picture and it is what the grader counts.
+            return [(restart, side, player, recipient, "")]
         # An incomplete pass reaches nobody, so it names nobody to talk about.
         return [(Event.PASS, side, player, recipient, "")] if recipient else []
     if kind == "Carry":
@@ -156,8 +173,17 @@ def _mapped(
     if kind == "Goal Keeper" and "Save" in name_at(row, "goalkeeper", "type"):
         return [(Event.SAVE, side, player, "", "")]
     if kind == "Foul Committed":
-        foul = (Event.FOUL, side, player, _fouled(row, by_id, names), card)
-        return [foul, (Event.CARD, side, player, "", card)] if card else [foul]
+        fouled = _fouled(row, by_id, names)
+        penalty = bool((row.get("foul_committed") or {}).get("penalty"))
+        # The award and the kick are two moments a minute apart, and a
+        # commentator is graded on both. The kick is the Shot row, which
+        # arrives as a goal or a save; this is the award.
+        events = [(Event.FOUL, side, player, fouled, "penalty" if penalty else card)]
+        if penalty:
+            events.append((Event.PENALTY, _other(side), fouled, player, ""))
+        if card:
+            events.append((Event.CARD, side, player, "", card))
+        return events
     if kind == "Bad Behaviour":
         return [(Event.CARD, side, player, "", card)] if card else []
     if kind == "Offside":

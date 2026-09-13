@@ -59,6 +59,14 @@ GOAL_CLAIMS: tuple[str, ...] = (
 
 _SUFFIXES = ("ing", "edly", "ed", "es", "s")
 
+#: How long after a goal a line may still be about it. The broadcaster spends
+#: a minute or more on the celebration, the replays and the scorer's face, and
+#: every line over that material is a line about a goal that really happened.
+#: The same number as ``runtime.GOAL_TALK_CAP_S``, and a test holds them
+#: equal: a grader stricter than the gate counts phantom goals the gate was
+#: right to let through, which is the A19 bug scored instead of run.
+GOAL_TALK_S = 150.0
+
 
 def normalise(text: str) -> str:
     folded = unicodedata.normalize("NFKD", text.lower())
@@ -280,6 +288,10 @@ def roster_names(pack: KnowledgePack) -> set[str]:
     ``Player.surname`` splits on the last space, so Di María's is "María" and
     De Paul's is "Paul"; without the parts, the grader counted "Di" and "De"
     as names off the roster every time the system got one right.
+
+    The managers are in for the same reason the gate has them: a commentator
+    says "Deschamps has a decision to make", the gate allows it, and a grader
+    without them scores the line as an invented name.
     """
     names: set[str] = set()
     for sheet in (pack.home, pack.away):
@@ -288,6 +300,10 @@ def roster_names(pack: KnowledgePack) -> set[str]:
             names.add(full)
             names.add(normalise(player.surname))
             names.update(full.split())
+        if sheet.manager:
+            manager = normalise(sheet.manager)
+            names.add(manager)
+            names.update(manager.split())
     names.discard("")
     return names
 
@@ -347,7 +363,11 @@ def factual_errors(
         claims_goal = line.event == Event.GOAL.value or any(
             phrase in lowered for phrase in GOAL_CLAIMS
         )
-        if claims_goal and not any(abs(line.video_ts - g) <= goal_window_s for g in goals):
+        # Asymmetric on purpose: a claim ahead of the goal is the system
+        # inventing one, a claim behind it is the celebration.
+        if claims_goal and not any(
+            -goal_window_s <= line.video_ts - g <= GOAL_TALK_S for g in goals
+        ):
             errors.append(FactualError(line.video_ts, "phantom_goal", "no goal nearby", line.text))
 
     return errors
@@ -423,7 +443,7 @@ def names(run: Run, wire_events: list[WireEvent], *, window_s: float = 3.0) -> N
     """
     scored = Names(total=len(run.lines))
     for line in run.lines:
-        found = _named_in(line.text, wire_events)
+        found = named_in(line.text, wire_events)
         if not found:
             continue
         scored.lines_with_name += 1
@@ -433,7 +453,7 @@ def names(run: Run, wire_events: list[WireEvent], *, window_s: float = 3.0) -> N
     return scored
 
 
-def _named_in(text: str, wire_events: list[WireEvent]) -> list[str]:
+def named_in(text: str, wire_events: list[WireEvent]) -> list[str]:
     """Every surname from the feed's cast that this line says out loud."""
     words = {normalise(w) for w in re.findall(r"\b[A-ZÁÉÍÓÚÄÖÜÑ][\w'-]+\b", text)}
     found: list[str] = []

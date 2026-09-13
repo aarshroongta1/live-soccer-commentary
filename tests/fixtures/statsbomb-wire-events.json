@@ -58,5 +58,19 @@
   "duel": {"type": {"name": "Tackle"}, "outcome": {"name": "Won"}}},
  {"id": "e16", "period": 2, "minute": 88, "second": 12,
   "type": {"name": "Own Goal Against"}, "team": {"name": "France"},
-  "player": {"id": 3013, "name": "Dayot Upamecano"}}
+  "player": {"id": 3013, "name": "Dayot Upamecano"}},
+ {"id": "e17", "period": 2, "minute": 60, "second": 0, "duration": 1.1,
+  "type": {"name": "Pass"}, "team": {"name": "Argentina"},
+  "player": {"id": 5504, "name": "Rodrigo Javier De Paul"},
+  "pass": {"type": {"name": "Throw-in"},
+           "recipient": {"id": 5503, "name": "Lionel Andrés Messi Cuccittini"}}},
+ {"id": "e18", "period": 2, "minute": 62, "second": 30,
+  "type": {"name": "Foul Committed"}, "team": {"name": "France"},
+  "player": {"id": 3009, "name": "Adrien Rabiot"},
+  "foul_committed": {"penalty": true},
+  "related_events": ["e19"]},
+ {"id": "e19", "period": 2, "minute": 62, "second": 30,
+  "type": {"name": "Foul Won"}, "team": {"name": "Argentina"},
+  "player": {"id": 5505, "name": "Ángel Fabián Di María Hernández"},
+  "related_events": ["e18"]}
 ]

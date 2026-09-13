@@ -255,6 +255,7 @@ ablations are wired correctly enough to run against the real thing.
 | `captions x.en.json3` | yt-dlp's auto-captions to a transcript: the human commentary, for free. |
 | `feed events.json --home X --away Y` | StatsBomb's event data to the feed shape the grader reads. |
 | `grade runs/*.jsonl` | Metrics for saved runs. |
+| `grade run.jsonl --pack p.json --statsbomb e.json --lineups l.json` | The whole thing: StatsBomb aligned onto video time from the trace's own board readings, the results table, and the brief's twelve-item definition of done with the evidence for each. Refuses to grade an alignment it cannot trust. |
 | `python -m commentary.grading.baselines` | The ablation suite and results table. |
 | `python -m commentary.mcp_server` | The match-state tools over MCP. |
 

@@ -122,8 +122,10 @@ def test_an_ordinary_sentence_opener_is_not_mistaken_for_a_name(
 
 def test_a_goal_claimed_where_none_happened_is_caught(tmp_path: Path, truth, pack) -> None:
     # A caller calling a goal marks the form as one, which is what the trace
-    # carries; the bare word "goal" in a line is not itself a claim.
-    path = write_trace(tmp_path, [spoken(150.0, "and that is a goal for Arsenal", event="goal")])
+    # carries; the bare word "goal" in a line is not itself a claim. Well past
+    # the goal-talk window, so this is a claim about nothing rather than a
+    # late line about the goal on 60.
+    path = write_trace(tmp_path, [spoken(400.0, "and that is a goal for Arsenal", event="goal")])
     run = metrics.load_run(path)
     kinds = {e.kind for e in metrics.factual_errors(run, truth, pack)}
     assert "phantom_goal" in kinds
@@ -146,10 +148,33 @@ def test_a_phantom_goal_is_caught_however_it_is_phrased(
     in! ... has scored" — the exact phrasing in use — so phantom goals were
     counted nowhere and every error rate was understated.
     """
-    path = write_trace(tmp_path, [spoken(150.0, line)])
+    path = write_trace(tmp_path, [spoken(400.0, line)])
     run = metrics.load_run(path)
     kinds = {e.kind for e in metrics.factual_errors(run, truth, pack)}
     assert "phantom_goal" in kinds, f"not detected as a goal claim: {line!r}"
+
+
+def test_the_celebration_is_not_a_phantom_goal(tmp_path: Path, truth, pack) -> None:
+    """A line about the goal ninety seconds later is the broadcast, not a lie.
+
+    The gate learned this in A19: a goal is talked about until play restarts,
+    which is a minute or more of celebration, replays and the scorer's face.
+    A grader with a twelve-second window scored every one of those lines as a
+    phantom goal, which is the gate's old bug measured rather than run.
+    """
+    path = write_trace(
+        tmp_path,
+        [spoken(150.0, "Saka wheels away, and Arsenal have scored the goal that decides it")],
+    )
+    run = metrics.load_run(path)
+    assert [e.kind for e in metrics.factual_errors(run, truth, pack)] == []
+
+
+def test_a_goal_claim_before_the_goal_is_still_a_phantom(tmp_path: Path, truth, pack) -> None:
+    """The window is asymmetric: ahead of the event is where inventing lives."""
+    path = write_trace(tmp_path, [spoken(20.0, "Saka has scored", event="goal")])
+    run = metrics.load_run(path)
+    assert "phantom_goal" in {e.kind for e in metrics.factual_errors(run, truth, pack)}
 
 
 def test_a_wrong_scoreline_is_caught(tmp_path: Path, truth, pack) -> None:

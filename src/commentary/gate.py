@@ -94,6 +94,16 @@ _STOPWORDS = frozenset(_STOPWORD_TEXT.split())
 #: two had separate lists and the grader's was the fuller one, so the gate
 #: trimmed names the grader would have allowed. One list, and the grading
 #: wall stays intact because it only ever points this way.
+#:
+#: The body and kit nouns are the second batch, and they came off real runs:
+#: "Arms wrapped around each other" reached the voice as "Wrapped around each
+#: other" and "Fist clenched, jaw trembling" as "Clenched, jaw trembling". A
+#: celebration is described with the parts of a body, every one of them a
+#: capitalised common noun at the front of a sentence, and each one was read
+#: as an invented surname. The list can never be finished — that is why the
+#: bare word "goal" came off the goal-claim patterns — but the words a
+#: commentator actually opens with are a short list, and each one added here
+#: is one the clip produced.
 _OPENER_TEXT = """
     round over under back up off in out through into onto past across along down
     inside outside forward square deep wide long high short straight low
@@ -104,6 +114,9 @@ _OPENER_TEXT = """
     one two three four five whoever whatever whenever
     everyone everybody nobody somebody someone neither either
     red blue white black green yellow orange purple claret navy maroon gold grey amber
+    arms arm fist fists hands hand head heads feet foot boot boots chest knee
+    shoulder shoulders face faces eyes tears shirt shirts legs body bodies
+    ball crowd noise silence bench flag stripes
 """
 OPENERS = frozenset(_OPENER_TEXT.split())
 

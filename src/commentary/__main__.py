@@ -443,19 +443,104 @@ async def cmd_feed(args: argparse.Namespace) -> int:
 
 
 async def cmd_grade(args: argparse.Namespace) -> int:
-    """Score one or more traces. Needs a pack and a ground truth to grade against."""
+    """Score traces. With a pack and StatsBomb's files, the whole definition of done.
+
+    Bare, it prints the numbers a trace can give on its own. Given the two
+    StatsBomb files and the pack, it does the thing a real-footage run is only
+    worth its cost for: aligns the feed onto video time from the trace's own
+    board readings, builds the truth for the window that was actually watched,
+    and answers the brief's twelve questions with the evidence for each.
+
+    The alignment is printed first and checked first. An offset four seconds
+    out produces a complete, plausible table in which every line has missed
+    its event, so a suspect fit refuses to grade rather than reporting one.
+    """
     from commentary.grading import metrics
 
+    if not args.statsbomb:
+        for raw in args.traces:
+            path = Path(raw)
+            run = metrics.load_run(path)
+            print(f"{path.name}: {len(run.lines)} lines, cost ${run.cost_usd:.3f}")
+            print(f"  lag p50/p95: {metrics.lag(run).as_dict()}")
+            print(f"  silence:     {metrics.silence_ratio(run):.0%}")
+            print(f"  repetition:  {metrics.repetition_rate(run):.1%}")
+            table = metrics.gate_table(run)
+            if table:
+                print(f"  gate:        {table}")
+        return 0
+
+    if not args.pack:
+        print("--statsbomb needs --pack: the roster is what a name is checked against")
+        return 2
+    if not args.lineups:
+        print("--statsbomb needs --lineups: it is where the names a commentator says come from")
+        return 2
+
+    code = 0
     for raw in args.traces:
-        path = Path(raw)
-        run = metrics.load_run(path)
-        print(f"{path.name}: {len(run.lines)} lines, cost ${run.cost_usd:.3f}")
-        print(f"  lag p50/p95: {metrics.lag(run).as_dict()}")
-        print(f"  silence:     {metrics.silence_ratio(run):.0%}")
-        print(f"  repetition:  {metrics.repetition_rate(run):.1%}")
-        table = metrics.gate_table(run)
-        if table:
-            print(f"  gate:        {table}")
+        code = max(code, _grade_fully(Path(raw), args))
+    return code
+
+
+def _grade_fully(path: Path, args: argparse.Namespace) -> int:
+    """One trace, graded end to end against StatsBomb. Returns a shell code."""
+    from commentary import statsbomb
+    from commentary.agents.researcher import load_pack
+    from commentary.grading import checklist, feed, metrics, report
+    from commentary.schemas import Event
+    from commentary.trace import read_trace, rows_of
+
+    pack = load_pack(Path(args.pack))
+    home = args.home or pack.home.name
+    away = args.away or pack.away.name
+    wire = statsbomb.read(Path(args.statsbomb), Path(args.lineups), home, away)
+
+    rows = read_trace(path)
+    run = metrics.load_run(path)
+    alignment = feed.align(
+        feed.from_wire(wire), rows_of(rows, "board"), tolerance_s=args.tolerance
+    )
+    print(f"== {path}")
+    print(alignment.summary())
+    if not alignment.ok:
+        print("refusing to grade: fix the alignment first, every number below it is fiction")
+        return 1
+
+    stamped = feed.stamp(wire, alignment)
+    watched_s = args.watched or max((float(r.get("ts", 0.0)) for r in rows), default=0.0)
+    # A commentator is not graded on the passes and carries between the
+    # events; everything else StatsBomb has in the window is fair game.
+    truth = [
+        event
+        for event in alignment.events
+        if event.event not in (Event.PASS, Event.CARRY) and 0.0 <= event.video_ts <= watched_s
+    ]
+    print(f"{len(truth)} graded events in the {watched_s:.0f}s watched")
+
+    card = report.score(
+        path.stem,
+        path,
+        truth,
+        pack,
+        duration_s=watched_s,
+        wire_events=stamped,
+    )
+    card.watched_s = watched_s
+    print()
+    print(report.table([card]))
+    print()
+    print(report.detail(card))
+    print()
+    state = checklist.watched(rows, run, truth, stamped, pack, watched_s=watched_s)
+    items = checklist.check(state)
+    print(checklist.report(items))
+    print()
+    print("== spoken")
+    offset = -alignment.offset_for(1)
+    for line in state.lines:
+        clock = line.ts + offset
+        print(f"  {int(clock // 60)}:{int(clock % 60):02d} [{line.voice}] {line.text}")
     return 0
 
 
@@ -544,8 +629,17 @@ def build_parser() -> argparse.ArgumentParser:
     fd.add_argument("--out", default="feed.json")
     fd.set_defaults(func=cmd_feed)
 
-    grade = sub.add_parser("grade", help="print metrics for saved traces")
+    grade = sub.add_parser("grade", help="score saved traces against StatsBomb")
     grade.add_argument("traces", nargs="+")
+    grade.add_argument("--pack", help="knowledge pack JSON: the roster names are checked against")
+    grade.add_argument("--statsbomb", help="StatsBomb events JSON; without it, trace metrics only")
+    grade.add_argument("--lineups", help="StatsBomb lineups JSON, for the names people are called")
+    grade.add_argument("--home", help="home team as StatsBomb spells it; defaults to the pack")
+    grade.add_argument("--away", help="away team as StatsBomb spells it; defaults to the pack")
+    grade.add_argument("--watched", type=float, default=None, help="seconds of clip watched")
+    grade.add_argument(
+        "--tolerance", type=float, default=2.0, help="alignment residual to still grade at"
+    )
     grade.set_defaults(func=cmd_grade)
 
     return parser

@@ -114,6 +114,9 @@ def test_the_wire_carries_every_row_that_names_a_player():
         (Event.GOAL, 2122.0),
         (Event.INTERCEPTION, 2465.0),
         (Event.CLEARANCE, 2690.0),
+        (Event.THROW_IN, 3600.0),
+        (Event.FOUL, 3750.0),
+        (Event.PENALTY, 3750.0),
         (Event.SUBSTITUTION, 4260.0),
         (Event.TACKLE, 5100.0),
         (Event.GOAL, 5292.0),
@@ -157,3 +160,32 @@ def test_a_substitution_carries_the_player_on_and_the_player_off():
 
 def test_a_pass_carries_how_long_it_took():
     assert only(Event.PASS)[0].duration_s == 1.2
+
+
+def test_a_restart_is_the_restart_and_not_the_pass_it_is_made_of():
+    """A throw-in is what a commentator calls, and what the grader counts.
+
+    StatsBomb writes every restart as a Pass with a type, so without this the
+    truth for a three-minute clip has no throw-in, no corner and no free kick
+    in it — and the brief grades the system on saying exactly those.
+    """
+    throw = only(Event.THROW_IN)[0]
+    assert (throw.player, throw.recipient) == ("Rodrigo De Paul", "Lionel Messi")
+    assert throw.clock_s not in [e.clock_s for e in only(Event.PASS)]
+
+
+def test_a_penalty_award_is_its_own_event_on_the_side_that_won_it():
+    """The award and the kick are a minute apart and are both commentated.
+
+    The kick arrives as a Shot row — a goal or a save — so without the award
+    there is nothing in the truth at the moment the referee points to the
+    spot, which is the moment the commentary is about.
+    """
+    penalty = only(Event.PENALTY)[0]
+    assert (penalty.side, penalty.player, penalty.recipient) == (
+        Side.HOME,
+        "Ángel Di María",
+        "Adrien Rabiot",
+    )
+    foul = [e for e in only(Event.FOUL) if e.clock_s == penalty.clock_s][0]
+    assert (foul.side, foul.detail) == (Side.AWAY, "penalty")

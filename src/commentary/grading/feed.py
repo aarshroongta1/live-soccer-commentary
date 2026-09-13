@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any
 
 from commentary import state
-from commentary.schemas import Event, GroundTruthEvent, Side
+from commentary.schemas import Event, GroundTruthEvent, Side, WireEvent
 
 #: The vocabulary a row's ``type`` may use: our own event names, plus the two
 #: card colours, because a saved feed writes those rather than "card".
@@ -355,3 +355,49 @@ def _truth(event: FeedEvent, offset_s: float) -> GroundTruthEvent:
         home_score=event.home_score,
         away_score=event.away_score,
     )
+
+
+# -- a wire feed, graded ------------------------------------------------
+
+
+def from_wire(events: list[WireEvent]) -> list[FeedEvent]:
+    """StatsBomb's events, as read for the wire, in the shape :func:`align` fits.
+
+    The two shapes carry the same match. ``WireEvent`` is what the runtime
+    would be told and keeps the half and the sub-second detail; ``FeedEvent``
+    is what the grader aligns, and the only thing it adds is a printed clock,
+    which alignment does not read. Converting rather than parsing twice keeps
+    one reader of a StatsBomb row, which is the whole point of
+    :mod:`commentary.statsbomb`.
+    """
+    return [
+        FeedEvent(
+            clock=Clock(
+                seconds=event.clock_s,
+                period=event.period,
+                text=f"{int(event.clock_s // 60)}:{int(event.clock_s % 60):02d}",
+            ),
+            event=event.event,
+            side=event.side,
+            player=event.player,
+            home_score=event.home_score,
+            away_score=event.away_score,
+            text=event.detail,
+        )
+        for event in events
+    ]
+
+
+def stamp(events: list[WireEvent], alignment: Alignment) -> list[WireEvent]:
+    """The same wire events with ``video_ts`` filled in from a fitted alignment.
+
+    The name metrics ask what the feed had somebody doing within three
+    seconds of a line, and a feed still on match time answers that question
+    about a different part of the match.
+    """
+    return [
+        event.model_copy(
+            update={"video_ts": event.clock_s + alignment.offset_for(event.period)}
+        )
+        for event in events
+    ]
