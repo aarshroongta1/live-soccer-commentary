@@ -138,6 +138,39 @@ lineups. "Bar" is the twelve-item definition of done.
 | shootout | a shootout: no clock, a tally | **10/12** | 7/7 (goals 3/3, the saved kick, the card, a clearance, a tackle) | **12 right, 0 wrong**, one kick called a save that was a goal | 0 | $0.94 |
 | offside | offside | **10/12** | **8/8 — everything** (offside 1/1, corner, free kick, throw-in, clearances 2/2, interception, tackle) | 12 right, 0 wrong | 0 | $0.95 |
 
+### Recall is not the same as calling it
+
+The column above is recall as the brief defines it — a line landed within ten
+seconds — and read on its own it flatters the runs badly. `commentary grade`
+now asks the other question too, per event: did a line *call* it, by the
+caller's own event tag or in as many words, and was the player named.
+
+| clip | a line landed near | the event was called |
+|---|---:|---:|
+| penalty1 | 67% | **2 of 6** |
+| subs | 73% | 4 of 11 |
+| card | 88% | 3 of 8 |
+| mbappe | 100% | 3 of 8 |
+| shootout | 100% | **1 of 7** |
+| offside | 100% | 6 of 8 |
+
+Three things that hid behind the recall column:
+
+- **The offside is never mentioned.** No line and no `offside` tag in three
+  minutes. The 1/1 is a line about a corner four seconds earlier.
+- **Mbappé's penalty goal is never called.** Nothing between 80.0 s and
+  95.5 s, and the 95.5 line is still describing the wait for a kick that had
+  gone in eleven seconds before.
+- **The shootout calls one of its three goals.** Paredes, perfectly. Kolo
+  Muani's kick gets a line sixteen seconds late that says the keeper saved
+  it, and he scored. Montiel's winner gets nothing, with the cursor running
+  twenty seconds past it.
+
+The shape of it is one sentence: **the system narrates the build-up and
+misses the outcome.** It is fluent about a ball on the spot, a wall shuffling
+across and a keeper on his line, and then the net bulges and it is looking at
+the crowd.
+
 **47 distinct players named across 119 spoken lines on footage the system had
 never seen, and not one of them was the wrong man.** Zero off-roster words in
 any clip once the grader stopped disagreeing with the gate. Zero factual
