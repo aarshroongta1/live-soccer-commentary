@@ -521,6 +521,15 @@ from the lineup) is the tie-breaker to add underneath if the margin rule
 leaves too many bodies unnamed; it needs pitch localisation and is its own
 item.
 
+Built at C12/C13 (2026-09-12) with two deviations, both stated in the
+module: **body embeddings only, no face model** — that would be a new
+dependency and the lead asked for the fewest, and SigLIP is already
+installed for it; and **a body the kit split cannot place is matched against
+everybody rather than one side's eleven**, because on real footage the split
+fails on exactly the close-ups where recognition matters. The threshold and
+the margin still apply, so the harder question is answered by the same two
+rules.
+
 Tests with fakes: two confirmed sightings build a two-player gallery; a
 new track whose embedding is near one centroid and far from the other is
 named at strength 0.6; one equidistant is not named; a later number read

@@ -274,9 +274,16 @@ def draw_marks(
             ):
                 continue
         if top < 0:
-            # No room above the player: a label clipped by the top edge is not
-            # readable, and pinning it to y=0 would put it over whatever the
-            # broadcaster has up there.
+            # No room above the player, which on a close-up is most of them:
+            # the body fills the frame and its box starts off the top of it.
+            # Put the tag inside the box at its top instead — still on that
+            # body, still readable, which a label clipped by the frame edge
+            # is not.
+            top = max(0, y0) + 2
+        if _overlaps((x0, top, x0 + box_w, top + box_h), _corner(image.shape)):
+            # Except in the top-left corner, where the broadcaster keeps the
+            # score bug and the simulator keeps the timestamp strip its
+            # oracle reads back out of these very frames.
             continue
         placed.append((x0, top, x0 + box_w, top + box_h))
         cv2.rectangle(marked, (x0, top), (x0 + box_w, top + box_h), (20, 20, 20), -1)
@@ -295,6 +302,16 @@ def draw_marks(
 
 def _overlaps(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
     return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
+
+
+def _corner(shape: tuple[int, ...]) -> tuple[int, int, int, int]:
+    """The top-left box nothing may be drawn in.
+
+    Wide enough for the simulator's timestamp strip, which is a fraction of
+    the frame width, and tall enough for one of its blocks.
+    """
+    height, width = shape[0], shape[1]
+    return (0, 0, int(width * 0.42), int(height * 0.07))
 
 
 def _mark_text(track: Track, pack: KnowledgePack | None) -> str | None:

@@ -32,6 +32,7 @@ from typing import Any, Protocol
 import numpy as np
 
 from commentary.capture.buffer import Frame
+from commentary.perception.gallery import CLASSIFY_EVERY_S, CROPS_PER_PASS, Gallery
 from commentary.schemas import KnowledgePack, Side
 
 log = logging.getLogger(__name__)
@@ -133,6 +134,9 @@ class Tracker(Protocol):
         self, mark: int, side: Side, number: int, name: str, ts: float
     ) -> None: ...
 
+    @property
+    def gallery(self) -> Gallery | None: ...
+
 
 @dataclass(frozen=True)
 class _Identity:
@@ -153,6 +157,10 @@ class Track:
     box: tuple[int, int, int, int]
     number: int | None = None
     name: str | None = None
+    #: True when the name came from the gallery recognising this body rather
+    #: than from somebody reading its shirt. The runtime believes it more
+    #: weakly for exactly that reason.
+    from_gallery: bool = False
 
 
 def mark_of(track_id: int) -> str:
@@ -296,11 +304,17 @@ class PlayerTracker:
         detector: Detector,
         *,
         pack: KnowledgePack | None = None,
+        gallery: Gallery | None = None,
         fit_samples: int = KIT_SAMPLES,
         refit_s: float = KIT_REFIT_S,
     ) -> None:
         self.detector = detector
         self.pack = pack
+        #: How a name survives a cut. Optional because the ablation runs
+        #: without one and the simulator has no use for it.
+        self.gallery = gallery
+        self._classified_ts = -CLASSIFY_EVERY_S
+        self._image: np.ndarray | None = None
         self.fit_samples = fit_samples
         #: Kits change at half time and light changes all match, so the split
         #: is re-fitted rather than decided once at kickoff.
@@ -357,7 +371,36 @@ class PlayerTracker:
             tracks.append(track)
 
         self._live = live
+        self._image = frame.image
+        self._recognise(tracks, crops, frame.ts)
         return tracks
+
+    def _recognise(self, tracks: list[Track], crops: list[np.ndarray], ts: float) -> None:
+        """Ask the gallery about the bodies nobody has read a shirt on.
+
+        Off the detection pass in everything but name: at most once a second,
+        at most a handful of crops, tallest first, because those are the ones
+        a viewer is being shown and the ones with enough pixels to recognise.
+        The detector runs eight times a second and must not wait for this.
+        """
+        if self.gallery is None or ts - self._classified_ts < CLASSIFY_EVERY_S:
+            return
+        self._classified_ts = ts
+        unnamed = [i for i, t in enumerate(tracks) if t.name is None]
+        unnamed.sort(key=lambda i: tracks[i].box[3] - tracks[i].box[1], reverse=True)
+        chosen = unnamed[:CROPS_PER_PASS]
+        if not chosen:
+            return
+        for match, i in zip(
+            self.gallery.classify([(crops[i], tracks[i].side) for i in chosen]),
+            chosen,
+            strict=True,
+        ):
+            if match is None:
+                continue
+            track = tracks[i]
+            track.side, track.number, track.name = match.side, match.number, match.name
+            track.from_gallery = True
 
     def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
         """Bind a name to a tracked body, from something that actually read it.
@@ -374,8 +417,15 @@ class PlayerTracker:
         """
         self._named[mark] = _Identity(side=side, number=number, name=name, ts=ts)
         track = self._live.get(mark)
-        if track is not None:
-            track.side, track.number, track.name = side, number, name
+        if track is None:
+            return
+        track.side, track.number, track.name = side, number, name
+        track.from_gallery = False
+        # A read that the roster confirmed is a labelled picture of that
+        # player under this match's light. It is the only thing the gallery
+        # ever learns from.
+        if self.gallery is not None and self._image is not None:
+            self.gallery.learn(_crop(self._image, track.box), side, number, name)
 
     def reset(self) -> None:
         """Start the ids again at a cut.
@@ -547,6 +597,10 @@ class NullTracker:
     def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
         return None
 
+    @property
+    def gallery(self) -> Gallery | None:
+        return None
+
 
 def _new_bytetrack() -> Any:
     """A fresh ByteTrack, which is also how the tracker forgets a cut.
@@ -567,6 +621,24 @@ def _new_bytetrack() -> Any:
             lost_track_buffer=int(round(LOST_PASSES * 30.0 / TRACK_RATE_HZ)),
             frame_rate=TRACK_RATE_HZ,
         )
+
+
+@dataclass
+class _SigLip:
+    """SigLIP image embeddings, which tell two players in a kit apart."""
+
+    model: Any
+    preprocess: Any
+
+    def embed(self, crops: list[np.ndarray]) -> np.ndarray:
+        torch = importlib.import_module("torch")
+        image_mod = importlib.import_module("PIL.Image")
+        batch = torch.stack(
+            [self.preprocess(image_mod.fromarray(crop[:, :, ::-1])) for crop in crops]
+        )
+        with torch.inference_mode():
+            features = self.model.encode_image(batch)
+        return np.asarray(features.cpu().numpy(), dtype=np.float32)
 
 
 class VisionExtraMissing(ImportError):
@@ -630,4 +702,16 @@ def default_tracker(
     this machine, so there is nothing to pass.
     """
     rfdetr = _require("rfdetr")
-    return PlayerTracker(_RfDetr(rfdetr.RFDETRNano()), pack=pack)
+    open_clip = _require("open_clip")
+    # SigLIP is back, for the job it is actually good at. It was wrong as a
+    # per-pass kit split — a second for fifteen crops against 92 ms for the
+    # whole detection — and it is right here: telling two people apart, a
+    # handful of crops a second, off the detection pass.
+    siglip, _, preprocess = open_clip.create_model_and_transforms(
+        "ViT-B-16-SigLIP", pretrained="webli"
+    )
+    return PlayerTracker(
+        _RfDetr(rfdetr.RFDETRNano()),
+        pack=pack,
+        gallery=Gallery(_SigLip(siglip.eval(), preprocess)),
+    )

@@ -48,6 +48,7 @@ from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate, fold
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
+from commentary.perception.gallery import GALLERY_STRENGTH
 from commentary.perception.players import NullTracker, Track, Tracker, id_of, mark_of
 from commentary.predictor import SpeakPredictor
 from commentary.prompts.caller import MARK_TOLERANCE_S
@@ -413,6 +414,9 @@ class Runtime:
                 ids=[t.id for t in tracks],
                 cut=cut,
             )
+            gallery = self.tracker.gallery
+            if gallery is not None:
+                self._publish(Topic.GALLERY, frame.ts, **gallery.drain())
             if tracks:
                 self._tracks.append((frame.ts, tracks))
                 # The registry is state, and state has one writer. The
@@ -421,8 +425,15 @@ class Runtime:
                 # the registry's decay to decide.
                 for track in tracks:
                     if track.number is not None and track.name is not None:
+                        # A gallery match is believed more weakly than a shirt
+                        # somebody read, so a later read overrides it rather
+                        # than arguing with it.
                         self.state_tracker.registry.believe(
-                            track.number, track.name, frame.ts, side=track.side
+                            track.number,
+                            track.name,
+                            frame.ts,
+                            side=track.side,
+                            strength=GALLERY_STRENGTH if track.from_gallery else 1.0,
                         )
             # A pass that beat the frame rate waits out the difference; one
             # that did not goes straight round again on the newest frame.

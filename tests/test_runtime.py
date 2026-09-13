@@ -424,6 +424,10 @@ class _SlowTracker:
     def reset(self) -> None:
         return None
 
+    @property
+    def gallery(self) -> None:
+        return None
+
 
 async def _pump_through(frames: int = 100) -> tuple[Runtime, _SlowTracker, float]:
     import asyncio
@@ -599,6 +603,10 @@ class _Binder:
 
     def identify(self, mark: int, side: Side, number: int, name: str, ts: float) -> None:
         self.bound.append((mark, side, number, name))
+
+    @property
+    def gallery(self) -> None:
+        return None
 
 
 async def _with_sightings(

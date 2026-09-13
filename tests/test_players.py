@@ -244,3 +244,94 @@ def test_a_body_keeps_its_id_while_it_moves():
         ids.append([track.id for track in tracker.update(frame)])
 
     assert ids[0] == ids[-1], f"ids churned across a pan: {ids[0]} -> {ids[-1]}"
+
+
+# -- the gallery, through the tracker ----------------------------------------
+
+
+class _Recorder:
+    """A gallery that records what it was asked, with no embedder at all."""
+
+    def __init__(self, answer=None) -> None:
+        self.learned: list[tuple] = []
+        self.asked: list[int] = []
+        self.answer = answer
+        self.players = 0
+
+    def learn(self, crop, side, number, name) -> None:
+        self.learned.append((side, number, name, crop.shape[0]))
+        self.players = len({(s, n) for s, n, _, _ in self.learned})
+
+    def classify(self, crops):
+        self.asked.append(len(crops))
+        return [self.answer] * len(crops)
+
+    def drain(self) -> dict:
+        return {"players": self.players, "classified": 0, "hits": 0}
+
+
+def test_a_sighting_is_the_only_thing_the_gallery_learns_from():
+    """Bootstrapped from certainty: nothing else calls learn."""
+    recorder = _Recorder()
+    frame, boxes = scene(SQUAD, ts=1.0)
+    tracker = PlayerTracker(FakeDetector([boxes]), pack=PACK, fit_samples=len(boxes))
+    tracker.gallery = recorder
+    tracks = tracker.update(frame)
+    assert recorder.learned == []
+
+    tracker.identify(tracks[0].id, Side.HOME, 7, "Bukayo Saka", 1.0)
+
+    assert [(s, n, name) for s, n, name, _ in recorder.learned] == [
+        (Side.HOME, 7, "Bukayo Saka")
+    ]
+
+
+def test_the_gallery_is_asked_about_unnamed_bodies_once_a_second_at_most():
+    """It is the expensive part of the chain and the detector must not wait."""
+    from commentary.perception.gallery import CLASSIFY_EVERY_S, CROPS_PER_PASS
+
+    recorder = _Recorder()
+    frame, boxes = scene(SQUAD, ts=0.0)
+    tracker = PlayerTracker(FakeDetector([boxes]), pack=PACK, fit_samples=len(boxes))
+    tracker.gallery = recorder
+
+    tracker.update(frame)
+    for step in (0.2, 0.4, 0.6):
+        tracker.update(scene(SQUAD, ts=step)[0])
+    assert len(recorder.asked) == 1, "one pass a second, not one a frame"
+    assert recorder.asked[0] <= CROPS_PER_PASS
+
+    tracker.update(scene(SQUAD, ts=CLASSIFY_EVERY_S + 0.1)[0])
+    assert len(recorder.asked) == 2
+
+
+def test_a_gallery_hit_names_the_track_and_says_where_the_name_came_from():
+    from commentary.perception.gallery import Match
+
+    recorder = _Recorder(Match(7, "Bukayo Saka", Side.HOME, 0.9, 0.2))
+    frame, boxes = scene(SQUAD, ts=0.0)
+    tracker = PlayerTracker(FakeDetector([boxes]), pack=PACK, fit_samples=len(boxes))
+    tracker.gallery = recorder
+
+    tracks = tracker.update(frame)
+    named = [t for t in tracks if t.name is not None]
+
+    assert named, "the gallery answered and nothing was named"
+    assert all(t.from_gallery for t in named)
+    assert all((t.number, t.name) == (7, "Bukayo Saka") for t in named)
+
+
+def test_a_read_shirt_beats_a_gallery_guess_on_the_same_track():
+    from commentary.perception.gallery import Match
+
+    recorder = _Recorder(Match(7, "Bukayo Saka", Side.HOME, 0.9, 0.2))
+    frame, boxes = scene(SQUAD, ts=0.0)
+    tracker = PlayerTracker(FakeDetector([boxes]), pack=PACK, fit_samples=len(boxes))
+    tracker.gallery = recorder
+    tracks = tracker.update(frame)
+
+    tracker.identify(tracks[0].id, Side.AWAY, 20, "Cole Palmer", 1.0)
+    after = tracker.update(scene(SQUAD, ts=2.0)[0])[0]
+
+    assert (after.number, after.name) == (20, "Cole Palmer")
+    assert not after.from_gallery

@@ -17,6 +17,7 @@ which is what makes the sim's marks row worth reading at all.
 from __future__ import annotations
 
 from commentary.capture.buffer import Frame
+from commentary.perception.gallery import Gallery
 from commentary.perception.players import Track
 from commentary.schemas import KnowledgePack, Side
 from commentary.sim.match import MatchSim
@@ -82,6 +83,11 @@ class SimTracker:
         tracker does too.
         """
         self._named[mark] = (side, number)
+
+    @property
+    def gallery(self) -> Gallery | None:
+        """None: the sim has ground truth and no need to recognise anybody."""
+        return None
 
     def _id_for(self, key: tuple[Side, int]) -> int:
         if key not in self._ids:

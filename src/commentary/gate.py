@@ -243,8 +243,21 @@ def _roster_of(state: MatchState, pack: KnowledgePack | None) -> _Roster:
                 people.update(token for token in fold(player.name).split() if len(token) >= 3)
                 if player.number is not None:
                     numbers.add(str(player.number))
+        # The vocabulary that is not people. A commentator says where they
+        # are, what they are playing for, and where a player is from, and
+        # none of those is a name to be checked against a squad. The fifth
+        # run lost "a final goal for the man from Rosario" to exactly this:
+        # "Rosario" is in the pack's own storylines and was on no roster, and
+        # "World Cup" failed because "Cup" is three letters and the old
+        # threshold was four.
         for label in (pack.competition, pack.venue):
-            teams.update(token for token in fold(label).split() if len(token) >= 4)
+            teams.update(token for token in fold(label).split() if len(token) >= 3)
+        for story in (*pack.storylines, *pack.key_matchups):
+            teams.update(
+                fold(word)
+                for word in re.findall(r"\b[A-Z][\w'’-]+", story)
+                if len(word) >= 3
+            )
 
     people.discard("")
     teams.discard("")
