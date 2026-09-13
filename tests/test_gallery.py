@@ -144,3 +144,21 @@ def test_the_trace_row_carries_every_decision_and_its_margin():
     assert row["named"] == ["Ángel Di María"]
     assert len(row["margins"]) == 2
     assert g.drain()["classified"] == 0, "drained rows are not reported twice"
+
+
+def test_a_gallery_of_one_recognises_nobody():
+    """There is no second best to beat, so the margin is not a rule at all.
+
+    Run B held one player and named five different bodies after him, every
+    one of them at a "margin" that was only the similarity under another
+    name. Nothing is recognised until there is somebody to be recognised
+    instead of.
+    """
+    g = gallery()
+    g.learn(crop(VECTORS["messi"]), Side.HOME, 10, "Lionel Messi")
+
+    assert g.classify([(crop(VECTORS["messi"]), Side.HOME)]) == [None]
+    assert g.classify([(crop(VECTORS["mbappe"]), Side.HOME)]) == [None]
+
+    g.learn(crop(VECTORS["dimaria"]), Side.HOME, 11, "Ángel Di María")
+    assert g.classify([(crop(VECTORS["messi"]), Side.HOME)])[0] is not None

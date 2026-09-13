@@ -61,6 +61,12 @@ MIN_BODY_PX = 90
 MATCH_THRESHOLD = 0.75
 MATCH_MARGIN = 0.35
 
+#: Players the comparison set must hold before anything is recognised. Two,
+#: because the margin is a comparison and there is nothing to compare a lone
+#: centroid with: every body in the stadium is then "more like him than like
+#: nobody", which is how a gallery of one came to name five different people.
+MIN_RIVALS = 2
+
 #: Crops embedded on one classification pass. The embedder is the slowest
 #: thing available to this system — about 70 ms a crop — and the tracker's
 #: own pass is 114 ms, so an unbounded classification pass would halve the
@@ -167,7 +173,12 @@ class Gallery:
             if norm == 0.0:
                 continue
             scored.append((float(vector @ (centroid / norm)), key))
-        if not scored:
+        if len(scored) < MIN_RIVALS:
+            # With one player to compare against there is no second best, so
+            # the margin is the similarity wearing a different name and the
+            # rule that makes this safe is not being applied at all. Run B
+            # named five bodies Upamecano on a gallery of one. Nothing is
+            # recognised until there is somebody to be recognised instead of.
             return None
         scored.sort(reverse=True)
         best, key = scored[0]
