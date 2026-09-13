@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from commentary.agents.caller import Caller, RepetitionGate, clean_line, similarity, trim_words
+from commentary.agents.caller import Caller, RecentLines, clean_line, similarity, trim_words
 from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.config import CALLER_MODEL, CallerConfig
 from commentary.llm.base import Block, LLMError
@@ -47,9 +47,7 @@ async def test_the_model_is_shown_the_cursor_frames_and_the_lookahead():
     backend = backend_saying(line())
     caller = Caller(backend, CONFIG)
 
-    result = await caller.call(
-        buffer_with(), "Arsenal 0-0 Chelsea, 12:04", [Trigger.CAMERA_CUT]
-    )
+    result = await caller.call(buffer_with(), "Arsenal 0-0 Chelsea, 12:04", [Trigger.CAMERA_CUT])
 
     assert result is not None and result.speak
     calls = backend.calls_tagged("caller")
@@ -140,23 +138,6 @@ async def test_model_silence_is_left_alone_and_not_remembered():
     assert caller.last_reason == "the model chose silence"
 
 
-async def test_a_near_repeat_is_suppressed_on_the_next_call():
-    backend = backend_saying(
-        line("Arsenal pushing forward on the left"),
-        line("Arsenal push forward down the left"),
-    )
-    caller = Caller(backend, CONFIG)
-    buf = buffer_with()
-
-    first = await caller.call(buf, "0-0", [])
-    second = await caller.call(buf, "0-0", [])
-
-    assert first is not None and first.speak
-    assert second is not None and second.speak is False
-    assert caller.suppressed["repetition"] == 1
-    assert caller.last_similarity > CONFIG.repetition_threshold
-
-
 async def test_spoken_lines_are_shown_back_to_the_model():
     backend = backend_saying(
         line("Arsenal pushing forward on the left"),
@@ -203,84 +184,14 @@ async def test_an_empty_buffer_makes_no_model_call():
     assert caller.suppressed["no_frames"] == 1
 
 
-def test_gate_rejects_the_near_miss_and_accepts_a_new_line():
-    gate = RepetitionGate(CONFIG)
-    gate.accept("Arsenal pushing forward on the left")
-
-    allowed, score = gate.judge("Arsenal push forward down the left")
-    assert not allowed
-    assert score > CONFIG.repetition_threshold
-
-    allowed, score = gate.judge("Sanchez turns it round the post")
-    assert allowed
-    assert score < CONFIG.repetition_threshold
-
-
-def test_gate_does_not_confuse_two_different_teams_doing_the_same_thing():
-    gate = RepetitionGate(CONFIG)
-    gate.accept("Arsenal break down the right")
-    allowed, _ = gate.judge("Chelsea break down the left")
-    assert allowed
-
-
 def test_gate_only_remembers_the_configured_number_of_lines():
     config = CallerConfig(recent_lines=2)
-    gate = RepetitionGate(config)
+    gate = RecentLines(config)
     gate.accept("one shot from Saka")
     gate.accept("two headers from Havertz")
     gate.accept("three corners for Chelsea")
 
     assert gate.recent == ["two headers from Havertz", "three corners for Chelsea"]
-    assert gate.judge("one shot from Saka")[0]
-
-
-def test_gate_lets_a_fragment_hand_the_ball_on():
-    """The five pairs are lifted out of real captions, seconds apart.
-
-    A fragment shares a surname with the line before it because the same
-    player is still on the ball, not because the caller is repeating itself.
-    """
-    gate = RepetitionGate(CONFIG)
-    gate.accept("Fernández, Álvarez.")
-    allowed, score = gate.judge("Fernández.")
-    assert allowed
-    assert score > CONFIG.repetition_threshold
-
-    gate = RepetitionGate(CONFIG)
-    gate.accept("Álvarez, here is Mac Allister.")
-    allowed, score = gate.judge("Mac Allister.")
-    assert allowed
-    assert score > CONFIG.repetition_threshold
-
-    gate = RepetitionGate(CONFIG)
-    gate.accept("Messi drives inside.")
-    assert gate.judge("Messi.")[0]
-
-
-def test_gate_still_refuses_the_same_fragment_twice():
-    gate = RepetitionGate(CONFIG)
-    gate.accept("Messi.")
-    allowed, score = gate.judge("Messi.")
-    assert not allowed
-    assert score == pytest.approx(1.0)
-
-
-def test_the_short_line_exemption_does_not_reach_a_sentence():
-    """Past three content tokens the near miss still dies on 0.62.
-
-    Three names reshuffled is the same line, and this one scores 0.88 — under
-    the fragment threshold, so it only survives if the exemption is reaching
-    lines it should not.
-    """
-    gate = RepetitionGate(CONFIG)
-    gate.accept("Álvarez, Mac Allister, De Paul.")
-    allowed, score = gate.judge("De Paul, Mac Allister, Álvarez.")
-    assert not allowed
-    assert CONFIG.repetition_threshold <= score < CONFIG.repetition_short_line_threshold
-
-
-def test_gate_never_passes_an_empty_line():
-    assert RepetitionGate(CONFIG).judge("   ") == (False, 0.0)
 
 
 def test_similarity_is_symmetric_and_bounded():

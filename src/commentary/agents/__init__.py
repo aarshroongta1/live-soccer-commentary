@@ -13,7 +13,7 @@ whistle goes.
 """
 
 from commentary.agents.analyst import Analyst
-from commentary.agents.caller import Caller, RepetitionGate, clean_line, similarity, trim_words
+from commentary.agents.caller import Caller, RecentLines, clean_line, similarity, trim_words
 from commentary.agents.researcher import (
     Researcher,
     freeze,
@@ -27,7 +27,7 @@ from commentary.agents.researcher import (
 __all__ = [
     "Analyst",
     "Caller",
-    "RepetitionGate",
+    "RecentLines",
     "Researcher",
     "clean_line",
     "freeze",

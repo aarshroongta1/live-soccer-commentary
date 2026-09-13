@@ -18,9 +18,9 @@ being the expensive part of the message.
 
 It must not do the caller's job. A second voice that paraphrases the first is
 worse than no second voice, so a line too close to what the caller has just
-said is killed here, at a tighter threshold than the analyst's own
-self-repetition gate — repeating yourself is a lapse, repeating your colleague
-is the failure mode that makes two-voice commentary sound wrong.
+said is killed here. Repeating your colleague is the failure mode that makes
+two-voice commentary sound wrong; repeating yourself is left to the prompt,
+which shows the model everything on air.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from commentary.agents.caller import (
-    RepetitionGate,
+    RecentLines,
     clean_line,
     flatten,
     similarity,
@@ -51,9 +51,9 @@ from commentary.tools import MatchTools
 #: its own, so this is the knob, exposed on the constructor for sweeps.
 MIN_CONFIDENCE = 0.45
 
-#: How close an analyst line may come to something the caller just said. Well
-#: under the caller's own repetition threshold, because the two voices share a
-#: channel and a viewer hears the paraphrase immediately.
+#: How close an analyst line may come to something the caller just said. Low,
+#: because the two voices share a channel and a viewer hears the paraphrase
+#: immediately.
 ECHO_THRESHOLD = 0.45
 
 #: Lines of on-air memory shown back to the model, both voices together.
@@ -101,12 +101,10 @@ def strip_label(text: str) -> str:
 class Analyst:
     """Frames, state and a handful of looked-up facts in; an aside out, rarely.
 
-    Holds its own :class:`RepetitionGate`, separate from the caller's. The two
-    voices must not silence each other: the analyst saying "that left side
-    again" ten seconds after the caller said "Arsenal down the left" is not a
-    repeat, it is the job, and neither gate should be able to veto the other
-    voice's line. What the analyst may not do is paraphrase — that is
-    :data:`ECHO_THRESHOLD`, checked against on-air memory, not against a gate.
+    Holds its own :class:`RecentLines`, separate from the caller's, so its
+    own lines come back in its prompt. What the analyst may not do is
+    paraphrase the caller — that is :data:`ECHO_THRESHOLD`, checked against
+    on-air memory.
     """
 
     def __init__(
@@ -136,9 +134,7 @@ class Analyst:
         #: makes carrying two squads and the pre-match notes affordable.
         self.system = analyst_system(self.pack, self.config)
         #: The analyst's own lines only. See the class docstring.
-        self.gate = RepetitionGate(
-            CallerConfig(recent_lines=ON_AIR_LINES, repetition_threshold=0.62)
-        )
+        self.gate = RecentLines(CallerConfig(recent_lines=ON_AIR_LINES))
         #: Everything that has gone out, either voice, in the order it went.
         self._on_air: deque[tuple[str, str]] = deque(maxlen=ON_AIR_LINES)
         #: Why the last call did not produce speech, in words, for the log.
@@ -379,10 +375,7 @@ class Analyst:
         echo = max((similarity(text, said) for said in self.caller_lines), default=0.0)
         if echo >= ECHO_THRESHOLD:
             return "echo", f"too close to what the caller just said ({echo:.2f})", echo
-        allowed, score = self.gate.judge(text)
-        if not allowed:
-            return "repetition", f"too close to its own recent line ({score:.2f})", score
-        return "", "", max(echo, score)
+        return "", "", echo
 
 
 def restates_score(text: str, scoreline: Any = None) -> bool:

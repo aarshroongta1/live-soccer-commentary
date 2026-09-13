@@ -2,14 +2,20 @@
 
 The model is asked for a form, not a sentence, and what comes back is treated
 as a proposal. Everything after the call is this module deciding whether the
-proposal is fit to say out loud: short enough, confident enough, not a replay,
-not something the same voice said twelve seconds ago. A model will do all four
-of those wrong at some point in ninety minutes, and none of them should reach
-a speaker.
+proposal is fit to say out loud: short enough, confident enough, not a replay.
+A model will do all three of those wrong at some point in ninety minutes, and
+none of them should reach a speaker.
 
-Suppression is recorded rather than hidden. A line held back for repetition is
-a fact about the system worth counting — the eval reports it — so the line
-still comes back with ``speak`` false and the reason on the agent, instead of
+There used to be a fourth check, a similarity veto against the last five
+lines, inherited from worldcupvoice. Across 63 real-clip runs and 1,062
+caller calls it fired zero times — the model sees its last five lines in
+every prompt and does not repeat them — and the one thing it was shown to
+refuse was a real hand-on, "Fernández." after "Fernández, Álvarez.". The
+memory stays, because the prompt reads it; the veto is gone.
+
+Suppression is recorded rather than hidden. A line held back is a fact about
+the system worth counting — the eval reports it — so the line still comes
+back with ``speak`` false and the reason on the agent, instead of
 disappearing into a ``return None``.
 """
 
@@ -130,49 +136,22 @@ def trim_words(text: str, max_words: int) -> str:
     return " ".join(words[:max_words]).rstrip(_DANGLING)
 
 
-class RepetitionGate:
-    """Remembers the last few spoken lines and refuses anything too close.
+class RecentLines:
+    """The last few spoken lines, which the prompt shows back to the model.
 
-    Inherited from worldcupvoice, where it is the single thing that stops a
-    fixed-cadence caller from saying the same sentence about the same passage
-    of play four times in a row. Kept explicit here because the eval counts how
-    often it fires: a high rate means the caller is being asked to speak when
-    nothing has changed, which is a speak-predictor problem, not a prompt one.
+    This is the whole of what stops the voice repeating itself: a model that
+    can read what it just said does not say it again, and the similarity
+    veto that used to sit here never fired on real footage.
     """
 
     def __init__(self, config: CallerConfig | None = None) -> None:
         cfg = config or CallerConfig()
-        self.threshold = cfg.repetition_threshold
-        self.short_line_tokens = cfg.repetition_short_line_tokens
-        self.short_line_threshold = cfg.repetition_short_line_threshold
         self._recent: deque[str] = deque(maxlen=max(1, cfg.recent_lines))
 
     @property
     def recent(self) -> list[str]:
         """The remembered lines, oldest first. This is what the prompt shows."""
         return list(self._recent)
-
-    def judge(self, line: str) -> tuple[bool, float]:
-        """``(may_speak, closest match)`` against everything remembered.
-
-        The score comes back either way so that a rejection can say how close
-        it was, and so a threshold sweep has something to sweep over.
-
-        A fragment is judged against a stricter threshold, because on one to
-        three content tokens ``similarity`` has almost nothing to divide by
-        and reads a shared surname as a repeated line. Real commentary hands
-        the ball on in exactly that shape — "Fernández, Álvarez." then, two
-        seconds later, "Fernández." — and 0.62 refuses all of it. What is
-        still a repeat at that length is the verbatim one: "Messi." after
-        "Messi." scores 1.0 and is still refused.
-        """
-        text = line.strip()
-        if not text:
-            return False, 0.0
-        worst = max((similarity(text, prev) for prev in self._recent), default=0.0)
-        short = len(_content(text)) <= self.short_line_tokens
-        threshold = self.short_line_threshold if short else self.threshold
-        return worst < threshold, worst
 
     def accept(self, line: str) -> None:
         """Record a line as spoken. Only call this when it really is going out."""
@@ -184,17 +163,15 @@ class RepetitionGate:
 class Caller:
     """Frames in, one short sentence out — or, more often, nothing.
 
-    Holds its own :class:`RepetitionGate`, which doubles as the memory of what
-    has been said: the same deque feeds the prompt's "last lines spoken" and
-    the similarity check, so the model and the gate can never disagree about
-    what the voice has already covered.
+    Holds its own :class:`RecentLines`, the memory of what has been said,
+    which feeds the prompt's "last lines spoken".
 
     One wrinkle worth knowing: a line is recorded as spoken the moment this
     agent approves it, which is before the fact gate downstream has had its
     say. A line the fact gate then kills still occupies a slot in the gate's
-    memory. That is the cheap direction to be wrong in — it suppresses a near
-    repeat of something never said, rather than letting a real repeat through
-    — but if it starts mattering, hand ``gate.accept`` to the director instead.
+    memory. That is the cheap direction to be wrong in — the model is told it
+    said something it did not — but if it starts mattering, hand
+    ``gate.accept`` to the director instead.
     """
 
     def __init__(
@@ -223,11 +200,9 @@ class Caller:
         #: Built once, never rebuilt. Identical bytes on every call is what
         #: makes the cache hit that pays for sending two squads each time.
         self.system = caller_system(self.pack, self.config)
-        self.gate = RepetitionGate(self.config)
+        self.gate = RecentLines(self.config)
         #: Why the last call did not produce speech, in words, for the log.
         self.last_reason = ""
-        #: How close the last candidate came to a recent line.
-        self.last_similarity = 0.0
         #: Suppressions by cause, for the eval's silence breakdown.
         self.suppressed: Counter[str] = Counter()
 
@@ -281,14 +256,12 @@ class Caller:
     def _settle(self, proposed: CallerLine) -> CallerLine:
         """Apply the post-conditions and record why, before anyone sees the line."""
         text = trim_words(clean_line(proposed.line), self.config.max_words)
-        self.last_similarity = 0.0
 
         if not proposed.speak:
             self.last_reason = "the model chose silence"
             return proposed.model_copy(update={"line": text, "speak": False})
 
-        code, reason, score = self._veto(proposed, text)
-        self.last_similarity = score
+        code, reason = self._veto(proposed, text)
         if code:
             self.last_reason = reason
             self.suppressed[code] += 1
@@ -298,19 +271,15 @@ class Caller:
         self.gate.accept(text)
         return proposed.model_copy(update={"line": text, "speak": True})
 
-    def _veto(self, proposed: CallerLine, text: str) -> tuple[str, str, float]:
-        """``(code, reason, similarity)``; an empty code means the line may go."""
+    def _veto(self, proposed: CallerLine, text: str) -> tuple[str, str]:
+        """``(code, reason)``; an empty code means the line may go."""
         if not text:
-            return "empty", "the model set speak but wrote nothing", 0.0
+            return "empty", "the model set speak but wrote nothing"
         if proposed.scene is Scene.REPLAY:
-            return "replay", "the scene is a replay, which is never called as live", 0.0
+            return "replay", "the scene is a replay, which is never called as live"
         if proposed.confidence < self.config.min_confidence:
             return (
                 "low_confidence",
                 f"confidence {proposed.confidence:.2f} is under {self.config.min_confidence:.2f}",
-                0.0,
             )
-        allowed, score = self.gate.judge(text)
-        if not allowed:
-            return "repetition", f"too close to a recent line ({score:.2f})", score
-        return "", "", score
+        return "", ""

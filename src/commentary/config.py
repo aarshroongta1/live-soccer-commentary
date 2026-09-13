@@ -75,17 +75,9 @@ class CallerConfig:
     #: property of what was just said rather than of the clock: a fragment
     #: buys a fragment's silence, a sentence buys a sentence's.
     gap_after_line_s: float = 0.8
-    #: A line scoring above this against the last five is dropped as repetition.
-    repetition_threshold: float = 0.62
-    #: At or under this many content tokens a line is a fragment, not a
-    #: sentence, and the threshold below judges it instead.
-    repetition_short_line_tokens: int = 3
-    #: On a fragment the word-overlap half of ``similarity`` has almost
-    #: nothing to divide by: "Fernández, Álvarez." then "Fernández."
-    #: scores 0.68, and "Álvarez, here is Mac Allister." then "Mac
-    #: Allister." 0.65 — both pairs occur seconds apart in real captions.
-    #: On lines this short only the verbatim repeat is a repeat.
-    repetition_short_line_threshold: float = 0.95
+    #: Lines shown back to the model as "the last lines spoken". This is the
+    #: whole of what stops it repeating itself; a similarity veto used to sit
+    #: behind it and fired zero times in 63 real-clip runs.
     recent_lines: int = 5
     max_words: int = 28
     min_confidence: float = 0.35

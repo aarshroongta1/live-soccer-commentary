@@ -308,9 +308,9 @@ def worldcupvoice(base: Settings = SETTINGS) -> Variant:
     """Baseline one: the loop this project is a reply to.
 
     Frames in, one sentence out, every four seconds, with no delay, no
-    lookahead, no match state, no notes, no fact gate and one voice. Its
-    repetition gate and word cap are kept, because those it does have and
-    removing them would be building a worse baseline than the real thing.
+    lookahead, no match state, no notes, no fact gate and one voice. Its word
+    cap is kept, because that it does have and removing it would be building
+    a worse baseline than the real thing.
     """
     settings = replace(
         base,

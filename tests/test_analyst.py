@@ -318,21 +318,6 @@ async def test_a_point_the_caller_did_not_make_goes_through():
     assert analyst.suppressed["echo"] == 0
 
 
-async def test_it_does_not_repeat_itself_twenty_five_seconds_later():
-    analyst, _ = analyst_with(
-        aside("Chelsea have sat deep since the goal and nobody is breaking that line."),
-        aside("Chelsea sitting deep since the goal, and nobody breaks that line."),
-    )
-    buf = buffer_with()
-
-    first = await analyst.call(buf, "0-0", "a lull")
-    second = await analyst.call(buf, "0-0", "a lull")
-
-    assert first is not None and first.speak
-    assert second is not None and second.speak is False
-    assert analyst.suppressed["repetition"] == 1
-
-
 async def test_its_own_spoken_line_comes_back_in_the_next_prompt():
     analyst, backend = analyst_with(
         aside("The gap between those midfielders has been there all half."),
