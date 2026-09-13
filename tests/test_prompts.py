@@ -203,10 +203,29 @@ def test_the_caller_is_told_a_goal_is_a_goal_whatever_put_it_there():
 
 def test_the_caller_is_told_to_say_the_name_it_just_read():
     """The Messi penalty: `10 Messi` reported in the same call as "the taker"."""
-    assert "Use the name you have." in CALLER_RULES
+    assert "Use the name you have, and keep it." in CALLER_RULES
     assert "having one and saying \"the striker\" instead" in CALLER_RULES
 
 
 def test_the_caller_is_told_what_a_name_may_be_carried_through():
-    assert "A name stays yours for a few seconds." in CALLER_RULES
+    assert "A name stays yours through the next" in CALLER_RULES
     assert "never the taker of a set piece you have not actually read" in CALLER_RULES
+
+
+def test_a_line_may_be_a_fragment_and_starts_with_the_name_on_the_ball():
+    """Real broadcast build-up is mostly bare surnames, not whole sentences."""
+    assert "A line does not have to be a" in CALLER_RULES
+    assert "A single surname is a line." in CALLER_RULES
+    assert "The subject is the player on the ball." in CALLER_RULES
+    assert "Present tense." in CALLER_RULES
+    assert '"in this frame"' in CALLER_RULES
+    # The withheld-name pair: a read 8 makes it Henderson's line, not England's.
+    assert "Bad:  England restart from the halfway line." in CALLER_RULES
+    assert "Good: Henderson, restarting for England." in CALLER_RULES
+
+
+def test_the_naming_rule_is_stated_once():
+    """Three paragraphs used to say this; every extra one dilutes the rest."""
+    assert CALLER_RULES.count("Use the name you have") == 1
+    assert CALLER_RULES.count("A name stays yours") == 1
+    assert CALLER_RULES.count("never the taker of a set piece") == 1

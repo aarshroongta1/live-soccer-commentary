@@ -150,6 +150,15 @@ def test_the_scoreline_on_the_board_passes_in_either_orientation(pack, state):
     assert gate.judge(call("Carrowmere trail 1-2 with time running out"), state, pack).passed
 
 
+def test_a_fragment_the_caller_wrote_short_is_a_line(pack, state):
+    """Build-up is called in names. The short-line rule is for trimmed lines only."""
+    gate = FactGate()
+    for text in ("Krastanov.", "Krastanov, Peñaló.", "Now Krastanov."):
+        verdict = gate.judge(call(text), state, pack)
+        assert verdict.passed, (text, verdict.reasons)
+        assert verdict.line == text
+
+
 def test_a_goal_needs_the_board(pack, state):
     gate = FactGate()
     goal = call("Krastanov smashes it home from eight yards", event=Event.GOAL)

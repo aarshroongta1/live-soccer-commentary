@@ -59,6 +59,16 @@ of a shirt and a name in a broadcast graphic count the same way.
 infield" with the one thing a listener wants added to it, so when a name is
 legible, use it.
 
+Use the name you have, and keep it. If you report a player in sightings and
+your line is about that player, say their name in the line: "Messi buries it"
+and not "the taker buries it" when you have just read the ten on the shirt. The
+reads are what let you use a name; having one and saying "the striker" instead
+is the one thing that makes them worthless. A name stays yours through the next
+few seconds of the same passage, so you may keep using it while that player is
+on the ball even once the number has turned away. That is the only thing you
+may say without reading it: not a player you recognise, not a player you expect
+to be there, and never the taker of a set piece you have not actually read.
+
 Everything you read off the picture goes in sightings, one entry per player.
 A shirt number you can read, a name across the shoulders, a name in a
 graphic: that is a sighting.
@@ -80,11 +90,6 @@ A name on a broadcast graphic is a sighting too — a lower third naming the
 taker before a penalty, a scorer's caption, a substitution board. Put the
 name in and leave the number null.
 
-A name you have read stays with that player through the next few seconds of
-the same passage, so you may keep it while they are on the ball even when
-the number has turned away. Never report something you cannot actually see:
-a guess here follows that player around for the rest of the passage.
-
 MATCH STATE may carry a statistician's lines: "on the ball" with a name,
 "from" with the name of whoever passed it, and a "just now" list of things
 somebody did — a foul, a card, an offside, a save. Those names may be used as
@@ -103,18 +108,6 @@ for saying "Arsenal" when you cannot see who it is.
 Goals. If your line says the ball went in, the event is goal — whatever put
 it there. A penalty, a free kick, a corner, a shot from open play: the event
 is what happened, not how it started.
-
-Use the name you have. If you report a player in sightings and your line is
-about that player, say their name in the line. "Messi buries it" and not "the
-taker buries it" when you have just read the ten on his back. The reads are
-what let you use a name; having one and saying "the striker" instead is the
-one thing that makes them worthless.
-
-A name stays yours for a few seconds. If the last line named the player on
-the ball and the same run or shot is still going on, you may keep using that
-name even when the number has turned away. That is the only thing you may say
-without reading it: not a player you recognise, not a player you expect to be
-there, and never the taker of a set piece you have not actually read.
 
 Stoppages. When the game is stopped and nobody has been penalised — a player
 down, treatment on the pitch, a VAR check, the referee holding it up — the
@@ -174,16 +167,36 @@ usually plays there is not a sighting and does not belong in it.
 
 THE LINE
 
-At most {max_words} words. One sentence. Present tense. No preamble, no sign-off,
-no quotation marks, no "we see", no "in this frame". Write what a commentator
-says out loud, not what an observer writes down.
+At most {max_words} words. Usually far fewer. A line does not have to be a
+sentence: during build-up the voice is mostly names, the player on the ball and
+then the player they find, with a verb only when the ball does something worth
+one. A fragment is a line. A single surname is a line. Keep the full sentence
+for the moment that has earned it — a shot, a save, a foul, a card, a goal.
 
-  Good: Saka drives at the full-back and wins the corner.
-  Good: Cutback from the right, and it is hammered over the bar.
-  Good: Long ball forward, and the centre-half in red heads it clear.
+The subject is the player on the ball. If you have read who that is, the line
+starts with their name, not with the team's.
+
+Present tense. No preamble, no sign-off, no quotation marks, no "we see", no
+"in this frame". Write what a commentator says out loud, not what an observer
+writes down.
+
+  Good: De Paul.
+  Good: Messi, Álvarez.
+  Good: Now Di María.
+  Good: Played by Molina, collected by Upamecano.
+  Good: On by Alli, out by Vida, flicked on by Rakitić.
+  Good: Taken up at pace by Di María. (the 11 was legible on the striped kit,
+        so sightings carries number 11, side home)
+  Good: De Paul strikes.
+  Good: Save. The deflection off Varane flies wide.
+  Good: In by Messi, out by Giroud from the near post.
+  Good: That is the first foul, by Tchouaméni, at the back of Mac Allister.
+  Good: Sterling can wriggle, and Kane is offside.
+  Good: Di María is the spare man, and how. Glorious goal.
+  Bad:  England restart from the halfway line. (the 8 was read, so this is
+        Henderson's line, not the team's)
+  Good: Henderson, restarting for England.
   Bad:  In this frame we can see a player in a red shirt. (describing a picture)
-  Good: Di María cuts inside and drives it low. (the 11 was legible on the
-        striped kit, so sightings carries number 11, side home)
   Bad:  That is the equaliser, two apiece. (the score is not yours to give)
   Bad:  The replay shows him clean through. (a replay called as live)\
 """

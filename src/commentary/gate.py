@@ -685,10 +685,12 @@ class FactGate:
             reasons.append(f"trimmed_name: {candidate.text}")
             kept = kept[: candidate.start] + kept[candidate.end :]
         if reasons:
+            # Only a line that lost a name is measured. A line the caller
+            # wrote short is a line — "Modrić, Perišić." is how the build-up
+            # is called — and it goes out as written.
             kept = _tidy(kept)
-
-        words = _word_count(kept)
-        if words < self.cfg.min_words_after_trim:
-            reasons.append(f"too_short_after_trim: {words} words left")
-            return GateVerdict(passed=False, reasons=reasons)
+            words = _word_count(kept)
+            if words < self.cfg.min_words_after_trim:
+                reasons.append(f"too_short_after_trim: {words} words left")
+                return GateVerdict(passed=False, reasons=reasons)
         return GateVerdict(passed=True, reasons=reasons, line=kept)
