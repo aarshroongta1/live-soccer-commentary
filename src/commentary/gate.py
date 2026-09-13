@@ -324,6 +324,12 @@ def _roster_of(state: MatchState, pack: KnowledgePack | None) -> _Roster:
                 if label:
                     teams.add(fold(label))
                     teams.update(token for token in fold(label).split() if len(token) >= 3)
+            if sheet.demonym:
+                # "the Dutchman steps up" cost two lines on the shootout clip:
+                # the demonym was a team word and the word a commentator
+                # actually says was not. One man, two men, same nationality.
+                folded = fold(sheet.demonym)
+                teams.update({f"{folded}man", f"{folded}men", f"{folded}woman"})
             if sheet.manager:
                 people.add(fold(sheet.manager))
                 people.add(fold(_surname(sheet.manager)))

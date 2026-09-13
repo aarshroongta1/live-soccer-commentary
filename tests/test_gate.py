@@ -575,3 +575,16 @@ def test_the_keepers_name_survives_a_possessive(pack, state) -> None:
     )
     assert verdict.passed
     assert keeper in verdict.line, verdict.reasons
+
+
+def test_a_nationality_with_a_man_on_the_end_is_still_not_a_name(pack, state) -> None:
+    """"the Dutchman steps up" lost its subject twice in one clip.
+
+    The demonym was allowed as a team word and the noun a commentator
+    actually reaches for was not, so "Dutchman" read as an invented surname.
+    """
+    gate = FactGate()
+    dutch = pack.model_copy(update={"home": pack.home.model_copy(update={"demonym": "Dutch"})})
+    verdict = gate.judge(call("The Dutchman steps up and strikes it low"), state, pack=dutch)
+    assert verdict.passed
+    assert "Dutchman" in verdict.line, verdict.reasons
