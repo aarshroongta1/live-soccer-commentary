@@ -1,0 +1,30 @@
+src/commentary/grading/checklist.py
+  s_071588aa9615d3::t_f44d3a5a5269cd 306,323-337,342
+tests/test_checklist.py
+  s_071588aa9615d3::t_f44d3a5a5269cd 580-598
+  s_071588aa9615d3::t_5c6b35c6730977 288-305,307-309,312
+tests/test_gate.py
+  s_071588aa9615d3::t_b3c60163fca794 517-554
+src/commentary/gate.py
+  s_071588aa9615d3::t_771e3433dc7e96 224-243,245-246,260-269
+  s_071588aa9615d3::t_ef92d5aed2d491 244,247,249-255,257-259
+  s_071588aa9615d3::t_587b853a19e257 130-133,136,148-150,160-162
+src/commentary/runtime.py
+  s_071588aa9615d3::t_771e3433dc7e96 48,121-122,124,131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3a9e0659891f2ba1c75785b1c7bb1f0078b0c24a",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
