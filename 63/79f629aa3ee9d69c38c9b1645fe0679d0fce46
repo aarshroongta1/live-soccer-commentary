@@ -1,0 +1,24 @@
+src/commentary/__main__.py
+  s_071588aa9615d3::t_07ed6c9d8232ee 502-518,653-657
+  s_071588aa9615d3::t_1ffa71e5966edb 658
+tests/test_checklist.py
+  s_071588aa9615d3::t_c49e69ab84db34 483-517
+docs/CLIPS.md
+  s_071588aa9615d3::t_3687869d553a5d 72-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6379f629aa3ee9d69c38c9b1645fe0679d0fce46",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
