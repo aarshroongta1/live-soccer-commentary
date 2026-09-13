@@ -516,8 +516,36 @@ def test_a_name_that_opens_the_line_is_no_longer_checked():
     assert verdict.reasons == []
 
 
+def test_a_word_that_opens_a_second_sentence_is_not_a_name() -> None:
+    """The Mbappé run: "buries it. Arms up, France have life" lost "Arms"."""
+    state, pack = argentina()
+    text = "Mbappé sends the keeper the wrong way and buries it. Arms up, France have life."
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.GOAL, confidence=0.9, speak=True, line=text
+    )
+    verdict = FactGate().judge(line, state, pack, board_changed=True)
+    assert verdict.passed
+    assert verdict.line == text
+    assert not any(str(r).startswith("trimmed_name") for r in verdict.reasons)
+
+
+def test_a_plural_demonym_is_a_team_word() -> None:
+    state, pack = argentina()
+    pack = KnowledgePack(
+        home=TeamSheet(name="Argentina", short="ARG", demonym="Argentine"),
+        away=TeamSheet(name="France", short="FRA", demonym="French"),
+    )
+    text = "Mbappé stands over it, and the Argentines back away towards the arc."
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.PENALTY, confidence=0.9, speak=True, line=text
+    )
+    verdict = FactGate().judge(line, state, pack)
+    assert verdict.passed
+    assert verdict.line == text
+
+
 def test_a_possessive_is_not_part_of_the_name() -> None:
-    """"He strikes it low to De Gea's right" lost the goalkeeper, twice.
+    """ "He strikes it low to De Gea's right" lost the goalkeeper, twice.
 
     `fold` dropped the apostrophe and glued the s on, so "De Gea's" became
     "de geas", matched nobody on either roster, and the gate trimmed a real
@@ -540,7 +568,7 @@ def test_the_keepers_name_survives_a_possessive(pack, state) -> None:
 
 
 def test_a_nationality_with_a_man_on_the_end_is_still_not_a_name(pack, state) -> None:
-    """"the Dutchman steps up" lost its subject twice in one clip.
+    """ "the Dutchman steps up" lost its subject twice in one clip.
 
     The demonym was allowed as a team word and the noun a commentator
     actually reaches for was not, so "Dutchman" read as an invented surname.
@@ -605,7 +633,7 @@ def test_a_name_the_caller_did_say_is_not_logged_as_withheld(pack, state) -> Non
 
 
 def test_the_long_way_of_saying_it_is_in_is_a_goal_claim() -> None:
-    """"Messi steps up ... and it is in" was scored as no goal at all.
+    """ "Messi steps up ... and it is in" was scored as no goal at all.
 
     The confirmation rule's pattern is the contraction, `it's in`, and the
     caller writes it out. Unifying the two definitions inherited the gap.

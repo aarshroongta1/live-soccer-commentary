@@ -7,6 +7,8 @@ from commentary.predictor import SpeakPredictor
 from commentary.schemas import Trigger
 
 MIN_GAP = SETTINGS.caller.min_gap_s
+GAP_FLOOR = SETTINGS.caller.min_gap_floor_s
+GAP_PAD = SETTINGS.caller.gap_after_line_s
 FORCES_AT = SETTINGS.predictor.silence_forces_at_s
 
 
@@ -112,3 +114,97 @@ def test_a_goal_beats_the_rate_cap() -> None:
     )
     assert allowed.should_call
     assert "a goal beats the rate cap" in allowed.reason
+
+
+def test_a_short_line_buys_a_short_silence() -> None:
+    """"De Paul." takes under a second to say and does not earn four of quiet.
+
+    This is the fragment rhythm the caller was rewritten for: real commentary
+    speaks a median 2.4s apart, and the cap as it was made that impossible
+    whatever the caller wrote.
+    """
+    predictor = SpeakPredictor()
+    short = 0.6  # two words at the speaker's own rate
+    decision = predictor.decide(
+        100.0 + GAP_FLOOR + 0.1,
+        [Trigger.CAMERA_CUT],
+        last_spoken_ts=100.0,
+        last_spoken_seconds=short,
+    )
+    assert decision.should_call
+    # Where the old cap would still have been holding it back.
+    assert GAP_FLOOR + 0.1 < MIN_GAP
+
+    too_soon = predictor.decide(
+        100.5, [Trigger.CAMERA_CUT], last_spoken_ts=100.0, last_spoken_seconds=short
+    )
+    assert not too_soon.should_call
+    assert f"min gap {GAP_FLOOR:.1f}s" in too_soon.reason
+
+
+def test_a_long_line_still_buys_the_old_four_seconds() -> None:
+    """A 20-word sentence takes six or seven seconds; the cap is the cap."""
+    predictor = SpeakPredictor()
+    blocked = predictor.decide(
+        103.9, [Trigger.CAMERA_CUT], last_spoken_ts=100.0, last_spoken_seconds=6.5
+    )
+    assert not blocked.should_call
+    assert f"min gap {MIN_GAP:.1f}s" in blocked.reason
+
+    allowed = predictor.decide(
+        104.1, [Trigger.CAMERA_CUT], last_spoken_ts=100.0, last_spoken_seconds=6.5
+    )
+    assert allowed.should_call
+
+
+def test_the_gap_is_the_line_plus_a_breath_between_the_floor_and_the_cap() -> None:
+    predictor = SpeakPredictor()
+    assert predictor.gap_after(None) == pytest.approx(MIN_GAP)
+    assert predictor.gap_after(0.0) == pytest.approx(GAP_FLOOR)
+    assert predictor.gap_after(0.3) == pytest.approx(GAP_FLOOR)
+    assert predictor.gap_after(2.0) == pytest.approx(2.0 + GAP_PAD)
+    assert predictor.gap_after(30.0) == pytest.approx(MIN_GAP)
+
+
+def test_an_unmeasured_line_keeps_the_old_fixed_cap() -> None:
+    """Nobody recorded a length, so nothing may be assumed about it."""
+    predictor = SpeakPredictor()
+    decision = predictor.decide(102.0, [Trigger.CAMERA_CUT], last_spoken_ts=100.0)
+    assert not decision.should_call
+    assert f"min gap {MIN_GAP:.1f}s" in decision.reason
+
+
+def test_a_board_change_still_beats_the_shortened_gap() -> None:
+    predictor = SpeakPredictor()
+    decision = predictor.decide(
+        100.2, [Trigger.BOARD_CHANGE], last_spoken_ts=100.0, last_spoken_seconds=0.6
+    )
+    assert decision.should_call
+    assert "board_change beats the rate cap" in decision.reason
+
+
+def test_a_goal_still_beats_the_shortened_gap() -> None:
+    predictor = SpeakPredictor()
+    decision = predictor.decide(
+        100.2,
+        [Trigger.SCHEDULED],
+        last_spoken_ts=100.0,
+        last_spoken_seconds=0.6,
+        after_goal=True,
+    )
+    assert decision.should_call
+
+
+def test_the_fixed_cadence_baseline_ignores_the_line_length() -> None:
+    """The naive timer is the thing being compared against; it does not move."""
+    from commentary.grading.baselines import FixedCadence
+
+    plain = FixedCadence()
+    lengths = FixedCadence()
+    for ts in (0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 9.0):
+        left = plain.decide(ts, [Trigger.CAMERA_CUT], last_spoken_ts=None)
+        right = lengths.decide(
+            ts, [Trigger.CAMERA_CUT], last_spoken_ts=ts - 0.5, last_spoken_seconds=0.4
+        )
+        assert left.should_call == right.should_call
+        assert left.reason == right.reason

@@ -315,11 +315,13 @@ def factual_errors(
     errors: list[FactualError] = []
 
     for line in run.lines:
-        for word in re.findall(r"\b[A-ZÁÉÍÓÚÄÖÜÑ][a-zá-ü]+\b", line.text):
-            # The gate stopped reading the first word of a line as a name, so
-            # the grader stops marking it as one. A grader stricter than the
-            # gate scores a system that is not the one running.
-            if line.text.strip().startswith(word):
+        for found in re.finditer(r"\b[A-ZÁÉÍÓÚÄÖÜÑ][a-zá-ü]+\b", line.text):
+            word = found.group()
+            # The gate stopped reading the first word of a sentence as a name,
+            # so the grader stops marking it as one. A grader stricter than
+            # the gate scores a system that is not the one running.
+            before = line.text[: found.start()].rstrip()
+            if not before or before[-1] in ".!?":
                 continue
             candidate = normalise(word)
             # The gate's list, not the short one above: a word the gate allows
@@ -376,6 +378,12 @@ def _is_team_word(candidate: str, pack: KnowledgePack) -> bool:
     for sheet in (pack.home, pack.away):
         for part in (sheet.name, sheet.short, sheet.demonym):
             if part and candidate in normalise(part).split():
+                return True
+        if sheet.demonym:
+            # "Argentines", "Frenchmen": the gate lets the plural and the
+            # -man forms through as team words, so the grader has to.
+            folded = normalise(sheet.demonym)
+            if candidate in {f"{folded}s", f"{folded}man", f"{folded}men", f"{folded}woman"}:
                 return True
     for label in (pack.venue, pack.competition):
         if label and candidate in normalise(label).split():

@@ -143,6 +143,8 @@ class RepetitionGate:
     def __init__(self, config: CallerConfig | None = None) -> None:
         cfg = config or CallerConfig()
         self.threshold = cfg.repetition_threshold
+        self.short_line_tokens = cfg.repetition_short_line_tokens
+        self.short_line_threshold = cfg.repetition_short_line_threshold
         self._recent: deque[str] = deque(maxlen=max(1, cfg.recent_lines))
 
     @property
@@ -155,12 +157,22 @@ class RepetitionGate:
 
         The score comes back either way so that a rejection can say how close
         it was, and so a threshold sweep has something to sweep over.
+
+        A fragment is judged against a stricter threshold, because on one to
+        three content tokens ``similarity`` has almost nothing to divide by
+        and reads a shared surname as a repeated line. Real commentary hands
+        the ball on in exactly that shape — "Fernández, Álvarez." then, two
+        seconds later, "Fernández." — and 0.62 refuses all of it. What is
+        still a repeat at that length is the verbatim one: "Messi." after
+        "Messi." scores 1.0 and is still refused.
         """
         text = line.strip()
         if not text:
             return False, 0.0
         worst = max((similarity(text, prev) for prev in self._recent), default=0.0)
-        return worst < self.threshold, worst
+        short = len(_content(text)) <= self.short_line_tokens
+        threshold = self.short_line_threshold if short else self.threshold
+        return worst < threshold, worst
 
     def accept(self, line: str) -> None:
         """Record a line as spoken. Only call this when it really is going out."""

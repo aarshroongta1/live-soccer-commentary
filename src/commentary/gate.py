@@ -259,7 +259,7 @@ def _roster_of(state: MatchState, pack: KnowledgePack | None) -> _Roster:
                 # the demonym was a team word and the word a commentator
                 # actually says was not. One man, two men, same nationality.
                 folded = fold(sheet.demonym)
-                teams.update({f"{folded}man", f"{folded}men", f"{folded}woman"})
+                teams.update({f"{folded}man", f"{folded}men", f"{folded}woman", f"{folded}s"})
             if sheet.manager:
                 people.add(fold(sheet.manager))
                 people.add(fold(_surname(sheet.manager)))
@@ -280,9 +280,7 @@ def _roster_of(state: MatchState, pack: KnowledgePack | None) -> _Roster:
             teams.update(token for token in fold(label).split() if len(token) >= 3)
         for story in (*pack.storylines, *pack.key_matchups):
             teams.update(
-                fold(word)
-                for word in re.findall(r"\b[A-Z][\w'’-]+", story)
-                if len(word) >= 3
+                fold(word) for word in re.findall(r"\b[A-Z][\w'’-]+", story) if len(word) >= 3
             )
 
     people.discard("")
@@ -297,6 +295,12 @@ class _Candidate:
     text: str
     start: int
     end: int
+
+
+def _opens_a_sentence(line: str, start: int) -> bool:
+    """Is the word at ``start`` the first word of the line or of a sentence in it?"""
+    before = line[:start].rstrip()
+    return not before or before[-1] in ".!?"
 
 
 def _candidates(line: str) -> list[_Candidate]:
@@ -314,12 +318,16 @@ def _candidates(line: str) -> list[_Candidate]:
     current: list[re.Match[str]] = []
 
     def flush() -> None:
-        # A run that starts the line is not a name claim at all. The rule that
-        # stripped an ordinary word off the front fired nineteen times in nine
-        # runs and never once caught an invented name, so the trim there is
-        # gone rather than made cleverer — and with it goes any checking of
-        # that run, which is the same decision stated the other way round.
-        if current and current[0].start() == 0:
+        # A run that starts a sentence is not a name claim at all. The rule
+        # that stripped an ordinary word off the front fired nineteen times
+        # in nine runs and never once caught an invented name, so the trim
+        # there is gone rather than made cleverer — and with it goes any
+        # checking of that run, which is the same decision stated the other
+        # way round. A second sentence inside the line starts the same way:
+        # once the caller was allowed "Save. The deflection flies wide", the
+        # word after the full stop was read as a name, and "Everything in
+        # this final waits on him" went to air as "in this final waits on him".
+        if current and _opens_a_sentence(line, current[0].start()):
             current.clear()
             return
         while current and fold(current[0].group()) in STOPWORDS:
@@ -653,9 +661,7 @@ class FactGate:
                 problems.append(f"sighting_disagrees: {name} is not number {sighting.number}")
         return problems
 
-    def _check_number(
-        self, number: str, roster: _Roster, pack: KnowledgePack | None
-    ) -> list[str]:
+    def _check_number(self, number: str, roster: _Roster, pack: KnowledgePack | None) -> list[str]:
         if pack is None:
             return []
         squad = {known.lstrip("0") for known in roster.numbers}

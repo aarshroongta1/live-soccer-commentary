@@ -66,7 +66,7 @@ from commentary.schemas import (
 from commentary.state import MatchStateTracker, parse_clock, period_for_clock
 from commentary.tools import MatchTools
 from commentary.trace import RunTrace
-from commentary.voice.speaker import LogSpeaker, Speaker
+from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker, Speaker
 from commentary.wire import Wire, WireSync
 
 #: How long after the ball crosses the line a broadcaster's score bug
@@ -213,6 +213,10 @@ class Runtime:
         #: the end of talking about it. ``None`` until it is seen.
         self._restart_ts: float | None = None
         self._last_spoken_video_ts: float | None = None
+        #: How long that line takes to say. The rate cap is a debt the last
+        #: line ran up, and a fragment runs up less of one than a sentence,
+        #: so the predictor needs the length and not just the timestamp.
+        self._last_spoken_seconds: float | None = None
         #: Whether the last line the caller got past the gate claimed a goal.
         #: The four seconds after one are the scorer's name, the celebration
         #: and the replay arriving together, and the rate cap spent them
@@ -452,6 +456,7 @@ class Runtime:
                 triggers=triggers,
                 last_spoken_ts=self._last_spoken_video_ts,
                 after_goal=self._said_a_goal,
+                last_spoken_seconds=self._last_spoken_seconds,
             )
             self._publish(Topic.TRIGGER, self.cursor_ts, decision)
             if self._over_budget():
@@ -511,7 +516,7 @@ class Runtime:
             )
         )
         self._last_analyst_ts = cursor
-        self._last_spoken_video_ts = cursor
+        self._mark_spoken(cursor, line.line)
         self.stats.analyst_calls += 1
         return True
 
@@ -585,11 +590,25 @@ class Runtime:
         )
         self.director.submit(beat)
         self._remember_on_the_ball(line, verdict.line, cursor)
-        self._last_spoken_video_ts = cursor
+        self._mark_spoken(cursor, verdict.line)
         if line.event is not Event.NONE:
             self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
+
+    def _mark_spoken(self, cursor: float, text: str) -> None:
+        """Remember when the voice was last given a line, and how long a one.
+
+        The length is the speaker's own arithmetic — words over
+        ``WORDS_PER_SECOND`` — rather than the ``seconds`` the director
+        records once the line has been said. It has to be: the next tick can
+        come half a second after the beat is submitted, before a word of it
+        has been spoken, and a cap that waits for the measurement would spend
+        every short line's window using the previous line's length.
+        """
+        self._last_spoken_video_ts = cursor
+        words = len(text.split())
+        self._last_spoken_seconds = words / WORDS_PER_SECOND if words else None
 
     def _next_cut_after(self, cursor: float) -> float | None:
         """Where the near future stops being the same passage of play.

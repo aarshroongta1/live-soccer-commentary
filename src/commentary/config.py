@@ -62,10 +62,30 @@ class CallerConfig:
     frames_at_cursor: int = 4
     cursor_spacing_s: float = 1.0
     frames_lookahead: int = 2
-    #: Hard floor between two caller lines, whatever the triggers say.
+    #: The longest the voice ever waits between two lines on the rate cap
+    #: alone. A full sentence takes about this long to say, so after one the
+    #: next line lands as the last one finishes.
     min_gap_s: float = 4.0
+    #: The shortest that wait is ever allowed to get. Real commentary calls
+    #: build-up in fragments — "De Paul." "Messi, Álvarez." — a median
+    #: 2.4s apart, and a two-word line held for four seconds is three
+    #: seconds of dead air. Under 1.5s two lines tread on each other.
+    min_gap_floor_s: float = 1.5
+    #: Breath. Added to however long the last line took, so the gap is a
+    #: property of what was just said rather than of the clock: a fragment
+    #: buys a fragment's silence, a sentence buys a sentence's.
+    gap_after_line_s: float = 0.8
     #: A line scoring above this against the last five is dropped as repetition.
     repetition_threshold: float = 0.62
+    #: At or under this many content tokens a line is a fragment, not a
+    #: sentence, and the threshold below judges it instead.
+    repetition_short_line_tokens: int = 3
+    #: On a fragment the word-overlap half of ``similarity`` has almost
+    #: nothing to divide by: "Fernández, Álvarez." then "Fernández."
+    #: scores 0.68, and "Álvarez, here is Mac Allister." then "Mac
+    #: Allister." 0.65 — both pairs occur seconds apart in real captions.
+    #: On lines this short only the verbatim repeat is a repeat.
+    repetition_short_line_threshold: float = 0.95
     recent_lines: int = 5
     max_words: int = 28
     min_confidence: float = 0.35

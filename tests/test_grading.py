@@ -246,7 +246,7 @@ def test_the_table_renders_every_card(tmp_path: Path, truth, pack) -> None:
 
 
 def test_the_grader_does_not_count_half_a_compound_surname_as_invented():
-    """"Di María" arrives as two capitalised words, and "Di" is on no sheet.
+    """ "Di María" arrives as two capitalised words, and "Di" is on no sheet.
 
     Before the name parts went into the roster, every correct use of a
     compound surname cost the run a fabricated ``name_off_roster``.
@@ -352,6 +352,28 @@ def test_where_the_match_is_being_played_is_not_an_invented_name():
         venue="Ashcombe Park",
     )
     line = SpokenLine(video_ts=1.0, voice="caller", text="We are away at Ashcombe Park")
+    assert factual_errors(Run(run_id="x", lines=[line]), [], pack) == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Mbappé stands over it, and the Argentines back away towards the arc.",
+        "Mbappé, eyes down, gathering himself. Everything in this final waits on him.",
+    ],
+)
+def test_a_plural_demonym_and_a_second_sentence_opener_are_not_invented_names(text: str):
+    from commentary.grading.metrics import Run, SpokenLine, factual_errors
+
+    pack = KnowledgePack(
+        home=TeamSheet(
+            name="Argentina", demonym="Argentine", starters=[Player(name="Lionel Messi", number=10)]
+        ),
+        away=TeamSheet(
+            name="France", demonym="French", starters=[Player(name="Kylian Mbappé", number=10)]
+        ),
+    )
+    line = SpokenLine(video_ts=1.0, voice="caller", text=text)
     assert factual_errors(Run(run_id="x", lines=[line]), [], pack) == []
 
 

@@ -234,6 +234,51 @@ def test_gate_only_remembers_the_configured_number_of_lines():
     assert gate.judge("one shot from Saka")[0]
 
 
+def test_gate_lets_a_fragment_hand_the_ball_on():
+    """The five pairs are lifted out of real captions, seconds apart.
+
+    A fragment shares a surname with the line before it because the same
+    player is still on the ball, not because the caller is repeating itself.
+    """
+    gate = RepetitionGate(CONFIG)
+    gate.accept("Fernández, Álvarez.")
+    allowed, score = gate.judge("Fernández.")
+    assert allowed
+    assert score > CONFIG.repetition_threshold
+
+    gate = RepetitionGate(CONFIG)
+    gate.accept("Álvarez, here is Mac Allister.")
+    allowed, score = gate.judge("Mac Allister.")
+    assert allowed
+    assert score > CONFIG.repetition_threshold
+
+    gate = RepetitionGate(CONFIG)
+    gate.accept("Messi drives inside.")
+    assert gate.judge("Messi.")[0]
+
+
+def test_gate_still_refuses_the_same_fragment_twice():
+    gate = RepetitionGate(CONFIG)
+    gate.accept("Messi.")
+    allowed, score = gate.judge("Messi.")
+    assert not allowed
+    assert score == pytest.approx(1.0)
+
+
+def test_the_short_line_exemption_does_not_reach_a_sentence():
+    """Past three content tokens the near miss still dies on 0.62.
+
+    Three names reshuffled is the same line, and this one scores 0.88 — under
+    the fragment threshold, so it only survives if the exemption is reaching
+    lines it should not.
+    """
+    gate = RepetitionGate(CONFIG)
+    gate.accept("Álvarez, Mac Allister, De Paul.")
+    allowed, score = gate.judge("De Paul, Mac Allister, Álvarez.")
+    assert not allowed
+    assert CONFIG.repetition_threshold <= score < CONFIG.repetition_short_line_threshold
+
+
 def test_gate_never_passes_an_empty_line():
     assert RepetitionGate(CONFIG).judge("   ") == (False, 0.0)
 
