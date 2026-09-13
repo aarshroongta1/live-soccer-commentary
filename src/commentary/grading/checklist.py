@@ -59,6 +59,9 @@ PASSES_PER_S = 5.0
 TRACK_LIFE_S = 2.5
 
 #: Events a line can claim that the feed can be asked about (item 3).
+#: `stoppage` is deliberately absent: it asserts that the game has stopped,
+#: not that anybody did anything, so there is nothing for the feed to
+#: contradict and no phantom to count.
 CLAIMABLE: dict[str, Event] = {
     "goal": Event.GOAL,
     "card": Event.CARD,
@@ -117,6 +120,7 @@ SAYS: dict[Event, tuple[str, ...]] = {
     Event.CLEARANCE: ("clear", "hacked away", "heads it away"),
     Event.TACKLE: ("tackle", "wins it back", "dispossess"),
     Event.KICKOFF: ("kick off", "kickoff", "restart", "under way", "underway"),
+    Event.STOPPAGE: ("down", "treatment", "injur", "physio", "var", "held up", "stopped"),
     Event.INTERCEPTION: ("intercept", "cuts it out", "reads it"),
 }
 

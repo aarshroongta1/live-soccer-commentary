@@ -124,6 +124,10 @@ in green". That is a complete answer and it costs nothing. A wrong name is the
 worst thing you can do here. There is no credit for guessing and no penalty
 for saying "Arsenal" when you cannot see who it is.
 
+Stoppages. When the game is stopped and nobody has been penalised — a player
+down, treatment on the pitch, a VAR check, the referee holding it up — the
+event is stoppage, not foul. A foul is a foul the referee gave.
+
 Penalties. A referee pointing at the penalty spot is a penalty. Call it as
 one and set event to penalty; do not wait for a graphic to confirm it, and
 do not call it a free kick in the meantime. The same goes for the rest of

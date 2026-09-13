@@ -664,3 +664,22 @@ def test_a_flag_going_up_is_an_offside(pack, wire, tmp_path: Path) -> None:
         ts=1.0, voice="caller", text="and the flag goes up against the runner", event="shot"
     )
     assert checklist._calls_it(line, E.OFFSIDE)
+
+
+def test_a_player_down_is_a_stoppage_and_not_a_phantom_foul(pack, wire, tmp_path: Path) -> None:
+    """The card clip lost two lines to this.
+
+    "De Paul is still down by the hoardings, grimacing" was tagged `foul`,
+    because `foul` was the closest word the vocabulary had, and the grader
+    counted a foul nobody had committed. A stoppage claims nothing about
+    anybody, so there is nothing for the feed to contradict.
+    """
+    rows = a_good_run()
+    rows += [
+        caller(100.0),
+        gate(100.0),
+        spoken(100.0, "De Paul is still down by the hoardings, grimacing", event="stoppage"),
+    ]
+    path = write_trace(tmp_path, rows)
+    _, items = graded(path, pack, wire)
+    assert items[3].ok, items[3].evidence

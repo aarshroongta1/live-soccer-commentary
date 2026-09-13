@@ -39,6 +39,12 @@ class Event(StrEnum):
     CARD = "card"
     SUBSTITUTION = "substitution"
     KICKOFF = "kickoff"
+    #: The game is stopped and nobody has been penalised: an injury, treatment
+    #: on the pitch, a VAR check, the referee holding play up. The card clip
+    #: had two lines about a player down being tagged `foul`, because `foul`
+    #: was the closest word available, and the grader counted two phantom
+    #: fouls for it. Nothing is claimed about anybody, so nothing can be wrong.
+    STOPPAGE = "stoppage"
     BUILD_UP = "build_up"
     PASS = "pass"
     CARRY = "carry"
