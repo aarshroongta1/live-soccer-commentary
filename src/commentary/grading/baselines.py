@@ -98,6 +98,7 @@ class OpenGate(FactGate):
         board_changed: bool,
         lookahead_celebration: bool,
         wire_confirmed: bool = False,
+        carried: str | None = None,
     ) -> GateVerdict:
         return GateVerdict(
             passed=True,

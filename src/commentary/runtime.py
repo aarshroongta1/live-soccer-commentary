@@ -114,6 +114,13 @@ TRACK_MAX_HZ = 15
 #: caller says.
 GOAL_TALK_CAP_S = 150.0
 
+#: How long a name stays on the ball. The caller reads a shirt, the player
+#: turns, and the number is gone while the move it is part of is still going
+#: on: Molina was named twice on his run and anonymous when he finished it.
+#: Eight seconds is the length of a run, not of a passage of play — past it
+#: the name has to be read again.
+CARRY_NAME_S = 8.0
+
 
 def _player_named(pack: KnowledgePack, name: str) -> tuple[Side, Player] | None:
     """Which player on either sheet this is, if it is one of them.
@@ -251,6 +258,9 @@ class Runtime:
         #: and the replay arriving together, and the rate cap spent them
         #: silent.
         self._said_a_goal = False
+        #: Which side the player on the ball plays for, so a carried name
+        #: cannot cross to the other team on the next line.
+        self._carry_side = Side.UNKNOWN
         self._last_analyst_ts: float = 0.0
         self._recent_event: tuple[Event, float] | None = None
         self._sync = WireSync(self.wire) if self.wire is not None else None
@@ -708,6 +718,7 @@ class Runtime:
             board_changed=self._board_supports_goal(cursor),
             lookahead_celebration=self._celebration_ahead(cursor),
             wire_confirmed=self._wire_confirms_goal(cursor),
+            carried=self._carried_name(line, cursor),
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:
@@ -734,6 +745,7 @@ class Runtime:
             preemptable=event not in (Event.GOAL, Event.PENALTY),
         )
         self.director.submit(beat)
+        self._remember_on_the_ball(line, verdict.line, cursor)
         self._last_spoken_video_ts = cursor
         if line.event is not Event.NONE:
             self._recent_event = (line.event, cursor)
@@ -888,6 +900,49 @@ class Runtime:
             return None
         one_side, wearer = wearing[0]
         return one_side, sighting.number, wearer.name
+
+    def _remember_on_the_ball(self, line: CallerLine, spoken: str, cursor: float) -> None:
+        """Record who this line was about, so the next one may keep the name.
+
+        The name has to be in the line that was actually spoken: a sighting
+        the caller reported and did not say is not what the commentary was
+        about, and carrying it would be inventing a subject rather than
+        keeping one.
+        """
+        registry = self.state_tracker.registry
+        dead = line.event in (Event.PENALTY, Event.FREE_KICK, Event.CORNER, Event.THROW_IN)
+        for sighting in line.sightings:
+            name = sighting.name
+            if not name:
+                continue
+            if fold(name.rsplit(" ", 1)[-1]) in fold(spoken):
+                registry.name_on_the_ball(name, cursor, dead_ball=dead)
+                self._carry_side = sighting.side
+                return
+
+    def _carried_name(self, line: CallerLine, cursor: float) -> str | None:
+        """The name the last line had on the ball, if this line may keep it.
+
+        One case only. The last line named the player on the ball within
+        :data:`CARRY_NAME_S`, the phase of play has not changed — no restart
+        and no change of possession — and this line is about the same run or
+        shot. Then the name is still the name of the man being described, and
+        the caller does not have to read a number that is facing away.
+
+        The dead-ball case was specified and is not implemented. On the
+        Netherlands clip the one name the caller had at a penalty was de Jong
+        and the taker was van Dijk: a sighting says "I read this number on
+        somebody in this picture", never "this is the man on the ball".
+        """
+        registry = self.state_tracker.registry
+        held = registry.on_the_ball
+        if held is None or held.dead_ball:
+            return None
+        if line.event in (Event.KICKOFF, Event.THROW_IN, Event.CORNER, Event.FREE_KICK):
+            return None
+        if line.side is not Side.UNKNOWN and self._carry_side not in (Side.UNKNOWN, line.side):
+            return None
+        return registry.carried_name(cursor, window_s=CARRY_NAME_S)
 
     def _note_restart(self, line: CallerLine, cursor: float) -> None:
         """Has the game gone again since the goal the state is holding?

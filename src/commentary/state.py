@@ -162,6 +162,28 @@ ROSTER_STRENGTH = 0.7
 DEFAULT_HALF_LIFE_S = 1500.0
 
 
+@dataclass(frozen=True)
+class OnTheBall:
+    """The player the commentary was last about, with the ball at their feet.
+
+    A name read off a shirt is gone the moment the player turns, and the two
+    seconds in which a run becomes a shot are exactly when a listener wants
+    it. This is the record that lets the next line keep saying it, and it is
+    deliberately not a belief about a number: it is about one player, now.
+    """
+
+    name: str
+    ts: float
+    #: Whether the ball was dead — a penalty, free kick or corner being stood
+    #: over. Recorded but not yet acted on: a dead-ball taker is *not* carried,
+    #: because on the Netherlands clip the one name the caller had at a
+    #: penalty was de Jong and the taker was van Dijk. A sighting says "I read
+    #: this number on somebody in this picture", never "this is the man on the
+    #: ball", and tying the two together is how a France forward once became
+    #: an Argentina full-back.
+    dead_ball: bool = False
+
+
 class EntityRegistry:
     """Shirt numbers to names, held with a confidence that fades.
 
@@ -175,6 +197,22 @@ class EntityRegistry:
     def __init__(self, *, half_life_s: float = DEFAULT_HALF_LIFE_S) -> None:
         self.half_life_s = half_life_s
         self._beliefs: dict[tuple[Side, int], Belief] = {}
+        #: Who was last named on the ball, and when. Not a belief about a
+        #: shirt number: a record of the one player the commentary has just
+        #: been about, which is what lets a name survive the two or three
+        #: seconds in which a run becomes a shot and the number turns away.
+        self.on_the_ball: OnTheBall | None = None
+
+    def name_on_the_ball(self, name: str, ts: float, *, dead_ball: bool = False) -> None:
+        """Record that this line was about this player, with the ball."""
+        self.on_the_ball = OnTheBall(name=name, ts=ts, dead_ball=dead_ball)
+
+    def carried_name(self, ts: float, *, window_s: float) -> str | None:
+        """The name a line at ``ts`` may still use without reading it again."""
+        held = self.on_the_ball
+        if held is None or ts < held.ts:
+            return None
+        return held.name if ts - held.ts <= window_s else None
 
     def seed(self, pack: KnowledgePack, ts: float = 0.0) -> None:
         """Take the rosters as a starting point, held loosely."""

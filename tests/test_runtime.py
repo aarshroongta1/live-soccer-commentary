@@ -823,3 +823,69 @@ async def test_a_goal_from_a_set_piece_is_a_goal_to_the_director(tmp_path: Path)
     event = E.GOAL if claims_goal(said, E.FREE_KICK) else E.FREE_KICK
     assert event is E.GOAL
     assert event in (E.GOAL, E.PENALTY)
+
+
+@pytest.mark.asyncio
+async def test_a_name_carries_through_the_run_it_was_read_on(tmp_path: Path) -> None:
+    """Molina was named twice on his run and anonymous when he finished it.
+
+    The name is recorded from the line that was actually spoken, not from
+    every sighting reported: a name the caller read and did not say is not
+    what the commentary was about, and carrying it would invent a subject
+    rather than keep one.
+    """
+    from commentary.schemas import Sighting
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    registry = runtime.state_tracker.registry
+    said = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.CARRY,
+        side=Side.HOME,
+        confidence=0.8,
+        speak=True,
+        line="Molina bursting up the right",
+        sightings=[Sighting(number=26, name="Molina", side=Side.HOME)],
+    )
+    runtime._remember_on_the_ball(said, said.line, 10.0)
+    assert registry.on_the_ball is not None and registry.on_the_ball.name == "Molina"
+
+    later = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.GOAL, side=Side.HOME,
+        confidence=0.8, speak=True, line="and it is in at the near post",
+    )
+    assert runtime._carried_name(later, 14.0) == "Molina"
+    # Past the window the name has to be read again.
+    assert runtime._carried_name(later, 30.0) is None
+    # A restart ends it whatever the clock says.
+    restart = later.model_copy(update={"event": Event.CORNER})
+    assert runtime._carried_name(restart, 14.0) is None
+
+
+@pytest.mark.asyncio
+async def test_a_dead_ball_name_is_never_carried(tmp_path: Path) -> None:
+    """The one name the caller had at a penalty was the wrong man.
+
+    On the Netherlands clip it reported `21 de Jong` while van Dijk stood
+    over the ball, and called him "the Dutch taker in orange" instead. A
+    sighting says "I read this number on somebody in this picture", never
+    "this is the man on the ball".
+    """
+    from commentary.schemas import Sighting
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    over_the_ball = CallerLine(
+        scene=Scene.STOPPAGE,
+        event=Event.PENALTY,
+        side=Side.HOME,
+        confidence=0.8,
+        speak=True,
+        line="de Jong stands over it",
+        sightings=[Sighting(number=21, name="de Jong", side=Side.HOME)],
+    )
+    runtime._remember_on_the_ball(over_the_ball, over_the_ball.line, 10.0)
+    kick = CallerLine(
+        scene=Scene.LIVE_PLAY, event=Event.GOAL, side=Side.HOME,
+        confidence=0.8, speak=True, line="and it is buried",
+    )
+    assert runtime._carried_name(kick, 12.0) is None

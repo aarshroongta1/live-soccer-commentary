@@ -544,3 +544,55 @@ def test_a_nationality_with_a_man_on_the_end_is_still_not_a_name(pack, state) ->
     verdict = gate.judge(call("The Dutchman steps up and strikes it low"), state, pack=dutch)
     assert verdict.passed
     assert "Dutchman" in verdict.line, verdict.reasons
+
+
+def test_a_carried_name_counts_as_verified(pack, state) -> None:
+    """The name the last line had on the ball is not an invention.
+
+    Molina was named twice on his run and anonymous when he finished it: the
+    number had turned away by the time the shot came, and the gate had no
+    reason to believe a name the caller could no longer read.
+    """
+    gate = FactGate()
+    # Mid-line, because the first word of a line is no longer checked at all.
+    said = "And it is Vasquez sliding it across the face of goal"
+    verdict = gate.judge(call(said), state, pack)
+    assert "Vasquez" not in verdict.line
+
+    carried = gate.judge(call(said), state, pack, carried="Ana Vasquez")
+    assert carried.passed
+    assert "Vasquez" in carried.line
+
+
+def test_a_name_the_caller_read_and_did_not_say_is_logged(pack, state) -> None:
+    """Logged, not rewritten: the gate does not put words in the line.
+
+    On the Messi penalty the caller reported `10 Messi` in the same call that
+    wrote "the keeper goes the wrong way", and nothing counted it.
+    """
+    from commentary.schemas import Sighting
+
+    gate = FactGate()
+    player = pack.home.squad[0]
+    line = call(
+        "The taker steps up and strikes it low",
+        sightings=[Sighting(number=player.number, name=player.name)],
+    )
+    verdict = gate.judge(line, state, pack)
+    assert verdict.passed
+    assert verdict.line == "The taker steps up and strikes it low"
+    assert any(r.startswith("name_withheld:") for r in verdict.reasons)
+
+
+def test_a_name_the_caller_did_say_is_not_logged_as_withheld(pack, state) -> None:
+    from commentary.schemas import Sighting
+
+    gate = FactGate()
+    player = pack.home.squad[0]
+    surname = player.name.rsplit(" ", 1)[-1]
+    line = call(
+        f"{surname} steps up and strikes it low past the keeper",
+        sightings=[Sighting(number=player.number, name=player.name)],
+    )
+    verdict = gate.judge(line, state, pack)
+    assert not any(r.startswith("name_withheld:") for r in verdict.reasons)

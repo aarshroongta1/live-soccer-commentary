@@ -34,7 +34,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from difflib import SequenceMatcher
 
 from commentary.config import SETTINGS, GateConfig
@@ -437,6 +437,37 @@ def claims_goal(text: str, event: Event | None = None) -> bool:
     return any(p.search(text) for p in (*_GOAL_CLAIMS, *_SAID_A_GOAL))
 
 
+#: The role nouns a caller reaches for instead of a name. Not an error and
+#: never trimmed — "the taker" is a perfectly good phrase — but when the
+#: line's own sightings already say who it is, it is the system declining to
+#: use something it has, and the trace should say so. On the Messi penalty
+#: the caller reported `10 Messi` in the same call that wrote "the keeper
+#: goes the wrong way".
+_ROLE_NOUNS = re.compile(
+    r"\bthe\s+(?:taker|runner|scorer|striker|keeper|goalkeeper|forward|winger|"
+    r"full[- ]back|centre[- ]half|midfielder|defender|substitute)\b",
+    re.IGNORECASE,
+)
+
+
+def _name_withheld(line: CallerLine, spoken: str) -> str:
+    """A name the caller read, reported, and then did not say.
+
+    Logged, never acted on: the gate does not rewrite lines. It is here so
+    the grader can count how often the system knows who it is watching and
+    says "the taker" anyway.
+    """
+    if not _ROLE_NOUNS.search(spoken):
+        return ""
+    said = fold(spoken)
+    held = [
+        sighting.name
+        for sighting in line.sightings
+        if sighting.name and fold(_surname(sighting.name)) not in said
+    ]
+    return ", ".join(held)
+
+
 def _claims_goal(line: CallerLine) -> bool:
     """Whether this line asserts that a goal has been scored, form or prose.
 
@@ -515,6 +546,7 @@ class FactGate:
         board_changed: bool = False,
         lookahead_celebration: bool = False,
         wire_confirmed: bool = False,
+        carried: str | None = None,
     ) -> GateVerdict:
         """Pass, trim, or reject — and always say why.
 
@@ -523,6 +555,11 @@ class FactGate:
         reader is still confirming, or a goal already in the state.
         ``wire_confirmed`` is a statistician having said so, which is only
         ever true in the ablation that runs one.
+
+        ``carried`` is the player the last line had on the ball, seconds ago.
+        A name the caller can no longer read is still the name of the man it
+        is describing, and the runtime decides whether the carry applies; the
+        gate's part is to accept it as verified when it does.
         """
         verdict = self._judge(
             line,
@@ -531,6 +568,7 @@ class FactGate:
             board_changed=board_changed,
             lookahead_celebration=lookahead_celebration,
             wire_confirmed=wire_confirmed,
+            carried=carried,
         )
         self.stats.record(verdict)
         return verdict
@@ -544,6 +582,7 @@ class FactGate:
         board_changed: bool,
         lookahead_celebration: bool,
         wire_confirmed: bool = False,
+        carried: str | None = None,
     ) -> GateVerdict:
         text = line.line.strip()
         if line.scene is Scene.REPLAY:
@@ -556,6 +595,11 @@ class FactGate:
             return GateVerdict(passed=False, reasons=["empty_line: nothing to say"])
 
         roster = _roster_of(state, pack)
+        if carried:
+            roster = replace(
+                roster,
+                people=roster.people | {fold(carried), fold(_surname(carried))},
+            )
         fatal: list[str] = []
         fatal += self._check_sightings(line, roster, pack)
         fatal += self._check_scoreline(text, state)
@@ -570,7 +614,11 @@ class FactGate:
         if fatal:
             return GateVerdict(passed=False, reasons=fatal)
 
-        return self._trim_unverified(text, roster)
+        verdict = self._trim_unverified(text, roster)
+        withheld = _name_withheld(line, verdict.line)
+        if withheld:
+            verdict.reasons.append(f"name_withheld: {withheld}")
+        return verdict
 
     def _check_sightings(
         self, line: CallerLine, roster: _Roster, pack: KnowledgePack | None

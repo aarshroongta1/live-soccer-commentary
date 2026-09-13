@@ -194,3 +194,19 @@ def test_the_referees_arm_is_the_penalty_and_the_graphic_is_not_needed():
 
 def test_a_name_on_a_graphic_is_a_sighting():
     assert "A name on a broadcast graphic is a sighting too" in CALLER_RULES
+
+
+def test_the_caller_is_told_a_goal_is_a_goal_whatever_put_it_there():
+    """Ronaldo's free kick was tagged `free_kick` and died on a camera cut."""
+    assert "If your line says the ball went in, the event is goal" in CALLER_RULES
+
+
+def test_the_caller_is_told_to_say_the_name_it_just_read():
+    """The Messi penalty: `10 Messi` reported in the same call as "the taker"."""
+    assert "Use the name you have." in CALLER_RULES
+    assert "having one and saying \"the striker\" instead" in CALLER_RULES
+
+
+def test_the_caller_is_told_what_a_name_may_be_carried_through():
+    assert "A name stays yours for a few seconds." in CALLER_RULES
+    assert "never the taker of a set piece you have not actually read" in CALLER_RULES
