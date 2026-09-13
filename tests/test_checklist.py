@@ -107,7 +107,14 @@ def tracks(ts: float, ids: list[int]):
     return (Topic.TRACKS, ts, payload)
 
 
-def sighting(ts: float, mark: str | None, number: int | None, name: str | None, bound: bool):
+def sighting(
+    ts: float,
+    mark: str | None,
+    number: int | None,
+    name: str | None,
+    bound: bool,
+    side: str = "",
+):
     return (
         Topic.SIGHTING,
         ts,
@@ -119,6 +126,7 @@ def sighting(ts: float, mark: str | None, number: int | None, name: str | None, 
                     "name": name,
                     "bound": bound,
                     "live": bool(mark),
+                    "side": side,
                 }
             ]
         },
@@ -515,3 +523,27 @@ def test_a_clip_with_no_clock_on_screen_can_be_graded_from_a_measured_offset(
     assert code == 0
     assert "alignment BY HAND: -3600.0s, nothing fitted, nothing checked" in out
     assert "Definition of done:" in out
+
+
+def test_a_number_bound_to_the_kit_the_caller_did_not_read_it_off_is_caught(
+    pack, wire, tmp_path: Path
+) -> None:
+    """Once the caller says which kit, the check narrows to that squad.
+
+    France's 18 is Upamecano and Argentina's is nobody's; a sighting that
+    says it read 18 off the striped kit is a read that cannot be right.
+    """
+    rows = a_good_run()
+    rows.append(sighting(100.0, "D", 18, None, True, side="home"))
+    path = write_trace(tmp_path, rows)
+    _, items = graded(path, pack, wire)
+    assert not items[8].ok
+    assert "18" in items[8].evidence
+
+
+def test_the_same_number_on_the_kit_that_wears_it_is_fine(pack, wire, tmp_path: Path) -> None:
+    rows = a_good_run()
+    rows.append(sighting(100.0, "D", 18, None, True, side="away"))
+    path = write_trace(tmp_path, rows)
+    _, items = graded(path, pack, wire)
+    assert items[8].ok, items[8].evidence

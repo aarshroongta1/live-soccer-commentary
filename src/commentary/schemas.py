@@ -86,6 +86,14 @@ class Sighting(BaseModel):
     put a read the caller put everything in that one and left this empty —
     thirteen lines to two on the run that measured it. One field, and the
     tag is a field in it rather than a competing habit.
+
+    ``side`` is here because a number on its own names nobody. Both squads
+    wear a 5, a 7, a 10 and an 11, and on the penalty clip that cost 18 of 34
+    sightings — the caller read the shirt correctly and the bind had no way to
+    say which shirt. The side used to be resolved by the kit split, which put
+    an Argentina body on France and turned a "26" into Marcus Thuram; the
+    model reading the picture does not confuse white stripes with navy, and
+    the kit strings it needs are in the team sheets it already has.
     """
 
     mark: str | None = Field(
@@ -97,6 +105,12 @@ class Sighting(BaseModel):
     )
     number: int | None = Field(default=None, description="Shirt number, if legible")
     name: str | None = Field(default=None, description="Name on the shirt or a graphic")
+    side: Side = Field(
+        default=Side.UNKNOWN,
+        description=(
+            "which team's kit the body wears, from the shirt colours on the team sheet"
+        ),
+    )
 
 
 class CallerLine(BaseModel):

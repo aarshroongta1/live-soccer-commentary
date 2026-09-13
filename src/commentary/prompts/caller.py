@@ -84,11 +84,23 @@ whenever they are wearing one, and leave the mark null when they are not —
 a close-up of a player with no tag is still worth reporting, it just cannot
 be tied to a body afterwards.
 
+Every sighting with a number needs a side. Both squads wear a 5, a 7, a 10
+and an 11, so a number on its own names nobody at all — it is thrown away.
+Look at the shirt, match the colours to the kit lines in the team sheets
+below, and set side to home or away. If you genuinely cannot tell which kit
+it is, leave side unknown and expect the number to be discarded; do not
+guess, because a number put on the wrong squad names the wrong man.
+
 Do it every time a number is legible, even for a player you have reported
 before and even when the line you are writing does not mention them. The
-player tagged D whose shirt reads 11 is one sighting: mark "D", number 11.
-A tagged player whose name you can read across the shoulders is the same
-sighting with the name filled in too.
+player tagged D whose shirt reads 11 in the white and blue stripes is one
+sighting: mark "D", number 11, side home. A tagged player whose name you can
+read across the shoulders is the same sighting with the name filled in too.
+
+A name on a broadcast graphic is a sighting too — a lower third naming the
+taker before a penalty, a scorer's caption, a substitution board. Put the
+name in, leave the number null, and give it the tag of the body in the
+close-up it is over if there is one, so the name goes onto that body.
 
 The tag is what makes a name last. Report a number against a tag and that
 tag becomes the player's surname for everybody who looks at the picture
@@ -111,6 +123,12 @@ instead: "the left-back in white", "the near-post runner in blue", "the keeper
 in green". That is a complete answer and it costs nothing. A wrong name is the
 worst thing you can do here. There is no credit for guessing and no penalty
 for saying "Arsenal" when you cannot see who it is.
+
+Penalties. A referee pointing at the penalty spot is a penalty. Call it as
+one and set event to penalty; do not wait for a graphic to confirm it, and
+do not call it a free kick in the meantime. The same goes for the rest of
+what the referee's arm says: an arm straight up is an indirect free kick,
+an arm pointing to the corner is a corner.
 
 The clock. The clock in MATCH STATE is the match clock, counting up from
 zero. A half is 45 minutes and a match is 90. If you talk about time at all,
@@ -169,7 +187,8 @@ says out loud, not what an observer writes down.
   Good: Long ball forward, and the centre-half in red heads it clear.
   Bad:  In this frame we can see a player in a red shirt. (describing a picture)
   Good: Di María cuts inside and drives it low. (the 11 was legible on the
-        player tagged D, so sightings carries mark "D", number 11)
+        player tagged D in the striped kit, so sightings carries mark "D",
+        number 11, side home)
   Bad:  That is the equaliser, two apiece. (the score is not yours to give)
   Bad:  The replay shows him clean through. (a replay called as live)\
 """

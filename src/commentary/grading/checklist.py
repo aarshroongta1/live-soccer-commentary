@@ -129,6 +129,7 @@ class Sighting:
     name: str | None
     bound: bool
     live: bool
+    side: str = ""
 
 
 @dataclass
@@ -185,6 +186,7 @@ def watched(
             name=_text_or_none(entry.get("name")),
             bound=bool(entry.get("bound")),
             live=bool(entry.get("live")),
+            side=str(entry.get("side") or ""),
         )
         for row in rows_of(rows, "sighting")
         for entry in row.get("sightings", [])
@@ -587,12 +589,16 @@ def _carried_on_a_mark(state: Watched) -> str | None:
 def _contradicts_roster(state: Watched, sighting: Sighting) -> bool:
     """A bound sighting the team sheets say cannot be right.
 
-    Both squads wear a 7 and an 11, so a shared number is not a contradiction
-    — which side it was is settled at bind time from the roster and is not in
-    this row. What is checkable here is a number nobody wears, a name nobody
-    is called, and a number and a name that belong to two different people.
+    Both squads wear a 7 and an 11, so a shared number on its own is not a
+    contradiction. When the caller said which kit it read the number off, the
+    check narrows to that squad, which is the whole point of asking. What is
+    checkable otherwise is a number nobody wears, a name nobody is called,
+    and a number and a name that belong to two different people.
     """
-    squad = [player for sheet in (state.pack.home, state.pack.away) for player in sheet.squad]
+    sheets = {"home": [state.pack.home], "away": [state.pack.away]}.get(
+        sighting.side, [state.pack.home, state.pack.away]
+    )
+    squad = [player for sheet in sheets for player in sheet.squad]
     if sighting.name:
         wearing = [p for p in squad if _surname(p.name) == _surname(sighting.name)]
         if not wearing:

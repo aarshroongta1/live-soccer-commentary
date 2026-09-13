@@ -189,26 +189,41 @@ touchline, which is where the camera was.
   Same shape as the A19 goal-talk bug. Each claimable event now has the tail
   its coverage really runs to.
 
+## Decided
+
+Both of penalty1's open questions came back with an answer, and both are in
+the code. Neither has been run: the key still has no credit.
+
+1. **A number alone, when both squads wear it, names nobody — and that was 18
+   of penalty1's 34 sightings.** *Decision: the caller resolves the side, not
+   the kit split.* `Sighting` has a `side` field, described as "which team's
+   kit the body wears, from the shirt colours on the team sheet" — the thing
+   reading the picture is the thing with both kit strings in its prompt, and a
+   model does not confuse white stripes with navy. A number with a side names
+   that side's player wearing it; a number with the side unknown still names
+   nobody, which is the case that used to be silent and is now something the
+   caller is told about in as many words. The kit split stays out of the
+   naming path, so the Thuram class of error — an Argentina body placed on
+   France by a colour histogram, and a "26" on it read as a France forward —
+   is closed rather than reopened. A name and a side that disagree are dropped
+   together: one of the two was misread and nothing can say which.
+2. **A player the system named thirty seconds ago is "he" at the moment that
+   matters.** *Decision: no rule change.* A name may be carried into a line
+   only through a live tag — once a body is bound its tag shows the surname,
+   and the caller may use it while that tag is on screen, which is C11's rule
+   already and is what a human does when the same player is visibly the same
+   player. Never from memory without a tag. So the lever is tracks surviving
+   and the gallery, both of which are already the next items in the handoff.
+
+Two prompt additions went in beside them, off the same clip:
+
+- **A referee pointing at the penalty spot is a penalty**, and the caller is
+  told not to wait for the graphic. It spent fifty seconds and six lines
+  calling this one a free kick.
+- **A name on a broadcast graphic is a sighting** — a lower third naming the
+  taker, a scorer's caption, a substitution board — with the name filled in,
+  no number, and the tag of the body in the close-up it is over.
+
 ## Needs a decision
 
-*(design changes a clip exposed, which are not this session's to make)*
-
-1. **A number alone, when both squads wear it, names nobody — and that is half
-   of every read.** penalty1 made 34 sightings and dropped 18, all but a couple
-   of them a bare number that two players in this match wear. Binding one needs
-   a side, the only source of a side in the picture is the kit split, and C11
-   took the kit split out of the naming path on purpose after it put France's
-   26 on Argentina's Molina. Three ways out, all of them rule changes: let the
-   kit split vote on a side when its distance to a centroid is small enough;
-   ask the caller for the side it read the number off, as a field beside the
-   number; or accept the side the possession state already believes. The first
-   is what C11 removed, the second is a schema change to `Sighting`, the third
-   is an inference rather than a read.
-2. **A player the system named thirty seconds ago is "he" at the moment that
-   matters.** The caller had `10 Messi` bound five times and said his name
-   twice in the build-up, then called the penalty goal itself with no name at
-   all. The rules tell it to name a player it can *read*, and at the moment of
-   a kick the camera is behind the taker with no number showing. Whether a name
-   already established in this passage of play may be carried into a line where
-   nothing is legible is a rule decision — it is the difference between naming
-   from the picture and naming from memory, which is the thesis.
+*(nothing open. New items land here as the clips run.)*

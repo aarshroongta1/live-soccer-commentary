@@ -807,6 +807,7 @@ class Runtime:
                 "mark": sighting.mark,
                 "number": sighting.number,
                 "name": sighting.name,
+                "side": sighting.side.value,
                 # Whether that tag still meant a body by the time the line came
                 # back, and whether there was a tag on it at all when the
                 # frame was drawn. The two failures look identical from the
@@ -836,13 +837,17 @@ class Runtime:
         A name settles which side it is and which number goes with it, so a
         number given alongside has to agree.
 
-        A number on its own only names somebody when one squad wears it. This
-        used to resolve the side from the kit split, and the kit split is the
-        weakest link in the chain by its own docstring: on the real clip it
-        put an Argentina body on France, and a sighting of "26" on it became
-        Marcus Thuram in a passage Argentina played the whole of. Both squads
-        had a 26. Nothing that saw the shirt could tell them apart, so
-        nothing should have claimed to.
+        A number needs a side, because both squads wear a 5, a 7 and an 11.
+        The side comes from the caller: it is looking at the kit and it has
+        both kit strings in its team sheets, and a model reading the picture
+        does not confuse white stripes with navy. It used to come from the
+        kit split, which is the weakest link in the chain by its own
+        docstring: on the real clip it put an Argentina body on France, and a
+        sighting of "26" on it became Marcus Thuram in a passage Argentina
+        played the whole of. A number with no side still names nobody — that
+        is the case that was throwing away half of every read, and the answer
+        to it is for the caller to say which kit, not for anything here to
+        guess.
         """
         if self.pack is None:
             return None
@@ -855,9 +860,16 @@ class Runtime:
                 return None
             if sighting.number is not None and sighting.number != player.number:
                 return None
+            if sighting.side is not Side.UNKNOWN and sighting.side is not side:
+                # The name and the kit disagree, so one of them was misread
+                # and there is no way to tell which.
+                return None
             return side, player.number, player.name
         if sighting.number is None:
             return None
+        if sighting.side is not Side.UNKNOWN:
+            wearer = _player_numbered(self.pack, sighting.side, sighting.number)
+            return (sighting.side, sighting.number, wearer.name) if wearer else None
         wearing = [
             (side, wearer)
             for side in (Side.HOME, Side.AWAY)

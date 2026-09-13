@@ -171,4 +171,26 @@ def test_the_names_rule_sends_the_caller_looking_for_a_number_first():
     # The bad example that showed a model naming two players it could not read
     # is gone; what replaces it shows the number that justified the name.
     assert "Odegaard" not in CALLER_RULES
-    assert 'sightings carries mark "D", number 11' in CALLER_RULES
+    assert 'sightings carries mark "D",\n        number 11, side home' in CALLER_RULES
+
+
+def test_a_number_is_useless_without_the_kit_it_was_read_off():
+    """Both squads wear a 5, a 7 and an 11, and the caller is the one looking.
+
+    On the penalty clip 18 of 34 sightings were dropped, nearly every one a
+    bare number two players in the match wear. The side used to be resolved
+    from the kit split, which put an Argentina body on France and named a
+    France forward for it.
+    """
+    assert "Every sighting with a number needs a side" in CALLER_RULES
+    assert "leave side unknown and expect the number to be discarded" in CALLER_RULES
+
+
+def test_the_referees_arm_is_the_penalty_and_the_graphic_is_not_needed():
+    """The clip: six `free_kick` lines, then "the graphic tells us the story"."""
+    assert "A referee pointing at the penalty spot is a penalty" in CALLER_RULES
+    assert "do not wait for a graphic" in CALLER_RULES
+
+
+def test_a_name_on_a_graphic_is_a_sighting():
+    assert "A name on a broadcast graphic is a sighting too" in CALLER_RULES

@@ -669,7 +669,72 @@ async def test_a_number_alone_names_somebody_only_if_one_squad_wears_it(
 
     if shared:
         _runtime, both = await _with_sightings(tmp_path, Sighting(mark="E", number=shared[0]))
-        assert both.bound == [], "two players wear it and the picture cannot say which"
+        assert both.bound == [], "two players wear it and the caller did not say which kit"
+
+
+@pytest.mark.asyncio
+async def test_the_caller_says_which_kit_and_a_shared_number_binds(tmp_path: Path) -> None:
+    """Both squads wear an 11, and the one looking at the shirt settles it.
+
+    On the penalty clip 18 of 34 sightings were dropped, nearly all of them a
+    bare number two players in the match wear. The side is the caller's to
+    give — it has the kit strings in its team sheets and it is the thing
+    looking at the picture — and it is not the kit split's, which put an
+    Argentina body on France and named a France forward off it.
+    """
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    assert runtime.pack is not None
+    home = {p.number for p in runtime.pack.home.squad if p.number is not None}
+    away = {p.number for p in runtime.pack.away.squad if p.number is not None}
+    shared = sorted(home & away)
+    if not shared:
+        pytest.skip("this pack's two squads share no number")
+    number = shared[0]
+
+    for side, sheet in ((Side.HOME, runtime.pack.home), (Side.AWAY, runtime.pack.away)):
+        name = next(p.name for p in sheet.squad if p.number == number)
+        _runtime, binder = await _with_sightings(
+            tmp_path, Sighting(mark="E", number=number, side=side)
+        )
+        assert binder.bound == [(4, side, number, name)]
+
+
+@pytest.mark.asyncio
+async def test_a_side_the_number_contradicts_is_dropped(tmp_path: Path) -> None:
+    """A number nobody on that side wears is a misread of one or the other.
+
+    The sim's two squads wear the same eleven numbers, so this one builds the
+    squads it needs rather than hunting the sim's pack for a number only one
+    side has.
+    """
+    from commentary.schemas import KnowledgePack, Player, TeamSheet
+
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime.pack = KnowledgePack(
+        home=TeamSheet(
+            name="Argentina", kit="stripes", starters=[Player(name="Molina", number=26)]
+        ),
+        away=TeamSheet(name="France", kit="navy", starters=[Player(name="Thuram", number=9)]),
+    )
+
+    assert runtime._roster_check(Sighting(mark="E", number=26, side=Side.AWAY), 4, 0.0) is None
+    assert runtime._roster_check(Sighting(mark="E", number=26, side=Side.HOME), 4, 0.0) == (
+        Side.HOME,
+        26,
+        "Molina",
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_name_and_a_kit_that_disagree_are_dropped(tmp_path: Path) -> None:
+    """One of the two was misread and nothing here can say which."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    number, name = _home_number(runtime)
+
+    _runtime, binder = await _with_sightings(
+        tmp_path, Sighting(mark="E", number=number, name=name, side=Side.AWAY)
+    )
+    assert binder.bound == []
 
 
 @pytest.mark.asyncio
