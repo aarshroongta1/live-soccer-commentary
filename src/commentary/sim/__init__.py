@@ -8,7 +8,6 @@ broadcast cannot give us: a written record of everything that happened, which
 is what turns "the commentary sounded fine" into a number.
 """
 
-from commentary.sim.audio import MatchAudio, band_energy
 from commentary.sim.match import (
     PITCH_L,
     PITCH_W,
@@ -45,7 +44,6 @@ __all__ = [
     "TS_BLOCKS",
     "BroadcastRenderer",
     "Dot",
-    "MatchAudio",
     "MatchSim",
     "Moment",
     "Outcome",
@@ -54,7 +52,6 @@ __all__ = [
     "SimOracle",
     "SimSource",
     "SimState",
-    "band_energy",
     "decode_ts",
     "encode_ts",
     "kit_colour",

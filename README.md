@@ -1,8 +1,8 @@
 # Live Soccer Commentary
 
 Two AI voices call a live soccer broadcast in real time, from a screen capture,
-using only what a human commentator has: the picture, the sound, and notes
-prepared before kickoff.
+using only what a human commentator has: the picture and notes prepared
+before kickoff.
 
 **No live data feed reaches any agent at runtime.** The score comes from reading
 the scoreboard on screen. Names come from the roster, shirt numbers, and
@@ -12,7 +12,7 @@ row of the ablation table, to show what one would have bought.
 
 ## How it works
 
-Frames and audio land in a ring buffer. Perception runs at the live edge, but
+Frames land in a ring buffer. Perception runs at the live edge, but
 the narration cursor trails it by a few seconds, so the caller can peek at what
 happens next before it commits to a line — the shot it is describing has already
 gone in, or has not. The viewer watches the video from the cursor too, which is
@@ -308,7 +308,7 @@ The whole suite runs offline. No test makes a model call.
 Days 1–12 of the two-week sprint in [`PLAN.md`](PLAN.md) are built and tested
 against the simulator, and the pipeline has now been run end to end against the
 real Anthropic API — Haiku 4.5 reading the score bug, Opus 5 calling, through a
-video file with its audio, through the fact gate, and with a wire. Since then
+video file, through the fact gate, and with a wire. Since then
 it has been run on eighteen clips of real broadcast from six matches and four
 broadcasters, graded against StatsBomb; that evidence is in
 [`docs/CLIPS.md`](docs/CLIPS.md) and the current state of the project is in

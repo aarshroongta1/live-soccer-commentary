@@ -17,7 +17,7 @@ from typing import Protocol
 
 import numpy as np
 
-from commentary.capture.buffer import AudioChunk, Frame, now
+from commentary.capture.buffer import Frame, now
 from commentary.config import SETTINGS, CaptureConfig
 
 
@@ -172,17 +172,12 @@ class ScreenCapture(FFmpegSource):
 
 
 class FileCapture(FFmpegSource):
-    """A recorded match, played at its real speed, picture and sound.
+    """A recorded match, played at its real speed.
 
     This is the development loop: the same clip, repeatedly, so prompt and
-    threshold changes are comparable between runs.
-
-    The sound comes out of a second ffmpeg process rather than out of the
-    same one, because the two streams are consumed by two different loops at
-    two different rates and one pipe carrying both would make each of them
-    wait for the other. Both processes seek to ``start_s`` and both stamp
-    from zero, so a chunk and a frame with the same timestamp are the same
-    instant of the file — which is what every trigger in the system assumes.
+    threshold changes are comparable between runs. Picture only: the audio
+    triggers that used to ride a second ffmpeg process were measured on real
+    broadcast and removed (see ``docs/HANDOFF.md``, section 8).
     """
 
     def __init__(
@@ -192,80 +187,8 @@ class FileCapture(FFmpegSource):
         *,
         start_s: float = 0.0,
         realtime: bool = True,
-        sample_rate: int = 16000,
-        chunk_s: float = 0.1,
     ) -> None:
         args = ["-ss", str(start_s), "-re"] if realtime else ["-ss", str(start_s)]
         super().__init__([*args, "-i", str(path), "-r", str(cfg.fps)], cfg, realtime=realtime)
         self.path = Path(path)
         self.start_s = start_s
-        self.sample_rate = sample_rate
-        self.chunk_s = chunk_s
-        self._audio: asyncio.subprocess.Process | None = None
-
-    @property
-    def chunk_bytes(self) -> int:
-        """One chunk of mono 16-bit samples."""
-        return int(self.sample_rate * self.chunk_s) * 2
-
-    def _audio_command(self) -> list[str]:
-        pace = ["-re"] if self._realtime else []
-        return [
-            "ffmpeg",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-ss",
-            str(self.start_s),
-            *pace,
-            "-i",
-            str(self.path),
-            "-vn",
-            "-ac",
-            "1",
-            "-ar",
-            str(self.sample_rate),
-            "-f",
-            "s16le",
-            "-",
-        ]
-
-    async def __aenter__(self) -> FileCapture:
-        await super().__aenter__()
-        self._audio = await asyncio.create_subprocess_exec(
-            *self._audio_command(),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            limit=self.chunk_bytes * 8,
-        )
-        return self
-
-    async def __aexit__(self, *exc: object) -> None:
-        await _stop(self._audio)
-        self._audio = None
-        await super().__aexit__(*exc)
-
-    async def audio(self) -> AsyncIterator[AudioChunk]:
-        """Mono float32 chunks on the video clock, paced like the frames.
-
-        A file with no audio track gives an ffmpeg process that writes
-        nothing and exits, which arrives here as a stream that ends at once:
-        the run then behaves exactly as it did before this existed.
-        """
-        if self._audio is None or self._audio.stdout is None:
-            raise RuntimeError("use the source as an async context manager")
-        start = now()
-        index = 0
-        while True:
-            try:
-                raw = await self._audio.stdout.readexactly(self.chunk_bytes)
-            except asyncio.IncompleteReadError:
-                return
-            samples = np.frombuffer(raw, dtype="<i2").astype(np.float32) / 32768.0
-            ts = index * self.chunk_s
-            index += 1
-            if self._realtime:
-                behind = ts - (now() - start)
-                if behind > 0:
-                    await asyncio.sleep(behind)
-            yield AudioChunk(ts=ts, samples=samples, sample_rate=self.sample_rate)

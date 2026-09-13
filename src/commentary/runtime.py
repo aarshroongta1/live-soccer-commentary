@@ -40,8 +40,8 @@ from typing import Any
 from commentary.agents.analyst import Analyst
 from commentary.agents.caller import Caller
 from commentary.bus import Bus, Topic
-from commentary.capture.audio import CutDetector, RoarDetector, WhistleDetector
-from commentary.capture.buffer import AudioRing, DelayBuffer, Frame
+from commentary.capture.audio import CutDetector
+from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.config import SETTINGS, Settings
 from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate, claims_goal, fold, is_the_same_name
@@ -57,7 +57,6 @@ from commentary.schemas import (
     KnowledgePack,
     MatchState,
     Player,
-    Scene,
     Side,
     Sighting,
     SpeakDecision,
@@ -93,9 +92,8 @@ GOAL_GRAPHIC_LAG_S = 10.0
 #: phantom goals for being more than 45 s past a goal applied at 66.8 — while
 #: the picture was still showing it, and the kickoff was still 13 s away.
 #:
-#: The cap exists because the restart can be missed: no whistle in the audio,
-#: no kickoff line written. Past it the picture has moved on whatever the
-#: caller says.
+#: The cap exists because the restart can be missed: no kickoff line
+#: written. Past it the picture has moved on whatever the caller says.
 GOAL_TALK_CAP_S = 150.0
 
 #: How long a name stays on the ball. The caller reads a shirt, the player
@@ -137,7 +135,6 @@ def _player_numbered(pack: KnowledgePack, side: Side, number: int) -> Player | N
 @dataclass
 class RuntimeStats:
     frames: int = 0
-    audio_chunks: int = 0
     board_reads: int = 0
     caller_calls: int = 0
     analyst_calls: int = 0
@@ -181,7 +178,6 @@ class Runtime:
             self.home, self.away = self.pack.home.name, self.pack.away.name
 
         self.buffer = DelayBuffer(cap.fps, cap.delay_s, cap.history_s)
-        self.audio_ring = AudioRing()
 
         self.board_reader = BoardReader(self.backend, config=self.settings.board)
         self.board_tracker = BoardTracker(self.settings.board)
@@ -205,13 +201,10 @@ class Runtime:
         self.predictor = SpeakPredictor(self.settings.predictor, self.settings.caller)
         self.director = Director(speaker=self.speaker, cfg=self.settings.director, bus=self.bus)
 
-        self.whistle = WhistleDetector(self.settings.predictor)
-        self.roar = RoarDetector(self.settings.predictor)
         self.cut = CutDetector(self.settings.predictor)
 
         self._pending: list[Trigger] = []
         self._board_changes: list[BoardChange] = []
-        self._roars: list[float] = []
         self._cuts: list[float] = []
         #: Cursor time at which the state last took in a board goal — not the
         #: time of the board change itself. See ``_apply_due_board_changes``.
@@ -219,10 +212,6 @@ class Runtime:
         #: Cursor time at which play was seen to restart after that goal, and
         #: the end of talking about it. ``None`` until it is seen.
         self._restart_ts: float | None = None
-        #: A whistle heard since that goal. On its own it is not a restart —
-        #: the referee whistles the goal too — but a whistle and then a live
-        #: picture is the game going again.
-        self._whistle_since_goal = False
         self._last_spoken_video_ts: float | None = None
         #: Whether the last line the caller got past the gate claimed a goal.
         #: The four seconds after one are the scorer's name, the celebration
@@ -279,8 +268,6 @@ class Runtime:
                 asyncio.create_task(self._tick(), name="tick"),
                 asyncio.create_task(self.director.run(), name="director"),
             ]
-            if hasattr(self.source, "audio"):
-                tasks.append(asyncio.create_task(self._ingest_audio(), name="audio"))
             if seconds is not None:
                 tasks.append(asyncio.create_task(self._deadline(seconds), name="deadline"))
 
@@ -335,21 +322,6 @@ class Runtime:
         # The source ran out: a clip ended, or the stream died. Either way the
         # match is over as far as this process is concerned.
         self.stop()
-
-    async def _ingest_audio(self) -> None:
-        async for chunk in self.source.audio():
-            self.audio_ring.append(chunk)
-            self.stats.audio_chunks += 1
-            if self.whistle.feed(chunk) is not None:
-                if self._last_goal_ts is not None:
-                    self._whistle_since_goal = True
-                self._fire(Trigger.WHISTLE)
-            if (roar := self.roar.feed(chunk)) is not None:
-                # Kept with its timestamp, not just as a trigger: the fact
-                # gate needs to know WHEN the crowd went up, to decide
-                # whether it corroborates a goal claimed at the cursor.
-                self._roars.append(roar.ts)
-                self._fire(Trigger.ROAR)
 
     async def _read_board(self) -> None:
         """Glance at the score bug, at the live edge, on a fixed interval."""
@@ -424,7 +396,6 @@ class Runtime:
         if any(c.is_goal for c in due):
             self._last_goal_ts = cursor
             self._restart_ts = None
-            self._whistle_since_goal = False
         for change in due:
             if change.is_goal and change.scoring_side is not None:
                 self.state.incidents.append(
@@ -585,7 +556,6 @@ class Runtime:
             self.state,
             self.pack,
             board_changed=self._board_supports_goal(cursor),
-            lookahead_celebration=self._celebration_ahead(cursor),
             wire_confirmed=self._wire_confirms_goal(cursor),
             carried=self._carried_name(line, cursor),
         )
@@ -795,14 +765,13 @@ class Runtime:
     def _note_restart(self, line: CallerLine, cursor: float) -> None:
         """Has the game gone again since the goal the state is holding?
 
-        Two ways to see it, and the first of them wins. The caller writing a
-        kickoff is the plain one. The other is a whistle followed by a live
-        picture: the referee's whistle alone is not enough, because the goal
-        itself was whistled, but a whistle and then the caller reporting live
-        play is the restart whatever the caller called the event.
+        The caller writing a kickoff. There used to be a second way, a
+        referee's whistle heard since the goal and then a live picture, and
+        on real broadcast the whistle detector fired once in 58 runs, so it
+        never was a way. Past the cap the talk ends anyway.
 
-        Neither counts while the score bug is away or the board reader thinks
-        we are in a replay. That is the broadcaster's own answer to "has the
+        A kickoff does not count while the score bug is away or the board
+        reader thinks we are in a replay. That is the broadcaster's own answer to "has the
         game started again", it does not depend on the caller getting the
         scene right, and the caller does not: it wrote a kickoff over a replay
         of the goal.
@@ -817,9 +786,7 @@ class Runtime:
             # 89.5 and ended goal talk sixty seconds early, which cost the
             # celebration lines that followed.
             return
-        if line.event is Event.KICKOFF or (
-            self._whistle_since_goal and line.scene is Scene.LIVE_PLAY
-        ):
+        if line.event is Event.KICKOFF:
             self._restart_ts = cursor
 
     def _goal_already_in_the_state(self, cursor: float) -> bool:
@@ -887,40 +854,15 @@ class Runtime:
             for event in self._sync.known
         )
 
-    def _celebration_ahead(self, cursor: float) -> bool:
-        """Is there a crowd celebration between the cursor and the live edge?
-
-        Evidence has to come from something other than the model that is
-        making the claim. The first version of this asked the caller how
-        confident it felt and let anything above 0.8 through, which is not a
-        second source at all — it is the same source with a number attached,
-        and a confidently wrong model is precisely the failure the gate
-        exists to stop. It let a goal be announced at a moment when no goal
-        had happened.
-
-        A sustained roar is independent: it comes off the audio, which the
-        caller never sees. But it is weak evidence, because crowds roar at
-        near misses too, and a run with this as a free-standing second route
-        to a goal let a phantom one through on exactly that. So the roar only
-        counts when the board cannot be read at all — a replay, a graphic
-        over the bug, a broadcaster who has hidden it. When the board is
-        legible it is the only thing that confirms a goal, because it is the
-        only source that is actually about the score.
-        """
-        if not self.board_tracker.in_replay and self.board_tracker.home_score is not None:
-            return False
-        window = self.settings.capture.delay_s
-        return any(cursor - 1.0 <= ts <= cursor + window for ts in self._roars)
-
     # -- plumbing --------------------------------------------------------
 
     def _fire(self, trigger: Trigger) -> None:
         """Park a trigger until the next tick reads them all at once.
 
-        Triggers arrive on the frame and audio loops, which run far faster
-        than the system can speak. Collecting them and letting the tick decide
-        is what keeps a burst of three cuts and a roar from becoming four
-        separate attempts to say something.
+        Triggers arrive on the frame loop, which runs far faster than the
+        system can speak. Collecting them and letting the tick decide is what
+        keeps a burst of three cuts from becoming three separate attempts to
+        say something.
         """
         self._pending.append(trigger)
 

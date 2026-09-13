@@ -153,8 +153,6 @@ class AnalystLine(BaseModel):
 class Trigger(StrEnum):
     """Why the system considered speaking at this instant."""
 
-    WHISTLE = "whistle"
-    ROAR = "roar"
     CAMERA_CUT = "camera_cut"
     BOARD_CHANGE = "board_change"
     SILENCE_PRESSURE = "silence_pressure"

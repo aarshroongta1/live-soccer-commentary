@@ -3,8 +3,8 @@
 worldcupvoice speaks every four seconds whatever is happening, which is why it
 talks over nothing and misses everything. Here silence is a decision with two
 forces acting on it. Triggers push towards speech, each carrying its own
-weight: a board change is the game changing and outranks everything, a roar is
-close behind, a camera cut is worth a glance. Pushing back is a hard rate cap,
+weight: a board change is the game changing and outranks everything, a camera
+cut is worth a glance. Pushing back is a hard rate cap,
 because a voice that lands every two seconds sounds panicked no matter how
 good the lines are.
 

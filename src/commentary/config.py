@@ -101,15 +101,9 @@ class PredictorConfig:
     silence_forces_at_s: float = 12.0
     #: Mean absolute frame difference above this reads as a camera cut.
     cut_threshold: float = 34.0
-    #: Audio energy over the rolling median that reads as a crowd roar.
-    roar_ratio: float = 2.2
-    whistle_band_hz: tuple[float, float] = (2200.0, 4200.0)
-    whistle_ratio: float = 3.5
     urgency_by_trigger: dict[str, float] = field(
         default_factory=lambda: {
             "board_change": 1.0,
-            "roar": 0.8,
-            "whistle": 0.5,
             "camera_cut": 0.35,
             "silence_pressure": 0.3,
             "scheduled": 0.2,

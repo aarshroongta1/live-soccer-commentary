@@ -127,36 +127,6 @@ async def test_nothing_is_spoken_while_a_replay_is_on_screen(tmp_path: Path) -> 
 
 
 @pytest.mark.asyncio
-async def test_a_confident_caller_is_not_evidence_of_a_celebration(tmp_path: Path) -> None:
-    """Corroboration has to come from somewhere other than the claimant.
-
-    An earlier version asked the caller how confident it felt and treated
-    anything above 0.8 as a celebration seen in the lookahead. That is the
-    same source with a number attached, and it let a goal be announced at a
-    moment when no goal had happened.
-    """
-    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0)
-
-    runtime._roars.clear()
-    assert runtime._celebration_ahead(10.0) is False
-
-    # A roar only stands in for the board when the board cannot be read.
-    # While the bug is legible the board is the only thing that confirms a
-    # goal, because a crowd roars at near misses too — and one did, letting a
-    # phantom goal through when the roar was a free-standing second route.
-    runtime._roars.append(12.0)
-    tracker = runtime.board_tracker
-    tracker._confirmed = (1, 0, 1)
-    tracker._absent_run = 0
-    assert runtime._celebration_ahead(10.0) is False, "the board was readable; it should decide"
-
-    # Bug gone for long enough to read as a replay: now the crowd is all we have.
-    tracker._absent_run = tracker.replay_reads
-    assert runtime._celebration_ahead(10.0) is True
-    assert runtime._celebration_ahead(100.0) is False
-
-
-@pytest.mark.asyncio
 async def test_the_goal_confirmation_window_does_not_widen_with_the_buffer(
     tmp_path: Path,
 ) -> None:
@@ -411,26 +381,6 @@ async def test_the_celebration_is_still_about_the_goal_until_play_restarts(
 
 
 @pytest.mark.asyncio
-async def test_a_whistle_and_then_a_live_picture_is_a_restart(tmp_path: Path) -> None:
-    """The referee whistles the goal too, so the whistle alone is not enough."""
-    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
-    runtime.board_tracker._pending = None
-    runtime._board_changes = []
-    runtime._last_goal_ts = 66.8
-
-    runtime._note_restart(_goal_line(scene=Scene.LIVE_PLAY), 100.0)
-    assert runtime._restart_ts is None, "a live picture with no whistle is not a restart"
-
-    runtime._whistle_since_goal = True
-    runtime._note_restart(_goal_line(scene=Scene.CLOSE_UP), 120.0)
-    assert runtime._restart_ts is None, "a whistle over a close-up is not a restart"
-
-    runtime._note_restart(_goal_line(scene=Scene.LIVE_PLAY), 150.0)
-    assert runtime._restart_ts == 150.0
-    assert runtime._board_supports_goal(160.0) is False
-
-
-@pytest.mark.asyncio
 async def test_a_restart_nobody_saw_is_what_the_cap_is_for(tmp_path: Path) -> None:
     from commentary.runtime import GOAL_TALK_CAP_S
 
@@ -451,7 +401,6 @@ async def test_the_next_goal_starts_the_talking_over(tmp_path: Path) -> None:
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     runtime.board_tracker._pending = None
     runtime._last_goal_ts = 66.8
-    runtime._whistle_since_goal = True
     runtime._note_restart(_goal_line(event=Event.KICKOFF), 153.5)
     assert runtime._board_supports_goal(200.0) is False
 
@@ -462,7 +411,6 @@ async def test_the_next_goal_starts_the_talking_over(tmp_path: Path) -> None:
     runtime._apply_due_board_changes()
 
     assert runtime._restart_ts is None
-    assert runtime._whistle_since_goal is False
     assert runtime._board_supports_goal(runtime.cursor_ts + 30.0) is True
 
 

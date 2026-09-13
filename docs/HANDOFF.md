@@ -108,8 +108,8 @@ play.
    after the referee's decision.
 3. **One fifteen-minute run on an unseen match, $5-6**, as the gate before
    anything goes live.
-4. **A live source** — yt-dlp or capture — with real-time audio and measured
-   end-to-end latency.
+4. **A live source** — yt-dlp or capture — with measured end-to-end
+   latency.
 5. **A Sonnet-versus-Opus caller A/B** over a fifteen-minute segment, once
    naming is stable.
 
@@ -151,6 +151,39 @@ in older traces are history.
 
 Untested and worth $1.20 if anyone cares: the same six clips on Opus with
 tags off, to see whether an Opus caller alone clears the 60% naming bar.
+
+## 8. The audio triggers are gone too
+
+The whistle and crowd-roar detectors, the audio ring, the second ffmpeg
+process that fed them and the simulator's synthetic sound are removed. The
+camera-cut detector stays; it is video. Measured across all 58 real-clip
+traces on disk, no new spend:
+
+- **Whistle**: fired once in 58 runs. A 2.2-4.2 kHz tone never stands out of
+  a broadcast mix with two commentators in it.
+- **Roar**: a median 4 firings a minute on every clip, event or no event. On
+  the Di María clip (ball over the line at video 58, celebration to 80) it
+  fired at 31, 35, 40, 44, then 81, 104, 108, 115 — nine runs, zero roars in
+  47-80. Lines it triggered alone were about an event 32% of the time; the
+  silence timer's lines, 32%; camera cuts, 60%. Roar-only calls fired a
+  median 4.4 s after the previous one, which is the rate cap, so they
+  advanced nothing.
+- **Roar as goal evidence**: when the board was unreadable a roar anywhere
+  in a nine-second window let a goal claim through the gate. That window
+  was open a median 50% of the time and up to 96%. In the three shootout
+  clips every goal and penalty claim passed on it. They happened to be
+  right.
+
+So `Trigger.WHISTLE`, `Trigger.ROAR`, `roar_ratio`, `whistle_band_hz`,
+`whistle_ratio`, `AudioChunk`, `AudioRing`, `FileCapture.audio`,
+`SimSource.audio`, `MatchAudio`, `_celebration_ahead` and the gate's
+`lookahead_celebration` route are gone. **A goal now needs the board or the
+wire, full stop.** In a shootout, where no broadcaster shows a clock or a
+running score, that means goal claims are refused until a graphic changes.
+That is honest, and it will cost shootout lines. The cheap fix if it
+matters: a Haiku yes-or-no on the two lookahead frames, "is this a goal
+celebration", as the independent second source the roar was pretending to
+be — well under a cent a claim.
 
 ## 6. Do not do these again
 
@@ -196,9 +229,8 @@ tags off, to see whether an Opus caller alone clears the 60% naming bar.
   before three agreeing post-goal reads land, which is a race. Nothing to do
   with A16: eight runs of it after that change all passed.
 - **There is no fixed window on talking about a goal.** It runs from the
-  cursor the state applied it at until play restarts — a kickoff line, or a
-  whistle since the goal and then a live picture — with `GOAL_TALK_CAP_S`
-  (150 s) as the backstop. A test asserting that a celebration line expires
+  cursor the state applied it at until play restarts — a kickoff line — with
+  `GOAL_TALK_CAP_S` (150 s) as the backstop. A test asserting that a celebration line expires
   on a clock is asserting the bug that rejected two correct lines.
 - **The board tracker now believes a score change it saw before a replay.**
   A pending change survives absent reads and confirms whenever the bug comes

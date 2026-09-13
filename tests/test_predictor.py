@@ -12,10 +12,10 @@ FORCES_AT = SETTINGS.predictor.silence_forces_at_s
 
 def test_the_rate_cap_holds_against_a_loud_trigger():
     predictor = SpeakPredictor()
-    decision = predictor.decide(100.0 + MIN_GAP / 2, [Trigger.ROAR], last_spoken_ts=100.0)
+    decision = predictor.decide(100.0 + MIN_GAP / 2, [Trigger.CAMERA_CUT], last_spoken_ts=100.0)
     assert not decision.should_call
     assert decision.reason.startswith("rate_cap")
-    assert "roar" in decision.reason
+    assert "camera_cut" in decision.reason
 
 
 def test_a_board_change_beats_the_rate_cap():
@@ -48,10 +48,10 @@ def test_nothing_spoken_yet_counts_as_maximum_silence():
 def test_the_reason_names_the_winning_trigger():
     predictor = SpeakPredictor()
     decision = predictor.decide(
-        108.0, [Trigger.CAMERA_CUT, Trigger.WHISTLE, Trigger.ROAR], last_spoken_ts=100.0
+        108.0, [Trigger.CAMERA_CUT, Trigger.BOARD_CHANGE], last_spoken_ts=100.0
     )
     assert decision.should_call
-    assert "roar" in decision.reason
+    assert "board_change" in decision.reason
     assert "8.0s since last line" in decision.reason
 
 
@@ -72,9 +72,9 @@ def test_pressure_lifts_a_weak_trigger_as_the_silence_runs_on():
 
 def test_a_trigger_trace_replays_identically():
     trace = [
-        (100.0, [Trigger.WHISTLE]),
+        (100.0, [Trigger.CAMERA_CUT]),
         (101.0, [Trigger.CAMERA_CUT]),
-        (106.0, [Trigger.ROAR]),
+        (106.0, [Trigger.BOARD_CHANGE]),
         (119.0, []),
     ]
 

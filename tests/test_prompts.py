@@ -128,14 +128,14 @@ def test_volatile_content_is_the_last_block():
         make_frames(2, start=10.0),
         "Arsenal 1-0 Chelsea, 63:20",
         ["Saka drives at the full-back."],
-        [Trigger.ROAR, Trigger.WHISTLE],
+        [Trigger.CAMERA_CUT, Trigger.BOARD_CHANGE],
     )
     tail = blocks[-1]
     assert tail["type"] == "text"
     body = str(tail["text"])
     assert "Arsenal 1-0 Chelsea, 63:20" in body
     assert "Saka drives at the full-back." in body
-    assert "roar, whistle" in body
+    assert "camera_cut, board_change" in body
 
 
 def test_tail_says_when_nothing_has_been_said_yet():

@@ -47,7 +47,9 @@ async def test_the_model_is_shown_the_cursor_frames_and_the_lookahead():
     backend = backend_saying(line())
     caller = Caller(backend, CONFIG)
 
-    result = await caller.call(buffer_with(), "Arsenal 0-0 Chelsea, 12:04", [Trigger.ROAR])
+    result = await caller.call(
+        buffer_with(), "Arsenal 0-0 Chelsea, 12:04", [Trigger.CAMERA_CUT]
+    )
 
     assert result is not None and result.speak
     calls = backend.calls_tagged("caller")
@@ -57,7 +59,7 @@ async def test_the_model_is_shown_the_cursor_frames_and_the_lookahead():
     assert calls[0].output_format is CallerLine
     assert "SECONDS AFTER" in calls[0].text
     assert "Arsenal 0-0 Chelsea, 12:04" in calls[0].text
-    assert "roar" in calls[0].text
+    assert "camera_cut" in calls[0].text
 
 
 async def test_the_system_prompt_is_the_same_object_on_every_call():

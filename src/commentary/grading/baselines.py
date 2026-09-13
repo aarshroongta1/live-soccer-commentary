@@ -32,7 +32,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from commentary.agents.caller import Caller
-from commentary.capture.buffer import AudioChunk, DelayBuffer, Frame, now
+from commentary.capture.buffer import DelayBuffer, Frame, now
 from commentary.config import SETTINGS, CallerConfig, PredictorConfig, Settings
 from commentary.director import Director
 from commentary.gate import FactGate
@@ -95,7 +95,6 @@ class OpenGate(FactGate):
         pack: KnowledgePack | None,
         *,
         board_changed: bool,
-        lookahead_celebration: bool,
         wire_confirmed: bool = False,
         carried: str | None = None,
     ) -> GateVerdict:
@@ -247,10 +246,6 @@ class PacedSource:
             await self._hold(frame.ts)
             yield frame
 
-    async def audio(self) -> AsyncIterator[AudioChunk]:
-        async for chunk in self.inner.audio():
-            await self._hold(chunk.ts)
-            yield chunk
 
 
 def speaker_for(speed: float) -> LogSpeaker:

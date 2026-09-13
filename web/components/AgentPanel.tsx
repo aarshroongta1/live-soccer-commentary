@@ -44,7 +44,7 @@ function SpeakDecision({ trigger }: { trigger: TriggerEvent | null }) {
           <div className="flex flex-wrap gap-1.5">
             {trigger.triggers.length > 0 ? (
               trigger.triggers.map((name) => (
-                <Chip key={name} tone={name === "board_change" || name === "roar" ? "live" : "neutral"}>
+                <Chip key={name} tone={name === "board_change" ? "live" : "neutral"}>
                   {label(name)}
                 </Chip>
               ))

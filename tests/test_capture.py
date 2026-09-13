@@ -72,24 +72,3 @@ async def test_a_file_yields_frames_at_the_capture_size(clip: Path):
     assert frames[0].ts == 0.0
     assert frames[0].image.shape == (CFG.height, CFG.width, 3)
 
-
-async def test_a_file_yields_sound_on_the_video_clock(clip: Path):
-    async with FileCapture(clip, CFG, realtime=False, sample_rate=SR) as source:
-        chunks = [chunk async for chunk in source.audio()]
-
-    assert len(chunks) > 10
-    assert chunks[0].ts == 0.0
-    assert chunks[1].ts == pytest.approx(0.1)
-    assert chunks[0].sample_rate == SR
-    assert chunks[0].samples.dtype == np.float32
-    assert chunks[0].duration_s == pytest.approx(0.1)
-    assert max(abs(float(chunk.samples.max())) for chunk in chunks) <= 1.0
-    # The tone is on the track: silence would fail this by two orders of magnitude.
-    assert max(chunk.rms for chunk in chunks) > 0.1
-
-
-async def test_sound_and_pictures_cover_the_same_stretch_of_file(clip: Path):
-    async with FileCapture(clip, CFG, realtime=False, sample_rate=SR) as source:
-        frames = [frame async for frame in source.frames()]
-        chunks = [chunk async for chunk in source.audio()]
-    assert frames[-1].ts == pytest.approx(chunks[-1].ts, abs=0.3)

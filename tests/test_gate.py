@@ -150,18 +150,15 @@ def test_the_scoreline_on_the_board_passes_in_either_orientation(pack, state):
     assert gate.judge(call("Carrowmere trail 1-2 with time running out"), state, pack).passed
 
 
-def test_a_goal_needs_the_board_or_a_celebration(pack, state):
+def test_a_goal_needs_the_board(pack, state):
     gate = FactGate()
     goal = call("Krastanov smashes it home from eight yards", event=Event.GOAL)
 
     unconfirmed = gate.judge(goal, state, pack)
     assert not unconfirmed.passed
-    assert unconfirmed.reasons == [
-        "unconfirmed_goal: no board change, no celebration in the lookahead, no wire"
-    ]
+    assert unconfirmed.reasons == ["unconfirmed_goal: no board change, no wire"]
 
     assert gate.judge(goal, state, pack, board_changed=True).passed
-    assert gate.judge(goal, state, pack, lookahead_celebration=True).passed
     # The third route exists only when an ablation is running a statistician.
     assert gate.judge(goal, state, pack, wire_confirmed=True).passed
 

@@ -1,4 +1,3 @@
-import asyncio
 
 import cv2
 import numpy as np
@@ -14,11 +13,9 @@ from commentary.sim import (
     ERROR_KINDS,
     TS_BLOCKS,
     BroadcastRenderer,
-    MatchAudio,
     MatchSim,
     SimOracle,
     SimSource,
-    band_energy,
     decode_ts,
     ts_block_size,
 )
@@ -206,43 +203,6 @@ def test_the_bug_sits_inside_the_configured_crop(width: int, height: int):
     assert inside / whole > 0.3
 
 
-# ------------------------------------------------------------------ audio
-
-
-def test_the_crowd_roars_on_a_goal():
-    sim = MatchSim(seed=11, duration_s=180.0)
-    audio = MatchAudio(sim)
-    goal = next(g for g in sim.ground_truth if g.event is Event.GOAL)
-    quiet = next(
-        ts for ts in np.arange(1.0, sim.duration_s, 0.5) if audio.roar_gain(float(ts)) < 0.05
-    )
-    assert audio.at(goal.video_ts + 0.5).rms > 4.0 * audio.at(float(quiet)).rms
-
-
-def test_the_whistle_lands_in_the_band_the_predictor_watches():
-    sim = MatchSim(seed=11, duration_s=180.0)
-    audio = MatchAudio(sim)
-    low, high = SETTINGS.predictor.whistle_band_hz
-    foul = next(g for g in sim.ground_truth if g.event is Event.FOUL)
-    silent = next(
-        ts
-        for ts in np.arange(1.0, sim.duration_s, 0.5)
-        if all(abs(float(ts) - w) > 1.5 for w in sim.whistle_times)
-    )
-    blown = band_energy(audio.at(foul.video_ts + 0.1), low, high)
-    assert blown > 100.0 * band_energy(audio.at(float(silent)), low, high)
-
-
-def test_chunks_are_the_shape_the_ring_buffer_expects():
-    audio = MatchAudio(MatchSim(seed=3, duration_s=20.0))
-    chunk = audio.chunk(7)
-    assert chunk.ts == pytest.approx(0.7)
-    assert chunk.sample_rate == 16000
-    assert chunk.samples.dtype == np.float32
-    assert chunk.duration_s == pytest.approx(0.1)
-    assert float(np.abs(chunk.samples).max()) <= 1.0
-
-
 # ----------------------------------------------------------------- source
 
 
@@ -251,28 +211,15 @@ def test_sim_source_is_a_frame_source():
     assert source is not None
 
 
-async def test_frames_and_audio_run_off_one_clock():
+async def test_frames_run_on_the_sim_clock():
     sim = MatchSim(seed=6, duration_s=4.0)
-    frames = []
-    chunks = []
 
     async with SimSource(sim, realtime=False) as source:
-
-        async def pull_frames() -> None:
-            async for frame in source.frames():
-                frames.append(frame)
-
-        async def pull_audio() -> None:
-            async for chunk in source.audio():
-                chunks.append(chunk)
-
-        await asyncio.gather(pull_frames(), pull_audio())
+        frames = [frame async for frame in source.frames()]
 
     assert len(frames) == int(4.0 * SETTINGS.capture.fps) + 1
-    assert len(chunks) == 41
     assert [f.ts for f in frames] == sorted(f.ts for f in frames)
     assert frames[-1].ts <= sim.duration_s
-    assert chunks[-1].ts <= sim.duration_s
     # Every frame knows its own time, which is the whole contract with the oracle.
     for frame in frames[::7]:
         assert decode_ts(frame.image) == pytest.approx(frame.ts, abs=0.002)

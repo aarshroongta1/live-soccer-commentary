@@ -16,8 +16,8 @@ Four rules, in the order a sceptic would apply them.
   roster then the caller did not read a graphic, it imagined one, and the rest
   of that line is suspect with it.
 * A scoreline said out loud must match the board.
-* A goal is only a goal once the board says so or the lookahead frames show a
-  celebration. Nothing else gets to claim one. "The board says so" is the
+* A goal is only a goal once the board says so. Nothing else gets to claim
+  one. "The board says so" is the
   caller's own runtime's judgement and it is broader than a settled change:
   a board part-way through agreeing counts, and so does a goal the state has
   already taken in, which is what every line *about* a goal comes after.
@@ -547,7 +547,6 @@ class FactGate:
         pack: KnowledgePack | None,
         *,
         board_changed: bool = False,
-        lookahead_celebration: bool = False,
         wire_confirmed: bool = False,
         carried: str | None = None,
     ) -> GateVerdict:
@@ -569,7 +568,6 @@ class FactGate:
             state,
             pack,
             board_changed=board_changed,
-            lookahead_celebration=lookahead_celebration,
             wire_confirmed=wire_confirmed,
             carried=carried,
         )
@@ -583,7 +581,6 @@ class FactGate:
         pack: KnowledgePack | None,
         *,
         board_changed: bool,
-        lookahead_celebration: bool,
         wire_confirmed: bool = False,
         carried: str | None = None,
     ) -> GateVerdict:
@@ -609,11 +606,9 @@ class FactGate:
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
-            and not (board_changed or lookahead_celebration or wire_confirmed)
+            and not (board_changed or wire_confirmed)
         ):
-            fatal.append(
-                "unconfirmed_goal: no board change, no celebration in the lookahead, no wire"
-            )
+            fatal.append("unconfirmed_goal: no board change, no wire")
         if fatal:
             return GateVerdict(passed=False, reasons=fatal)
 
