@@ -77,7 +77,11 @@ _STOPWORD_TEXT = """
     always surely much nice easy lucky unlucky dangerous clear close magnificent outstanding
     fine smart neat tidy calm cool sweet huge massive well ooh wow yeah okay
 """
-_STOPWORDS = frozenset(_STOPWORD_TEXT.split())
+#: Public because the grader needs the same list. A grader with a shorter one
+#: marks as an invented name every ordinary word the gate deliberately let
+#: through — the real runs produced "Play breaks down by the touchline" and
+#: had "Play" counted as a person.
+STOPWORDS = frozenset(_STOPWORD_TEXT.split())
 
 #: Words that open a commentary sentence and are grammar, not people.
 #:
@@ -303,9 +307,9 @@ def _candidates(line: str) -> list[_Candidate]:
     def flush() -> None:
         if current and current[0].start() == 0 and fold(current[0].group()) in OPENERS:
             current.pop(0)
-        while current and fold(current[0].group()) in _STOPWORDS:
+        while current and fold(current[0].group()) in STOPWORDS:
             current.pop(0)
-        while current and fold(current[-1].group()) in _STOPWORDS:
+        while current and fold(current[-1].group()) in STOPWORDS:
             current.pop()
         if current:
             runs.append(
@@ -329,7 +333,7 @@ def _candidates(line: str) -> list[_Candidate]:
             flush()
         previous_end = match.end()
     flush()
-    return [c for c in runs if fold(c.text) not in _STOPWORDS]
+    return [c for c in runs if fold(c.text) not in STOPWORDS]
 
 
 def _matches_roster(name: str, roster: _Roster, threshold: float) -> bool:

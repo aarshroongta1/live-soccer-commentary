@@ -600,7 +600,12 @@ def _contradicts_roster(state: Watched, sighting: Sighting) -> bool:
     )
     squad = [player for sheet in sheets for player in sheet.squad]
     if sighting.name:
-        wearing = [p for p in squad if _surname(p.name) == _surname(sighting.name)]
+        # Any word of the name, not the last one: a caller reading KOLO MUANI
+        # off a shirt may write either half, and "Di María" arrives as often
+        # as "María" does. Matching the last word alone called a correct read
+        # of the 12 a contradiction.
+        said = _words(sighting.name)
+        wearing = [p for p in squad if said & _words(p.name)]
         if not wearing:
             return True
         if sighting.number is not None:

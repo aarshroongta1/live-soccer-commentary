@@ -547,3 +547,16 @@ def test_the_same_number_on_the_kit_that_wears_it_is_fine(pack, wire, tmp_path: 
     path = write_trace(tmp_path, rows)
     _, items = graded(path, pack, wire)
     assert items[8].ok, items[8].evidence
+
+
+def test_half_a_compound_surname_is_still_that_player(pack, wire, tmp_path: Path) -> None:
+    """A caller reading KOLO MUANI off a shirt may write either half.
+
+    Matching the last word alone scored a correct read of the 12 as a
+    sighting bound to the wrong man.
+    """
+    rows = a_good_run()
+    rows.append(sighting(100.0, "D", 11, "María", True, side="home"))
+    path = write_trace(tmp_path, rows)
+    _, items = graded(path, pack, wire)
+    assert items[8].ok, items[8].evidence

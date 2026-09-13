@@ -360,3 +360,30 @@ def test_an_opener_the_caller_was_told_to_use_is_not_an_invented_name(text: str)
     pack = KnowledgePack(home=TeamSheet(name="Argentina"), away=TeamSheet(name="France"))
     line = SpokenLine(video_ts=1.0, voice="caller", text=text)
     assert factual_errors(Run(run_id="x", lines=[line]), [], pack) == []
+
+
+def test_the_grader_allows_every_ordinary_word_the_gate_allows(tmp_path: Path, truth, pack) -> None:
+    """One stopword list, because two is the table scoring a different system.
+
+    A real run produced "Play breaks down by the touchline, an Argentina arm
+    goes up appealing". The gate has "play" in its stopwords and passed the
+    line untouched; the grader had its own short list, did not, and counted
+    "Play" as a name the system invented.
+    """
+    from commentary import gate
+
+    path = write_trace(tmp_path, [spoken(31.0, "Play breaks down by the touchline")])
+    run = metrics.load_run(path)
+    assert metrics.factual_errors(run, truth, pack) == []
+    assert metrics.GATE_WORDS is gate.STOPWORDS
+
+
+def test_the_short_list_is_still_what_repetition_is_measured_on(tmp_path: Path) -> None:
+    """The two lists have different jobs and the long one would flatten this.
+
+    "Play breaks down" and "Play resumes" share only stopwords; with the
+    gate's football vocabulary dropped as well there would be almost nothing
+    left of either line to compare.
+    """
+    assert "play" not in metrics.STOPWORDS
+    assert metrics.tokens("Play breaks down by the touchline") != metrics.tokens("Play resumes")

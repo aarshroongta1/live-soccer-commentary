@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from commentary.gate import OPENERS
+from commentary.gate import STOPWORDS as GATE_WORDS
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, WireEvent
 from commentary.trace import read_trace, rows_of
 from commentary.voice.speaker import WORDS_PER_SECOND
@@ -340,7 +341,10 @@ def factual_errors(
 
         for word in re.findall(r"\b[A-ZÁÉÍÓÚÄÖÜÑ][a-zá-ü]+\b", line.text):
             candidate = normalise(word)
-            if candidate in known or candidate in STOPWORDS:
+            # The gate's list, not the short one above: a word the gate allows
+            # and the grader calls a name is the table scoring a system that
+            # is not the one running.
+            if candidate in known or candidate in GATE_WORDS:
                 continue
             if _is_team_word(candidate, pack) or _is_ordinary_opener(line.text, word):
                 continue
