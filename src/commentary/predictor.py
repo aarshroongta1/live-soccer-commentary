@@ -58,6 +58,8 @@ class SpeakPredictor:
         now_ts: float,
         triggers: Sequence[Trigger],
         last_spoken_ts: float | None,
+        *,
+        after_goal: bool = False,
     ) -> SpeakDecision:
         """One tick's verdict, with a reason a human reading a trace can act on."""
         self.ticks += 1
@@ -79,7 +81,11 @@ class SpeakPredictor:
 
         forced = silence_s >= self.cfg.silence_forces_at_s
         capped = last_spoken_ts is not None and silence_s < self.caller.min_gap_s
-        override = Trigger.BOARD_CHANGE in fired
+        # A goal is the one thing that is never too soon. The four seconds
+        # after one are when the scorer's name, the celebration and the
+        # replay all arrive at once, and they were the four seconds the cap
+        # spent silent.
+        override = Trigger.BOARD_CHANGE in fired or after_goal
         winner = best.value if best is not None else "silence_pressure" if pressure else "none"
 
         if capped and not override:
@@ -100,7 +106,9 @@ class SpeakPredictor:
                     should_call=True,
                     triggers=fired,
                     urgency=urgency,
-                    reason=f"board_change beats the rate cap, {since}",
+                    reason=(
+                        f"{'a goal' if after_goal else 'board_change'} beats the rate cap, {since}"
+                    ),
                 )
             )
         if forced:

@@ -90,3 +90,25 @@ def test_a_trigger_trace_replays_identically():
         return out
 
     assert replay() == replay()
+
+
+def test_a_goal_beats_the_rate_cap() -> None:
+    """The four seconds after a goal are the four that matter most.
+
+    A goal is the one thing that is never too soon: the scorer's name, the
+    celebration and the replay all arrive inside the window the cap was
+    keeping quiet.
+    """
+    from commentary.predictor import SpeakPredictor
+    from commentary.schemas import Trigger as T
+
+    predictor = SpeakPredictor()
+    blocked = predictor.decide(now_ts=10.0, triggers=[T.SCHEDULED], last_spoken_ts=8.0)
+    assert not blocked.should_call
+    assert "rate_cap" in blocked.reason
+
+    allowed = predictor.decide(
+        now_ts=10.0, triggers=[T.SCHEDULED], last_spoken_ts=8.0, after_goal=True
+    )
+    assert allowed.should_call
+    assert "a goal beats the rate cap" in allowed.reason

@@ -246,6 +246,11 @@ class Runtime:
         #: picture is the game going again.
         self._whistle_since_goal = False
         self._last_spoken_video_ts: float | None = None
+        #: Whether the last line the caller got past the gate claimed a goal.
+        #: The four seconds after one are the scorer's name, the celebration
+        #: and the replay arriving together, and the rate cap spent them
+        #: silent.
+        self._said_a_goal = False
         self._last_analyst_ts: float = 0.0
         self._recent_event: tuple[Event, float] | None = None
         self._sync = WireSync(self.wire) if self.wire is not None else None
@@ -596,6 +601,7 @@ class Runtime:
                 now_ts=self.cursor_ts,
                 triggers=triggers,
                 last_spoken_ts=self._last_spoken_video_ts,
+                after_goal=self._said_a_goal,
             )
             self._publish(Topic.TRIGGER, self.cursor_ts, decision)
             if self._over_budget():
@@ -715,6 +721,7 @@ class Runtime:
         # camera cut that every broadcaster makes the instant a goal goes in.
         # A goal is a goal whatever put the ball there.
         event = Event.GOAL if claims_goal(verdict.line, line.event) else line.event
+        self._said_a_goal = event is Event.GOAL
         beat = Beat(
             id=next_beat_id(),
             voice=Voice.CALLER,

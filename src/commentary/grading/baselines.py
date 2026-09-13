@@ -130,8 +130,13 @@ class FixedCadence(SpeakPredictor):
         now_ts: float,
         triggers: Sequence[Trigger],
         last_spoken_ts: float | None,
+        *,
+        after_goal: bool = False,
     ) -> SpeakDecision:
         """Due every ``cadence_s`` of video time, and never for any other reason.
+
+        ``after_goal`` is ignored on purpose: the baseline is a timer, and a
+        timer that made an exception for goals would not be the baseline.
 
         The timer runs off this object's own last attempt rather than off the
         runtime's last spoken line. worldcupvoice narrates every four seconds;
