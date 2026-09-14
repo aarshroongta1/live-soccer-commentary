@@ -98,6 +98,10 @@ class SaySpeaker:
             spoken=beat.text if completed else self._estimate(beat.text, elapsed),
             seconds=elapsed,
             completed=completed,
+            # ``say`` renders and plays behind its own back: nothing here can
+            # see the moment sound starts, and guessing at it would put a
+            # made-up number next to two measured ones.
+            first_audio_s=None,
         )
         self.said.append(utterance)
         return utterance

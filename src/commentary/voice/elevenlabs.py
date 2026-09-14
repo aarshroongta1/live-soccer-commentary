@@ -33,7 +33,7 @@ from collections.abc import AsyncIterator, Callable
 from typing import Any
 
 from commentary.schemas import Beat, Voice
-from commentary.voice.playback import AudioSink, NullSink, default_sink
+from commentary.voice.playback import AudioSink, NullSink, PcmSink, default_sink
 from commentary.voice.speaker import WORDS_PER_SECOND, Utterance
 
 log = logging.getLogger(__name__)
@@ -45,12 +45,17 @@ log = logging.getLogger(__name__)
 #: the chain where a quarter of a second buys nothing but polish.
 MODEL_ID = "eleven_flash_v2_5"
 
-#: 32 kbps at 22 kHz. Deliberately the smallest mp3 on offer: fewer bytes per
-#: second of speech means the first audible syllable arrives sooner, and at
-#: this bitrate a single close-mic voice still sounds fine over a demo's
-#: speakers. ``pcm_24000`` skips decoding entirely and is better again if the
-#: account allows it — pass it as ``output_format`` and the ffplay sink adapts.
-OUTPUT_FORMAT = "mp3_22050_32"
+#: Raw 16-bit mono at 22 050 Hz. Not an mp3, and that is the point: raw
+#: samples go straight into the sound card, so there is no decoder to feed and
+#: no player process to start, and the sink knows exactly how much speech it
+#: is holding. That last part is what the mp3 path could not do — see
+#: :class:`~commentary.voice.playback.PcmSink` for the three seconds a line it
+#: was costing. ``pcm_16000`` and ``pcm_24000`` are the other two rates a free
+#: account may ask for; ``pcm_44100`` needs a paid one. ``mp3_22050_32`` is
+#: still here and still a quarter of the bytes, which is the trade to make on
+#: a connection too slow to deliver PCM in real time: pass it as
+#: ``output_format`` and the ffplay sink takes over.
+OUTPUT_FORMAT = "pcm_22050"
 
 #: Stock library voices, picked to be told apart instantly rather than to be
 #: the best two voices on the platform. The caller is a British male with some
@@ -150,15 +155,26 @@ class ElevenLabsSpeaker:
                 beat,
                 spoken=self._estimate(beat.text, audio_started),
                 started=started,
+                audio_started=audio_started,
                 completed=False,
             )
 
         if completed:
             await sink.finish()
-            return self._record(beat, spoken=beat.text, started=started, completed=True)
+            return self._record(
+                beat,
+                spoken=beat.text,
+                started=started,
+                audio_started=audio_started,
+                completed=True,
+            )
         await sink.stop()
         return self._record(
-            beat, spoken=self._estimate(beat.text, audio_started), started=started, completed=False
+            beat,
+            spoken=self._estimate(beat.text, audio_started),
+            started=started,
+            audio_started=audio_started,
+            completed=False,
         )
 
     async def _pump(
@@ -259,12 +275,31 @@ class ElevenLabsSpeaker:
         heard = int((time.monotonic() - audio_started) * self.words_per_second)
         return " ".join(words[: max(0, heard)])
 
-    def _record(self, beat: Beat, *, spoken: str, started: float, completed: bool) -> Utterance:
+    def _record(
+        self,
+        beat: Beat,
+        *,
+        spoken: str,
+        started: float,
+        audio_started: float | None,
+        completed: bool,
+    ) -> Utterance:
+        """One line's account of itself, including how long nothing happened.
+
+        ``seconds`` is the whole call and is what the director bills the
+        channel for. On its own it cannot say whether a long line was long
+        speech or a slow first byte, and those want opposite fixes: the first
+        is the model writing too much, the second is the network or the
+        format. ``first_audio_s`` separates them, and it is None when no audio
+        ever arrived rather than zero, because a line nobody heard did not
+        reach the speakers instantly.
+        """
         utterance = Utterance(
             beat=beat,
             spoken=spoken,
             seconds=time.monotonic() - started,
             completed=completed,
+            first_audio_s=None if audio_started is None else audio_started - started,
         )
         self.said.append(utterance)
         return utterance
@@ -309,6 +344,7 @@ __all__ = [
     "AudioSink",
     "ElevenLabsSpeaker",
     "NullSink",
+    "PcmSink",
     "SinkFactory",
     "StreamFactory",
     "VoiceUnavailable",

@@ -139,7 +139,17 @@ class Director:
         self.last_voice = beat.voice
         if utterance.completed:
             self.stats.spoken += 1
-            self._publish(Topic.SPOKEN, beat, spoken=utterance.spoken, seconds=utterance.seconds)
+            # ``first_audio_s`` rides along with ``seconds`` because the two
+            # only mean anything beside each other: five seconds of channel
+            # for a six-word line is a different problem depending on whether
+            # four of them were silence.
+            self._publish(
+                Topic.SPOKEN,
+                beat,
+                spoken=utterance.spoken,
+                seconds=utterance.seconds,
+                first_audio_s=utterance.first_audio_s,
+            )
         else:
             self.stats.preempted += 1
             self._publish(

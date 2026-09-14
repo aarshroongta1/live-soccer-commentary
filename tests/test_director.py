@@ -129,3 +129,36 @@ async def test_the_bus_carries_what_happened() -> None:
 
     assert Topic.BEAT in seen
     assert Topic.SPOKEN in seen
+
+
+@pytest.mark.asyncio
+async def test_a_spoken_row_says_how_long_the_line_took_and_how_long_it_was_silent() -> None:
+    """Both numbers, or neither is readable.
+
+    ``seconds`` is what the channel was held for and what the rate limiter
+    charges against; on its own it cannot say whether a long line was long
+    speech or a slow first byte, and those are different bugs. A trace with
+    only one of the two is how three seconds a line of player overhead went
+    unnoticed for a whole run.
+    """
+    bus = Bus()
+    spoken: list[dict[str, object]] = []
+
+    async def watch() -> None:
+        async for message in bus.subscribe():
+            if message.topic is Topic.SPOKEN:
+                spoken.append(message.payload)
+
+    watcher = asyncio.create_task(watch())
+    await asyncio.sleep(0)
+
+    director = Director(speaker=LogSpeaker(words_per_second=200), bus=bus)
+    director.submit(beat("a line"))
+    await run_briefly(director, 0.3)
+    watcher.cancel()
+
+    assert len(spoken) == 1
+    assert spoken[0]["seconds"] > 0.0
+    # The printed voice has no synthesis to wait through, and says so rather
+    # than leaving the field out.
+    assert spoken[0]["first_audio_s"] == 0.0

@@ -28,6 +28,12 @@ class Utterance:
     spoken: str
     seconds: float
     completed: bool
+    #: Seconds from ``say`` being called to the first sound reaching the
+    #: output. ``seconds`` covers the whole line and cannot be read as
+    #: latency; this is the part a listener waits through before anything
+    #: happens, and it is the number to watch when a voice or a format
+    #: changes. None where a speaker cannot observe it.
+    first_audio_s: float | None = None
 
 
 class Speaker(Protocol):
@@ -72,6 +78,9 @@ class LogSpeaker:
             spoken=" ".join(out),
             seconds=time.monotonic() - started,
             completed=len(out) == len(words) and not cancel.is_set(),
+            # There is no synthesis to wait for: the first word is "out" the
+            # instant the line is taken.
+            first_audio_s=0.0,
         )
         self.said.append(utterance)
         if self.echo:

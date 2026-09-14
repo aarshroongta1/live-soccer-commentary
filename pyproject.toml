@@ -18,6 +18,10 @@ dependencies = [
 eval = ["mlx-whisper>=0.4; sys_platform == 'darwin'", "httpx>=0.27"]
 trace = ["langfuse>=2.53"]
 voice = ["elevenlabs>=1.9"]
+# PortAudio, for playing raw PCM inside this process instead of piping it to
+# ffplay. Separate from `voice` because it is the only wheel here that needs a
+# sound card to be useful, and the mp3 path still works without it.
+audio = ["sounddevice>=0.5"]
 tools = [
     "mcp>=1.2",
 ]
@@ -53,7 +57,7 @@ strict = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["cv2.*", "mlx_whisper.*"]
+module = ["cv2.*", "mlx_whisper.*", "sounddevice.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

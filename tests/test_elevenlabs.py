@@ -4,11 +4,18 @@ Nothing here touches the network. The chunk stream and the audio sink are both
 constructor arguments, so a fake iterator and a :class:`NullSink` exercise the
 real pump loop — the cancel checks, the abandonment, the estimate — without a
 key, a socket, or a sound card.
+
+The PCM sink is the same trick one layer down. Its stream is a constructor
+argument too, so the arithmetic that replaced ffplay's timeout — how long the
+audio handed over will take to come out, and how little a cancel waits — is
+checkable against a fake card that keeps its own books and makes no sound.
 """
 
 from __future__ import annotations
 
 import asyncio
+import importlib.util
+import shutil
 import subprocess
 import sys
 import time
@@ -19,7 +26,15 @@ import pytest
 
 from commentary.schemas import Beat, Voice
 from commentary.voice import ElevenLabsSpeaker, VoiceUnavailable
-from commentary.voice.playback import FFplaySink, NullSink
+from commentary.voice.playback import (
+    DRAIN_TIMEOUT_S,
+    PCM_SAMPLE_BYTES,
+    FFplaySink,
+    NullSink,
+    PcmSink,
+    default_sink,
+    pcm_rate,
+)
 
 
 def beat(text: str, *, voice: Voice = Voice.CALLER) -> Beat:
@@ -292,3 +307,229 @@ async def test_stopping_a_player_that_never_started_is_harmless() -> None:
     await sink.write(b"nothing is listening")
     await sink.stop()
     await sink.finish()
+
+
+# -- the PCM sink -------------------------------------------------------
+
+RATE = 22050
+#: Bytes of ``pcm_22050`` in one second of speech.
+SECOND = RATE * PCM_SAMPLE_BYTES
+
+
+class FakeCard:
+    """A sound card that keeps its books and makes no sound.
+
+    ``write_available`` is the part that matters: it is finite and only goes
+    back up when the test says the card has played something, which is what
+    makes the sink's back-pressure real without a device. Writing past it
+    fails the test rather than being quietly absorbed, because a sink that
+    overruns a real card is a sink that drops audio.
+    """
+
+    def __init__(self, room_frames: int = 1 << 20) -> None:
+        self._room = room_frames
+        self.written = b""
+        self.started = False
+        self.stopped = False
+        self.aborted = False
+        self.closed = False
+
+    @property
+    def write_available(self) -> int:
+        return self._room
+
+    def start(self) -> None:
+        self.started = True
+
+    def write(self, data: bytes) -> None:
+        frames = len(data) // PCM_SAMPLE_BYTES
+        assert frames <= self._room, "wrote more than the card said it had room for"
+        self.written += bytes(data)
+        self._room -= frames
+
+    def play(self, frames: int) -> None:
+        """The card gets through some of what it is holding."""
+        self._room += frames
+
+    def stop(self) -> None:
+        self.stopped = True
+
+    def abort(self) -> None:
+        self.aborted = True
+
+    def close(self) -> None:
+        self.closed = True
+
+
+def pcm_sink(card: FakeCard, **kwargs: float) -> PcmSink:
+    return PcmSink("pcm_22050", open_stream=lambda _rate: card, **kwargs)  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_a_finished_pcm_line_waits_for_its_own_audio_and_not_for_a_timeout() -> None:
+    """The measurement this sink exists for.
+
+    ffplay's ``-autoexit`` never fired on a closed pipe, so every finished
+    line sat out :data:`DRAIN_TIMEOUT_S` and was then killed — three seconds
+    of held channel for two seconds of speech. Here the wait is the audio.
+    """
+    card = FakeCard()
+    sink = pcm_sink(card)
+    await sink.start()
+    await sink.write(b"\0" * (RATE // 4 * PCM_SAMPLE_BYTES))
+
+    started = time.monotonic()
+    await sink.finish()
+    waited = time.monotonic() - started
+
+    assert waited == pytest.approx(0.25, abs=0.1)
+    assert waited < DRAIN_TIMEOUT_S
+    assert sink.seconds_written == pytest.approx(0.25, abs=1e-3)
+    # Played out and closed, not killed: the next voice may now start.
+    assert card.stopped and card.closed and not card.aborted
+
+
+@pytest.mark.asyncio
+async def test_a_cut_line_drops_what_the_card_is_holding_instead_of_playing_it() -> None:
+    card = FakeCard()
+    sink = pcm_sink(card)
+    await sink.start()
+    await sink.write(b"\0" * SECOND)
+
+    started = time.monotonic()
+    await sink.stop()
+
+    assert time.monotonic() - started < 0.05, "a preemption waited out the audio it was cancelling"
+    assert card.aborted and card.closed and not card.stopped
+
+
+@pytest.mark.asyncio
+async def test_the_sink_writes_only_as_much_as_the_card_says_it_has_room_for() -> None:
+    """A full card is waited on, on the event loop, not overrun and not blocked.
+
+    Nothing here may occupy a thread: a write stuck inside PortAudio is a
+    write a cancel cannot reach, and aborting the stream out from under one is
+    how this crashes rather than goes quiet.
+    """
+    card = FakeCard(room_frames=100)
+    sink = pcm_sink(card, poll_s=0.001)
+    await sink.start()
+
+    async def play() -> None:
+        for _ in range(2):
+            await asyncio.sleep(0.01)
+            card.play(100)
+
+    playing = asyncio.create_task(play())
+    await sink.write(b"\0" * 600)  # 300 frames into a card that holds 100
+    await playing
+
+    assert len(card.written) == 600
+    assert sink.written == 600
+
+
+@pytest.mark.asyncio
+async def test_a_chunk_that_ends_mid_sample_holds_the_odd_byte_back() -> None:
+    # Where a chunk boundary falls is a fact about how the HTTP response was
+    # split up, not about the speech. PortAudio counts whole frames.
+    card = FakeCard()
+    sink = pcm_sink(card)
+    await sink.start()
+
+    await sink.write(b"abc")
+    assert card.written == b"ab"
+
+    await sink.write(b"de")
+    assert card.written == b"abcd"
+
+
+@pytest.mark.asyncio
+async def test_a_stream_slower_than_real_time_still_ends_when_its_audio_does() -> None:
+    """The card runs dry between chunks, so the sound ends later than the bytes.
+
+    Total bytes over the rate would say a fifth of a second here. The answer
+    is nearer half of one, because the second chunk could not start playing
+    until it arrived.
+    """
+    card = FakeCard()
+    sink = pcm_sink(card)
+    await sink.start()
+
+    await sink.write(b"\0" * (SECOND // 10))
+    await asyncio.sleep(0.25)  # longer than the tenth of a second just written
+    await sink.write(b"\0" * (SECOND // 10))
+
+    started = time.monotonic()
+    await sink.finish()
+
+    assert time.monotonic() - started == pytest.approx(0.1, abs=0.06)
+
+
+@pytest.mark.asyncio
+async def test_a_sink_nothing_was_written_to_neither_waits_nor_complains() -> None:
+    card = FakeCard()
+    sink = pcm_sink(card)
+    await sink.start()
+
+    started = time.monotonic()
+    await sink.finish()
+
+    assert time.monotonic() - started < 0.05
+    assert card.stopped
+    # And a second finish, or a stop after one, is a no-op rather than a crash.
+    await sink.finish()
+    await sink.stop()
+
+
+def test_a_raw_format_is_recognised_by_its_name_and_an_mp3_is_not() -> None:
+    assert pcm_rate("pcm_22050") == RATE
+    assert pcm_rate("pcm_24000") == 24000
+    assert pcm_rate("mp3_22050_32") is None
+    assert pcm_rate("ulaw_8000") is None
+
+
+def test_asking_for_a_raw_format_from_the_pcm_sink_is_the_only_thing_it_accepts() -> None:
+    with pytest.raises(ValueError, match="not a raw PCM format"):
+        PcmSink("mp3_22050_32")
+
+
+@pytest.mark.skipif(
+    importlib.util.find_spec("sounddevice") is None, reason="the audio extra is not installed"
+)
+def test_the_format_the_voice_asks_for_picks_the_sink_that_can_play_it() -> None:
+    # Constructing either is cheap and opens no device; the choice is the
+    # whole of what is being asserted.
+    assert isinstance(default_sink("pcm_22050"), PcmSink)
+    if shutil.which("ffplay") is not None:
+        assert isinstance(default_sink("mp3_22050_32"), FFplaySink)
+
+
+@pytest.mark.asyncio
+async def test_a_line_reports_how_long_the_listener_waited_for_the_first_sound() -> None:
+    """``seconds`` cannot answer this, and the two want opposite fixes.
+
+    Five seconds of channel for a six-word line is the model writing too much
+    if the sound started at once, and the network or the format if it did not.
+    """
+    stream = FakeStream([b"a" * 64] * 4, delay_s=0.05)
+    spk = speaker(stream, NullSink())
+
+    utterance = await spk.say(beat("a slow start"), asyncio.Event())
+
+    assert utterance.first_audio_s is not None
+    assert utterance.first_audio_s == pytest.approx(0.05, abs=0.04)
+    assert utterance.first_audio_s < utterance.seconds
+
+
+@pytest.mark.asyncio
+async def test_a_line_nobody_heard_reports_no_first_audio_rather_than_none_at_all() -> None:
+    # None, not zero: a line that never made a sound did not reach the
+    # speakers instantly, and a zero here would average into the latency as
+    # though it had.
+    def explode(_text: str, _voice: str) -> AsyncIterator[bytes]:
+        raise ConnectionError("no route to ElevenLabs")
+
+    spk = ElevenLabsSpeaker(api_key="test-key", stream=explode, sink=NullSink)
+    utterance = await spk.say(beat("a line nobody hears"), asyncio.Event())
+
+    assert utterance.first_audio_s is None
