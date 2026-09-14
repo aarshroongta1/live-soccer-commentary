@@ -1,0 +1,35 @@
+src/commentary/__main__.py
+  s_d55ab428b62c9f::t_82aac58c56d998 16,239-240,245-246,342-343,348-349
+  s_d55ab428b62c9f::t_fc7148565939e8 320-341,344-347,350-352,358
+  s_d55ab428b62c9f::t_bb1d3bb550712f 353-357
+  s_d55ab428b62c9f::t_a4517d50bcd23f 35
+  s_d55ab428b62c9f::t_e0fb4c5c3f0ba5 656-669
+  s_d55ab428b62c9f::t_c076355ee303b1 281-282,284-290,292-297,306-317
+  s_d55ab428b62c9f::t_44a7708494a06a 298-305
+  s_d55ab428b62c9f::t_8f5e53f4ec421c 8
+  s_d55ab428b62c9f::t_ff1dd8b22bbcb8 318-319,670
+src/commentary/replay.py
+  s_d55ab428b62c9f::t_b5a346a3648d75 1-169,175-258
+  s_d55ab428b62c9f::t_e87462ad5244f3 170-174
+tests/test_replay.py
+  s_d55ab428b62c9f::t_13fd4d4e5353e8 24
+  s_d55ab428b62c9f::t_a8e080f020c3b8 32-34
+  s_d55ab428b62c9f::t_7cb81ec59bd08e 212,216-222
+  s_d55ab428b62c9f::t_51bb5775c3aef3 1-23,25-31,35-211,213-215,223-235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a66128d599e5d54d4bc952b1ebfa6ccf7cd99e63",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
