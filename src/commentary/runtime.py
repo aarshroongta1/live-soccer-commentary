@@ -599,6 +599,11 @@ class Runtime:
             self.pack,
             board_changed=self._board_supports_goal(cursor),
             wire_confirmed=self._wire_confirms_goal(cursor),
+            # The narrow half of the three, passed on its own: a goal the
+            # state already holds is a goal the score already counts, and the
+            # gate's arithmetic needs to know that the number is settled
+            # rather than arriving.
+            goal_in_state=self._goal_already_in_the_state(cursor),
             carried=self._carried_name(line, cursor),
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)

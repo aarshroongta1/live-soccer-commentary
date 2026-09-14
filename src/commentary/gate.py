@@ -15,7 +15,12 @@ Four rules, in the order a sceptic would apply them.
   have read off a graphic gets *less* latitude, not more: if it is not on a
   roster then the caller did not read a graphic, it imagined one, and the rest
   of that line is suspect with it.
-* A scoreline said out loud must match the board.
+* A number put on the score must be a number the state holds. The scoreline
+  said out loud is the obvious way of putting one there and the ordinal is the
+  quiet one: "Argentina's third" claims a score exactly as hard as "3-0" does,
+  and only the state is entitled to settle either. The one latitude is a goal
+  being called while the graphic catches up, which is the whole reason the
+  caller is allowed to speak ahead of the board at all.
 * A goal is only a goal once the board says so. Nothing else gets to claim
   one. "The board says so" is the
   caller's own runtime's judgement and it is broader than a settled change:
@@ -38,7 +43,15 @@ from dataclasses import dataclass, field, replace
 from difflib import SequenceMatcher
 
 from commentary.config import SETTINGS, GateConfig
-from commentary.schemas import CallerLine, Event, GateVerdict, KnowledgePack, MatchState, Scene
+from commentary.schemas import (
+    CallerLine,
+    Event,
+    GateVerdict,
+    KnowledgePack,
+    MatchState,
+    Scene,
+    Side,
+)
 
 # Words that open sentences or describe football, not people. A capitalised
 # token in here is never treated as a name, which is what stops the gate
@@ -115,6 +128,18 @@ _WORD_ALT = "|".join(_NUMBER_WORDS)
 _DIGIT_PAIR = re.compile(r"\b([0-9])\s*[-–—:]\s*([0-9])\b")
 _WORD_PAIR = re.compile(rf"\b({_WORD_ALT})[\s-]+({_WORD_ALT})\b", re.IGNORECASE)
 _ALL_PAIR = re.compile(rf"\b({_WORD_ALT})[\s-]+all\b", re.IGNORECASE)
+#: A measurement is not a scoreline. "Eight to ten yards out" has the shape of
+#: one and the meaning of a distance, and the gate is the last thing that
+#: should be rejecting a line for saying where the ball was.
+_NOT_A_UNIT = r"(?!\s+(?:yards?|metres?|meters?|feet|foot|minutes?|seconds?|men|man|players?))"
+#: "3 nil". The word pair above wants both halves spelled out and the pair
+#: above that wants both in figures; a commentator mixes them freely.
+_MIXED_PAIR = re.compile(rf"\b([0-9])[\s-]+({_WORD_ALT})\b{_NOT_A_UNIT}", re.IGNORECASE)
+#: "two to one", "2 to 1". Not "one to one", which is a duel with a keeper: a
+#: level score is said "one all", and _ALL_PAIR already has that one.
+_TO_PAIR = re.compile(
+    rf"\b([0-9]|{_WORD_ALT})\s+to\s+([0-9]|{_WORD_ALT})\b{_NOT_A_UNIT}", re.IGNORECASE
+)
 
 #: How a line says a goal was scored. The word "goal" is not on the list.
 #: It used to be, with a second expression stripping the innocent uses first
@@ -399,6 +424,150 @@ def _stated_scores(line: str) -> list[tuple[int, int]]:
     for match in _ALL_PAIR.finditer(line):
         value = _NUMBER_WORDS[match.group(1).lower()]
         found.append((value, value))
+    for match in _MIXED_PAIR.finditer(line):
+        found.append((int(match.group(1)), _NUMBER_WORDS[match.group(2).lower()]))
+    for match in _TO_PAIR.finditer(line):
+        first, second = match.group(1).lower(), match.group(2).lower()
+        if first == second == "one":
+            continue  # "one to one with the keeper" is a duel, not a draw.
+        found.append((_as_number(first), _as_number(second)))
+    return found
+
+
+def _as_number(token: str) -> int:
+    return int(token) if token.isdigit() else _NUMBER_WORDS[token]
+
+
+#: Ordinals a commentator actually says, spelled out or in figures.
+_ORDINAL_WORDS: dict[str, int] = {
+    "first": 1,
+    "second": 2,
+    "third": 3,
+    "fourth": 4,
+    "fifth": 5,
+    "sixth": 6,
+    "seventh": 7,
+    "eighth": 8,
+    "ninth": 9,
+    "tenth": 10,
+    "1st": 1,
+    "2nd": 2,
+    "3rd": 3,
+    "4th": 4,
+    "5th": 5,
+    "6th": 6,
+    "7th": 7,
+    "8th": 8,
+    "9th": 9,
+    "10th": 10,
+}
+_ORD_ALT = "|".join(_ORDINAL_WORDS)
+
+#: An ordinal counts goals only where a noun would go: ending the sentence, in
+#: front of "goal", or in front of "of the night". Everywhere else it is
+#: describing something that is not the score — "their first real chance", "the
+#: third man on the overlap" — and a rule that counted those would spend the
+#: first half rejecting true lines.
+_ORD_TAIL = r"(?=\s*(?:[.,!?;:]|[-–—]|$)|\s+goals?\b|\s+of\b)"
+
+#: One or two ordinary words, checked against the team names afterwards rather
+#: than by their capitals. "Argentina", "Northvale United", "the French".
+_TEAM_RUN = r"[^\W\d_][\w-]*(?:\s+[^\W\d_][\w-]*)?"
+
+#: A number somebody is chasing is not a number they hold. "Looking for their
+#: third" at two-nil is both true and unsayable under plain arithmetic, so a
+#: wish is read as a wish and left alone.
+_ASPIRING = frozenset(
+    (
+        "for",
+        "chasing",
+        "chase",
+        "seeking",
+        "search",
+        "searching",
+        "hunting",
+        "hunt",
+        "after",
+        "need",
+        "needs",
+        "want",
+        "wants",
+    )
+)
+
+#: "Argentina's third", "their fourth", "a third for Argentina". A hat-trick is
+#: deliberately absent: it counts one man's goals, not the team's, and so is
+#: "his third" — neither says anything the board can be held to.
+_ORD_POSSESSIVE = re.compile(
+    rf"\b(?P<team>{_TEAM_RUN})['’]s\s+(?P<ord>{_ORD_ALT}){_ORD_TAIL}", re.IGNORECASE
+)
+_ORD_THEIR = re.compile(rf"\btheir\s+(?P<ord>{_ORD_ALT}){_ORD_TAIL}", re.IGNORECASE)
+_ORD_FOR_TEAM = re.compile(
+    rf"\b(?:a|an|the)\s+(?P<ord>{_ORD_ALT})\s+(?:goals?\s+)?for\s+(?P<team>{_TEAM_RUN})\b",
+    re.IGNORECASE,
+)
+
+
+def _team_words(state: MatchState, pack: KnowledgePack | None) -> dict[Side, frozenset[str]]:
+    """The words that name each side, with the words that name both removed.
+
+    Two clubs called United share the word, and a word both sides answer to
+    names neither: better to skip the check than to count a goal for the wrong
+    team.
+    """
+    labels: dict[Side, list[str]] = {Side.HOME: [state.home], Side.AWAY: [state.away]}
+    if pack is not None:
+        for side, sheet in ((Side.HOME, pack.home), (Side.AWAY, pack.away)):
+            labels[side] += [sheet.name, sheet.short, sheet.demonym]
+    words = {
+        side: {token for label in names for token in fold(label).split() if len(token) >= 3}
+        for side, names in labels.items()
+    }
+    shared = words[Side.HOME] & words[Side.AWAY]
+    return {side: frozenset(found - shared) for side, found in words.items()}
+
+
+def _side_named(phrase: str, teams: dict[Side, frozenset[str]]) -> Side | None:
+    """Which side does this run of words name, if exactly one of them?"""
+    said = {token for token in fold(phrase).split() if len(token) >= 3}
+    hit = [side for side, words in teams.items() if said & words]
+    return hit[0] if len(hit) == 1 else None
+
+
+def _side_of_line(line: CallerLine, teams: dict[Side, frozenset[str]]) -> Side | None:
+    """Whose goal "their third" is counting, from the form the caller filled in.
+
+    The form first, because the caller writes the team name it read; the bare
+    ``side`` field after it. When neither answers, the claim is left alone
+    rather than guessed at: a rule that picked a side would reject true lines
+    about the other one.
+    """
+    if line.team:
+        named = _side_named(line.team, teams)
+        if named is not None:
+            return named
+    return line.side if line.side in (Side.HOME, Side.AWAY) else None
+
+
+def _is_aspiration(text: str, start: int) -> bool:
+    before = _WORD.findall(text[:start])
+    return bool(before) and before[-1].lower() in _ASPIRING
+
+
+def _ordinal_claims(
+    text: str, line: CallerLine, teams: dict[Side, frozenset[str]]
+) -> list[tuple[str, Side, int]]:
+    """Every claim the line makes about how many goals a side has."""
+    found: list[tuple[str, Side, int]] = []
+    for pattern in (_ORD_POSSESSIVE, _ORD_THEIR, _ORD_FOR_TEAM):
+        for match in pattern.finditer(text):
+            if _is_aspiration(text, match.start()):
+                continue
+            named = match.groupdict().get("team")
+            side = _side_named(named, teams) if named else _side_of_line(line, teams)
+            if side is None:
+                continue
+            found.append((match.group().strip(), side, _ORDINAL_WORDS[match.group("ord").lower()]))
     return found
 
 
@@ -556,6 +725,7 @@ class FactGate:
         *,
         board_changed: bool = False,
         wire_confirmed: bool = False,
+        goal_in_state: bool = False,
         carried: str | None = None,
     ) -> GateVerdict:
         """Pass, trim, or reject — and always say why.
@@ -565,6 +735,13 @@ class FactGate:
         reader is still confirming, or a goal already in the state.
         ``wire_confirmed`` is a statistician having said so, which is only
         ever true in the ablation that runs one.
+
+        ``goal_in_state`` is the third of those three, on its own, and it is
+        what tells the arithmetic which situation it is in. A goal the state
+        has already counted is in the score; the next line about it may say
+        that score and no other. A goal the board is only now agreeing to is
+        not in the score yet, and the line calling it is allowed to be one
+        ahead.
 
         ``carried`` is the player the last line had on the ball, seconds ago.
         A name the caller can no longer read is still the name of the man it
@@ -577,6 +754,7 @@ class FactGate:
             pack,
             board_changed=board_changed,
             wire_confirmed=wire_confirmed,
+            goal_in_state=goal_in_state,
             carried=carried,
         )
         self.stats.record(verdict)
@@ -590,6 +768,7 @@ class FactGate:
         *,
         board_changed: bool,
         wire_confirmed: bool = False,
+        goal_in_state: bool = False,
         carried: str | None = None,
     ) -> GateVerdict:
         text = line.line.strip()
@@ -608,9 +787,15 @@ class FactGate:
                 roster,
                 people=roster.people | {fold(carried), fold(_surname(carried))},
             )
+        # A goal is being called that the score does not yet include: the ball
+        # has crossed the line, something outside the caller agrees, and the
+        # board has not caught up. That and only that buys a line the right to
+        # be one goal ahead of the state.
+        goal_incoming = (board_changed or wire_confirmed) and not goal_in_state
         fatal: list[str] = []
         fatal += self._check_sightings(line, roster, pack)
-        fatal += self._check_scoreline(text, state)
+        fatal += self._check_scoreline(text, state, goal_incoming=goal_incoming)
+        fatal += self._check_score_claims(text, line, state, pack, goal_incoming=goal_incoming)
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
@@ -669,15 +854,56 @@ class FactGate:
             return []
         return [f"number_not_in_squad: {number}"]
 
-    def _check_scoreline(self, text: str, state: MatchState) -> list[str]:
+    def _check_scoreline(self, text: str, state: MatchState, *, goal_incoming: bool) -> list[str]:
         """Either orientation is allowed: the gate cannot know which team was meant."""
         board = (state.home_score, state.away_score)
+        allowed = {board, board[::-1]}
+        if goal_incoming:
+            # "And that's three-nil!" as the ball hits the net, seconds before
+            # the graphic says so. One goal on one side, and only while a goal
+            # is actually being called.
+            for bumped in ((board[0] + 1, board[1]), (board[0], board[1] + 1)):
+                allowed |= {bumped, bumped[::-1]}
         problems: list[str] = []
         for home, away in _stated_scores(text):
-            if (home, away) != board and (away, home) != board:
+            if (home, away) not in allowed:
                 problems.append(
                     f"scoreline_mismatch: said {home}-{away}, board {board[0]}-{board[1]}"
                 )
+        return problems
+
+    def _check_score_claims(
+        self,
+        text: str,
+        line: CallerLine,
+        state: MatchState,
+        pack: KnowledgePack | None,
+        *,
+        goal_incoming: bool,
+    ) -> list[str]:
+        """An ordinal is a scoreline with one number left out, and it is checked.
+
+        On the Di María clip the caller called the second goal twice more
+        after the state already held it — "Messi, from the rebound!
+        Argentina's third", then "De Paul! Argentina's fourth!" — and both
+        went out. Neither was a phantom goal by the board rule: a goal *was*
+        in the state, which is the cover every celebration line needs. What
+        made them lies was the counting, and counting is arithmetic the gate
+        can do on its own.
+
+        So: a side that has scored *n* may be said to have scored *n*, and one
+        more than *n* only while a goal is being called that the state has not
+        taken in yet. Nothing else, and the whole line goes — there is no
+        trimming a number out of a sentence and leaving commentary behind.
+        """
+        board = (state.home_score, state.away_score)
+        teams = _team_words(state, pack)
+        problems: list[str] = []
+        for said, side, count in _ordinal_claims(text, line, teams):
+            held = board[0] if side is Side.HOME else board[1]
+            allowed = {held, held + 1} if goal_incoming else {held}
+            if count not in allowed:
+                problems.append(f"score_claim: {said} vs state {board[0]}-{board[1]}")
         return problems
 
     def _trim_unverified(self, text: str, roster: _Roster) -> GateVerdict:

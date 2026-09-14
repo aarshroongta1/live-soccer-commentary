@@ -301,6 +301,48 @@ async def test_the_lines_that_follow_a_goal_are_about_a_goal_the_state_holds(
 
 
 @pytest.mark.asyncio
+async def test_the_gate_is_told_which_of_the_three_the_board_gave_it(tmp_path: Path) -> None:
+    """A goal already in the state is cover for talking, not for counting.
+
+    ``_board_supports_goal`` answers one question with three signals, and the
+    broadest of them — a goal the state already holds — is the one that let
+    "Argentina's third" out at two-nil. The gate's arithmetic needs that
+    signal on its own: a number is settled or it is arriving, and only an
+    arriving one may be a goal ahead of the board.
+    """
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    cursor = runtime.cursor_ts
+    assert cursor is not None
+    runtime._last_goal_ts = cursor
+    runtime._restart_ts = None
+
+    seen: dict[str, Any] = {}
+    judged = runtime.gate.judge
+
+    def spy(*args: Any, **kwargs: Any) -> Any:
+        seen.update(kwargs)
+        return judged(*args, **kwargs)
+
+    runtime.gate.judge = spy  # type: ignore[method-assign]
+
+    async def one_line(*args: Any, **kwargs: Any) -> CallerLine:
+        return CallerLine(
+            scene=Scene.LIVE_PLAY,
+            event=Event.GOAL,
+            side=Side.HOME,
+            confidence=0.9,
+            speak=True,
+            line="And it is in!",
+        )
+
+    runtime.caller.call = one_line  # type: ignore[method-assign]
+    await runtime._call([])
+
+    assert seen["goal_in_state"] is True
+    assert seen["board_changed"] is True
+
+
+@pytest.mark.asyncio
 async def test_a_goal_claim_long_after_the_last_one_still_fails(tmp_path: Path) -> None:
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
 

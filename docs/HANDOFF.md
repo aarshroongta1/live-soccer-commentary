@@ -91,6 +91,19 @@ $1.20. Sections 7, 8 and 9 carry the numbers.
 | `193ab26` | The rate cap is earned by the last line's length (floor 1.5 s, cap 4 s). Two trims the new multi-sentence lines exposed: a capitalised word opening a second sentence was read as a name, and a plural demonym ("Argentines") was off-roster to the grader. Both fixed in gate and grader. |
 | `31b6a88` | The similarity veto on repeats is gone from both voices. Zero firings in 63 runs and 1,062 calls; the prompt's "last five lines" is what stops a repeat. The analyst's echo check against the caller stays. |
 
+- **14 September — the gate does the arithmetic now.** In
+  `runs/voice/dimaria-goal/file-20260914-015533.jsonl` the caller called the
+  second goal twice more during the celebration, "Argentina's third" and then
+  "Argentina's fourth", with the state holding 2-0. Both went out with no gate
+  reason at all: a goal *was* in the state, which is cover for any line about a
+  goal, and it turned out to be cover for counting as well. A side that has
+  scored *n* may now be said to have scored *n*, and *n+1* only while a goal is
+  being called that the state has not taken in yet — the new `score_claim`
+  rejection, whole line, no trim. The scoreline rule shares the arithmetic and
+  gains the same latitude, which it never had; it also hears "3 nil" and "2 to
+  1" now. An ordinal that counts anything but goals ("their first real chance",
+  "chasing a third") is left alone.
+
 ## 4. Known gaps
 
 - **Open-play naming, and what it actually is.** Across 208 live-play caller

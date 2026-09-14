@@ -643,3 +643,131 @@ def test_the_long_way_of_saying_it_is_in_is_a_goal_claim() -> None:
     assert claims_goal("Messi steps up, strikes it low, and it is in")
     assert claims_goal("it's in!")
     assert not claims_goal("the ball is in the corner and he waits")
+
+
+def at(home: int, away: int) -> MatchState:
+    """The same two teams, on any scoreline."""
+    return MatchState(
+        home="Northvale United", away="Carrowmere City", home_score=home, away_score=away
+    )
+
+
+def test_an_ordinal_the_score_cannot_support_is_rejected(pack) -> None:
+    """The number a line puts on the score is checked like any other claim.
+
+    An ordinal is a scoreline with one number left out. "Northvale's third"
+    at two-nil says the same false thing as "3-0" and, until this rule, said
+    it without the gate noticing.
+    """
+    gate = FactGate()
+    third = gate.judge(call("Northvale's third."), at(2, 0), pack)
+    assert not third.passed
+    assert third.reasons == ["score_claim: Northvale's third vs state 2-0"]
+
+    assert gate.judge(call("Northvale's second."), at(2, 0), pack).passed
+    assert not gate.judge(call("Northvale's fourth!"), at(2, 0), pack).passed
+
+
+def test_the_goal_being_called_is_allowed_to_be_one_ahead(pack) -> None:
+    """The graphic lags the ball, so the line that calls a goal may count it.
+
+    That latitude is the whole reason the caller speaks ahead of the board.
+    It lasts exactly as long as the board is still agreeing: once the state
+    holds the goal, the state's number is the only sayable one.
+    """
+    gate = FactGate()
+    called = gate.judge(call("Northvale's second."), at(1, 0), pack, board_changed=True)
+    assert called.passed
+
+    held = gate.judge(
+        call("Northvale's third."), at(2, 0), pack, board_changed=True, goal_in_state=True
+    )
+    assert not held.passed
+    assert held.reasons == ["score_claim: Northvale's third vs state 2-0"]
+
+
+def test_a_scoreline_may_be_one_goal_ahead_of_the_board_while_a_goal_is_called(pack) -> None:
+    gate = FactGate()
+    for text in ("Three-nil!", "It is 2-1"):
+        assert gate.judge(call(text), at(2, 0), pack, board_changed=True).passed, text
+    for text in ("Four-nil!", "It is 3-1"):
+        assert not gate.judge(call(text), at(2, 0), pack, board_changed=True).passed, text
+
+
+def test_the_board_scoreline_needs_no_goal_to_be_sayable(pack) -> None:
+    assert FactGate().judge(call("Two-nil with half an hour left"), at(2, 0), pack).passed
+
+
+def test_a_scoreline_said_in_half_figures_is_still_a_scoreline(pack) -> None:
+    """The caller mixes figures and words, and the check has to hear both."""
+    gate = FactGate()
+    assert not gate.judge(call("It is 3 nil now"), at(2, 0), pack).passed
+    assert not gate.judge(call("They lead 2 to 1"), at(2, 0), pack).passed
+    # And the shapes that are not scorelines at all.
+    assert gate.judge(call("From eight to ten yards out"), at(2, 0), pack).passed
+    assert gate.judge(call("One to one with the keeper"), at(2, 0), pack).passed
+
+
+def test_a_line_that_puts_no_number_on_the_score_is_untouched(pack) -> None:
+    gate = FactGate()
+    for text in (
+        "Kimbanda holds it up on the edge of the box",
+        "A hat-trick for the captain",  # one man's goals, not the team's.
+        "His third of the night",  # likewise.
+    ):
+        assert gate.judge(call(text), at(2, 0), pack).passed, text
+
+
+def test_an_ordinal_with_no_side_to_pin_it_on_is_left_alone(pack) -> None:
+    """A guess about whose goal it is would reject true lines about the other side."""
+    gate = FactGate()
+    loose = call("Their third.", team=None, side=Side.UNKNOWN)
+    assert gate.judge(loose, at(2, 0), pack).passed
+
+    named = call("Their third.", team="Northvale United")
+    assert not gate.judge(named, at(2, 0), pack).passed
+
+
+def test_a_number_being_chased_is_not_a_number_being_claimed(pack) -> None:
+    """A number somebody is chasing is not a number they hold."""
+    gate = FactGate()
+    for text in ("Looking for their third", "Northvale chasing a third", "Pushing for a third"):
+        assert gate.judge(call(text), at(2, 0), pack).passed, text
+
+
+def test_an_ordinal_describing_anything_but_the_score_is_not_a_claim(pack) -> None:
+    """Most ordinals in a football match count something other than goals."""
+    gate = FactGate()
+    for text in (
+        "Northvale's first real chance since the break",
+        "The third man on the overlap is Dunthorpe",
+        "Into the second half now",
+    ):
+        assert gate.judge(call(text), at(2, 0), pack).passed, text
+
+
+def test_the_two_lines_that_went_out_on_the_di_maria_goal() -> None:
+    """The failure this rule was written for, from runs/voice/dimaria-goal.
+
+    Argentina had scored twice, the state held 2-0, and the caller spent the
+    celebration counting upwards: "Argentina's third", then "Argentina's
+    fourth". Both passed the gate with no reasons at all, because a goal was
+    in the state and that is cover for any line about a goal. It is not cover
+    for arithmetic.
+    """
+    state = MatchState(home="Argentina", away="France", home_score=2, away_score=0)
+    lines = (
+        ("Messi, from the rebound! Argentina's third.", "third"),
+        ("De Paul! Argentina's fourth!", "fourth"),
+    )
+    gate = FactGate()
+    for text, counted in lines:
+        verdict = gate.judge(
+            call(text, event=Event.GOAL, team="Argentina"),
+            state,
+            None,
+            board_changed=True,
+            goal_in_state=True,
+        )
+        assert not verdict.passed, text
+        assert verdict.reasons == [f"score_claim: Argentina's {counted} vs state 2-0"]
