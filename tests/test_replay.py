@@ -571,6 +571,32 @@ async def test_the_page_is_told_whether_anything_is_actually_coming_out_of_the_s
     assert TestClient(create_app(speaking)).get("/api/state").json()["status"]["speaking"] is True
 
 
+@pytest.mark.asyncio
+async def test_a_looping_replay_says_the_lines_on_every_lap_not_only_the_first() -> None:
+    """What ``--loop`` is for, once there is a voice on it.
+
+    A demo left running on a screen is the case: the clip goes round, and a
+    second lap in silence would be worse than not looping at all. Winding
+    ``_played`` back is what does it — every cue is emitted again, so every
+    beat reaches the director again, restamped for this pass rather than the
+    last one and so not thrown away as stale.
+    """
+    speaker = fast_speaker()
+    replay = replay_of([beat_row(1.0, "a line")], seconds=6.0, speaker=speaker)
+    replay.loop = True
+
+    runner = asyncio.create_task(replay.run())
+    for _ in range(20_000):
+        if len(speaker.said) >= 2:
+            break
+        await asyncio.sleep(0)
+
+    replay.stop()
+    await asyncio.wait_for(runner, timeout=2.0)
+
+    assert [utterance.beat.text for utterance in speaker.said[:2]] == ["a line", "a line"]
+
+
 def test_from_files_carries_the_voice_through_to_the_replay(tmp_path: Any) -> None:
     path = tmp_path / "run.jsonl"
     with RunTrace(path=path) as trace:

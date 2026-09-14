@@ -145,6 +145,8 @@ uv run python -m commentary replay \
 
 `--voice say` does the same through macOS's built-in speech for nothing at
 all; `log`, the default, stays silent and republishes the trace as before.
+With `--loop` the lines are said on every lap, not only the first, so a demo
+left running on a screen keeps its sound.
 
 With a voice on, the queueing, the ageing-out and the mid-word cut on a goal
 all happen again, now — so the trace's own `spoken` and `preempted` rows are
