@@ -3,6 +3,8 @@ README.md
   s_d55ab428b62c9f::t_9785c121b3f6ca 132-160,162-186,330
 src/commentary/replay.py
   s_d55ab428b62c9f::t_05f2be9afbd14a 27-34,47,55,57,59-70,146-162,180-182,188-196,244-247,295-302,308-313,368-395,424,437
+  s_d55ab428b62c9f::t_bb1f3719b4276b 280-281,286,293-294,303-307
+  s_d55ab428b62c9f::t_4ab157d28acb6a 344-350
 tests/test_replay.py
   s_d55ab428b62c9f::t_f839ee17d9a538 26,81-127,440-583
 src/commentary/__main__.py
@@ -11,6 +13,7 @@ src/commentary/__main__.py
   s_d55ab428b62c9f::t_e3934b69f89dcd 729-739
   s_d55ab428b62c9f::t_05f2be9afbd14a 24,328-342,349-353,362,369,376,384-388,391-395,405-411
   s_d55ab428b62c9f::t_3ca7fcfab13ce9 390
+  s_d55ab428b62c9f::t_bde616978ae61a 370-375
 ---
 {
   "schema_version": "authorship/3.0.0",
