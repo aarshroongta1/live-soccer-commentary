@@ -94,6 +94,39 @@ uv run python -m commentary run --source screen --backend anthropic --serve
 
 Then open <http://127.0.0.1:8000> and play a match full screen.
 
+## Playground
+
+The watch page is a Next.js app in [`web/`](web). It shows the delayed picture
+beside everything the agents decided: the trigger that fired, the form the
+caller filled in, which shirt numbers it read and which of them the team sheet
+turned into a player, every line the fact gate blocked and why, and the spend.
+
+Three commands. Each Python one serves the runtime on `:8000`; the page proxies
+to it, so the page is the only address to open.
+
+```bash
+cd web && npm install && npm run dev                       # the page, on :3000
+
+uv run python -m commentary run --source sim --serve \
+    --port 8000 --seconds 90                               # a live session, no key
+
+uv run python -m commentary replay \
+    --trace runs/screen/dimaria/screen-20260913-222906.jsonl \
+    --path clips/argfra-dimaria.mp4 --start 20 \
+    --serve --port 8000                                    # a past run, again
+```
+
+`replay` is the one to reach for. A run costs real money and happens once;
+the trace it leaves is exactly what the bus published, so the clip and the
+trace together reproduce the session frame for frame, calling nothing and
+needing no key. `--start` is how far into the clip that run began — a
+`--source file` run began at 0, and the screen runs played a clip in a video
+player and started part-way in. The timestamps on the page are the trace's
+own, so the goal called at 0:39 in the trace is called at 0:39 here.
+
+`?mock=1` on the page replays a built-in fixture with no runtime behind it at
+all, which is how the UI is developed.
+
 ## The simulator
 
 There is a synthetic broadcast in [`src/commentary/sim/`](src/commentary/sim):
@@ -236,6 +269,7 @@ ablations are wired correctly enough to run against the real thing.
 | Command | What it does |
 |---|---|
 | `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice elevenlabs` adds sound and needs a key. |
+| `replay --trace t.jsonl --path clip.mp4` | Watch a finished run again: its clip through the delay buffer, its trace back onto the bus. `--start` is the clip offset the run began at, `--serve` adds the watch page. Calls nothing and costs nothing. |
 | `sim` | Describe the synthetic match, or `--out x.mp4` to render it. |
 | `capture [seconds]` | Prove frames reach Python. The day-one gate. |
 | `crop --path m.mp4 --at 300` | One frame with the score-bug box drawn on it and the bug beside it, so the crop is checked by eye before a run spends money. |
