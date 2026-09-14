@@ -10,10 +10,12 @@
 import type {
   BoardEvent,
   CallerEvent,
+  CorrectionEvent,
   CostEvent,
   GateEvent,
   NoticeEvent,
   PreemptedEvent,
+  SightingEvent,
   SpokenEvent,
   StateEvent,
   StreamEvent,
@@ -33,6 +35,9 @@ export interface Counts {
   readonly stale: number;
   readonly gatePassed: number;
   readonly gateRejected: number;
+  /** Shirt reads that the team sheet turned into a player, and those it did not. */
+  readonly sightingsBound: number;
+  readonly sightingsDropped: number;
 }
 
 export interface StreamStore {
@@ -42,6 +47,10 @@ export interface StreamStore {
   readonly trigger: TriggerEvent | null;
   readonly cost: CostEvent | null;
   readonly notice: NoticeEvent | null;
+  /** The last thing the caller read off a shirt, and what the roster said. */
+  readonly sighting: SightingEvent | null;
+  /** Newest first — the statistician overruling the screen. */
+  readonly corrections: readonly CorrectionEvent[];
   /** Oldest first — a transcript reads downward. */
   readonly feed: readonly FeedItem[];
   /** Newest first — a panel of recent rejections reads downward from now. */
@@ -64,10 +73,21 @@ export const EMPTY_STORE: StreamStore = {
   trigger: null,
   cost: null,
   notice: null,
+  sighting: null,
+  corrections: [],
   feed: [],
   rejected: [],
   cuts: [],
-  counts: { beats: 0, spoken: 0, cut: 0, stale: 0, gatePassed: 0, gateRejected: 0 },
+  counts: {
+    beats: 0,
+    spoken: 0,
+    cut: 0,
+    stale: 0,
+    gatePassed: 0,
+    gateRejected: 0,
+    sightingsBound: 0,
+    sightingsDropped: 0,
+  },
   lastLagS: null,
   lastEventAt: null,
 };
@@ -80,6 +100,8 @@ interface Draft {
   trigger: TriggerEvent | null;
   cost: CostEvent | null;
   notice: NoticeEvent | null;
+  sighting: SightingEvent | null;
+  corrections: CorrectionEvent[];
   feed: FeedItem[];
   rejected: GateEvent[];
   cuts: PreemptedEvent[];
@@ -133,6 +155,17 @@ function apply(draft: Draft, event: StreamEvent): void {
     case "caller":
       draft.caller = event;
       break;
+    case "sighting":
+      draft.sighting = event;
+      draft.counts = {
+        ...draft.counts,
+        sightingsBound: draft.counts.sightingsBound + event.bound,
+        sightingsDropped: draft.counts.sightingsDropped + (event.sightings.length - event.bound),
+      };
+      break;
+    case "correction":
+      unshiftCapped(draft.corrections, event, PANEL_CAP);
+      break;
     case "trigger":
       draft.trigger = event;
       break;
@@ -169,6 +202,8 @@ export function reduceEvents(store: StreamStore, events: readonly StreamEvent[])
     trigger: store.trigger,
     cost: store.cost,
     notice: store.notice,
+    sighting: store.sighting,
+    corrections: [...store.corrections],
     feed: [...store.feed],
     rejected: [...store.rejected],
     cuts: [...store.cuts],
@@ -188,6 +223,8 @@ export function reduceEvents(store: StreamStore, events: readonly StreamEvent[])
     trigger: draft.trigger,
     cost: draft.cost,
     notice: draft.notice,
+    sighting: draft.sighting,
+    corrections: draft.corrections,
     feed: draft.feed,
     rejected: draft.rejected,
     cuts: draft.cuts,

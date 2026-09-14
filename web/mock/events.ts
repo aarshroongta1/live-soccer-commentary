@@ -3,10 +3,10 @@
  *
  * This is the fixture the UI is developed against: it runs through the same
  * `buildEvent` parser as the live stream, so a field that would break the page
- * at 88 minutes on a Tuesday breaks it here first. It covers the five things
- * the agent panel exists to show — a routine build-up, a shot, a save whose
- * line the gate rejects, a deliberate silence, and a goal that cuts the
- * analyst off mid-sentence.
+ * at 88 minutes on a Tuesday breaks it here first. It covers the six things
+ * the agent panel exists to show — a routine build-up, a shot, a shirt read
+ * that binds to nobody, a save whose line the gate rejects, a deliberate
+ * silence, and a goal that cuts the analyst off mid-sentence.
  *
  * `after` is milliseconds to wait before emitting, relative to the previous
  * frame. `ts` inside each payload is video time, which advances in step.
@@ -97,10 +97,18 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "build_up",
       side: "home",
       team: HOME,
-      names_read: ["6", "Kimmich"],
+      sightings: [{ number: 6, name: "Kimmich", side: "home", bound: true, as: "6 Joshua Kimmich" }],
       confidence: 0.74,
       speak: true,
       line: "Kimmich takes it off the back line, Bayern in no hurry here.",
+    },
+  },
+  {
+    after: 40,
+    name: "sighting",
+    data: {
+      ts: 3125.4,
+      sightings: [{ number: 6, name: "Kimmich", side: "home", bound: true, as: "6 Joshua Kimmich" }],
     },
   },
   {
@@ -159,7 +167,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "none",
       side: "unknown",
       team: null,
-      names_read: [],
+      sightings: [],
       confidence: 0.55,
       speak: false,
       line: "",
@@ -170,7 +178,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
   {
     after: 3600,
     name: "trigger",
-    data: { ts: 3132.8, triggers: ["roar", "camera_cut"], urgency: 0.72, reason: "crowd roar, 0.8s", should_call: true },
+    data: { ts: 3132.8, triggers: ["camera_cut"], urgency: 0.72, reason: "cut to a tight shot, 0.8s", should_call: true },
   },
   {
     after: 280,
@@ -181,10 +189,18 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "shot",
       side: "home",
       team: HOME,
-      names_read: ["10", "Musiala"],
+      sightings: [{ number: 10, name: "Musiala", side: "home", bound: true, as: "10 Jamal Musiala" }],
       confidence: 0.81,
       speak: true,
       line: "Musiala cuts inside and goes for the far corner!",
+    },
+  },
+  {
+    after: 40,
+    name: "sighting",
+    data: {
+      ts: 3133.1,
+      sightings: [{ number: 10, name: "Musiala", side: "home", bound: true, as: "10 Jamal Musiala" }],
     },
   },
   {
@@ -203,7 +219,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
     data: beat("b-4472", 3133.1, "caller", "Musiala cuts inside and goes for the far corner!", {
       event: "shot",
       urgency: 0.72,
-      triggers: ["roar", "camera_cut"],
+      triggers: ["camera_cut"],
     }),
   },
   {
@@ -213,7 +229,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
       topic: "spoken",
       event: "shot",
       urgency: 0.72,
-      triggers: ["roar", "camera_cut"],
+      triggers: ["camera_cut"],
       spoken: "Musiala cuts inside and goes for the far corner!",
       seconds: 2.6,
     }),
@@ -223,7 +239,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
   {
     after: 1500,
     name: "trigger",
-    data: { ts: 3134.9, triggers: ["roar"], urgency: 0.64, reason: "roar sustained", should_call: true },
+    data: { ts: 3134.9, triggers: ["camera_cut"], urgency: 0.64, reason: "cut to the goalmouth", should_call: true },
   },
   {
     after: 260,
@@ -234,10 +250,18 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "save",
       side: "away",
       team: AWAY,
-      names_read: ["Sommer"],
+      sightings: [{ number: null, name: "Sommer", side: "away", bound: false, as: null }],
       confidence: 0.42,
       speak: true,
       line: "Sommer gets a strong hand to it and turns it behind for the corner.",
+    },
+  },
+  {
+    after: 40,
+    name: "sighting",
+    data: {
+      ts: 3135.2,
+      sightings: [{ number: null, name: "Sommer", side: "away", bound: false, as: null }],
     },
   },
   {
@@ -262,7 +286,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "save",
       side: "away",
       team: AWAY,
-      names_read: [],
+      sightings: [],
       confidence: 0.69,
       speak: true,
       line: "The keeper gets a strong hand to it, behind for a corner.",
@@ -284,7 +308,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
     data: beat("b-4473", 3135.6, "caller", "The keeper gets a strong hand to it, behind for a corner.", {
       event: "save",
       urgency: 0.64,
-      triggers: ["roar"],
+      triggers: ["camera_cut"],
     }),
   },
   {
@@ -294,7 +318,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
       topic: "spoken",
       event: "save",
       urgency: 0.64,
-      triggers: ["roar"],
+      triggers: ["camera_cut"],
       spoken: "The keeper gets a strong hand to it, behind for a corner.",
       seconds: 3.1,
     }),
@@ -330,7 +354,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "save",
       side: "away",
       team: AWAY,
-      names_read: [],
+      sightings: [],
       confidence: 0.77,
       speak: false,
       line: "",
@@ -399,9 +423,9 @@ export const FIXTURE: readonly FixtureFrame[] = [
     name: "trigger",
     data: {
       ts: 3146.3,
-      triggers: ["roar", "board_change"],
+      triggers: ["board_change"],
       urgency: 0.98,
-      reason: "board 1-0 to 2-0, roar 1.4s",
+      reason: "board 1-0 to 2-0, third agreeing read",
       should_call: true,
     },
   },
@@ -419,10 +443,18 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "goal",
       side: "home",
       team: HOME,
-      names_read: ["10", "Musiala"],
+      sightings: [{ number: 10, name: "Musiala", side: "home", bound: true, as: "10 Jamal Musiala" }],
       confidence: 0.93,
       speak: true,
       line: "Musiala! Two-nil Bayern, and Inter are gone.",
+    },
+  },
+  {
+    after: 40,
+    name: "sighting",
+    data: {
+      ts: 3146.6,
+      sightings: [{ number: 10, name: "Musiala", side: "home", bound: true, as: "10 Jamal Musiala" }],
     },
   },
   {
@@ -445,7 +477,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
     data: beat("b-4475", 3146.6, "caller", "Musiala! Two-nil Bayern, and Inter are gone.", {
       event: "goal",
       urgency: 0.98,
-      triggers: ["roar", "board_change"],
+      triggers: ["board_change"],
       preemptable: false,
       urgent: true,
     }),
@@ -475,7 +507,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
       topic: "spoken",
       event: "goal",
       urgency: 0.98,
-      triggers: ["roar", "board_change"],
+      triggers: ["board_change"],
       preemptable: false,
       spoken: "Musiala! Two-nil Bayern, and Inter are gone.",
       seconds: 2.9,
@@ -507,7 +539,7 @@ export const FIXTURE: readonly FixtureFrame[] = [
       event: "none",
       side: "home",
       team: HOME,
-      names_read: [],
+      sightings: [],
       confidence: 0.58,
       speak: true,
       line: "Three-nil, and this is a rout now.",

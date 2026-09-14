@@ -17,9 +17,11 @@ export const EVENT_NAMES = [
   "preempted",
   "state",
   "board",
+  "sighting",
   "caller",
   "analyst",
   "gate",
+  "correction",
   "trigger",
   "cost",
   "status",
@@ -45,7 +47,13 @@ export type MatchEvent =
   | "card"
   | "substitution"
   | "kickoff"
-  | "build_up";
+  | "stoppage"
+  | "build_up"
+  | "pass"
+  | "carry"
+  | "interception"
+  | "clearance"
+  | "tackle";
 
 /** Events the director will cut a line off for. */
 export const BIG_EVENTS: ReadonlySet<MatchEvent> = new Set<MatchEvent>([
@@ -60,14 +68,15 @@ export type Scene = "live_play" | "replay" | "close_up" | "crowd" | "stoppage" |
 
 export type Side = "home" | "away" | "unknown";
 
-/** `Trigger` in schemas.py — why the system considered speaking. */
-export type TriggerName =
-  | "whistle"
-  | "roar"
-  | "camera_cut"
-  | "board_change"
-  | "silence_pressure"
-  | "scheduled";
+/**
+ * `Trigger` in schemas.py — why the system considered speaking.
+ *
+ * There used to be a `whistle` and a `roar` here. Both detectors were
+ * measured across every trace on disk and removed: the whistle fired once in
+ * 58 runs, and the roar fired four times a minute whether or not anything
+ * happened. See `docs/HANDOFF.md`, section 8.
+ */
+export type TriggerName = "camera_cut" | "board_change" | "silence_pressure" | "scheduled";
 
 /** Fields every event carries, plus the two the client adds on arrival. */
 interface Envelope<N extends EventName> {
@@ -131,15 +140,52 @@ export interface BoardEvent extends Envelope<"board"> {
   readonly confidence: number;
 }
 
+/**
+ * One shirt number or name the caller says it could read, and what the
+ * roster made of it.
+ *
+ * `bound` is the whole point. A number the caller read off a shirt is a
+ * claim about pixels; `as` is the player the team sheet turned it into, and
+ * an unbound sighting is the caller reading something that names nobody.
+ */
+export interface Sighting {
+  readonly number: number | null;
+  readonly name: string | null;
+  readonly side: Side;
+  readonly bound: boolean;
+  /** "26 Nahuel Molina" when the roster matched; null when it did not. */
+  readonly as: string | null;
+}
+
 export interface CallerEvent extends Envelope<"caller"> {
   readonly scene: Scene;
   readonly event: MatchEvent;
   readonly side: Side;
   readonly team: string | null;
-  readonly namesRead: readonly string[];
+  /**
+   * What the caller read off the picture. This used to be `names_read`, a
+   * list of free text; the field on `CallerLine` is `sightings` and has been
+   * since the second reader was removed from the schema.
+   */
+  readonly sightings: readonly Sighting[];
   readonly confidence: number;
   readonly speak: boolean;
   readonly line: string;
+}
+
+/**
+ * The roster's verdict on everything one caller line read, published after
+ * the line itself. Same list as `caller.sightings`, with the bind resolved.
+ */
+export interface SightingEvent extends Envelope<"sighting"> {
+  readonly sightings: readonly Sighting[];
+  readonly bound: number;
+}
+
+/** The statistician disagreeing with the screen, and the state giving way. */
+export interface CorrectionEvent extends Envelope<"correction"> {
+  readonly what: string;
+  readonly event: MatchEvent;
 }
 
 export interface AnalystEvent extends Envelope<"analyst"> {
@@ -193,9 +239,11 @@ export type StreamEvent =
   | PreemptedEvent
   | StateEvent
   | BoardEvent
+  | SightingEvent
   | CallerEvent
   | AnalystEvent
   | GateEvent
+  | CorrectionEvent
   | TriggerEvent
   | CostEvent
   | NoticeEvent;
@@ -248,19 +296,45 @@ const MATCH_EVENTS: readonly MatchEvent[] = [
   "card",
   "substitution",
   "kickoff",
+  "stoppage",
   "build_up",
+  "pass",
+  "carry",
+  "interception",
+  "clearance",
+  "tackle",
 ];
 
 const SCENES: readonly Scene[] = ["live_play", "replay", "close_up", "crowd", "stoppage", "graphic"];
 const SIDES: readonly Side[] = ["home", "away", "unknown"];
 const TRIGGER_NAMES: readonly TriggerName[] = [
-  "whistle",
-  "roar",
   "camera_cut",
   "board_change",
   "silence_pressure",
   "scheduled",
 ];
+
+/**
+ * A sighting list, from either the caller's own form or the `sighting`
+ * topic. The caller's copy has no `bound`/`as` yet — the bind happens after
+ * the form is published — so an entry without them is simply unresolved.
+ */
+function sightings(value: unknown): Sighting[] {
+  if (!Array.isArray(value)) return [];
+  const parsed: Sighting[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const raw = item as Raw;
+    parsed.push({
+      number: optNum(raw.number),
+      name: optStr(raw.name),
+      side: oneOf(raw.side, SIDES, "unknown"),
+      bound: bool(raw.bound),
+      as: optStr(raw.as),
+    });
+  }
+  return parsed;
+}
 
 function triggers(value: unknown): TriggerName[] {
   return strings(value).filter((item): item is TriggerName =>
@@ -400,10 +474,26 @@ export function buildEvent(name: EventName, raw: Raw): StreamEvent {
         event: oneOf(raw.event, MATCH_EVENTS, "none"),
         side: oneOf(raw.side, SIDES, "unknown"),
         team: optStr(raw.team),
-        namesRead: strings(raw.names_read),
+        sightings: sightings(raw.sightings),
         confidence: num(raw.confidence),
         speak: bool(raw.speak),
         line: str(raw.line),
+      };
+    case "sighting": {
+      const seen = sightings(raw.sightings);
+      return {
+        name,
+        ...envelope,
+        sightings: seen,
+        bound: seen.filter((item) => item.bound).length,
+      };
+    }
+    case "correction":
+      return {
+        name,
+        ...envelope,
+        what: str(raw.what),
+        event: oneOf(raw.event, MATCH_EVENTS, "none"),
       };
     case "analyst":
       return {

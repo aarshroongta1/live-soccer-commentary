@@ -1,6 +1,16 @@
 import { Chip, Empty, Field, Meter, Panel } from "@/components/ui";
 import { label, percent, usd, videoClock } from "@/lib/format";
-import type { BoardEvent, CallerEvent, CostEvent, GateEvent, PreemptedEvent, TriggerEvent } from "@/lib/events";
+import type {
+  BoardEvent,
+  CallerEvent,
+  CorrectionEvent,
+  CostEvent,
+  GateEvent,
+  PreemptedEvent,
+  Sighting,
+  SightingEvent,
+  TriggerEvent,
+} from "@/lib/events";
 import type { Counts, StreamStore } from "@/lib/store";
 
 /**
@@ -16,9 +26,11 @@ export function AgentPanel({ store }: { store: StreamStore }) {
     <div className="flex flex-col gap-3">
       <SpeakDecision trigger={store.trigger} />
       <CallerForm caller={store.caller} />
+      <Sightings sighting={store.sighting} counts={store.counts} />
       <FactGate rejected={store.rejected} counts={store.counts} />
       <Preempted cuts={store.cuts} counts={store.counts} />
       <BoardReader board={store.board} />
+      {store.corrections.length > 0 ? <Corrections corrections={store.corrections} /> : null}
       <Ledger cost={store.cost} counts={store.counts} lagS={store.lastLagS} />
     </div>
   );
@@ -89,10 +101,12 @@ function CallerForm({ caller }: { caller: CallerEvent | null }) {
           </div>
 
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">names read</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">read off the picture</span>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {caller.namesRead.length > 0 ? (
-                caller.namesRead.map((name) => <Chip key={name}>{name}</Chip>)
+              {caller.sightings.length > 0 ? (
+                caller.sightings.map((seen, index) => (
+                  <Chip key={`${caller.seq}-${index}`}>{describe(seen)}</Chip>
+                ))
               ) : (
                 <Chip tone="quiet">nothing legible</Chip>
               )}
@@ -106,6 +120,83 @@ function CallerForm({ caller }: { caller: CallerEvent | null }) {
       ) : (
         <Empty>The caller has not filed a form yet.</Empty>
       )}
+    </Panel>
+  );
+}
+
+/** A shirt read, as the caller wrote it down: `#10`, `Musiala`, or both. */
+function describe(seen: Sighting): string {
+  if (seen.number !== null && seen.name) return `#${seen.number} ${seen.name}`;
+  if (seen.number !== null) return `#${seen.number}`;
+  return seen.name ?? "unreadable";
+}
+
+/**
+ * What the caller read off the shirts, and whether the team sheet agreed.
+ *
+ * This is the naming pipeline in one box. A number the caller read is only a
+ * claim about pixels until the roster turns it into a player, and the gap
+ * between what was read and what bound is the single number that says
+ * whether open-play naming is working at all.
+ */
+function Sightings({ sighting, counts }: { sighting: SightingEvent | null; counts: Counts }) {
+  const seenTotal = counts.sightingsBound + counts.sightingsDropped;
+  return (
+    <Panel
+      label="sightings · roster bind"
+      meta={
+        <span className="tnum">
+          {seenTotal === 0 ? "none yet" : `${counts.sightingsBound} of ${seenTotal} bound`}
+        </span>
+      }
+    >
+      {sighting && sighting.sightings.length > 0 ? (
+        <ul className="flex flex-col gap-2">
+          {sighting.sightings.map((seen, index) => (
+            <li key={`${sighting.seq}-${index}`} className="flex items-baseline gap-2">
+              <Chip tone={seen.bound ? "caller" : "reject"}>{describe(seen)}</Chip>
+              {seen.side !== "unknown" ? (
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">
+                  {seen.side}
+                </span>
+              ) : null}
+              <span className="min-w-0 text-[13px] leading-snug text-dim">
+                {seen.bound ? (
+                  (seen.as ?? "on the team sheet")
+                ) : (
+                  <span className="text-faint">names nobody on either sheet</span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Empty>
+          Nothing read off a shirt yet. A number in a wide shot is four pixels tall, so most
+          lines have no sighting at all.
+        </Empty>
+      )}
+    </Panel>
+  );
+}
+
+/**
+ * The statistician overruling the screen. Off in the default runtime — the
+ * thesis is that the picture is enough — so this panel only appears on a run
+ * started with `--wire`.
+ */
+function Corrections({ corrections }: { corrections: readonly CorrectionEvent[] }) {
+  return (
+    <Panel label="wire corrections" meta={<span className="tnum">{corrections.length}</span>}>
+      <ol className="flex flex-col gap-2">
+        {corrections.map((correction) => (
+          <li key={correction.seq} className="flex items-baseline gap-2">
+            <span className="tnum font-mono text-[10px] text-faint">{videoClock(correction.ts)}</span>
+            <Chip tone="live">{label(correction.event)}</Chip>
+            <span className="min-w-0 text-[13px] leading-snug text-dim">{correction.what}</span>
+          </li>
+        ))}
+      </ol>
     </Panel>
   );
 }
