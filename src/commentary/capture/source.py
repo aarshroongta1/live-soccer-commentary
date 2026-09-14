@@ -138,7 +138,16 @@ class FFmpegSource:
 
 
 class ScreenCapture(FFmpegSource):
-    """Whatever is on screen: a broadcast, a browser tab, a highlight reel."""
+    """Whatever is on screen: a broadcast, a browser tab, a highlight reel.
+
+    ``-r cfg.fps`` after ``-i`` pins the *output* rate, the same way
+    ``FileCapture`` does. Without it, avfoundation's screen input reports a
+    huge timebase and ffmpeg's default constant-frame-rate output duplicates
+    frames to match that timebase rather than the requested ``-framerate``
+    (measured at roughly 470fps against a real macOS screen grab instead of
+    the configured 15), so the count-capped ``DelayBuffer`` holds under a
+    second of video instead of the intended history.
+    """
 
     def __init__(self, cfg: CaptureConfig = SETTINGS.capture) -> None:
         super().__init__(
@@ -151,6 +160,8 @@ class ScreenCapture(FFmpegSource):
                 str(cfg.fps),
                 "-i",
                 cfg.device,
+                "-r",
+                str(cfg.fps),
             ],
             cfg,
             realtime=False,  # the screen already runs at wall-clock speed

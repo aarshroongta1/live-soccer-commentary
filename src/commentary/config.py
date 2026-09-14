@@ -26,7 +26,11 @@ JUDGE_MODEL = os.getenv("JUDGE_MODEL", "claude-opus-5")
 class CaptureConfig:
     """Screen capture and the delay buffer that sits behind it."""
 
-    device: str = os.getenv("AVFOUNDATION_DEVICE", "1:0")
+    #: Prefer the name form, e.g. "Capture screen 0", over an index like
+    #: "1:0": avfoundation device indices shift when hardware is plugged in
+    #: (the screen was index 1, then became 3 with an iPhone attached), while
+    #: the name is stable across those changes.
+    device: str = os.getenv("AVFOUNDATION_DEVICE", "Capture screen 0")
     width: int = 1280
     height: int = 720
     fps: int = 15

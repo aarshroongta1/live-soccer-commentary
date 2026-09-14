@@ -14,6 +14,7 @@ import numpy as np
 import pytest
 
 from commentary.capture import FileCapture
+from commentary.capture.source import ScreenCapture
 from commentary.config import CaptureConfig
 
 SR = 16000
@@ -72,3 +73,11 @@ async def test_a_file_yields_frames_at_the_capture_size(clip: Path):
     assert frames[0].ts == 0.0
     assert frames[0].image.shape == (CFG.height, CFG.width, 3)
 
+
+def test_the_screen_source_pins_the_output_rate_so_the_buffer_holds_the_delay():
+    cfg = CaptureConfig(width=320, height=180, fps=15)
+    command = ScreenCapture(cfg)._command()
+    i_index = command.index("-i")
+    after_i = command[i_index + 2 : i_index + 4]
+    assert after_i == ["-r", str(cfg.fps)]
+    assert command.index("-framerate") < i_index
