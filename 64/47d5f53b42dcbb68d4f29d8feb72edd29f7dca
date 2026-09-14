@@ -1,0 +1,25 @@
+src/commentary/config.py
+  s_d55ab428b62c9f::t_67481438be9ace 29-33
+src/commentary/capture/source.py
+  s_d55ab428b62c9f::t_67481438be9ace 141-150,163-164
+.env.example
+  s_d55ab428b62c9f::t_67481438be9ace 30-33
+tests/test_capture.py
+  s_d55ab428b62c9f::t_67481438be9ace 17,76-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6447d5f53b42dcbb68d4f29d8feb72edd29f7dca",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
