@@ -93,7 +93,9 @@ function usePresentOffset(enabled: boolean): string | null {
       .then((response) => (response.ok ? response.json() : null))
       .then((body: unknown) => {
         const seconds = presentOffsetOf(body);
-        if (seconds !== null) setOffset(String(Number(seconds.toFixed(1))));
+        // A runtime serving the cursor exactly has nothing to add to the
+        // label, and "−0 s" reads as a bug rather than as a setting.
+        if (seconds !== null && seconds >= 0.05) setOffset(String(Number(seconds.toFixed(1))));
       })
       .catch(() => undefined);
     return () => abort.abort();
