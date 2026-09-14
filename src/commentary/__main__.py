@@ -5,6 +5,7 @@
     uv run python -m commentary sim                  # watch the fake broadcast
     uv run python -m commentary research Arsenal PSG # pre-match notes, once
     uv run python -m commentary run --serve          # call a match, in a browser
+    uv run python -m commentary replay --trace ... --path clip.mp4 --serve
     uv run python -m commentary grade runs/*.jsonl
 """
 
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -30,6 +32,7 @@ if TYPE_CHECKING:
     # Imported for types only: the simulator pulls in the renderer and cv2,
     # and `commentary capture` should not pay for either.
     from commentary.schemas import KnowledgePack
+    from commentary.server import RuntimeHandle
     from commentary.sim import MatchSim
     from commentary.wire import Wire
 
@@ -233,14 +236,14 @@ async def cmd_run(args: argparse.Namespace) -> int:
             trace=trace,
             wire=wire,
         )
-        server_task = asyncio.create_task(_serve(runtime, args.port)) if args.serve else None
-        if server_task is not None:
+        watch = _Watch(runtime, args.port) if args.serve else None
+        if watch is not None:
             print(f"watch at http://127.0.0.1:{args.port}")
         try:
             await runtime.run(seconds=args.seconds)
         finally:
-            if server_task is not None:
-                server_task.cancel()
+            if watch is not None:
+                await watch.close()
 
     print()
     print(runtime.gate.stats.table())
@@ -275,15 +278,84 @@ async def cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
-async def _serve(runtime: Runtime, port: int) -> None:
-    import uvicorn
+class _Watch:
+    """The watch page, served alongside a run for as long as the run lasts.
 
-    from commentary.server import create_app
+    Shut down rather than cancelled. Cancelling a uvicorn task with an open
+    MJPEG stream and an open event stream on it prints two pages of
+    ``CancelledError`` after the results table, which reads as a crash and is
+    only the browser still being attached. ``force_exit`` is the right flag
+    for these two endpoints in particular: neither ever ends on its own, so a
+    graceful shutdown would wait for the tab to be closed.
+    """
 
-    config = uvicorn.Config(
-        create_app(runtime), host="127.0.0.1", port=port, log_level="warning"
-    )
-    await uvicorn.Server(config).serve()
+    def __init__(self, runtime: RuntimeHandle, port: int) -> None:
+        import uvicorn
+
+        from commentary.server import create_app
+
+        config = uvicorn.Config(
+            create_app(runtime),
+            host="127.0.0.1",
+            port=port,
+            log_level="warning",
+            # The app has no startup or shutdown handlers, and the lifespan
+            # task is the one that prints a CancelledError traceback on the
+            # way out. Nothing to run, so nothing to cancel.
+            lifespan="off",
+        )
+        self._server = uvicorn.Server(config)
+        self._task = asyncio.create_task(self._server.serve(), name="watch")
+
+    async def close(self) -> None:
+        self._server.should_exit = True
+        self._server.force_exit = True
+        with contextlib.suppress(TimeoutError, asyncio.CancelledError):
+            await asyncio.wait_for(asyncio.shield(self._task), timeout=2.0)
+        self._task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await self._task
+
+
+# -- replay -------------------------------------------------------------
+
+
+async def cmd_replay(args: argparse.Namespace) -> int:
+    """Play a finished run back: its clip through the buffer, its trace onto the bus.
+
+    The watch page cannot tell this from a live run, which is the whole
+    point — a run costs real money and happens once, and everything anybody
+    needs to look at afterwards is already on disk.
+    """
+    from commentary.replay import from_files
+
+    capture = SETTINGS.capture
+    if args.delay is not None:
+        capture = replace(capture, delay_s=args.delay)
+    settings = replace(SETTINGS, capture=capture)
+
+    replay = from_files(args.trace, args.path, start_s=args.start, settings=settings)
+    span = max((cue.ts for cue in replay.cues), default=0.0)
+    print(f"{len(replay.cues)} rows over {span:.0f}s, against {args.path} from {args.start:g}s in")
+    print(f"buffer {settings.capture.delay_s:g}s: the first rows land once the cursor reaches them")
+
+    watch = _Watch(replay, args.port) if args.serve else None
+    if watch is not None:
+        print(f"watch at http://127.0.0.1:{args.port}")
+    try:
+        await replay.run(seconds=args.seconds)
+    finally:
+        if watch is not None:
+            await watch.close()
+
+    print(f"replayed {replay.played} of {len(replay.cues)} rows")
+    if replay.remaining:
+        # The cursor never reached the end of the trace: the clip is shorter
+        # than the run was, or --seconds cut it off. Said out loud, because a
+        # demo that quietly stops two rows before the goal reads as a bug in
+        # the system rather than in the arguments.
+        print(f"{replay.remaining} rows the cursor never reached")
+    return 0
 
 
 # -- crop ---------------------------------------------------------------
@@ -580,6 +652,21 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--port", type=int, default=8000)
     run.add_argument("--out", default="runs")
     run.set_defaults(func=cmd_run)
+
+    rp = sub.add_parser("replay", help="watch a saved run again, from its trace and its clip")
+    rp.add_argument("--trace", required=True, help="runs/<name>/<run>.jsonl")
+    rp.add_argument("--path", required=True, help="the clip that run was watching")
+    rp.add_argument(
+        "--start",
+        type=float,
+        default=0.0,
+        help="seconds into the clip the run began at; a --source file run began at 0",
+    )
+    rp.add_argument("--delay", type=float, default=None, help="override the buffer depth")
+    rp.add_argument("--seconds", type=float, default=None, help="stop after this long")
+    rp.add_argument("--serve", action="store_true", help="also serve the watch page")
+    rp.add_argument("--port", type=int, default=8000)
+    rp.set_defaults(func=cmd_replay)
 
     cr = sub.add_parser("crop", help="draw the score-bug box on one frame of a file")
     cr.add_argument("--path", required=True, help="video file")
