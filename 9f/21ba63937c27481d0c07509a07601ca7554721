@@ -1,0 +1,31 @@
+README.md
+  s_d55ab428b62c9f::t_2c0e5c098528bd 460-463,467-470
+  s_d55ab428b62c9f::t_e5c02bdd052ffe 382
+  s_d55ab428b62c9f::t_a23372bf3acc46 37-59
+  s_d55ab428b62c9f::t_e05eff2119d73d 19-21
+  s_d55ab428b62c9f::t_eb46245aa188ef 116,122-137
+  s_d55ab428b62c9f::t_856b47de64e006 231-237
+  s_d55ab428b62c9f::t_99f15f6f2a298a 464-466
+  s_d55ab428b62c9f::t_f11d505824f788 443
+  s_d55ab428b62c9f::t_8e0468d8aa0b32 138
+docs/HANDOFF.md
+  s_d55ab428b62c9f::t_99f15f6f2a298a 90-93,305
+  s_d55ab428b62c9f::t_a81729625c89be 138,154
+  s_d55ab428b62c9f::t_42297893391aae 7-9,14-16,30-62,71-74,82,84-86,102,114-115,121-137,139-153,155-224,231-257,261-268,270-276,280-302,304,307-311,313-314,321-338,342-343,347-349,352-353,355,357-360,369-406,410-418,420-424,430-444,450,454-455,457-461,465-470,472-475,480
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9f21ba63937c27481d0c07509a07601ca7554721",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
