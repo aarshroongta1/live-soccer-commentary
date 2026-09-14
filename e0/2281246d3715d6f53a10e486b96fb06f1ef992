@@ -1,0 +1,44 @@
+web/lib/events.ts
+  s_d55ab428b62c9f::t_71ef0f6b4b4c74 71-79
+  s_d55ab428b62c9f::t_df45451d8e25f4 50-56
+  s_d55ab428b62c9f::t_2ad135ea076643 242,246
+  s_d55ab428b62c9f::t_ebc9f4e540c82e 143-159,165-170,176-188
+  s_d55ab428b62c9f::t_59fa66e19c5799 20,24
+  s_d55ab428b62c9f::t_0766f192f4328a 189,317-338
+  s_d55ab428b62c9f::t_b2a5f1eb922c38 299,301-305
+  s_d55ab428b62c9f::t_111a62406e56d4 477,482-497
+  s_d55ab428b62c9f::t_f2ed9ae4c4a0bd 190
+web/lib/store.ts
+  s_d55ab428b62c9f::t_068b58199b6862 13,18
+  s_d55ab428b62c9f::t_94b6e4ee0093ca 103-104
+  s_d55ab428b62c9f::t_3c5f9721a61411 158-168
+  s_d55ab428b62c9f::t_6bf47cea7cf4c9 76-77,81-90
+  s_d55ab428b62c9f::t_29cce379f220a3 38-40
+  s_d55ab428b62c9f::t_b02348f71f5eb4 226-227
+  s_d55ab428b62c9f::t_57a1be708a235f 205-206
+  s_d55ab428b62c9f::t_c2140272f135d5 50-53
+web/components/AgentPanel.tsx
+  s_d55ab428b62c9f::t_4775ef10aa7cf7 104,106-109
+  s_d55ab428b62c9f::t_40e9baa0250fff 3-13
+  s_d55ab428b62c9f::t_697a46a07b74b5 29,33
+  s_d55ab428b62c9f::t_e14645986239f3 127-203
+web/mock/events.ts
+  s_d55ab428b62c9f::t_7d635b82dcd667 100,170,181,192,222,232,242,253,289,311,321,357,426,428,446,480,510,542
+  s_d55ab428b62c9f::t_5a8b2e9b48beff 6-9,106-113,198-205,259-266,452-459
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e02281246d3715d6f53a10e486b96fb06f1ef992",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
