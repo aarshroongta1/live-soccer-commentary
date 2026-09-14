@@ -41,6 +41,10 @@ class DelayBuffer:
     def append(self, frame: Frame) -> None:
         self._frames.append(frame)
 
+    def clear(self) -> None:
+        """Empty the buffer, as at the start of a fresh pass over the clip."""
+        self._frames.clear()
+
     @property
     def live_ts(self) -> float | None:
         """Timestamp of the newest frame, the live edge."""

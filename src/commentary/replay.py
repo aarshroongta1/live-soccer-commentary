@@ -135,6 +135,9 @@ class Replay:
     start_s: float = 0.0
     #: For the status line, so the page says which run it is showing.
     label: str = ""
+    #: Once the last cue has played, seek the clip back to the start and play
+    #: the trace again, rather than ending the process.
+    loop: bool = False
 
     bus: Bus = field(default_factory=Bus)
 
@@ -145,6 +148,7 @@ class Replay:
         self._played = 0
         self._usage = Usage()
         self._stop = asyncio.Event()
+        self._pass = 1
         # The teams are known before the first state row the same way a live
         # runtime knows them before kickoff: they come off the team sheets,
         # not off the screen. Everything else — the score, the clock, the
@@ -152,7 +156,8 @@ class Replay:
         first = next(
             (state for cue in self.cues if (state := self._teams_of(cue)) is not None), None
         )
-        self._state = first if first is not None else MatchState(home="Home", away="Away")
+        self._initial_state = first if first is not None else MatchState(home="Home", away="Away")
+        self._state = self._initial_state
 
     @staticmethod
     def _teams_of(cue: Cue) -> MatchState | None:
@@ -216,18 +221,17 @@ class Replay:
     # -- playing it ------------------------------------------------------
 
     async def run(self, seconds: float | None = None) -> None:
-        async with self.source:
-            tasks = [asyncio.create_task(self._ingest(), name="frames")]
-            if seconds is not None:
-                tasks.append(asyncio.create_task(self._deadline(seconds), name="deadline"))
-            try:
-                await self._stop.wait()
-            finally:
-                for task in tasks:
-                    task.cancel()
-                for task in tasks:
-                    with contextlib.suppress(asyncio.CancelledError):
-                        await task
+        tasks = [asyncio.create_task(self._ingest(), name="frames")]
+        if seconds is not None:
+            tasks.append(asyncio.create_task(self._deadline(seconds), name="deadline"))
+        try:
+            await self._stop.wait()
+        finally:
+            for task in tasks:
+                task.cancel()
+            for task in tasks:
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
 
     async def _deadline(self, seconds: float) -> None:
         await asyncio.sleep(seconds)
@@ -237,13 +241,34 @@ class Replay:
         self._stop.set()
 
     async def _ingest(self) -> None:
-        async for frame in self.source.frames():
-            self.buffer.append(frame)
-            self.publish_due()
-        # The clip ended. Anything left is a row the original run made about
-        # video this clip does not contain; firing it now would put it on the
-        # page at the wrong moment, so it is counted and dropped.
+        while True:
+            async with self.source:
+                async for frame in self.source.frames():
+                    self.buffer.append(frame)
+                    self.publish_due()
+            # The clip ended. Anything left is a row the original run made
+            # about video this clip does not contain; firing it now would put
+            # it on the page at the wrong moment, so it is counted and
+            # dropped, whether or not another pass follows.
+            if not self.loop:
+                break
+            self._restart_pass()
         self.stop()
+
+    def _restart_pass(self) -> None:
+        """Seek the clip back to the start and play the trace again.
+
+        The Bus and the server keep running; only the source is reopened
+        (the next ``async with self.source`` in ``_ingest`` calls its
+        ``__aenter__`` again) and the buffer and the replayed state go back
+        to what they were before the first frame of the first pass.
+        """
+        self._pass += 1
+        self._played = 0
+        self.buffer.clear()
+        self._state = self._initial_state
+        self._usage = Usage()
+        print(f"pass {self._pass}: {len(self.cues)} rows")
 
     def publish_due(self) -> None:
         """Publish every cue the cursor has reached, in order, once each."""
@@ -281,6 +306,7 @@ def from_files(
     *,
     start_s: float = 0.0,
     settings: Settings = SETTINGS,
+    loop: bool = False,
 ) -> Replay:
     """A replay of one trace against one clip, ready to run or to serve."""
     trace_path, clip = Path(trace), Path(path)
@@ -292,4 +318,5 @@ def from_files(
         settings=settings,
         start_s=start_s,
         label=f"{trace_path.name} over {clip.name}",
+        loop=loop,
     )

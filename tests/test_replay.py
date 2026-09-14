@@ -222,6 +222,80 @@ async def test_a_replay_serves_the_delayed_picture_from_the_cursor_like_a_live_r
     assert live - cursor == pytest.approx(DELAY_S)
 
 
+@pytest.mark.asyncio
+async def test_with_loop_the_cues_are_published_again_once_the_first_pass_ends() -> None:
+    replay = replay_of([row("spoken", 1.0, text="a line")], seconds=6.0)
+    replay.loop = True
+    seen: list[Message] = []
+
+    async def watch() -> None:
+        async for message in replay.bus.subscribe():
+            seen.append(message)
+
+    watcher = asyncio.create_task(watch())
+    await asyncio.sleep(0)
+    runner = asyncio.create_task(replay.run())
+
+    for _ in range(20_000):
+        if len(seen) >= 2:
+            break
+        await asyncio.sleep(0)
+
+    replay.stop()
+    await asyncio.wait_for(runner, timeout=1.0)
+    watcher.cancel()
+
+    # Republished at the same point in the trace the second time round, not
+    # somewhere it never appeared in the first pass.
+    assert len(seen) >= 2
+    assert [message.payload["text"] for message in seen[:2]] == ["a line", "a line"]
+    assert seen[0].ts == seen[1].ts == 1.0
+
+
+@pytest.mark.asyncio
+async def test_looping_seeks_the_clip_back_so_the_buffers_live_ts_restarts() -> None:
+    replay = replay_of([row("spoken", 1.0, text="a line")], seconds=1.0)
+    replay.loop = True
+    runner = asyncio.create_task(replay.run())
+
+    peak = 0.0
+    dropped = False
+    for _ in range(20_000):
+        await asyncio.sleep(0)
+        live = replay.buffer.live_ts
+        if live is None:
+            continue
+        if live < peak - 0.05:
+            # The live edge fell well below where it had climbed to: the
+            # source was reopened at the start rather than kept playing on.
+            dropped = True
+            break
+        peak = max(peak, live)
+
+    replay.stop()
+    await asyncio.wait_for(runner, timeout=1.0)
+
+    assert dropped
+    assert peak > 0.5  # the first pass actually played most of the one-second clip
+
+
+@pytest.mark.asyncio
+async def test_stop_ends_a_looping_replay() -> None:
+    replay = replay_of([row("spoken", 1.0, text="a line")], seconds=1.0)
+    replay.loop = True
+    runner = asyncio.create_task(replay.run())
+
+    # Enough scheduler turns for the one-second clip to loop several times
+    # over before it is asked to stop.
+    for _ in range(5000):
+        await asyncio.sleep(0)
+
+    replay.stop()
+    await asyncio.wait_for(runner, timeout=1.0)
+
+    assert runner.done() and not runner.cancelled()
+
+
 def test_from_files_reads_a_trace_off_disk_and_points_ffmpeg_at_the_clip(tmp_path: Any) -> None:
     path = tmp_path / "run.jsonl"
     with RunTrace(path=path) as trace:

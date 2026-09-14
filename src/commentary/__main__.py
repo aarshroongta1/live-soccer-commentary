@@ -338,7 +338,9 @@ async def cmd_replay(args: argparse.Namespace) -> int:
         capture = replace(capture, delay_s=args.delay)
     settings = replace(SETTINGS, capture=capture)
 
-    replay = from_files(args.trace, args.path, start_s=args.start, settings=settings)
+    replay = from_files(
+        args.trace, args.path, start_s=args.start, settings=settings, loop=args.loop
+    )
     span = max((cue.ts for cue in replay.cues), default=0.0)
     print(f"{len(replay.cues)} rows over {span:.0f}s, against {args.path} from {args.start:g}s in")
     print(
@@ -674,6 +676,11 @@ def build_parser() -> argparse.ArgumentParser:
     rp.add_argument("--seconds", type=float, default=None, help="stop after this long")
     rp.add_argument("--serve", action="store_true", help="also serve the watch page")
     rp.add_argument("--port", type=int, default=8000)
+    rp.add_argument(
+        "--loop",
+        action="store_true",
+        help="once the trace ends, seek back to --start and play it again, forever",
+    )
     rp.set_defaults(func=cmd_replay)
 
     cr = sub.add_parser("crop", help="draw the score-bug box on one frame of a file")

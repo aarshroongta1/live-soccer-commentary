@@ -123,6 +123,8 @@ needing no key. `--start` is how far into the clip that run began — a
 `--source file` run began at 0, and the screen runs played a clip in a video
 player and started part-way in. The timestamps on the page are the trace's
 own, so the goal called at 0:39 in the trace is called at 0:39 here.
+Add `--loop` and the replay keeps playing the trace from the start once it
+ends, so the page still has something running for whoever opens it late.
 
 `?mock=1` on the page replays a built-in fixture with no runtime behind it at
 all, which is how the UI is developed.
