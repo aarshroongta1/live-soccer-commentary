@@ -1,0 +1,28 @@
+README.md
+  s_d55ab428b62c9f::t_93a565aa6e91bc 126-127
+src/commentary/__main__.py
+  s_d55ab428b62c9f::t_93a565aa6e91bc 341-343,679-683
+src/commentary/capture/buffer.py
+  s_d55ab428b62c9f::t_93a565aa6e91bc 44-47
+tests/test_replay.py
+  s_d55ab428b62c9f::t_93a565aa6e91bc 225-297
+  s_d55ab428b62c9f::t_3f70c329b19225 224
+src/commentary/replay.py
+  s_d55ab428b62c9f::t_93a565aa6e91bc 138-140,151,159-160,224-234,244-255,258-272,309,321
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d7d7e43a2642d7a6c6b43ebceec61e393ee05163",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
