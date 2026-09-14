@@ -57,6 +57,24 @@ DEFAULT_FORMAT = "pcm_22050"
 #: full buffer is not a spin loop.
 POLL_S = 0.005
 
+#: How long to keep offering audio to a card that is not taking any before
+#: giving up on the line. A healthy card refuses for as long as its buffer
+#: holds, which is a fraction of a second; one that refuses for this long has
+#: stopped playing. macOS's audio stack really does wedge — killing ``say``
+#: mid-utterance is one way to do it — and a director waiting politely on a
+#: dead device never says anything again, which is a silent match rather than
+#: a missing line.
+STALL_S = 5.0
+
+#: A little longer than the arithmetic says, before a finished line's stream
+#: is torn down. Covers the few milliseconds between handing the last sample
+#: to PortAudio and it reaching the speaker, which the byte count cannot see.
+TAIL_S = 0.05
+
+
+class AudioStalled(RuntimeError):
+    """The output stopped taking audio and did not start again."""
+
 
 class AudioSink(Protocol):
     """Somewhere to put audio chunks that can be silenced mid-chunk."""
@@ -178,6 +196,7 @@ class PcmSink:
         *,
         open_stream: Any = None,
         poll_s: float = POLL_S,
+        stall_s: float = STALL_S,
     ) -> None:
         rate = pcm_rate(output_format)
         if rate is None:
@@ -187,6 +206,7 @@ class PcmSink:
         self.frame_bytes = PCM_SAMPLE_BYTES * PCM_CHANNELS
         self.bytes_per_second = float(rate * self.frame_bytes)
         self.poll_s = poll_s
+        self.stall_s = stall_s
         self._open = open_stream if open_stream is not None else open_portaudio
         self._stream: PcmStream | None = None
         #: Bytes handed to the card so far.
@@ -216,6 +236,12 @@ class PcmSink:
         frames and would refuse the odd byte, and a chunk boundary landing
         mid-sample is a fact about how the HTTP response was split up on the
         way here, not about the speech.
+
+        Raises :class:`AudioStalled` if the card takes nothing for
+        :data:`STALL_S`. The pump turns that into a cut line, which is the
+        only honest ending: a device that has stopped playing is not going to
+        play this one, and waiting on it holds the channel for the rest of
+        the match.
         """
         stream = self._stream
         if stream is None or not chunk:
@@ -223,14 +249,26 @@ class PcmSink:
         data = self._remainder + chunk
         usable = len(data) - len(data) % self.frame_bytes
         self._remainder, data = data[usable:], data[:usable]
+        refusing_since: float | None = None
         while data:
             room = stream.write_available * self.frame_bytes
             if room <= 0:
-                # The card is full, which means it is still playing what it
-                # already has. Waiting here is the back-pressure that stops
-                # this reading a whole line into memory ahead of the speaker.
+                # The card is full, which usually means it is still playing
+                # what it already has. Waiting here is the back-pressure that
+                # stops this reading a whole line into memory ahead of the
+                # speaker — but only for as long as a full buffer could
+                # plausibly last.
+                now = time.monotonic()
+                if refusing_since is None:
+                    refusing_since = now
+                elif now - refusing_since > self.stall_s:
+                    raise AudioStalled(
+                        f"the output took no audio for {self.stall_s:g}s; "
+                        "the device has stopped playing"
+                    )
                 await asyncio.sleep(self.poll_s)
                 continue
+            refusing_since = None
             piece, data = data[:room], data[room:]
             stream.write(piece)
             self.written += len(piece)
@@ -248,18 +286,23 @@ class PcmSink:
         than real time underruns, and the sound then ends later than the
         bytes on their own would say.
 
-        Stopping the stream afterwards is PortAudio's own version of the same
-        wait and costs nothing once the sleep is over. It is here so that a
-        few milliseconds of misjudgement are still heard rather than clipped.
+        The stream is then aborted rather than stopped, even though stopping
+        is the one that means "play out what is left". By this point there is
+        nothing left: the sleep has already covered every byte handed over,
+        plus :data:`TAIL_S` for the arithmetic being a few milliseconds out.
+        And ``stop`` is a blocking drain — on a device that has wedged it
+        never returns, and it would be holding the event loop, not a thread.
+        A tail that cannot be clipped is worth less than a match that cannot
+        hang.
         """
         stream, self._stream = self._stream, None
         if stream is None:
             return
         remaining = self.plays_until - time.monotonic()
         if remaining > 0:
-            await asyncio.sleep(remaining)
+            await asyncio.sleep(remaining + TAIL_S)
         try:
-            stream.stop()
+            stream.abort()
         finally:
             stream.close()
 

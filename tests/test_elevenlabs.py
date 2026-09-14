@@ -29,6 +29,7 @@ from commentary.voice import ElevenLabsSpeaker, VoiceUnavailable
 from commentary.voice.playback import (
     DRAIN_TIMEOUT_S,
     PCM_SAMPLE_BYTES,
+    AudioStalled,
     FFplaySink,
     NullSink,
     PcmSink,
@@ -385,8 +386,9 @@ async def test_a_finished_pcm_line_waits_for_its_own_audio_and_not_for_a_timeout
     assert waited == pytest.approx(0.25, abs=0.1)
     assert waited < DRAIN_TIMEOUT_S
     assert sink.seconds_written == pytest.approx(0.25, abs=1e-3)
-    # Played out and closed, not killed: the next voice may now start.
-    assert card.stopped and card.closed and not card.aborted
+    # The wait covered the audio, so the stream is torn down rather than
+    # asked to drain: a blocking drain on a wedged device never returns.
+    assert card.aborted and card.closed
 
 
 @pytest.mark.asyncio
@@ -400,7 +402,7 @@ async def test_a_cut_line_drops_what_the_card_is_holding_instead_of_playing_it()
     await sink.stop()
 
     assert time.monotonic() - started < 0.05, "a preemption waited out the audio it was cancelling"
-    assert card.aborted and card.closed and not card.stopped
+    assert card.aborted and card.closed
 
 
 @pytest.mark.asyncio
@@ -474,11 +476,49 @@ async def test_a_sink_nothing_was_written_to_neither_waits_nor_complains() -> No
     started = time.monotonic()
     await sink.finish()
 
-    assert time.monotonic() - started < 0.05
-    assert card.stopped
+    assert time.monotonic() - started < 0.2
+    assert card.closed
     # And a second finish, or a stop after one, is a no-op rather than a crash.
     await sink.finish()
     await sink.stop()
+
+
+@pytest.mark.asyncio
+async def test_a_card_that_has_stopped_playing_ends_the_line_instead_of_the_match() -> None:
+    """macOS's audio stack does wedge, and a polite wait is then permanent.
+
+    The director holds the channel until ``say`` returns. A sink that waits
+    for room on a dead device never returns, so the commentary does not
+    resume when the next beat arrives, or the one after that — the match goes
+    silent for good rather than losing one line.
+    """
+    card = FakeCard(room_frames=0)  # takes nothing, ever
+    sink = pcm_sink(card, poll_s=0.001, stall_s=0.05)
+    await sink.start()
+
+    started = time.monotonic()
+    with pytest.raises(AudioStalled, match="stopped playing"):
+        await sink.write(b"\0" * SECOND)
+
+    assert time.monotonic() - started < 1.0
+    assert card.written == b""
+
+
+@pytest.mark.asyncio
+async def test_a_stalled_output_is_reported_as_a_cut_line_and_not_as_a_crash() -> None:
+    # What the director has to see. An exception out of `say` would take the
+    # whole runtime down over one unplayable line.
+    class StallingSink(NullSink):
+        async def write(self, chunk: bytes) -> None:
+            raise AudioStalled("the output took no audio for 5s")
+
+    sink = StallingSink()
+    spk = speaker(FakeStream([b"a" * 64] * 4), sink)
+
+    utterance = await spk.say(beat("a line into a dead speaker"), asyncio.Event())
+
+    assert not utterance.completed
+    assert sink.stopped
 
 
 def test_a_raw_format_is_recognised_by_its_name_and_an_mp3_is_not() -> None:

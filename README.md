@@ -184,6 +184,14 @@ cannot deliver 44 KB/s the download, not the speech, becomes what `seconds`
 measures. Pass `output_format="mp3_22050_32"` to `ElevenLabsSpeaker` and the
 ffplay sink takes over, timeout and all.
 
+One thing to know before match day: `--voice say` cuts macOS's `say` off
+mid-utterance on every preemption, and doing that repeatedly can wedge the
+Mac's audio stack until `sudo killall coreaudiod`. Nothing then plays — not
+`say`, not PortAudio, not the browser. The sink gives up on a line after five
+seconds of a device taking no audio and reports it cut, so the match keeps
+calling rather than going silent for good, but the sound will not come back
+on its own. Use `--voice say` to check the plumbing, not to rehearse.
+
 ## The simulator
 
 There is a synthetic broadcast in [`src/commentary/sim/`](src/commentary/sim):
