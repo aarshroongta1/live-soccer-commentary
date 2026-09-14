@@ -16,7 +16,9 @@ Frames land in a ring buffer. Perception runs at the live edge, but
 the narration cursor trails it by a few seconds, so the caller can peek at what
 happens next before it commits to a line — the shot it is describing has already
 gone in, or has not. The viewer watches the video from the cursor too, which is
-what makes the delay invisible.
+what makes the delay invisible — held a further `PRESENT_OFFSET_S` behind it,
+3.5 s by default, because a line is stamped with the cursor when the call
+*begins* and only reaches the viewer when the model answers.
 
 ```
 screen capture ─► delay buffer ─┬─► board reader (score bug)
@@ -31,6 +33,29 @@ because that is how the system learns a goal went in before the cursor reaches
 it. But a board change is not applied to match state until the cursor passes the
 moment it happened. The evidence arrives early; the belief arrives on time, so
 the commentary can never announce something the viewer has not been shown.
+
+The gate does arithmetic as well as lookups. A side the state has seen score
+twice may be said to have scored twice, and a third only while a goal is being
+called that the state has not taken in yet. That rule exists because of two
+lines that reached air: on a Haiku replay of the Di María clip, at 2-0, the
+caller wrote "Messi, from the rebound! Argentina's third." and then "De Paul!
+Argentina's fourth!", and both passed. A goal *was* in the state, which was
+cover for any line about a goal, and it turned out to be cover for counting too.
+
+### Lag, end to end
+
+| | |
+|---|---:|
+| delay buffer, live edge to narration cursor | 8.0 s |
+| caller round trip, call begun to line published | median 3.4 s, range 1.9–5.6 |
+| first sound out of the speaker, once warm | 0.22–0.39 s |
+
+The first two are measured over the beat rows of the 60-second screen run in
+`runs/screen/dimaria`; the third over a voiced replay of the Di María trace.
+The buffer is the price of the lookahead and cannot shrink — the gate's goal
+window and the caller's peek are both spent out of it — so the picture moves
+instead, which is what `PRESENT_OFFSET_S` is. Its 3.5 s default is that round
+trip.
 
 Full architecture, agent roster, and evaluation plan: [`PLAN.md`](PLAN.md).
 Research behind the design choices: [`docs/research/`](docs/research).
@@ -88,11 +113,28 @@ To call something real:
 
 ```bash
 cp .env.example .env            # add ANTHROPIC_API_KEY
-bash scripts/list_devices.sh    # pick "<screen>:<audio>" for AVFOUNDATION_DEVICE
+bash scripts/list_devices.sh    # copy the screen device's *name*
 uv run python -m commentary run --source screen --backend anthropic --serve
 ```
 
 Then open <http://127.0.0.1:8000> and play a match full screen.
+
+Set `AVFOUNDATION_DEVICE` to the name, `"Capture screen 0"`, not an index: the
+index moves when anything else capturable is plugged in. macOS must have
+granted Screen Recording permission to whatever is running the session, or
+ffmpeg hangs with no error and no frames.
+
+The settings worth knowing, all in `.env`:
+
+| | |
+|---|---|
+| `CALLER_MODEL` `BOARD_MODEL` `ANALYST_MODEL` | Opus 5 calls, Haiku 4.5 reads the board, Opus 5 on the analyst. |
+| `DELAY_S` | How far the narration cursor trails the live edge. 8.0. |
+| `PRESENT_OFFSET_S` | How far the viewer's picture trails the cursor. 3.5, and no deeper than the buffer's history. |
+| `CALLER_FRAME_WIDTH` | Width the caller's frames go out at. 768; 1280 costs 1.75x and did not pay. |
+| `MAX_USD_PER_MATCH` | Past this the system stops calling the model. 35. |
+| `AVFOUNDATION_DEVICE` | Capture device, by name. |
+| `ELEVENLABS_API_KEY` and the two voice ids | Only read when `--voice elevenlabs` is on. |
 
 ## Playground
 
@@ -185,6 +227,13 @@ Raw PCM is four times the bytes of `mp3_22050_32`, so on a connection that
 cannot deliver 44 KB/s the download, not the speech, becomes what `seconds`
 measures. Pass `output_format="mp3_22050_32"` to `ElevenLabsSpeaker` and the
 ffplay sink takes over, timeout and all.
+
+Which is why the mean per line barely moved — 4.01 s to 3.78 s over the same
+trace. On the free tier the stream arrives at about playback speed, so no line
+in that replay came out under 2.8 s and a six-word line took 3.2 s. Real
+commentary's median utterance is five words and this system's rate cap floors
+at 1.5 s, so the audio, not the writing, is currently the shortest a line can
+be.
 
 One thing to know before match day: `--voice say` cuts macOS's `say` off
 mid-utterance on every preemption, and doing that repeatedly can wedge the
@@ -290,12 +339,6 @@ system that wants to use one and also wants to be right has to wait at least as
 long as the feed does. That is an argument for the delay that does not depend on
 the lookahead at all.
 
-The fact gate is the result. Switching it off takes factual error rate from 6.5%
-to 71.8% — the caller proposes plenty of nonsense either way, and the gate is
-the only thing standing between that and a voice. The reproduced worldcupvoice
-loop sits at 87.5%, which is what an ungated caller with no state and no roster
-does: 11 invented names, 7 goals that never happened, 3 wrong scorelines.
-
 ### The delay
 
 | delay | 0 s | 2 s | 4 s | 8 s |
@@ -336,7 +379,7 @@ ablations are wired correctly enough to run against the real thing.
 | Command | What it does |
 |---|---|
 | `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice say` adds free sound via macOS's built-in speech (testing only), `--voice elevenlabs` adds the real two-voice sound and needs a key. |
-| `replay --trace t.jsonl --path clip.mp4` | Watch a finished run again: its clip through the delay buffer, its trace back onto the bus. `--start` is the clip offset the run began at, `--serve` adds the watch page. Calls nothing and costs nothing. |
+| `replay --trace t.jsonl --path clip.mp4` | Watch a finished run again: its clip through the delay buffer, its trace back onto the bus. `--start` is the clip offset the run began at, `--serve` adds the watch page, `--loop` plays it round again when the clip ends. Calls nothing and costs nothing. |
 | `replay --trace t.jsonl --path clip.mp4 --voice elevenlabs` | The same, but said out loud through a real director, so a voice or a sink can be heard on lines the model was already paid for. `--voice say` is free; `--out` says where to write the trace of what actually came out. No model is called either way. |
 | `sim` | Describe the synthetic match, or `--out x.mp4` to render it. |
 | `capture [seconds]` | Prove frames reach Python. The day-one gate. |
@@ -397,7 +440,7 @@ with the roster as the prompt, so it spells the players right.
 ## Development
 
 ```bash
-uv run pytest        # 448 tests, no network, no key, no model weights
+uv run pytest        # 556 tests, no network, no key, no model weights
 uv run ruff check .  # lint
 uv run mypy          # strict
 uv run pre-commit install
@@ -414,8 +457,17 @@ video file, through the fact gate, and with a wire. Since then
 it has been run on eighteen clips of real broadcast from six matches and four
 broadcasters, graded against StatsBomb; that evidence is in
 [`docs/CLIPS.md`](docs/CLIPS.md) and the current state of the project is in
-[`docs/HANDOFF.md`](docs/HANDOFF.md). What has **not** happened yet is a live
-source: everything so far is recorded clips.
+[`docs/HANDOFF.md`](docs/HANDOFF.md).
+
+The live path now works. A 60-second `--source screen` run against a
+full-screen 4K playback, at the default crop, read the score bug **16 times out
+of 16** and spoke 9 lines, all 9 through the gate, for **$0.075**. Reading a
+score bug off a rescaled 4K screen grab turned out to be no harder than reading
+one off the file.
+
+What has **not** happened is a match. Every run is a clip; nothing has run
+longer than three and a half minutes; the voice has never been on with a live
+source; and no fixture has been picked.
 
 ## Rights
 
