@@ -192,6 +192,10 @@ def _speaker(args: argparse.Namespace) -> Speaker:
         from commentary.voice import ElevenLabsSpeaker
 
         return ElevenLabsSpeaker()
+    if args.voice == "say":
+        from commentary.voice import SaySpeaker
+
+        return SaySpeaker()
     return LogSpeaker(echo=True)
 
 
@@ -627,7 +631,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--source", choices=["sim", "screen", "file"], default="sim")
     run.add_argument("--path", help="video file, with --source file")
     run.add_argument("--backend", choices=["oracle", "anthropic"], default="oracle")
-    run.add_argument("--voice", choices=["log", "elevenlabs"], default="log")
+    run.add_argument("--voice", choices=["log", "say", "elevenlabs"], default="log")
     run.add_argument("--pack", help="knowledge pack JSON written by the researcher")
     run.add_argument("--seconds", type=float, default=60.0, help="wall-clock run length")
     run.add_argument("--duration", type=float, default=600.0, help="sim match length")

@@ -268,7 +268,7 @@ ablations are wired correctly enough to run against the real thing.
 
 | Command | What it does |
 |---|---|
-| `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice elevenlabs` adds sound and needs a key. |
+| `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice say` adds free sound via macOS's built-in speech (testing only), `--voice elevenlabs` adds the real two-voice sound and needs a key. |
 | `replay --trace t.jsonl --path clip.mp4` | Watch a finished run again: its clip through the delay buffer, its trace back onto the bus. `--start` is the clip offset the run began at, `--serve` adds the watch page. Calls nothing and costs nothing. |
 | `sim` | Describe the synthetic match, or `--out x.mp4` to render it. |
 | `capture [seconds]` | Prove frames reach Python. The day-one gate. |

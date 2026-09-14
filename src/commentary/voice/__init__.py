@@ -2,6 +2,7 @@
 
 from commentary.voice.elevenlabs import ElevenLabsSpeaker, VoiceUnavailable
 from commentary.voice.playback import AudioSink, FFplaySink, NullSink, default_sink
+from commentary.voice.say import SaySpeaker
 from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker, Speaker, Utterance
 
 __all__ = [
@@ -11,6 +12,7 @@ __all__ = [
     "FFplaySink",
     "LogSpeaker",
     "NullSink",
+    "SaySpeaker",
     "Speaker",
     "Utterance",
     "VoiceUnavailable",
