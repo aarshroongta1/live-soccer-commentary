@@ -233,3 +233,87 @@ def test_from_files_reads_a_trace_off_disk_and_points_ffmpeg_at_the_clip(tmp_pat
     assert replay.start_s == 20.0
     assert getattr(replay.source, "start_s", None) == 20.0
     assert "run.jsonl" in replay.status()["message"]
+
+
+def test_a_row_that_carries_a_live_edge_is_scheduled_at_the_cursor_it_went_out_at() -> None:
+    """A beat is stamped with the moment it is *about*, not the moment it aired.
+
+    The caller is handed the cursor, the model thinks for a few seconds, and
+    only then does the line exist to be published. ``video_ts`` is the first
+    of those instants and ``live_ts`` the second, so the cursor time the run
+    actually published at is ``live_ts - delay_s``. On the Di María screen
+    run that gap is a median 3.4 s.
+    """
+    ordered = cues(
+        [
+            row("beat", 0.25, text="Argentina building from the back", live_ts=13.9),
+            row("gate", 0.25, passed=True),
+        ],
+        delay_s=8.0,
+    )
+    scheduled = {cue.topic: cue.at for cue in ordered}
+
+    assert scheduled[Topic.BEAT] == pytest.approx(5.9)
+    # The row still *says* 0.25: that is the moment the line is about, and the
+    # transcript, the eval and every panel align on it.
+    assert [cue.ts for cue in ordered] == [0.25, 0.25]
+    # A row with no live edge is a panel's account of a moment, not something
+    # a viewer hears. It stays where it is.
+    assert scheduled[Topic.GATE] == pytest.approx(0.25)
+
+
+def test_rows_without_a_live_edge_keep_their_order_among_themselves() -> None:
+    # The stable sort still holds after the rescheduling: these three share a
+    # schedule and come back in the order the run produced them.
+    ordered = cues([row("trigger", 2.0), row("caller", 2.0), row("sighting", 2.0)], delay_s=8.0)
+
+    assert [cue.topic for cue in ordered] == [Topic.TRIGGER, Topic.CALLER, Topic.SIGHTING]
+
+
+@pytest.mark.asyncio
+async def test_a_line_is_replayed_when_the_run_said_it_not_when_it_was_written_about() -> None:
+    """The whole point of the rescheduling, end to end.
+
+    Replaying a beat at its own timestamp would put it on the page three
+    seconds before the play it describes, because the picture is now held
+    ``present_offset_s`` behind the cursor to meet the model's round trip.
+    """
+    replay = replay_of(
+        [row("beat", 1.0, text="Di María strikes.", live_ts=DELAY_S + 4.0)],
+        seconds=10.0,
+    )
+
+    # The beat is about video second 1.0 but went out at cursor 4.0, so the
+    # cursor sails past 1.0 with nothing published.
+    for index in range(5 * FPS):
+        replay.buffer.append(Frame(ts=index / FPS, image=np.zeros((8, 8, 3), dtype=np.uint8)))
+        replay.publish_due()
+    assert replay.buffer.cursor_ts is not None and replay.buffer.cursor_ts > 1.0
+    assert replay.played == 0, "a line replayed at its own timestamp lands before its own play"
+
+    for index in range(5 * FPS, 8 * FPS):
+        replay.buffer.append(Frame(ts=index / FPS, image=np.zeros((8, 8, 3), dtype=np.uint8)))
+        replay.publish_due()
+
+    assert replay.played == 1
+
+
+@pytest.mark.asyncio
+async def test_the_republished_row_still_carries_the_moment_it_describes() -> None:
+    replay = replay_of(
+        [row("spoken", 1.0, voice="caller", text="Di María strikes.", live_ts=DELAY_S + 3.4)],
+        seconds=10.0,
+    )
+
+    seen = await collect(replay)
+
+    assert [message.ts for message in seen] == [1.0]
+    assert seen[0].payload["text"] == "Di María strikes."
+
+
+def test_the_replay_tells_the_page_how_far_behind_the_cursor_the_picture_is() -> None:
+    replay = replay_of([row("spoken", 1.0, text="a line")])
+    client = TestClient(create_app(replay))
+
+    offset = client.get("/api/state").json()["status"]["present_offset_s"]
+    assert offset == pytest.approx(settings().capture.present_offset_s)

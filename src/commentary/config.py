@@ -39,6 +39,33 @@ class CaptureConfig:
     delay_s: float = float(os.getenv("DELAY_S", "8.0"))
     #: Seconds of frames kept behind the cursor, for lookback in prompts.
     history_s: float = 6.0
+    #: How far behind the narration cursor the viewer's picture is held.
+    #:
+    #: A caller line is stamped with the cursor at the moment the call
+    #: *starts* and reaches the viewer when the call returns, so without this
+    #: every line lands after the moment it describes has gone past on screen.
+    #: Measured on the 60 s screen run —
+    #: ``runs/screen/dimaria/screen-20260913-222906.jsonl``, ``live_ts -
+    #: video_ts - delay_s`` over its ``beat`` rows — the round trip is a
+    #: median 3.4 s, range 1.9 to 5.6 s, and the median was the same on Opus
+    #: over file runs. Holding the picture back by that much puts the line
+    #: and its moment back together.
+    #:
+    #: The buffer is what pays for it: the frame comes from ``history_s``
+    #: behind the cursor, so the offset can never exceed it. Shrinking the
+    #: delay instead is not an option — the gate's goal window and the
+    #: caller's lookahead are both spent out of it.
+    present_offset_s: float = float(os.getenv("PRESENT_OFFSET_S", "3.5"))
+
+    def __post_init__(self) -> None:
+        if self.present_offset_s < 0:
+            raise ValueError("present_offset_s must be >= 0")
+        if self.present_offset_s > self.history_s:
+            raise ValueError(
+                f"present_offset_s ({self.present_offset_s:g}s) is more than the buffer keeps "
+                f"behind the cursor (history_s {self.history_s:g}s): the viewer's frame would "
+                f"already have been evicted. Raise history_s or lower PRESENT_OFFSET_S."
+            )
 
 
 @dataclass(frozen=True)

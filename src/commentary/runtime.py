@@ -243,6 +243,11 @@ class Runtime:
     def usage(self) -> Usage:
         return self.backend.total
 
+    @property
+    def present_offset_s(self) -> float:
+        """How far behind the cursor the viewer's picture is held."""
+        return self.settings.capture.present_offset_s
+
     def status(self) -> dict[str, Any]:
         stats = self.gate.stats
         return {

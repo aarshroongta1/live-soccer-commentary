@@ -77,7 +77,17 @@ def fast(delay_s: float = 4.0) -> Settings:
     answer about a frame whose moment it cannot read.
     """
     return Settings(
-        capture=CaptureConfig(width=640, height=360, fps=8, delay_s=delay_s, history_s=3.0),
+        capture=CaptureConfig(
+            width=640,
+            height=360,
+            fps=8,
+            delay_s=delay_s,
+            # A shallow buffer keeps these fast, and the presentation
+            # offset cannot reach back further than the buffer holds.
+            # Nothing here watches the picture, so it only has to be legal.
+            history_s=3.0,
+            present_offset_s=3.0,
+        ),
         caller=CallerConfig(min_gap_s=2.0),
         predictor=PredictorConfig(tick_s=0.02),
         director=DirectorConfig(max_beat_age_s=30.0),

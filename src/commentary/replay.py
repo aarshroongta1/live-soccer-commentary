@@ -7,10 +7,17 @@ the picture, and the picture is the clip, still on disk.
 
 This module puts the two back together. The clip goes through the same
 :class:`FileCapture` and :class:`DelayBuffer` a live run uses, so ``/api/video``
-serves frames at the narration cursor exactly as it did on the night; each
-trace row is republished onto a fresh :class:`Bus` when the cursor reaches its
-timestamp. The page cannot tell the difference, and neither can anything else
-that speaks to a :class:`~commentary.server.RuntimeHandle`.
+serves frames behind the narration cursor exactly as it did on the night; each
+trace row is republished onto a fresh :class:`Bus` when the cursor reaches the
+point the run published it at. The page cannot tell the difference, and neither
+can anything else that speaks to a
+:class:`~commentary.server.RuntimeHandle`.
+
+"The point the run published it at" is not always the row's own timestamp, and
+:func:`cues` is where that is worked out. It matters more than it looks: the
+picture is now held ``present_offset_s`` behind the cursor to meet the model's
+round trip, so a replay that fired every line at the moment it describes would
+show each one several seconds before the play it is about.
 
 No model is called and no key is needed. That is the point: a run costs real
 money and can be watched once, live, by whoever happened to be at the screen.
@@ -48,21 +55,44 @@ class Cue:
     ts: float
     topic: Topic
     payload: dict[str, Any]
+    #: Cursor time the original run actually published this row at. Usually
+    #: ``ts``; see :func:`cues` for the rows where it is not.
+    at: float = 0.0
 
     def message(self) -> Message:
         return Message(topic=self.topic, ts=self.ts, payload=self.payload)
 
 
-def cues(rows: list[dict[str, Any]]) -> list[Cue]:
-    """Trace rows as cues, oldest first.
+def cues(rows: list[dict[str, Any]], *, delay_s: float = 0.0) -> list[Cue]:
+    """Trace rows as cues, in the order the cursor will reach them.
 
-    Sorted by ``ts`` rather than left in file order, because a trace is
-    written in arrival order and the board reader runs a buffer's length
-    ahead of everything else: the first line of a real trace is a board read
-    stamped two seconds in, above a trigger stamped at a quarter of a second.
+    Sorted rather than left in file order, because a trace is written in
+    arrival order and the board reader runs a buffer's length ahead of
+    everything else: the first line of a real trace is a board read stamped
+    two seconds in, above a trigger stamped at a quarter of a second.
     Replaying file order would put the match slightly out of sequence for no
-    reason. The sort is stable, so rows sharing a timestamp — a gate verdict
-    and the beat it let through — keep the order the run produced them in.
+    reason. The sort is stable, so rows scheduled together keep the order the
+    run produced them in.
+
+    **A row is not always published at its own timestamp.** A ``beat`` is
+    stamped ``video_ts`` — the cursor when the caller's call *began* — but it
+    only exists once the model answers, a measured median 3.4 s later, and
+    that is when it went out over the bus and reached the page. Those rows
+    carry the live edge they were published at, so their cursor time is
+    ``live_ts - delay_s``. Replaying them at ``ts`` would put every line on
+    the page three seconds early, which the presentation offset then makes
+    three seconds *earlier* still: the picture is held back to meet the line,
+    so the line must arrive when it really did.
+
+    Rows without a ``live_ts`` stay on ``ts``. A ``caller`` form, a ``gate``
+    verdict, a ``sighting``: these are the panels' account of a moment rather
+    than something a viewer hears, and the moment is what they are stamped
+    with.
+
+    The rule moves a ``status`` row backwards rather than forwards, and that
+    is right too: the runtime stamps those with the live edge instead of the
+    cursor, so ``live_ts - delay_s`` is the cursor time they went out at in
+    exactly the same way.
 
     A row whose topic is not one the bus knows is dropped. Traces outlive the
     code that wrote them; ``tracks`` and ``gallery`` rows from before the
@@ -75,8 +105,11 @@ def cues(rows: list[dict[str, Any]]) -> list[Cue]:
         except ValueError:
             continue
         payload = {key: value for key, value in row.items() if key not in ("topic", "ts")}
-        found.append(Cue(ts=float(row.get("ts", 0.0)), topic=topic, payload=payload))
-    found.sort(key=lambda cue: cue.ts)
+        ts = float(row.get("ts", 0.0))
+        live_ts = payload.get("live_ts")
+        at = float(live_ts) - delay_s if isinstance(live_ts, int | float) else ts
+        found.append(Cue(ts=ts, topic=topic, payload=payload, at=at))
+    found.sort(key=lambda cue: cue.at)
     return found
 
 
@@ -108,7 +141,7 @@ class Replay:
     def __post_init__(self) -> None:
         cap = self.settings.capture
         self.buffer = DelayBuffer(cap.fps, cap.delay_s, cap.history_s)
-        self.cues = cues(self.rows)
+        self.cues = cues(self.rows, delay_s=cap.delay_s)
         self._played = 0
         self._usage = Usage()
         self._stop = asyncio.Event()
@@ -137,6 +170,10 @@ class Replay:
     @property
     def usage(self) -> Usage:
         return self._usage
+
+    @property
+    def present_offset_s(self) -> float:
+        return self.settings.capture.present_offset_s
 
     def status(self) -> dict[str, Any]:
         return {
@@ -213,7 +250,7 @@ class Replay:
         cursor = self.buffer.cursor_ts
         if cursor is None:
             return
-        while self._played < len(self.cues) and self.cues[self._played].ts <= cursor:
+        while self._played < len(self.cues) and self.cues[self._played].at <= cursor:
             cue = self.cues[self._played]
             self._played += 1
             self._apply(cue)

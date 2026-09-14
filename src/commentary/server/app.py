@@ -2,9 +2,15 @@
 
 Two streams leave this process. One is the feed of everything the agents did,
 as server-sent events. The other is the video itself, taken from the delay
-buffer at the narration cursor rather than at the live edge — the viewer and
-the commentator therefore see the same instant, which is the whole reason the
-delay is invisible rather than annoying.
+buffer behind the narration cursor rather than at the live edge — the viewer
+and the commentator therefore see the same instant, which is the whole reason
+the delay is invisible rather than annoying.
+
+*Behind* the cursor, not at it, by ``CaptureConfig.present_offset_s``. The
+cursor is where the caller was looking when it began the call; the line
+arrives a model round trip later, a measured median 3.4 s. Serving the cursor
+exactly would put every line that far after the thing it describes. Holding
+the picture back by the round trip lands the two together.
 
 Neither stream may slow the match down. The bus drops messages for a slow
 subscriber, and the video encoder skips frames rather than queueing them.
@@ -20,7 +26,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
 
 from commentary.bus import Bus
-from commentary.capture.buffer import DelayBuffer
+from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.llm.base import Usage
 from commentary.schemas import MatchState
 
@@ -42,23 +48,43 @@ class RuntimeHandle(Protocol):
     @property
     def usage(self) -> Usage: ...
 
+    @property
+    def present_offset_s(self) -> float: ...
+
     def status(self) -> dict[str, Any]: ...
 
 
-async def mjpeg(buffer: DelayBuffer, fps: int = 12, quality: int = 72) -> AsyncIterator[bytes]:
+def present_frame(buffer: DelayBuffer, present_offset_s: float) -> Frame | None:
+    """The frame the viewer should be looking at right now.
+
+    ``present_offset_s`` behind the narration cursor, clamped at the oldest
+    frame the buffer still holds — which is what the first seconds of a run
+    look like, before there is any history to fall back through.
+    """
+    cursor = buffer.cursor_ts
+    if cursor is None:
+        return None
+    return buffer.nearest(cursor - present_offset_s)
+
+
+async def mjpeg(
+    buffer: DelayBuffer,
+    present_offset_s: float = 0.0,
+    fps: int = 12,
+    quality: int = 72,
+) -> AsyncIterator[bytes]:
     """The delayed video, as a multipart JPEG stream.
 
-    Deliberately re-encodes from the cursor on a fixed wall-clock tick instead
-    of following the buffer: if the browser falls behind, it should see the
-    present late, not the past in order.
+    Deliberately re-encodes on a fixed wall-clock tick instead of following the
+    buffer: if the browser falls behind, it should see the present late, not
+    the past in order.
     """
     from commentary.llm.base import encode_frame
 
     interval = 1.0 / fps
     last_ts = -1.0
     while True:
-        cursor = buffer.cursor_ts
-        frame = buffer.nearest(cursor) if cursor is not None else None
+        frame = present_frame(buffer, present_offset_s)
         if frame is not None and frame.ts != last_ts:
             last_ts = frame.ts
             jpeg = encode_frame(frame.image, quality=quality, max_width=960)
@@ -80,7 +106,9 @@ def create_app(runtime: RuntimeHandle) -> FastAPI:
     async def state() -> dict[str, Any]:
         return {
             "state": runtime.state.model_dump(mode="json"),
-            "status": runtime.status(),
+            # Folded in here rather than left to each runtime to remember: the
+            # page reads it to say how far behind the cursor the picture is.
+            "status": {**runtime.status(), "present_offset_s": runtime.present_offset_s},
             "usage": {
                 "input_tokens": runtime.usage.input_tokens,
                 "output_tokens": runtime.usage.output_tokens,
@@ -106,7 +134,7 @@ def create_app(runtime: RuntimeHandle) -> FastAPI:
     @app.get("/api/video")
     async def video() -> StreamingResponse:
         return StreamingResponse(
-            mjpeg(runtime.buffer),
+            mjpeg(runtime.buffer, runtime.present_offset_s),
             media_type=f"multipart/x-mixed-replace; boundary={BOUNDARY}",
             headers={"Cache-Control": "no-cache"},
         )

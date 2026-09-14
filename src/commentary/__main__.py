@@ -341,7 +341,11 @@ async def cmd_replay(args: argparse.Namespace) -> int:
     replay = from_files(args.trace, args.path, start_s=args.start, settings=settings)
     span = max((cue.ts for cue in replay.cues), default=0.0)
     print(f"{len(replay.cues)} rows over {span:.0f}s, against {args.path} from {args.start:g}s in")
-    print(f"buffer {settings.capture.delay_s:g}s: the first rows land once the cursor reaches them")
+    print(
+        f"buffer {settings.capture.delay_s:g}s, picture held "
+        f"{settings.capture.present_offset_s:g}s behind the cursor: "
+        "lines land when the run published them"
+    )
 
     watch = _Watch(replay, args.port) if args.serve else None
     if watch is not None:

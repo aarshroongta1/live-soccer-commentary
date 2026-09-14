@@ -14,14 +14,15 @@ from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.llm.base import Usage
 from commentary.schemas import MatchState
 from commentary.server import create_app
-from commentary.server.app import mjpeg
+from commentary.server.app import mjpeg, present_frame
 
 
 class FakeRuntime:
     """Just enough of a runtime for the web layer to have something to show."""
 
-    def __init__(self) -> None:
+    def __init__(self, present_offset_s: float = 0.0) -> None:
         self._bus = Bus()
+        self._present_offset_s = present_offset_s
         self._buffer = DelayBuffer(fps=10, delay_s=1.0, history_s=1.0)
         self._state = MatchState(home="Ashcombe", away="Verity", home_score=1, clock="37:12")
         for i in range(25):
@@ -43,6 +44,10 @@ class FakeRuntime:
     @property
     def usage(self) -> Usage:
         return Usage(input_tokens=1200, output_tokens=90, cost_usd=0.0034)
+
+    @property
+    def present_offset_s(self) -> float:
+        return self._present_offset_s
 
     def status(self) -> dict[str, Any]:
         return {"frames": 25, "spoken": 3}
@@ -134,3 +139,63 @@ async def test_a_slow_subscriber_loses_messages_rather_than_blocking_the_match()
 
     assert bus.dropped > 0, "a stalled reader should shed messages, not apply back-pressure"
     await agen.aclose()
+
+
+@pytest.mark.asyncio
+async def test_the_video_stream_serves_the_frame_the_line_will_be_about() -> None:
+    """The picture is held behind the cursor by the caller's round trip.
+
+    A line is written about the cursor and reaches the page a model call
+    later, so a stream served at the cursor exactly puts every line after the
+    thing it describes. The frame the viewer gets is the one at
+    ``cursor - present_offset_s``, which is the moment the line coming out of
+    the model right now was written about.
+    """
+    import cv2
+
+    offset = 0.8
+    runtime = FakeRuntime(present_offset_s=offset)
+    cursor = runtime.buffer.cursor_ts
+    assert cursor is not None
+
+    wanted = runtime.buffer.nearest(cursor - offset)
+    assert wanted is not None
+    assert wanted.ts == pytest.approx(cursor - offset)
+    assert present_frame(runtime.buffer, offset) is wanted
+    # Not the cursor's own frame, which is what the stream used to serve.
+    assert wanted.ts != runtime.buffer.nearest(cursor).ts  # type: ignore[union-attr]
+
+    part = await anext(mjpeg(runtime.buffer, offset, fps=60))
+    body = part.split(b"\r\n\r\n", 1)[1].rstrip(b"\r\n")
+    decoded = cv2.imdecode(np.frombuffer(body, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+    # The frames are flat greys, one value apiece, so the picture on the wire
+    # names which frame it came from.
+    assert float(decoded.mean()) == pytest.approx(float(wanted.image.mean()), abs=2.0)
+
+
+@pytest.mark.asyncio
+async def test_the_offset_clamps_at_the_oldest_frame_rather_than_running_off_the_end() -> None:
+    """Early in a run there is no history to fall back through.
+
+    The buffer has held frames for a fraction of a second and the offset asks
+    for one from before the run began. The viewer gets the oldest frame there
+    is — a picture a little ahead of where it should be, for a moment — rather
+    than nothing at all.
+    """
+    runtime = FakeRuntime(present_offset_s=5.0)
+    oldest = runtime.buffer.nearest(-1e9)
+    assert oldest is not None
+
+    assert present_frame(runtime.buffer, 5.0) is oldest
+
+    part = await anext(mjpeg(runtime.buffer, 5.0, fps=60))
+    assert part.startswith(b"--frame")
+
+
+def test_the_snapshot_says_how_far_behind_the_cursor_the_picture_is() -> None:
+    # The page reads it from here to label the video stage; no runtime has to
+    # remember to put it in its own status dict.
+    client = TestClient(create_app(FakeRuntime(present_offset_s=3.5)))
+
+    assert client.get("/api/state").json()["status"]["present_offset_s"] == pytest.approx(3.5)
