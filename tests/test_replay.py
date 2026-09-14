@@ -23,6 +23,7 @@ from commentary.replay import Replay, cues, from_files
 from commentary.server import create_app
 from commentary.server.app import mjpeg
 from commentary.trace import RunTrace
+from commentary.voice import LogSpeaker
 
 FPS = 10
 DELAY_S = 2.0
@@ -77,8 +78,53 @@ def state_row(ts: float, home_score: int, away_score: int, clock: str) -> dict[s
     )
 
 
-def replay_of(rows: list[dict[str, Any]], *, seconds: float = 10.0, start_s: float = 0.0) -> Replay:
-    return Replay(rows=rows, source=Clip(seconds), settings=settings(), start_s=start_s)
+def beat_row(
+    ts: float,
+    text: str,
+    *,
+    beat_id: str = "b1",
+    voice: str = "caller",
+    event: str = "none",
+    preemptable: bool = True,
+    created_ts: float = 941887.047232583,
+    live_ts: float | None = None,
+) -> dict[str, Any]:
+    """A ``beat`` row shaped the way the trace writer shapes one.
+
+    ``created_ts`` defaults to a real reading out of the Di María trace: a
+    ``time.monotonic()`` value from a process that is long gone, which is
+    exactly the hazard a replay with a voice has to survive.
+    """
+    return row(
+        "beat",
+        ts,
+        id=beat_id,
+        voice=voice,
+        text=text,
+        video_ts=ts,
+        created_ts=created_ts,
+        live_ts=DELAY_S + ts if live_ts is None else live_ts,
+        event=event,
+        urgency=0.0,
+        triggers=[],
+        preemptable=preemptable,
+    )
+
+
+def replay_of(
+    rows: list[dict[str, Any]],
+    *,
+    seconds: float = 10.0,
+    start_s: float = 0.0,
+    speaker: Any = None,
+) -> Replay:
+    return Replay(
+        rows=rows,
+        source=Clip(seconds),
+        settings=settings(),
+        start_s=start_s,
+        speaker=speaker,
+    )
 
 
 async def collect(replay: Replay) -> list[Message]:
@@ -391,3 +437,147 @@ def test_the_replay_tells_the_page_how_far_behind_the_cursor_the_picture_is() ->
 
     offset = client.get("/api/state").json()["status"]["present_offset_s"]
     assert offset == pytest.approx(settings().capture.present_offset_s)
+
+
+# -- replaying with a voice ---------------------------------------------
+#
+# A trace is a list of lines a model was already paid for. Handing them to a
+# real director and a real speaker is the only way to hear a change to either
+# without buying the thinking a second time, and the point of these tests is
+# that what comes out is the live article and not a recital of the file.
+
+
+def fast_speaker() -> LogSpeaker:
+    """Fast enough that a whole clip's lines fit inside the test."""
+    return LogSpeaker(words_per_second=2000.0)
+
+
+@pytest.mark.asyncio
+async def test_with_no_voice_the_trace_is_replayed_exactly_as_before() -> None:
+    replay = replay_of([beat_row(1.0, "a line"), row("spoken", 1.0, text="a line", seconds=5.1)])
+
+    seen = await collect(replay)
+
+    assert replay.director is None
+    # Both rows go back out untouched: the trace is the whole account.
+    assert [message.topic for message in seen] == [Topic.BEAT, Topic.SPOKEN]
+    assert seen[1].payload["seconds"] == 5.1
+
+
+@pytest.mark.asyncio
+async def test_a_voice_says_the_traces_lines_again_through_a_real_director() -> None:
+    speaker = fast_speaker()
+    replay = replay_of([beat_row(1.0, "Di María strikes.")], speaker=speaker)
+
+    seen = await collect(replay)
+
+    assert [utterance.beat.text for utterance in speaker.said] == ["Di María strikes."]
+    spoken = [message for message in seen if message.topic is Topic.SPOKEN]
+    assert len(spoken) == 1
+    assert spoken[0].payload["spoken"] == "Di María strikes."
+    # The director's own timing, measured here and now, not the file's.
+    assert spoken[0].payload["first_audio_s"] == 0.0
+    # And stamped with the moment the line is about, exactly as a live run
+    # stamps it, so the transcript still lines up with the picture.
+    assert spoken[0].ts == pytest.approx(1.0)
+
+
+@pytest.mark.asyncio
+async def test_the_traces_own_account_of_the_speaking_is_dropped_when_there_is_a_voice() -> None:
+    """Two accounts of one line on the page is worse than either alone.
+
+    The trace says the line took 5.1 s through ffplay in September. The
+    director says what it took just now. Only one of them is about the audio
+    in the room, so only one of them is published.
+    """
+    replay = replay_of(
+        [
+            beat_row(1.0, "a line"),
+            row("spoken", 1.0, text="a line", spoken="a line", seconds=5.1, live_ts=DELAY_S + 1.0),
+            row("preempted", 2.0, text="a cut line", reason="cut", live_ts=DELAY_S + 2.0),
+            row("gate", 1.0, passed=True),
+        ],
+        speaker=fast_speaker(),
+    )
+
+    seen = await collect(replay)
+
+    seconds = [message.payload.get("seconds") for message in seen if message.topic is Topic.SPOKEN]
+    assert 5.1 not in seconds
+    assert len(seconds) == 1 and seconds[0] is not None and seconds[0] < 5.1
+    # The file's cut line is gone with it; nothing this playback did was cut.
+    assert not [message for message in seen if message.topic is Topic.PREEMPTED]
+    # Everything that is not the speaking is still the trace's to report.
+    assert [message.topic for message in seen if message.topic is Topic.GATE]
+
+
+@pytest.mark.asyncio
+async def test_a_beat_from_an_old_trace_is_not_thrown_away_as_hours_stale() -> None:
+    """The one thing that has to be rewritten on the way back in.
+
+    ``created_ts`` in the file is a ``time.monotonic()`` reading from a
+    process that exited weeks ago. The director ages beats against
+    ``time.monotonic()`` now, so left as written every line in every trace is
+    past its limit and is dropped before a voice ever sees it.
+    """
+    speaker = fast_speaker()
+    replay = replay_of([beat_row(1.0, "a line from an old run")], speaker=speaker)
+
+    await collect(replay)
+
+    assert [utterance.beat.text for utterance in speaker.said] == ["a line from an old run"]
+
+
+@pytest.mark.asyncio
+async def test_a_goal_still_goes_to_the_front_of_the_queue_on_the_way_back_out() -> None:
+    """The queueing is the director's, not the file's order.
+
+    A replayed goal has to still be a goal — the event and ``preemptable``
+    survive the round trip — or the one behaviour this project is built
+    around is the one thing a replay cannot be used to hear.
+    """
+    speaker = LogSpeaker(words_per_second=20.0)
+    replay = replay_of(
+        [
+            beat_row(1.0, "an aside about the press", beat_id="a1", voice="analyst"),
+            beat_row(
+                1.0,
+                "Di María! The rebound, and it is in!",
+                beat_id="b2",
+                event="goal",
+                preemptable=False,
+            ),
+        ],
+        speaker=speaker,
+    )
+
+    seen = await collect(replay)
+
+    urgent = [
+        message.payload["text"]
+        for message in seen
+        if message.topic is Topic.BEAT and message.payload.get("urgent")
+    ]
+    assert urgent == ["Di María! The rebound, and it is in!"]
+    assert speaker.said[0].beat.text == "Di María! The rebound, and it is in!"
+
+
+@pytest.mark.asyncio
+async def test_the_page_is_told_whether_anything_is_actually_coming_out_of_the_speakers() -> None:
+    silent = replay_of([row("spoken", 1.0, text="a line")])
+    speaking = replay_of([beat_row(1.0, "a line")], speaker=fast_speaker())
+
+    assert TestClient(create_app(silent)).get("/api/state").json()["status"]["speaking"] is False
+    assert TestClient(create_app(speaking)).get("/api/state").json()["status"]["speaking"] is True
+
+
+def test_from_files_carries_the_voice_through_to_the_replay(tmp_path: Any) -> None:
+    path = tmp_path / "run.jsonl"
+    with RunTrace(path=path) as trace:
+        trace.event(Topic.SPOKEN, 2.0, text="Glorious goal. Di María.")
+
+    speaker = fast_speaker()
+    replay = from_files(path, "clips/argfra-dimaria.mp4", settings=settings(), speaker=speaker)
+
+    assert replay.director is not None
+    assert replay.director.speaker is speaker

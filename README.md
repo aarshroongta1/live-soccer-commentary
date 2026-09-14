@@ -129,6 +129,61 @@ ends, so the page still has something running for whoever opens it late.
 `?mock=1` on the page replays a built-in fixture with no runtime behind it at
 all, which is how the UI is developed.
 
+### Hearing a change without paying for it twice
+
+`--voice` on `replay` is the same idea applied to the audio. A trace is a list
+of lines a model was already paid for, so the cheap way to try a voice, a
+sink, or a change to the director is to hand those lines to a real director
+and listen.
+
+```bash
+uv run python -m commentary replay \
+    --trace runs/voice/dimaria-goal/file-20260914-015533.jsonl \
+    --path clips/dimaria-goal.mp4 \
+    --voice elevenlabs --out runs/voice/replay-pcm
+```
+
+`--voice say` does the same through macOS's built-in speech for nothing at
+all; `log`, the default, stays silent and republishes the trace as before.
+
+With a voice on, the queueing, the ageing-out and the mid-word cut on a goal
+all happen again, now — so the trace's own `spoken` and `preempted` rows are
+dropped and the director publishes its own. That is the point: what the page
+shows is the audio in the room, not a recital of the file. A trace of the
+playback is written under `--out` (defaulting to `runs/`), carrying `seconds`
+and `first_audio_s` for every line that came out.
+
+Sound needs the audio extra, which is PortAudio:
+
+```bash
+uv sync --extra voice --extra audio
+```
+
+### What the voice costs in time
+
+Two numbers per line, both in the trace. `seconds` is how long the director
+held the channel; `first_audio_s` is how much of that the listener spent
+waiting for any sound at all. They want reading together — five seconds for a
+six-word line is the model writing too much if the sound started at once, and
+the network or the output format if it did not.
+
+Audio plays through PortAudio in this process
+([`voice/playback.py`](src/commentary/voice/playback.py)), asking ElevenLabs
+for raw `pcm_22050` rather than an mp3. The sink then knows exactly how much
+speech it is holding, so finishing a line is arithmetic on bytes handed over
+instead of waiting on a player to notice its input has ended — which ffplay,
+given a pipe, does not do: four of the ten lines in the Di María trace sat out
+the full five-second drain timeout and were killed. Measured on that trace,
+replayed: those four fell from 5.10 / 5.22 / 4.92 / 5.50 s to 4.48 / 4.10 /
+4.53 s and one cut, and the wait for first sound is 0.22–0.39 s once PortAudio
+is warm. Opening its first stream costs a second on top, which the first line
+of a match pays.
+
+Raw PCM is four times the bytes of `mp3_22050_32`, so on a connection that
+cannot deliver 44 KB/s the download, not the speech, becomes what `seconds`
+measures. Pass `output_format="mp3_22050_32"` to `ElevenLabsSpeaker` and the
+ffplay sink takes over, timeout and all.
+
 ## The simulator
 
 There is a synthetic broadcast in [`src/commentary/sim/`](src/commentary/sim):
@@ -272,6 +327,7 @@ ablations are wired correctly enough to run against the real thing.
 |---|---|
 | `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice say` adds free sound via macOS's built-in speech (testing only), `--voice elevenlabs` adds the real two-voice sound and needs a key. |
 | `replay --trace t.jsonl --path clip.mp4` | Watch a finished run again: its clip through the delay buffer, its trace back onto the bus. `--start` is the clip offset the run began at, `--serve` adds the watch page. Calls nothing and costs nothing. |
+| `replay --trace t.jsonl --path clip.mp4 --voice elevenlabs` | The same, but said out loud through a real director, so a voice or a sink can be heard on lines the model was already paid for. `--voice say` is free; `--out` says where to write the trace of what actually came out. No model is called either way. |
 | `sim` | Describe the synthetic match, or `--out x.mp4` to render it. |
 | `capture [seconds]` | Prove frames reach Python. The day-one gate. |
 | `crop --path m.mp4 --at 300` | One frame with the score-bug box drawn on it and the bug beside it, so the crop is checked by eye before a run spends money. |

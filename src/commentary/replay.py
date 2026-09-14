@@ -24,6 +24,14 @@ money and can be watched once, live, by whoever happened to be at the screen.
 Replayed it costs nothing and can be watched by anybody, as often as it takes
 to work out why the gate rejected the line about the penalty.
 
+Give it a speaker and it is also the only free way to *hear* a change. The
+trace's ``beat`` rows go to a real :class:`~commentary.director.Director`
+instead of being republished, so the queueing, the ageing-out and the
+mid-word cut on a goal all happen again, now, against whatever voice is being
+tried — on lines a model was already paid for once. What the trace says was
+spoken is then dropped: it is last time's account of the speaking, and this
+time is different by construction.
+
 ``start_s`` is the offset into the clip the original run began at. A
 ``--source file`` run starts at zero and needs nothing; the screen runs played
 a clip in a video player and started capturing part-way in, so their traces
@@ -36,6 +44,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -43,9 +52,22 @@ from typing import Any
 from commentary.bus import Bus, Message, Topic
 from commentary.capture import DelayBuffer, FileCapture, FrameSource
 from commentary.config import SETTINGS, Settings
+from commentary.director import Director
 from commentary.llm.base import Usage
-from commentary.schemas import MatchState
+from commentary.schemas import Beat, MatchState
 from commentary.trace import read_trace
+from commentary.voice.speaker import Speaker
+
+#: The three topics that are the director's own account of the speaking. With
+#: a voice attached the speaking happens again, so the trace's copies are
+#: dropped and the live director's are published instead.
+SPEAKING = (Topic.BEAT, Topic.SPOKEN, Topic.PREEMPTED)
+
+#: How long to let the queue empty after the clip ends, when a voice is on.
+#: The last thing a run said is usually the thing somebody put the clip on to
+#: hear, and cutting it at the final frame would be a worse lie than a second
+#: of black.
+VOICE_DRAIN_S = 8.0
 
 
 @dataclass(frozen=True)
@@ -121,6 +143,23 @@ def _state_of(payload: dict[str, Any]) -> MatchState | None:
         return None
 
 
+def _beat_of(payload: dict[str, Any]) -> Beat | None:
+    """A ``beat`` row back into the model a director can be handed.
+
+    ``created_ts`` is restamped, and that is not tidying. It is a
+    ``time.monotonic()`` reading from a process that exited weeks ago, and the
+    director measures staleness against ``time.monotonic()`` now: left as
+    written, every line in the file is hours past its age limit and would be
+    dropped before it reached a voice. Everything else is kept, ``video_ts``
+    and ``preemptable`` and the event above all — a goal has to still be a
+    goal here, or the cut this whole design is about never happens.
+    """
+    try:
+        return Beat.model_validate({**payload, "created_ts": time.monotonic()})
+    except Exception:
+        return None
+
+
 @dataclass
 class Replay:
     """A finished run, played back from its trace and its clip.
@@ -138,11 +177,23 @@ class Replay:
     #: Once the last cue has played, seek the clip back to the start and play
     #: the trace again, rather than ending the process.
     loop: bool = False
+    #: A voice to say the trace's lines again, or None to stay silent and
+    #: republish what the run said the first time.
+    speaker: Speaker | None = None
 
     bus: Bus = field(default_factory=Bus)
 
     def __post_init__(self) -> None:
         cap = self.settings.capture
+        # The director is built here rather than passed in so that a replay
+        # with a voice is one argument at every level above this. It gets the
+        # replay's own bus, which is what puts its lines on the page and in
+        # the trace exactly where the original run's were.
+        self.director = (
+            None
+            if self.speaker is None
+            else Director(speaker=self.speaker, cfg=self.settings.director, bus=self.bus)
+        )
         self.buffer = DelayBuffer(cap.fps, cap.delay_s, cap.history_s)
         self.cues = cues(self.rows, delay_s=cap.delay_s)
         self._played = 0
@@ -190,6 +241,10 @@ class Replay:
             "buffered_frames": len(self.buffer),
             "cursor_ts": self.buffer.cursor_ts,
             "live_ts": self.buffer.live_ts,
+            # Said out loud so that a page showing lines nobody can hear, and
+            # a page showing lines coming out of the speakers right now, are
+            # not the same page.
+            "speaking": self.director is not None,
         }
 
     # -- the clock -------------------------------------------------------
@@ -222,16 +277,40 @@ class Replay:
 
     async def run(self, seconds: float | None = None) -> None:
         tasks = [asyncio.create_task(self._ingest(), name="frames")]
+        if self.director is not None:
+            tasks.append(asyncio.create_task(self.director.run(), name="director"))
         if seconds is not None:
             tasks.append(asyncio.create_task(self._deadline(seconds), name="deadline"))
         try:
             await self._stop.wait()
+            await self._finish_speaking()
         finally:
             for task in tasks:
                 task.cancel()
             for task in tasks:
                 with contextlib.suppress(asyncio.CancelledError):
                     await task
+            if self.speaker is not None:
+                await self.speaker.aclose()
+
+    async def _finish_speaking(self) -> None:
+        """Let the voice finish before the clip's last frame ends everything.
+
+        A live run drains at the final whistle for the same reason: the queue
+        is almost never empty when the video stops, and a demo that cuts its
+        own goal call off mid-word looks like the preemption misfiring rather
+        than like the file running out.
+
+        Only at the end. A ``--loop`` replay does not come through here at the
+        seam between passes: the queue there is the tail of the pass that just
+        finished, and the right thing to do with it is carry on speaking into
+        the new one, exactly as the director would at any other moment.
+        """
+        director = self.director
+        if director is None:
+            return
+        await director.drain(timeout=VOICE_DRAIN_S)
+        director.stop()
 
     async def _deadline(self, seconds: float) -> None:
         await asyncio.sleep(seconds)
@@ -262,6 +341,13 @@ class Replay:
         (the next ``async with self.source`` in ``_ingest`` calls its
         ``__aenter__`` again) and the buffer and the replayed state go back
         to what they were before the first frame of the first pass.
+
+        A voice needs nothing said to it here, and that is the point of
+        winding ``_played`` back rather than tracking passes anywhere else:
+        every cue is emitted again, so every ``beat`` is submitted to the
+        director again, with its ``created_ts`` stamped at this pass rather
+        than the last one. A looping demo therefore says the lines out loud
+        on every lap, not only the first.
         """
         self._pass += 1
         self._played = 0
@@ -279,6 +365,34 @@ class Replay:
             cue = self.cues[self._played]
             self._played += 1
             self._apply(cue)
+            self._emit(cue)
+
+    def _emit(self, cue: Cue) -> None:
+        """Put one cue back out — through the voice, if there is one.
+
+        Silent, this is a straight republish: the trace holds what the run
+        said and when, and that is exactly what the page wants.
+
+        With a voice it is not, because the speaking is happening again. A
+        ``beat`` is handed to the director, which publishes its own ``beat``
+        as it queues it and its own ``spoken`` or ``preempted`` when it finds
+        out how the line actually went. The trace's three copies are dropped
+        rather than published alongside, or the page would be showing two
+        accounts of the same line at once — and only one of them would be
+        about the audio in the room.
+        """
+        if self.director is None or cue.topic not in SPEAKING:
+            self.bus.publish(cue.topic, cue.ts, **cue.payload)
+            return
+        if cue.topic is Topic.BEAT:
+            beat = _beat_of(cue.payload)
+            if beat is not None:
+                self.director.submit(beat)
+                return
+            # A row too old or too broken to be a Beat any more. Putting it
+            # back on the bus unspoken is better than losing the line: the
+            # transcript panel still shows it, with nothing claiming it was
+            # heard.
             self.bus.publish(cue.topic, cue.ts, **cue.payload)
 
     def _apply(self, cue: Cue) -> None:
@@ -307,6 +421,7 @@ def from_files(
     start_s: float = 0.0,
     settings: Settings = SETTINGS,
     loop: bool = False,
+    speaker: Speaker | None = None,
 ) -> Replay:
     """A replay of one trace against one clip, ready to run or to serve."""
     trace_path, clip = Path(trace), Path(path)
@@ -319,4 +434,5 @@ def from_files(
         start_s=start_s,
         label=f"{trace_path.name} over {clip.name}",
         loop=loop,
+        speaker=speaker,
     )

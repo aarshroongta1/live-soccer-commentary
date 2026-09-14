@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from commentary.bus import Bus
 from commentary.capture import DelayBuffer, FileCapture, FrameSource, ScreenCapture
 from commentary.config import SETTINGS, Settings
 from commentary.llm.base import LLMBackend, LLMError
@@ -324,12 +325,32 @@ class _Watch:
 # -- replay -------------------------------------------------------------
 
 
+async def _record(bus: Bus, trace: RunTrace) -> None:
+    """Write everything a replay publishes to a trace of its own.
+
+    The same subscribe-and-write the runtime uses, and for the same reason:
+    the director publishes its own account of what was said, and a second
+    write path would be a thing the eval silently never sees. A replay with a
+    voice attached is the only case that has anything new to record — the
+    ``spoken`` rows are about this playback, not the run that paid for the
+    lines — but recording the rest along with them costs nothing and keeps the
+    file the same shape as any other trace.
+    """
+    async for message in bus.subscribe():
+        trace.write(message)
+
+
 async def cmd_replay(args: argparse.Namespace) -> int:
     """Play a finished run back: its clip through the buffer, its trace onto the bus.
 
     The watch page cannot tell this from a live run, which is the whole
     point — a run costs real money and happens once, and everything anybody
     needs to look at afterwards is already on disk.
+
+    ``--voice`` makes it the cheap way to hear a change too. The trace's lines
+    go through a real director and a real speaker, so the audio, the queueing
+    and the mid-word cut on a goal are the live article; only the thinking was
+    paid for, once, weeks ago.
     """
     from commentary.replay import from_files
 
@@ -338,8 +359,20 @@ async def cmd_replay(args: argparse.Namespace) -> int:
         capture = replace(capture, delay_s=args.delay)
     settings = replace(SETTINGS, capture=capture)
 
+    speaker = _speaker(args) if args.voice != "log" else None
+    # A silent replay says nothing the trace it was given does not already
+    # hold, so writing a second copy of it would be litter. A spoken one is
+    # the only record of how long each line actually took to come out, and
+    # that number is the whole reason to run it, so it gets somewhere to land
+    # whether or not anybody said where.
+    out = args.out or ("runs" if speaker is not None else None)
     replay = from_files(
-        args.trace, args.path, start_s=args.start, settings=settings, loop=args.loop
+        args.trace,
+        args.path,
+        start_s=args.start,
+        settings=settings,
+        loop=args.loop,
+        speaker=speaker,
     )
     span = max((cue.ts for cue in replay.cues), default=0.0)
     print(f"{len(replay.cues)} rows over {span:.0f}s, against {args.path} from {args.start:g}s in")
@@ -348,6 +381,18 @@ async def cmd_replay(args: argparse.Namespace) -> int:
         f"{settings.capture.present_offset_s:g}s behind the cursor: "
         "lines land when the run published them"
     )
+    if speaker is not None:
+        print(
+            f"voice {args.voice}: the lines are being said again now, so the trace's own "
+            "spoken rows are dropped and the director's are published instead"
+        )
+
+    trace = RunTrace(path=trace_path(Path(out), "replay")) if out else None
+    if trace is not None:
+        recorder = asyncio.create_task(_record(replay.bus, trace), name="trace")
+        # Let the subscription register before the first frame is decoded;
+        # the bus only fans out to whoever is already listening.
+        await asyncio.sleep(0)
 
     watch = _Watch(replay, args.port) if args.serve else None
     if watch is not None:
@@ -357,6 +402,13 @@ async def cmd_replay(args: argparse.Namespace) -> int:
     finally:
         if watch is not None:
             await watch.close()
+        if trace is not None:
+            await asyncio.sleep(0.05)
+            recorder.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await recorder
+            trace.close()
+            print(f"trace: {trace.path}")
 
     print(f"replayed {replay.played} of {len(replay.cues)} rows")
     if replay.remaining:
@@ -674,6 +726,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rp.add_argument("--delay", type=float, default=None, help="override the buffer depth")
     rp.add_argument("--seconds", type=float, default=None, help="stop after this long")
+    rp.add_argument(
+        "--voice",
+        choices=["log", "say", "elevenlabs"],
+        default="log",
+        help="say the trace's lines again through a real voice; log is silent, as before",
+    )
+    rp.add_argument(
+        "--out",
+        default=None,
+        help="write a trace of this replay under here; defaults to runs/ when a voice is on",
+    )
     rp.add_argument("--serve", action="store_true", help="also serve the watch page")
     rp.add_argument("--port", type=int, default=8000)
     rp.add_argument(
