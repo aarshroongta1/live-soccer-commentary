@@ -1,0 +1,43 @@
+src/commentary/gate.py
+  s_d55ab428b62c9f::t_837e742e234fc9 607-616,620-626,629-660
+  s_d55ab428b62c9f::t_255df9f7f74f7e 628
+  s_d55ab428b62c9f::t_c31a481c772240 784,805-810,820,835,862-863
+  s_d55ab428b62c9f::t_013248f7a7b8a5 617-619,627
+  s_d55ab428b62c9f::t_5fabf011c3f1b6 974-1032,1037-1044
+  s_d55ab428b62c9f::t_6596851e436862 1033-1036
+src/commentary/runtime.py
+  s_d55ab428b62c9f::t_058d0b2a3708cc 627
+src/commentary/rephrase.py
+  s_d55ab428b62c9f::t_058d0b2a3708cc 358
+  s_d55ab428b62c9f::t_5e6429a8f13acf 370-376
+  s_d55ab428b62c9f::t_f78f767f1dd177 108-113,123-129,152,156-157,159,367-368,403-404,415-424
+  s_d55ab428b62c9f::t_9ea5badc151e5b 425-426
+src/commentary/prompts/phraser.py
+  s_d55ab428b62c9f::t_eb247d354f11a3 100-155
+  s_d55ab428b62c9f::t_5e6429a8f13acf 180
+  s_d55ab428b62c9f::t_23ebe91d00a3b9 276-281,305-306
+src/commentary/config.py
+  s_d55ab428b62c9f::t_5e6429a8f13acf 147-156
+tests/test_gate.py
+  s_d55ab428b62c9f::t_ff248985fba305 774-990
+src/commentary/grading/baselines.py
+  s_d55ab428b62c9f::t_1271485c7276c9 101
+tests/test_phraser.py
+  s_d55ab428b62c9f::t_a5a33b42c9c3c7 601-646
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a8e7ae46403c4f0573a4b6b8e8c2e2bfbfc41b96",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
