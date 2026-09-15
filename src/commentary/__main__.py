@@ -450,7 +450,15 @@ async def cmd_rephrase(args: argparse.Namespace) -> int:
         print("no --pack: the gate has only the two team names to check against")
 
     backend = default_backend()
-    result = await rephrase(rows, backend, pack=pack, settings=SETTINGS, model=args.model)
+    result = await rephrase(
+        rows,
+        backend,
+        pack=pack,
+        settings=SETTINGS,
+        model=args.model,
+        colour=args.colour,
+        colour_model=args.colour_model,
+    )
 
     out = Path(args.out)
     name = Path(args.trace).stem
@@ -473,6 +481,23 @@ async def cmd_rephrase(args: argparse.Namespace) -> int:
         f"tokens: in {used.input_tokens} out {used.output_tokens} "
         f"cache read {used.cache_read_tokens} write {used.cache_write_tokens}"
     )
+    if result.colour is not None:
+        print()
+        print(result.colour.table())
+        print()
+        counts = result.colour.counts()
+        print(
+            f"colour: {counts['turns_spoken']:.0f} turns of "
+            f"{counts['turns_offered']:.0f} offered, {counts['utterances']:.0f} utterances, "
+            f"{counts['inside_12s_of_a_big_event']:.0f} inside 12 s of a big event "
+            f"(target 0), {counts['sanctioned_goal_reactions']:.0f} sanctioned goal reactions"
+        )
+        print(
+            f"        median {counts['median_utterances_per_turn']:.1f} utterances a turn "
+            f"(target 3-4), median {counts['median_words']:.0f} words, "
+            f"{counts['cue_share']:.0%} open on a cue (target >60%), "
+            f"{counts['refused']:.0f} refused, ${counts['usd']:.4f}"
+        )
     print(f"trace: {path}")
     print(f"hear it: uv run python -m commentary replay --trace {path} --path <clip> --voice say")
     return 0
@@ -911,6 +936,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--model",
         default=None,
         help=f"phrasing model; defaults to PHRASER_MODEL ({SETTINGS.phraser.model})",
+    )
+    rph.add_argument(
+        "--colour",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="offer the colour seat a turn wherever its phase gate allows (default on)",
+    )
+    rph.add_argument(
+        "--colour-model",
+        default=None,
+        help=f"the colour seat; defaults to COLOUR_MODEL ({SETTINGS.colour.model})",
     )
     rph.set_defaults(func=cmd_rephrase)
 

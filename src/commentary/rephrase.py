@@ -62,6 +62,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from commentary.agents.colour import ColourPass, colour_pass
 from commentary.agents.phraser import Phraser
 from commentary.bus import Topic
 from commentary.config import SETTINGS, Settings
@@ -111,9 +112,16 @@ class Line:
     form_event: Event = Event.NONE
     #: The phraser had nothing and the caller's own line went through.
     fallback: bool = False
+    #: The phraser chose to say nothing, which is a line in itself. Real
+    #: commentary passes over 43% of goal kicks and a quarter of build-up
+    #: touches (the corpus study, section 3), and counting the ones this
+    #: system chooses is the only way to know whether it has learned to.
+    silent: bool = False
 
     @property
     def verdict(self) -> str:
+        if self.silent:
+            return "chose silence"
         if self.fallback:
             return "fell back"
         return "passed" if self.passed else (self.reason or "rejected")
@@ -133,6 +141,10 @@ class Rephrased:
     rows: list[dict[str, Any]] = field(default_factory=list)
     lines: list[Line] = field(default_factory=list)
     cost_usd: float = 0.0
+    #: What the colour seat did on this pass, or ``None`` when it was not
+    #: run. Its rows are already in :attr:`rows`; this is the account of
+    #: them, for the printed table and the counts.
+    colour: ColourPass | None = None
 
     @property
     def rejected(self) -> int:
@@ -284,11 +296,15 @@ async def rephrase(
     pack: KnowledgePack | None = None,
     settings: Settings = SETTINGS,
     model: str | None = None,
+    colour: bool = True,
+    colour_model: str | None = None,
 ) -> Rephrased:
     """Rewrite every spoken caller line in a trace, and judge the rewrites.
 
-    Nothing here touches the clip, the board reader or the caller. The only
-    model called is the phraser, once per line that was actually spoken.
+    Nothing here touches the clip, the board reader or the caller. Two models
+    are called: the phraser, once per line that was actually spoken, and —
+    unless ``colour`` is false — the colour seat, once at each moment its
+    phase gate allows, which on a three-minute trace is a handful of times.
     """
     states: list[tuple[float, MatchState]] = []
     for row in rows:
@@ -350,6 +366,41 @@ async def rephrase(
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
+        if phrased is not None and not phrased.line.strip() and phraser.chose_silence:
+            # Chosen silence: the `phrased` row records it so the judge can
+            # count it, and there is no beat and no gate row because nothing
+            # was said. The same shape the runtime publishes.
+            out.rows.append(
+                {
+                    "topic": Topic.PHRASED.value,
+                    "ts": ts,
+                    "original": form.line,
+                    "line": "",
+                    "excitement": 0.0,
+                    "event": form.event.value,
+                    "form_event": form.event.value,
+                    "reason": phraser.last_reason or "the phraser chose silence",
+                    "usd": round(usd, 6),
+                    "tokens_in": phraser.last_usage.input_tokens,
+                    "cache_read": phraser.last_usage.cache_read_tokens,
+                    "cache_write": phraser.last_usage.cache_write_tokens,
+                }
+            )
+            out.lines.append(
+                Line(
+                    ts=ts,
+                    original=form.line,
+                    phrased="",
+                    excitement=0.0,
+                    passed=True,
+                    reason="",
+                    usd=usd,
+                    event=form.event,
+                    form_event=form.event,
+                    silent=True,
+                )
+            )
+            continue
         if phrased is None or not phrased.line.strip():
             # Same rule as the runtime: never a silent drop. The caller's own
             # words go out and the trace says the phraser had nothing.
@@ -424,8 +475,28 @@ async def rephrase(
             )
         )
         if verdict.passed:
-            phraser.accept(verdict.line)
+            phraser.accept(verdict.line, form.event)
             cover.remember(form, verdict.line, ts)
+
+    # -- the colour seat -------------------------------------------------
+    # The second seat runs over the rewritten trace, not the original one:
+    # what it observes off is what the lead actually says now. Everything
+    # about it — when it is offered a turn, how the turn is spaced, how each
+    # utterance is judged — is in ``commentary.agents.colour``, and this is
+    # the whole of the hook.
+    if colour:
+        out.colour = await colour_pass(
+            out.rows,
+            backend,
+            pack=pack,
+            settings=settings,
+            model=colour_model,
+            goal_in_state=cover.goal_in_state,
+            state_summary=_summary,
+        )
+        out.rows = out.colour.rows
+        out.cost_usd += out.colour.cost_usd
+    # -- end of the colour seat ------------------------------------------
 
     return out
 

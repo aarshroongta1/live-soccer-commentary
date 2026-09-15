@@ -35,6 +35,11 @@ class Topic(StrEnum):
     #: helped or whether the caller had already said it well.
     PHRASED = "phrased"
     ANALYST = "analyst"
+    #: One turn of the colour seat: what it said, what it leaned on, and what
+    #: it cost. Separate from ``analyst`` because the two are different seats
+    #: with different shapes — a turn is a list of utterances — and a trace
+    #: with both in it has to be able to say which one spoke.
+    COLOUR = "colour"
     GATE = "gate"
     CORRECTION = "correction"
     TRIGGER = "trigger"

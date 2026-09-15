@@ -50,7 +50,7 @@ from pydantic import BaseModel, Field
 from commentary.config import JUDGE_MODEL
 from commentary.gate import fold
 from commentary.grading.judge import Asker, JudgeError, Question, SequentialAsker
-from commentary.grading.register_reference import BANDS, ORDER, SOURCE, Band
+from commentary.grading.register_reference import BANDS, ORDER, REFERENCE, SOURCE, Band
 from commentary.llm.base import LLMBackend, Usage, text_block
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
 from commentary.schemas import KnowledgePack
@@ -345,6 +345,7 @@ class Shape:
     share_le_2: float = 0.0
     share_le_4: float = 0.0
     share_ge_9: float = 0.0
+    share_ge_16: float = 0.0
     bare_name_share: float = 0.0
     name_share: float = 0.0
     opener_repeat_share: float = 0.0
@@ -410,6 +411,10 @@ def measure(rows: list[dict[str, Any]], pack: KnowledgePack | None = None) -> Sh
         shape.share_le_2 = _share(counts, lambda n: n <= 2)
         shape.share_le_4 = _share(counts, lambda n: n <= 4)
         shape.share_ge_9 = _share(counts, lambda n: n >= 9)
+        # One club utterance in five is sixteen words or longer (study
+        # section 1). The phraser's old cap was sixteen, so this row read
+        # zero by construction and nothing said so.
+        shape.share_ge_16 = _share(counts, lambda n: n >= 16)
         shape.bare_name_share = _share(lead, lambda line: is_bare_name(line.text, names))
         shape.name_share = _share(lead, lambda line: says_a_name(line.text, names))
         shape.opener_repeat_share = opener_repeat_share(lead)
@@ -791,8 +796,11 @@ class RegisterReport:
                     f"{_fmt(event.bare_name_share, 'share'):>7}"
                     f"{_fmt(event.name_share, 'share'):>7}"
                 )
-            out.append("no reference per event yet; the corpus study is what fills this in")
-        out += ["", f"reference: {SOURCE}, provisional"]
+            out.append(
+                "no reference per event: the study's per-kind table (section 3) counts "
+                "a window around a StatsBomb event, both voices, not a line about one"
+            )
+        out += ["", f"reference: {REFERENCE}, {SOURCE}"]
 
         if self.verdict is None:
             out += ["", "no model run (--no-model): the judge's half of this table is missing"]
@@ -858,7 +866,8 @@ class RegisterReport:
         out: dict[str, Any] = {
             "trace": self.name,
             "reference_source": SOURCE,
-            "reference_is_provisional": True,
+            "reference": REFERENCE,
+            "reference_is_provisional": False,
             "shape": shape,
             "measured": measured,
             "judge": self.carried,

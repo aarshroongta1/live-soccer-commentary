@@ -29,7 +29,7 @@ from commentary.config import (
 from commentary.llm.base import Block
 from commentary.llm.fake import ScriptedBackend
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
-from commentary.prompts.phraser import phraser_blocks, phraser_system
+from commentary.prompts.phraser import _examples, phraser_blocks, phraser_system
 from commentary.rephrase import rephrase
 from commentary.runtime import Runtime
 from commentary.schemas import (
@@ -184,8 +184,17 @@ def test_every_example_is_shorter_than_a_commentator_ever_goes() -> None:
 
 
 def test_the_example_set_is_big_enough_to_be_a_register_and_small_enough_to_cache() -> None:
+    """The file is the corpus; the prompt is a sample of it.
+
+    The bound moved from 300 to 600 when the corpus study split eight kinds
+    into twenty-one (its Gap 8) and pooled six matches instead of one. What
+    has to stay small is the *prompt*, not the file — :data:`SHOWN` decides
+    how many of each kind are printed — so the second assertion here is the
+    one that guards the cache.
+    """
     total = sum(len(EXAMPLES[kind]) for kind in KINDS)
-    assert 150 <= total <= 300, total
+    assert 300 <= total <= 600, total
+    assert len(_examples(10)) < 8000, len(_examples(10))
 
 
 def test_the_example_set_holds_enough_goals_and_chances_to_teach_one() -> None:
@@ -226,7 +235,7 @@ def test_the_rules_ask_the_excitement_and_the_words_to_move_together() -> None:
     assert "EXCITEMENT, AND IT HAS TO MOVE" in rules
     assert "a break at speed, a run at a defender" in rules
     assert "DO NOT SOUND LIKE THE LINE BEFORE IT" in rules
-    assert "same two words as the one above it" in rules
+    assert "same word as either of the two above it" in rules
 
 
 def test_a_form_that_carries_a_detail_puts_it_in_front_of_the_phraser() -> None:
@@ -431,17 +440,67 @@ async def test_a_phraser_that_fails_costs_a_rewrite_and_never_a_line() -> None:
     assert beats[0].excitement == 0.0
 
 
-@pytest.mark.asyncio
-async def test_an_empty_phrasing_falls_back_rather_than_dropping_the_line() -> None:
-    runtime = a_runtime()
+def _a_carrying_form(runtime: Runtime) -> CallerLine:
     assert runtime.pack is not None
     player = runtime.pack.home.starters[0]
-    form = a_form(
+    return a_form(
         line=f"{player.surname} carries it forward past two challenges towards the box.",
         sightings=[Sighting(number=player.number, name=player.name, side=Side.HOME)],
     )
+
+
+def _watch_published(runtime: Runtime) -> list[tuple[str, dict[str, Any]]]:
+    """Every ``_publish`` the runtime makes, topic and keywords."""
+    seen: list[tuple[str, dict[str, Any]]] = []
+    original = runtime._publish
+
+    def spy(topic: Any, ts: float, value: Any = None, **extra: Any) -> None:
+        seen.append((str(getattr(topic, "value", topic)), extra))
+        original(topic, ts, value, **extra)
+
+    runtime._publish = spy  # type: ignore[method-assign]
+    return seen
+
+
+@pytest.mark.asyncio
+async def test_a_phraser_that_chose_silence_speaks_no_line_at_all() -> None:
+    """A quarter of build-up touches pass in silence in real commentary.
+
+    ``docs/research/real-commentary-corpus.md`` section 3: 24% of carries and
+    passes have nothing said within three seconds, 43% of goal kicks and 37%
+    of throw-in deliveries. The phraser could never do that — an empty line
+    fell back to the caller's words — so the system spoke on every call it
+    made. An empty line is now a choice, and it produces no beat, no gate
+    row, and a ``phrased`` row that says silence was chosen.
+    """
+    runtime = a_runtime()
+    form = _a_carrying_form(runtime)
     speaking(runtime, form)
-    runtime.phraser = a_phraser(saying(PhrasedLine(line="   ", excitement=0.9)))
+    runtime.phraser = a_phraser(saying(PhrasedLine(line="", excitement=0.0)))
+    beats = caught_beats(runtime)
+    published = _watch_published(runtime)
+
+    await runtime._call([Trigger.SCHEDULED])
+
+    assert beats == []
+    phrased = [extra for topic, extra in published if topic == "phrased"]
+    assert phrased and phrased[0]["line"] == ""
+    assert "silence" in phrased[0]["reason"]
+    assert not [topic for topic, _ in published if topic == "gate"]
+
+
+@pytest.mark.asyncio
+async def test_a_phrasing_that_cleaned_away_to_nothing_still_falls_back() -> None:
+    """Silence is an empty answer, not an answer that survived nothing.
+
+    A model that writes a label and no line has failed, and the caller's own
+    words go out as they always did. Only a model that returns nothing has
+    decided anything.
+    """
+    runtime = a_runtime()
+    form = _a_carrying_form(runtime)
+    speaking(runtime, form)
+    runtime.phraser = a_phraser(saying(PhrasedLine(line='"Commentary:"', excitement=0.9)))
     beats = caught_beats(runtime)
 
     await runtime._call([Trigger.SCHEDULED])
@@ -747,6 +806,27 @@ async def test_a_rephrase_that_fails_keeps_the_line_the_run_paid_for() -> None:
     assert beats["b1"].startswith("Molina drives forward")
     assert len(rows_of(result.rows, "error")) == 2
     assert all(line.fallback for line in result.lines)
+
+
+@pytest.mark.asyncio
+async def test_a_chosen_silence_leaves_no_beat_and_no_gate_row_but_is_recorded() -> None:
+    """The offline path has to count silence the same way the runtime does.
+
+    Otherwise a rephrase pass looks like it dropped a line, and the judge
+    cannot tell a moment the phraser passed over from one it failed on.
+    """
+    backend = saying(
+        PhrasedLine(line="", excitement=0.0),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+    )
+    result = await rephrase(a_trace(), backend, pack=a_pack())
+
+    phrased = rows_of(result.rows, "phrased")
+    assert [row["line"] for row in phrased] == ["", "Messi strikes."]
+    assert "silence" in phrased[0]["reason"]
+    assert [row["id"] for row in rows_of(result.rows, "beat") if row["voice"] == "caller"] == ["b2"]
+    assert not [row for row in rows_of(result.rows, "gate") if row.get("where") == "rephrase"]
+    assert [line.verdict for line in result.lines] == ["chose silence", "passed"]
 
 
 @pytest.mark.asyncio

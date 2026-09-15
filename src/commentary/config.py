@@ -25,6 +25,12 @@ RESEARCHER_MODEL = os.getenv("RESEARCHER_MODEL", "claude-opus-5")
 #: ``off`` and the stage does not exist — the caller's own line goes to the
 #: gate, exactly as before there was a phraser.
 PHRASER_MODEL = os.getenv("PHRASER_MODEL", "claude-haiku-4-5")
+#: The colour seat. Haiku for the same reason the phraser is: the seat is
+#: given the lead's last lines, the forms since its own last turn and the
+#: pack notes, and asked for three short utterances. The rules and the
+#: forty real colour utterances that set the register sit in a cached system
+#: prefix, so a turn costs a fraction of a cent. ``off`` removes the seat.
+COLOUR_MODEL = os.getenv("COLOUR_MODEL", "claude-haiku-4-5")
 JUDGE_MODEL = os.getenv("JUDGE_MODEL", "claude-opus-5")
 
 
@@ -104,14 +110,38 @@ class CallerConfig:
     #: next line lands as the last one finishes.
     min_gap_s: float = 4.0
     #: The shortest that wait is ever allowed to get. Real commentary calls
-    #: build-up in fragments — "De Paul." "Messi, Álvarez." — a median
-    #: 2.4s apart, and a two-word line held for four seconds is three
-    #: seconds of dead air. Under 1.5s two lines tread on each other.
+    #: build-up in fragments — "De Paul." "Messi, Álvarez." — and a two-word
+    #: line held for four seconds is three seconds of dead air. Under 1.5s
+    #: two lines tread on each other.
+    #:
+    #: This used to cite "a median 2.4s apart", which was the wrong unit:
+    #: 2.44s is the gap between YouTube *caption segments*, of which there
+    #: are 1.75 to an utterance. Utterance to utterance the real median is
+    #: 4.3s pooled across club football and 4.6s at the 2022 final, and more
+    #: than half of all gaps run over four seconds (study section 2.1). The
+    #: floor is not changed here — what it is a floor on is a rate decision
+    #: and study Gap 3 asks for two rates, not a different one — but the
+    #: number it was justified by was measuring something else.
     min_gap_floor_s: float = 1.5
     #: Breath. Added to however long the last line took, so the gap is a
     #: property of what was just said rather than of the clock: a fragment
     #: buys a fragment's silence, a sentence buys a sentence's.
     gap_after_line_s: float = 0.8
+    #: The three caps that replace one flat ``min_gap_s``, chosen by the
+    #: phase of play the last line was about. Study section 2.3 measures the
+    #: gap between utterances three ways over the four aligned matches: 2.8 s
+    #: in an attacking move, 4.2 s in build-up, 4.5 s at a dead ball and
+    #: 4.6 s at a stoppage. In the box the commentator speaks half again as
+    #: fast and says less each time; at a restart the gaps open and the lines
+    #: get longer. One rate through both — which is what this had — sounds
+    #: too slow in the box and too busy on the halfway line, and Gap 3 of
+    #: ``docs/research/real-commentary-corpus.md`` says so in those words.
+    #:
+    #: ``min_gap_s`` stays as the default for a line filed under no phase at
+    #: all, which is the colour seat's and the analyst's.
+    min_gap_attacking_s: float = 2.5
+    min_gap_build_up_s: float = 4.5
+    min_gap_dead_ball_s: float = 5.0
     #: Lines shown back to the model as "the last lines spoken". This is the
     #: whole of what stops it repeating itself; a similarity veto used to sit
     #: behind it and fired zero times in 63 real-clip runs.
@@ -129,10 +159,12 @@ class CallerConfig:
 class PhraserConfig:
     """Turning the caller's form into something a commentator would say.
 
-    Every number here is a consequence of the measurement in
-    ``runs/prompt-name/REAL_COMMENTARY.md``: median five words, a quarter of
-    live-play utterances two words or fewer, the longest thing said in half
-    an hour twenty-eight words.
+    Every number here used to be a consequence of the measurement in
+    ``runs/prompt-name/REAL_COMMENTARY.md``, which was one World Cup final.
+    They are now club football's, from
+    ``docs/research/real-commentary-corpus.md`` section 1: median eight
+    words, 47% of utterances nine words or more, 20% sixteen or more, the
+    95th percentile 22 to 27 and the longest in a match 50 and up.
     """
 
     #: Which model says it, or ``off`` for no phrasing stage at all. Here
@@ -140,9 +172,18 @@ class PhraserConfig:
     #: sweep or a rephrase can turn the stage off without touching the
     #: process it is running in.
     model: str = PHRASER_MODEL
-    #: Hard cap on the phrased line. Well under the caller's 28, because the
-    #: caller's cap is a backstop against a runaway and this is a target.
-    max_words: int = 16
+    #: Hard cap on the phrased line, and the caller's cap as well.
+    #:
+    #: It was 16, chosen as a target rather than a backstop when the
+    #: reference was a World Cup final whose 95th percentile is 18 words. The
+    #: corpus study measured six club matches: one utterance in five runs to
+    #: sixteen words or longer and the 95th percentile is 22 to 27 (study
+    #: section 1 and Gap 4), so a cap of 16 removed the top fifth of real
+    #: commentary by construction and the v3 traces have no line of nine
+    #: words anywhere. 28 is what the caller has always had and it is a
+    #: backstop again: the length the phraser should write is in the prompt,
+    #: tied to the phase of play, not in this number.
+    max_words: int = 28
     #: Real utterances shown per kind in the system prompt. The whole set is
     #: 228 lines and a sample is enough to set a register.
     #:
@@ -164,7 +205,13 @@ class PhraserConfig:
 
 @dataclass(frozen=True)
 class AnalystConfig:
-    """The colour voice."""
+    """The old colour voice: a silence timer that sees frames.
+
+    Superseded by :class:`ColourConfig`, and kept because it still runs when
+    ``colour.enabled`` is off. Study section 9, Gap 2 is the case against it:
+    a lull is not a phase, and on the Mbappé trace this fired eight seconds
+    after the goal call, inside the window the corpus gives to the lead.
+    """
 
     frames: int = 6
     window_s: float = 20.0
@@ -175,6 +222,92 @@ class AnalystConfig:
     #: A second voice that talks more than the first is not a second voice.
     min_gap_s: float = 40.0
     max_words: int = 30
+
+
+@dataclass(frozen=True)
+class ColourConfig:
+    """The colour seat: when it is offered a turn, and how long a turn is.
+
+    Every number is from ``docs/research/real-commentary-corpus.md``. The
+    seat is text-only and event-driven — it never sees a frame and it is
+    never on a timer — because section 4.2 counts colour entries per hundred
+    utterances by phase and the spread is the whole finding: 2.1 in an
+    attacking move against 10.5 at a dead ball, 11.8 at a stoppage and 15.4
+    over a replay. Five times less likely while the ball is live.
+    """
+
+    #: Which model speaks it, or ``off`` for no colour seat. Read from
+    #: ``COLOUR_MODEL`` the way the phraser reads ``PHRASER_MODEL``, so a
+    #: test or a sweep can switch seats without touching the environment.
+    model: str = COLOUR_MODEL
+    #: Whether the runtime prefers this seat over the old silence-timer
+    #: analyst. On by default; off restores exactly the runtime that was
+    #: there before this file knew about a phase.
+    enabled: bool = field(default_factory=lambda: _env_flag("COLOUR_SEAT", True))
+    #: Nothing is said inside this long after a goal, shot, save or penalty
+    #: form. Section 4.3: the median delay from a big event to the first
+    #: colour entry is 21.4 s and only 7% land within six seconds. Those
+    #: seconds belong to the lead, who is rebuilding the move and giving the
+    #: tally.
+    quiet_after_big_s: float = 12.0
+    #: The one exception, also 4.3: at a goal 31% of colour entries do arrive
+    #: inside six seconds, and what arrives is a reaction fragment — "WELL,
+    #: it's the first goal of the game", "Well, well, well." So a goal, and
+    #: only a goal, opens a short window.
+    goal_reaction_from_s: float = 4.0
+    goal_reaction_to_s: float = 8.0
+    #: How long after a big event the phase still counts as its aftermath. At
+    #: or past this the seat is offered a turn on the clock alone, because by
+    #: then the corpus is back to ordinary build-up rates.
+    settled_after_big_s: float = 20.0
+    #: One turn per this long in build-up. Section 4.2's 5.9 entries per 100
+    #: utterances in build-up, against a system that says a line every four
+    #: to six seconds, is about one turn a minute; 45 s is that, rounded
+    #: towards speaking.
+    min_gap_s: float = 45.0
+    #: How many caller forms back the phase is read off. Two, because a
+    #: single close-up inside a live move is a cutaway and not a stoppage.
+    phase_forms: int = 2
+    #: A turn is this many utterances. Section 4.4: median run 4, mean 4.4,
+    #: 51% run four or more, 20% a single utterance.
+    min_utterances: int = 2
+    max_utterances: int = 4
+    #: Words in one utterance. The corpus's colour entries are 3 to 12 words
+    #: each and simply come in sequence; ``AnalystConfig.max_words = 30`` is
+    #: one utterance's worth and truncated mid-clause on the real trace.
+    max_words: int = 12
+    #: Seconds between the utterances of one turn. Section 2.5's median
+    #: internal gap at a dead ball is 4.5 s and 4.2 s in build-up, but those
+    #: are gaps between *speakers*; inside one held microphone the run is
+    #: faster, and the director will cut the tail the moment the lead has
+    #: something.
+    utterance_gap_s: float = 2.5
+    #: No colour utterance sits closer than this to a caller beat — before
+    #: it, or after the lead has finished saying it. Two voices on one
+    #: channel, and the lead has the ball.
+    #:
+    #: "After he finishes", not "after the beat is stamped": the first run of
+    #: this seat put a colour line 2.0 s after a nine-word lead line, which
+    #: at ``WORDS_PER_SECOND`` is 2.8 s before the lead stops talking. The
+    #: beat's timestamp is when the line starts.
+    clear_of_caller_s: float = 2.0
+    #: How long one turn may take from its first utterance to its last.
+    #: Pushing utterances clear of the lead stretches a turn, and a thought
+    #: that arrives fifteen seconds after the one before it is not the same
+    #: turn any more. Anything past this is dropped, which is section 4.6's
+    #: hand-back: the colour voice stops mid-thought when the ball moves and
+    #: there is no verbal hand-back anywhere in the corpus.
+    turn_span_s: float = 10.0
+    #: The lead's last lines the seat observes off. Eight rather than the
+    #: phraser's four: this seat is looking for what has been true for a
+    #: while, not for what it just said.
+    lead_lines: int = 8
+    #: It never opens cold. Section 4.6: the colour voice comes in after the
+    #: lead, and hands back by stopping when the ball moves. Before this many
+    #: lead lines exist there is nothing to observe off.
+    min_lead_lines: int = 2
+    #: Small. The answer is three short sentences and two short lists.
+    max_tokens: int = 700
 
 
 @dataclass(frozen=True)
@@ -389,6 +522,7 @@ class Settings:
     caller: CallerConfig = field(default_factory=CallerConfig)
     phraser: PhraserConfig = field(default_factory=PhraserConfig)
     analyst: AnalystConfig = field(default_factory=AnalystConfig)
+    colour: ColourConfig = field(default_factory=ColourConfig)
     predictor: PredictorConfig = field(default_factory=PredictorConfig)
     gate: GateConfig = field(default_factory=GateConfig)
     director: DirectorConfig = field(default_factory=DirectorConfig)

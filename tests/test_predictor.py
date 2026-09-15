@@ -4,9 +4,12 @@ import pytest
 
 from commentary.config import SETTINGS
 from commentary.predictor import SpeakPredictor
-from commentary.schemas import Trigger
+from commentary.schemas import Event, Trigger
 
 MIN_GAP = SETTINGS.caller.min_gap_s
+ATTACKING_GAP = SETTINGS.caller.min_gap_attacking_s
+BUILD_UP_GAP = SETTINGS.caller.min_gap_build_up_s
+DEAD_BALL_GAP = SETTINGS.caller.min_gap_dead_ball_s
 GAP_FLOOR = SETTINGS.caller.min_gap_floor_s
 GAP_PAD = SETTINGS.caller.gap_after_line_s
 FORCES_AT = SETTINGS.predictor.silence_forces_at_s
@@ -208,3 +211,56 @@ def test_the_fixed_cadence_baseline_ignores_the_line_length() -> None:
         )
         assert left.should_call == right.should_call
         assert left.reason == right.reason
+
+
+# -- two rates, not one ------------------------------------------------------
+
+
+def test_the_cap_is_the_phase_the_last_line_was_about() -> None:
+    """Study section 2.3: 2.8s in the box, 4.2s in build-up, 4.5s at a restart.
+
+    One rate through all three is the corpus study's Gap 3. A long line still
+    cannot buy more than its phase allows, which is what these three assert.
+    """
+    predictor = SpeakPredictor()
+    assert predictor.gap_after(30.0, Event.SHOT) == pytest.approx(ATTACKING_GAP)
+    assert predictor.gap_after(30.0, Event.BUILD_UP) == pytest.approx(BUILD_UP_GAP)
+    assert predictor.gap_after(30.0, Event.THROW_IN) == pytest.approx(DEAD_BALL_GAP)
+    assert predictor.gap_after(30.0, None) == pytest.approx(MIN_GAP)
+
+
+def test_the_voice_comes_back_faster_in_the_box_than_on_the_halfway_line() -> None:
+    predictor = SpeakPredictor()
+    after_a_shot = predictor.decide(
+        103.0, [Trigger.CAMERA_CUT], last_spoken_ts=100.0, last_spoken_seconds=4.0,
+        last_event=Event.SHOT,
+    )
+    after_build_up = predictor.decide(
+        103.0, [Trigger.CAMERA_CUT], last_spoken_ts=100.0, last_spoken_seconds=4.0,
+        last_event=Event.BUILD_UP,
+    )
+    assert after_a_shot.should_call
+    assert not after_build_up.should_call
+
+
+def test_a_chosen_silence_holds_the_cap_without_easing_the_pressure() -> None:
+    """The phraser passing over a moment must not send the caller straight back.
+
+    Real commentary says nothing at a quarter of build-up touches. The tick
+    loop runs twice a second, so without this the next tick calls Opus again
+    half a second after the phraser decided there was nothing to say — and
+    the silence itself still has to force a line eventually, which is why the
+    pressure clock is left alone.
+    """
+    predictor = SpeakPredictor()
+    straight_after = predictor.decide(
+        100.5, [Trigger.CAMERA_CUT], last_spoken_ts=None, last_quiet_ts=100.0
+    )
+    assert not straight_after.should_call
+    assert straight_after.reason.startswith("rate_cap")
+
+    later = predictor.decide(
+        100.0 + FORCES_AT + 1.0, [Trigger.SCHEDULED], last_spoken_ts=None, last_quiet_ts=100.0
+    )
+    assert later.should_call
+    assert "silence_pressure forces a line" in later.reason

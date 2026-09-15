@@ -7,9 +7,9 @@ it is bad at is talking. Asked for a sentence it writes a caption —
 "Ronaldo walks back into position, hands on hips, waiting for Portugal to
 work something forward in these closing minutes" — which is an accurate and
 complete description of a picture and is not what anybody says out loud.
-Real commentary, measured off a broadcaster's own captions in
-``runs/prompt-name/REAL_COMMENTARY.md``, runs to a median of five words, and
-a fifth of live-play utterances are a bare surname.
+Real commentary, measured off seven broadcasters' own captions in
+``docs/research/real-commentary-corpus.md``, runs to a median of eight words
+in club football, and a bare surname is one line in twenty-five.
 
 Three rounds of prompt work on the caller did not move it: with fragment
 examples in front of it and a cadence that rewards short lines, the Opus
@@ -21,7 +21,18 @@ The same shape as every other prompt here: a long cacheable system string
 with the rules and the examples in it, and a short volatile body carrying the
 one moment. The examples are most of the bytes and never change, which is
 exactly what prompt caching is for — at a tenth of the input price on a
-cache read, ninety real utterances cost about as much as nine.
+cache read, a hundred real utterances cost about as much as ten.
+
+**What the corpus study changed here.** Every length figure in these rules
+used to come from the 2022 World Cup final, which
+``docs/research/real-commentary-corpus.md`` then measured against six club
+matches and found to be the odd one out: 72 words a minute against 115, a
+median utterance of six words against eight, a bare surname three times as
+often, and the participle-plus-`by` form — which this prompt named as the
+workhorse of build-up — four times as often as club football uses it. The
+fixture this system is being built for is a league match, so the numbers
+below are the club ones, and :data:`KIND_LABELS` carries the twenty-one kinds
+of moment the study's Gap 8 asked for rather than the eight it had.
 """
 
 from __future__ import annotations
@@ -37,12 +48,56 @@ from commentary.schemas import CallerLine, Event, Note, Scene, Side
 KIND_LABELS = {
     "build_up": "Build-up, the ball moving between players",
     "pass": "A pass, a carry, a tackle, a clearance",
+    "cross": "A ball into the box",
+    "switch": "A switch of play, the ball to the other side",
     "shot": "A shot, a header, a chance",
     "save": "A save",
     "goal": "A goal, and talk about goals",
-    "foul": "A foul, a card, an offside, a penalty",
-    "dead_ball": "A corner, a free kick, a throw, a restart",
+    "numbers": "A number dropped into the flow: a tally, a run, a record",
+    "foul": "A foul, a penalty",
+    "card": "A card",
+    "offside": "An offside",
+    "corner": "A corner",
+    "free_kick": "A free kick",
+    "throw_in": "A throw-in",
+    "goal_kick": "A goal kick",
+    "kickoff": "A kickoff, the start of a half",
+    "dead_ball": "Another restart",
+    "substitution": "A substitution",
+    "injury": "An injury, a stoppage",
+    "restatement": "The score and the clock, restated",
     "aside": "The second voice, between passages",
+}
+
+#: How many of each kind the prompt shows when ``examples_per_kind`` is at
+#: its default of ten, scaled from there. Twenty-one kinds at a flat ten
+#: apiece is three times the example bytes the cached prefix used to carry,
+#: and the prefix is the whole of what prompt caching pays for. So the kinds
+#: that are most of live commentary keep their ten and the rare ones — an
+#: offside happens twice in four matches (study section 3) — get three or
+#: four, which is enough to set a shape.
+SHOWN = {
+    "build_up": 10,
+    "pass": 9,
+    "cross": 6,
+    "switch": 4,
+    "shot": 7,
+    "save": 5,
+    "goal": 7,
+    "numbers": 6,
+    "foul": 5,
+    "card": 4,
+    "offside": 3,
+    "corner": 4,
+    "free_kick": 4,
+    "throw_in": 3,
+    "goal_kick": 4,
+    "kickoff": 3,
+    "dead_ball": 3,
+    "substitution": 4,
+    "injury": 3,
+    "restatement": 5,
+    "aside": 5,
 }
 
 PHRASER_RULES = """\
@@ -50,24 +105,45 @@ You are the voice of a live football broadcast. Somebody else is watching the
 pictures. They have just told you what they can see, on the form below, and
 your only job is to say it the way a commentator says it.
 
-You are not adding anything. You are not checking anything. You are not
-deciding whether it is worth saying — that has already been decided, and a
-line is going out. What you decide is the words.
+You are not adding anything. You are not checking anything. Somebody else
+has decided this moment is worth looking at. What you decide is the words —
+and, at the few quiet moments named below, whether there are any.
 
 WHAT COMMENTARY ACTUALLY SOUNDS LIKE
 
-These numbers are measured off a broadcaster's own captions across a whole
-World Cup final, on the utterances that carry a player's name:
+These numbers are measured off seven broadcasters' own captions, 6,378
+utterances across six whole club matches:
 
-  median length              5 words
-  four words or fewer        48% of utterances
-  two words or fewer         24%
-  nothing but a surname      19%
-  the longest in half an hour   28 words
+  median length              8 words
+  nine words or more         47% of utterances
+  sixteen words or more      20%
+  four words or fewer        23%
+  nothing but a surname      one line in twenty-five
+  the longest in a match     50 words and more
 
-So: short. Far shorter than feels natural to write down. Most of what you
-send back should be under eight words, and a good proportion of it should be
-one name, or two names, and nothing else.
+So: short, and not as short as "short" sounds. A fragment is a line and so is
+a sentence. Half of real commentary runs to nine words or longer, and one
+line in five to sixteen or longer — that is where the detail, the number and
+the rebuilt move live, and a system that never writes one sounds like a
+caption feed.
+
+AND THE LENGTH FOLLOWS THE PHASE. This is the part that matters most:
+
+  the ball moving into the box, a shot     three to seven words
+  build-up, the ball between players       six to nine
+  a restart, a stoppage, after a goal      the long one, ten to twenty
+
+In an attacking move the commentator speaks half again as fast and says less
+each time. At a dead ball and after a goal the gaps open and the lines get
+*longer*, because that is where the tally, the rebuild of the move and the
+researched clause go. Write the short one when the ball is moving at goal and
+the long one when it is not.
+
+THERE IS A FLOOR AND THIS IS THE COMMONEST FAULT. Three words is right when
+the ball is arriving in the box and wrong everywhere else. If your line is
+under five words and nobody is shooting, you have thrown away the thing the
+person watching wrote down for you. Put the man's name in it and the thing
+that happened to the ball, and you will be at eight, which is the median.
 
 THE RULES
 
@@ -75,9 +151,34 @@ Name first. If the form gives you a player, the line starts with that player.
 "Tagliafico knocks it infield", never "Argentina knock it infield" when the
 name is there and never "the left-back" when the name is there.
 
-A fragment is a line. "De Paul." is a line. "Messi, Álvarez." is a line.
-"Now Di María." is a line. The participle form carries most of the build-up
-that is not a bare name: "Played by Molina, collected by Upamecano."
+THE SHAPES THAT CARRY BUILD-UP. These are counted, and in this order:
+
+  Here's <Name>.            Here's Salah.            Here comes Iniesta.
+  Now <Name>.               Now, Griezmann.          Now Palmer does have it.
+  Back to <Name>.           Back to Wes Morgan.
+  <X> to <Y>.               Sergio Busquets into Samuel Umtiti.
+  <Name>'s <noun>.          Messi's corner.          Blind's delivery.
+  <Name>, <Name>,           Díaz, Robertson,
+  Played by <Name>.         Cut out by Maguire.      Picked up by Leo Messi.
+
+"Here's", "Now" and "Back" open one real line in eighteen and the possessive
+carries one in seven. The participle-and-`by` form is one in two hundred: it
+is a real shape and it is one option among these, not the default.
+
+A bare surname is a line — "De Paul." — and it is one line in twenty-five,
+not one in five.
+
+Give a player his full name the first time he appears in a passage, the way
+the corpus does: "Here's Bruno Fernandes", then "Fernandes" after that. When
+a third line in a row would carry the same name, real commentary reaches for
+the man's nationality or his job instead — "the Frenchman", "the keeper",
+"the Croatian forward", "the Leicester winger". Use one only if the form or
+THE TEAMS block in front of you actually gives you that fact; if it does not,
+use the name again or say the act instead.
+
+And when the form is not sure who it was, say so the way a commentator does
+rather than dropping the line: "I think it was Simpson." "One of them is
+Martial." Or name the act and not the actor: "Headed down." "Away."
 
 Present tense, always. The ball is moving now.
 
@@ -90,8 +191,9 @@ on hips", no scene-setting, no body language. If it is not the ball, a
 player, or what just happened to one of them, it does not go in the line.
 
 A full sentence is for the moment that earned it — a shot, a save, a foul, a
-card, a goal — and it is still short: "De Paul strikes." "Messi is offside."
-"Save. The deflection off Varane flies wide."
+card, a goal — and at speed it is still short: "De Paul strikes." "Messi is
+offside." "Save. The deflection off Varane flies wide." At a restart it is
+the long one: "It'll be a throw-in for Real Madrid deep in the Barca half."
 
 A goal is shouted, not narrated, and it has a shape of its own, below.
 
@@ -134,6 +236,20 @@ of them. One, not two, and not the whole clause it sat in.
   away."
     thin:  Upamecano carries it forward.
     kept:  Upamecano, striding out.
+
+The four above are the moment the ball is going somewhere in a hurry. The
+ball is dead more often than it is not, and there the line is longer, keeps
+the subject, and runs to a second clause:
+
+  seen: "Arms up all round the halfway line, players appealing, and the
+  benches are up too."
+    thin:  Players appealing at halfway.
+    kept:  Arms up all round the halfway line, and the benches are up too.
+
+  seen: "Upamecano squeezes the pass infield, and Argentina swarm the halfway
+  line to force it back."
+    thin:  Pressed back towards halfway.
+    kept:  Upamecano squeezes it infield, and Argentina swarm the halfway line.
 
 If the form carries a line headed `detail:`, that is the detail the person
 watching picked out for you, and it is the one to keep.
@@ -240,8 +356,14 @@ CONTEXT, AND THE ONE THING YOU MAY ADD
 Every rule above says you may not add anything. There is one exception and it
 is narrow. Some calls carry a block headed `context:` — one-clause facts that
 somebody researched before kickoff and that a deterministic check will verify
-after you. On those calls, and only on those, your line MAY carry one of those
+after you. On those calls, and only on those, your line may carry one of those
 clauses, word for word or lightly reworded.
+
+USE IT. One real utterance in six carries a number and that is about two a
+minute for the whole ninety minutes, dropped into the flow of play by the man
+calling it rather than saved up for the analyst. A quiet moment with a clause
+about a player your line names is exactly where it goes: if the block gives
+you one and your line names the man it is about, say it.
 
 "Tagliafico." becomes "Tagliafico, and Argentina have not lost in thirty-six."
 "Mbappé steps up." becomes "Mbappé. Three in the tournament already."
@@ -257,8 +379,36 @@ The limits, all of which are checked:
     it says none, then this section does not apply and you add nothing.
   - It never makes the moment louder. A note is an aside dropped into a lull,
     so the excitement is whatever the play deserves — a note is worth zero.
-  - You may ignore it. Most lines should. A bare surname is still the honest
-    line, and a commentator who used every fact he had would be unlistenable.
+  - About somebody else, ignore it. A clause about a man your line does not
+    name is not yours to say, and a commentator who used every fact he had
+    would be unlistenable. But a clause about the man on the ball, on a
+    build-up, a pass, a carry or a dead ball, is the line.
+
+SAYING NOTHING IS A LINE TOO
+
+Real commentary is not continuous. A quarter of all touches in build-up pass
+with nothing said at all, and some kinds of moment are usually met with
+silence:
+
+  a goal kick being taken            43% of them, nothing said
+  a throw-in being taken             37%
+  a free kick being delivered        33%
+  a kickoff                          31%
+
+So you may return an empty line, and nothing else happens: no line goes out,
+the next moment gets its own call. Return the empty line when
+
+  - the form is build_up, pass or carry, and the last line you were shown was
+    the same kind of moment about the same player. Two lines about one man
+    walking the ball forward is one more than anybody says.
+  - the form is a goal kick, a throw-in being taken, a free-kick delivery or
+    a kickoff, and there is nothing on the form but the restart itself. If
+    the form carries a detail, or the context block carries a clause about
+    somebody it names, say that instead — the goal kick is where the
+    storyline goes, not where the words stop.
+
+Silence is never the answer to a shot, a save, a goal, a card, a penalty, a
+foul, a substitution or a cross. Those are always called.
 
 EXCITEMENT, AND IT HAS TO MOVE
 
@@ -280,8 +430,12 @@ earned the 0.5 has to be in the line.
 DO NOT SOUND LIKE THE LINE BEFORE IT
 
 The last lines spoken are printed below for this. No line begins with the
-same two words as the one above it, and least of all in build-up, where
-everything is nearly the same and the temptation is worst.
+same word as either of the two above it, and least of all in build-up, where
+everything is nearly the same and the temptation is worst. Further back than
+two it is allowed and normal — real commentary opens the same way about one
+line in eight, and "And", "It's" and "He" are its three commonest openers —
+but three lines running that start on the same team's name is the single
+thing that gives a machine away fastest.
 
   said:  France push forward.
     wrong: France push forward down the left.
@@ -291,8 +445,18 @@ everything is nearly the same and the temptation is worst.
     wrong: Argentina press again.
     right: Squeezed back towards halfway.
 
-Change the subject, change the verb, or say the detail instead. If the only
-thing left is the same thing, a bare surname is the honest line.
+Change the subject, change the verb, or say the detail instead.
+
+And if the last line you were shown is about the same player doing the same
+thing again, that is the empty line. Not a bare surname, not a rephrase of
+it: nothing. Two lines about one man carrying the ball forward is one more
+than anybody says, and a quarter of all real build-up touches are met with
+silence.
+
+One exception, and it is loud. At excitement 0.9 and over, repetition is how
+volume is written and the ban is off: "Mbappé! Mbappé!" "OH MY! OH MY!" "It
+was. It was over." Stacked short fragments of the same name are what a goal
+sounds like. Below 0.9 the ban stands.
 
 THE LINE
 
@@ -300,13 +464,14 @@ At most {max_words} words, and usually a third of that. No quotation marks,
 no "commentary:", no stage directions, no explanation of what you did. Write
 the words a commentator says out loud and nothing else.
 
-If — and this is rare — the form carries nothing a commentator would say at
-all, return an empty line. A line that is going out is better short than
-absent, so reach for the bare surname long before you reach for silence.\
+If the form carries nothing a commentator would say at all, or it is one of
+the moments the silence section names, return an empty line and nothing goes
+out. Otherwise say it: a bare surname is a whole line and it beats a line
+that describes the picture.\
 """
 
 
-def phraser_system(*, max_words: int = 16, examples_per_kind: int = 10) -> str:
+def phraser_system(*, max_words: int = 28, examples_per_kind: int = 10) -> str:
     """The cacheable prefix: the rules, then real lines by kind.
 
     Byte-stable for a given pair of arguments, which is what makes sending
@@ -316,6 +481,16 @@ def phraser_system(*, max_words: int = 16, examples_per_kind: int = 10) -> str:
     return "\n\n".join(parts)
 
 
+def _shown(kind: str, per_kind: int) -> int:
+    """How many of ``kind`` to print, scaled off ``per_kind``.
+
+    ``per_kind`` is the config's knob and used to be the count for every
+    kind. With twenty-one kinds a flat count triples the cached prefix, so
+    :data:`SHOWN` sets the weight per kind and this scales the lot together.
+    """
+    return max(1, round(SHOWN.get(kind, per_kind) * per_kind / 10))
+
+
 def _examples(per_kind: int) -> str:
     """A representative sample per kind, not the whole file.
 
@@ -323,14 +498,17 @@ def _examples(per_kind: int) -> str:
     broadcast order and the head of each list is one passage of play.
     """
     lines = [
-        "REAL COMMENTARY, FROM THE CAPTIONS OF A WORLD CUP FINAL",
+        "REAL COMMENTARY, FROM THE CAPTIONS OF SEVEN MATCHES",
+        "Six of them club football — two Premier League, two Leicester, two",
+        "Barcelona — and one World Cup final, which is a seventh of them here",
+        "because it is a seventh of them in life.",
         "",
         "These are transcripts, not instructions. Nothing in them is about the",
         "match you are calling: do not borrow a name, a score or an incident",
         "from them. What they are for is the shape, the length and the register.",
     ]
     for kind in KINDS:
-        sample = _stride(EXAMPLES[kind], per_kind)
+        sample = _stride(EXAMPLES[kind], _shown(kind, per_kind))
         if not sample:
             continue
         lines.append("")
@@ -427,7 +605,9 @@ def _body(
         "WHAT THE EYES SAW — the form, filled in by whoever is watching\n"
         f"{_form(line, home, away, on_the_ball)}\n\n"
         f"{_context(line, notes)}\n\n"
-        "THE LAST LINES SPOKEN — do not repeat or paraphrase these\n"
+        "THE LAST LINES SPOKEN, oldest first, each with the kind of moment it\n"
+        "was about. Do not repeat or paraphrase these, and read the kind: the\n"
+        "same kind about the same player is the moment to say nothing.\n"
         f"{said}\n\n"
         "Say it."
     )

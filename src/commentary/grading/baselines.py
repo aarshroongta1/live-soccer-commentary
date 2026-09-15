@@ -43,6 +43,7 @@ from commentary.runtime import Runtime
 from commentary.schemas import (
     Beat,
     CallerLine,
+    Event,
     GateVerdict,
     KnowledgePack,
     MatchState,
@@ -134,12 +135,15 @@ class FixedCadence(SpeakPredictor):
         *,
         after_goal: bool = False,
         last_spoken_seconds: float | None = None,
+        last_event: Event | None = None,
+        last_quiet_ts: float | None = None,
     ) -> SpeakDecision:
         """Due every ``cadence_s`` of video time, and never for any other reason.
 
-        ``after_goal`` and ``last_spoken_seconds`` are ignored on purpose: the
-        baseline is a timer, and a timer that made an exception for goals, or
-        that shortened its wait after a short line, would not be the baseline.
+        Every keyword is ignored on purpose: the baseline is a timer, and a
+        timer that made an exception for goals, or that shortened its wait
+        after a short line, or that ran at one rate in the box and another on
+        the halfway line, would not be the baseline.
 
         The timer runs off this object's own last attempt rather than off the
         runtime's last spoken line. worldcupvoice narrates every four seconds;

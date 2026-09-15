@@ -36,7 +36,7 @@ from commentary.agents.caller import clean_line, trim_words
 from commentary.config import PHRASER_MODEL, PhraserConfig
 from commentary.llm.base import LLMBackend, LLMError, Usage
 from commentary.prompts.phraser import phraser_blocks, phraser_system
-from commentary.schemas import CallerLine, Note, PhrasedLine
+from commentary.schemas import CallerLine, Event, Note, PhrasedLine
 
 #: The value of ``PHRASER_MODEL`` that means "do not run this stage".
 OFF = "off"
@@ -77,9 +77,29 @@ class Phraser:
             max_words=self.config.max_words,
             examples_per_kind=self.config.examples_per_kind,
         )
-        self._recent: deque[str] = deque(maxlen=max(1, self.config.recent_lines))
+        #: What was said, and what each line was about. The kind is carried
+        #: beside the words because the two rules that need it — do not open
+        #: the same way twice, and say nothing when the last line was this
+        #: same moment about this same man — cannot be checked from the text
+        #: alone. A model shown "Upamecano works it forward." has no way to
+        #: know whether that was a carry or a tackle.
+        self._recent: deque[tuple[str, Event | None]] = deque(
+            maxlen=max(1, self.config.recent_lines)
+        )
         #: Why the last call produced nothing, in words, for the error row.
         self.last_reason = ""
+        #: Did the last call choose to say nothing? A model that returns an
+        #: empty line has decided this moment is one of the ones real
+        #: commentary passes over — 43% of goal kicks, 37% of throw-in
+        #: deliveries, 33% of free-kick deliveries, 31% of kickoffs and a
+        #: quarter of all build-up touches
+        #: (``docs/research/real-commentary-corpus.md`` section 3). That is a
+        #: different event from a call that failed or a line that was
+        #: nothing but a label, and the two used to be one flag: both came
+        #: back as an empty line and both fell back to the caller's words,
+        #: so the phraser could never choose silence. Read it beside
+        #: :meth:`phrase` returning ``None``, which is still a failure.
+        self.chose_silence = False
         #: What the last call cost, so a rephrase can price itself per line.
         self.last_usage = Usage()
 
@@ -89,14 +109,22 @@ class Phraser:
 
     @property
     def recent(self) -> list[str]:
-        """What has actually been said, oldest first."""
-        return list(self._recent)
+        """What has actually been said, oldest first, each tagged with its kind.
 
-    def accept(self, line: str) -> None:
+        The tag is what the prompt reads as "a pass, 2 lines ago": without it
+        the model cannot tell a second line about the same carry from a
+        genuinely new moment, and the corpus says the second one is silence
+        a quarter of the time.
+        """
+        return [
+            f"[{event.value if event else 'no kind'}] {text}" for text, event in self._recent
+        ]
+
+    def accept(self, line: str, event: Event | None = None) -> None:
         """Record a line as spoken. Only call this when it really is going out."""
         text = line.strip()
         if text:
-            self._recent.append(text)
+            self._recent.append((text, event))
 
     async def phrase(
         self,
@@ -108,10 +136,11 @@ class Phraser:
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
 
-        ``None`` and an empty line mean the same thing to the runtime, which
-        falls back to the caller's own words either way rather than losing a
-        line the gate was about to pass. They are kept apart here so the
-        error row can say which happened.
+        ``None`` is a failure and the caller's own words go out instead: a
+        line the gate was about to pass is worth more spoken badly than
+        lost. An empty ``line`` on the returned object is the other thing —
+        the phraser deciding this is a moment to say nothing — and
+        :attr:`chose_silence` tells the two apart.
 
         ``notes`` are the pack's clauses about the people on this form, and
         they are the only outside information this stage has ever been given.
@@ -121,6 +150,7 @@ class Phraser:
         that never reaches the speaker.
         """
         self.last_reason = ""
+        self.chose_silence = False
         self.last_usage = Usage()
         blocks = phraser_blocks(
             line,
@@ -159,5 +189,15 @@ class Phraser:
         """
         text = trim_words(clean_line(proposed.line), self.config.max_words)
         if not text:
-            self.last_reason = "the phraser wrote nothing"
+            # An empty answer is a choice; an answer that was only a label
+            # or a pair of quotation marks is a failed one. The difference
+            # decides whether the moment passes in silence or the caller's
+            # own line goes out, so it is drawn on what the model actually
+            # returned rather than on what survived the cleaning.
+            self.chose_silence = not proposed.line.strip()
+            self.last_reason = (
+                "the phraser chose silence"
+                if self.chose_silence
+                else "the phraser wrote nothing sayable"
+            )
         return proposed.model_copy(update={"line": text})

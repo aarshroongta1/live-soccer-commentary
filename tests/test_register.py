@@ -31,6 +31,7 @@ from commentary.grading.register import (
 from commentary.llm.base import Block
 from commentary.llm.fake import ScriptedBackend
 from commentary.llm.schema import strict_schema
+from commentary.prompts.commentary_examples import EXAMPLES, KINDS
 
 # -- a trace whose every number was worked out on paper -----------------
 
@@ -246,7 +247,10 @@ async def test_the_judge_is_shown_the_real_utterances_and_every_line(
     backend = scripted()
     await register.judge_register(measure(rows), backend, name="t.jsonl")
     call = backend.calls_tagged("judge_register")[0]
-    assert "Spread by Romero." in call.text
+    # A real utterance, whichever one the generated example set happens to
+    # start with. Naming one by hand ties this test to a rebuild of that
+    # file, and the file is rebuilt whenever the corpus grows.
+    assert EXAMPLES[KINDS[0]][0] in call.text
     assert "Messi drives again." in call.text
     # The refused line is shown, marked, so the judge can see what the
     # phraser tried to say without scoring it as if it had been said.
@@ -308,8 +312,9 @@ async def test_score_trace_writes_a_report_beside_the_trace(
     assert out == tmp_path / "run.register.json"
     written = json.loads(out.read_text(encoding="utf-8"))
     assert written["measured"]["median_words"]["trace"] == pytest.approx(2.5)
-    assert written["measured"]["median_words"]["real"] == pytest.approx(5.0)
-    assert written["reference_is_provisional"] is True
+    assert written["measured"]["median_words"]["real"] == pytest.approx(8.0)
+    assert written["reference"] == "club football, six matches"
+    assert written["reference_is_provisional"] is False
     assert written["judge"]["scores"]["overall"]["score"] == pytest.approx(5.0)
     assert written["usd"] == pytest.approx(0.0)
     assert "trace" in report.table()

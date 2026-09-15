@@ -193,6 +193,33 @@ class AnalystLine(BaseModel):
     line: str = Field(default="", max_length=280)
 
 
+class ColourTurn(BaseModel):
+    """One turn of the colour seat: a short run of utterances, or silence.
+
+    A list rather than a line, and that is the whole difference from
+    :class:`AnalystLine`. The corpus (section 4.4) holds the colour voice for
+    a median of four utterances of three to twelve words each, coming in
+    sequence two or three seconds apart; a single thirty-word sentence is
+    what the old analyst produced and it is not the shape of the thing.
+
+    ``cites`` carries the same weight it does for the analyst: what this
+    leaned on, named plainly. A turn that cannot say what it leaned on is a
+    turn that made something up, and the fact gate will only catch the half
+    of that which mentions a number or a name.
+    """
+
+    angle: Angle
+    cites: list[str] = Field(
+        default_factory=list,
+        description="Notes, forms or state this leans on, named plainly",
+    )
+    speak: bool
+    utterances: list[str] = Field(
+        default_factory=list,
+        description="Two to four short utterances, 3-12 words each, in the order they are said",
+    )
+
+
 class Trigger(StrEnum):
     """Why the system considered speaking at this instant."""
 

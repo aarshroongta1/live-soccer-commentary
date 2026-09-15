@@ -42,6 +42,7 @@ from typing import Any
 
 from commentary.agents.analyst import Analyst
 from commentary.agents.caller import Caller
+from commentary.agents.colour import EXCITEMENT, ColourSeat, judge_utterance, space_out
 from commentary.agents.phraser import Phraser
 from commentary.bus import Bus, Topic
 from commentary.capture.audio import CutDetector
@@ -212,6 +213,10 @@ class Runtime:
             tools=MatchTools(state=self.state_tracker.state, pack=self.pack),
             pack=self.pack,
         )
+        #: The second seat, event-driven and text-only. When it is enabled
+        #: the old silence-timer analyst is not asked at all; see
+        #: :meth:`_maybe_colour` and ``docs/HANDOFF.md`` section 3e.
+        self.colour = ColourSeat(self.backend, config=self.settings.colour, pack=self.pack)
         self.gate = FactGate(self.settings.gate)
         self.predictor = SpeakPredictor(self.settings.predictor, self.settings.caller)
         self.director = Director(speaker=self.speaker, cfg=self.settings.director, bus=self.bus)
@@ -232,6 +237,14 @@ class Runtime:
         #: line ran up, and a fragment runs up less of one than a sentence,
         #: so the predictor needs the length and not just the timestamp.
         self._last_spoken_seconds: float | None = None
+        #: What the last line was about, which picks which of the three rates
+        #: the cap uses. See :func:`commentary.predictor.phase_of`.
+        self._last_spoken_event: Event | None = None
+        #: When the phraser last chose to say nothing. It holds the rate cap
+        #: off so the next tick does not send the caller straight back out,
+        #: and it deliberately does not touch the silence pressure: a chosen
+        #: silence is still silence to whoever is listening.
+        self._last_quiet_ts: float | None = None
         #: Whether the last line the caller got past the gate claimed a goal.
         #: The four seconds after one are the scorer's name, the celebration
         #: and the replay arriving together, and the rate cap spent them
@@ -241,6 +254,12 @@ class Runtime:
         #: cannot cross to the other team on the next line.
         self._carry_side = Side.UNKNOWN
         self._last_analyst_ts: float = 0.0
+        #: The colour seat's turn in flight, so a second one is never started
+        #: on top of it and the final whistle can cancel it.
+        self._colour_turn: asyncio.Task[None] | None = None
+        #: Lead beats submitted, counted so a colour turn already in the air
+        #: stops the moment the caller has something.
+        self._lead_beats = 0
         self._recent_event: tuple[Event, float] | None = None
         self._sync = WireSync(self.wire) if self.wire is not None else None
         self._stop = asyncio.Event()
@@ -309,6 +328,11 @@ class Runtime:
                 )
                 await asyncio.sleep(0)
                 self.director.stop()
+                # A colour turn is a run of utterances with sleeps between
+                # them, so at the whistle there may be one still waiting to
+                # say its third thing. It goes with everything else.
+                if self._colour_turn is not None:
+                    tasks.append(self._colour_turn)
                 for task in tasks:
                     task.cancel()
                 for task in tasks:
@@ -506,6 +530,8 @@ class Runtime:
                 last_spoken_ts=self._last_spoken_video_ts,
                 after_goal=self._said_a_goal,
                 last_spoken_seconds=self._last_spoken_seconds,
+                last_event=self._last_spoken_event,
+                last_quiet_ts=self._last_quiet_ts,
             )
             self._publish(Topic.TRIGGER, self.cursor_ts, decision)
             if self._over_budget():
@@ -516,7 +542,10 @@ class Runtime:
             # mute, so left alone it will always send the caller to fill a
             # silence — and the analyst, which by design only speaks into
             # silences, would never once get a turn.
-            if self._is_a_lull(decision) and await self._maybe_analyst():
+            if self.settings.colour.enabled:
+                if await self._maybe_colour():
+                    continue
+            elif self._is_a_lull(decision) and await self._maybe_analyst():
                 continue
             if decision.should_call:
                 await self._call(decision.triggers)
@@ -525,6 +554,104 @@ class Runtime:
         """Nothing has happened; the only reason to speak is that nobody has."""
         real = set(decision.triggers) - {Trigger.SCHEDULED, Trigger.SILENCE_PRESSURE}
         return not real
+
+    async def _maybe_colour(self) -> bool:
+        """Offer the colour seat a turn. Returns whether it took one.
+
+        The phase gate is deterministic and free, so this can be asked every
+        tick and most ticks end on the first line. When it does say yes the
+        turn is a run of two to four utterances, and they are spoken from a
+        background task rather than submitted together: the director's queue
+        is three deep and a turn that filled it would push the lead out.
+
+        Everything about the timing is in
+        :func:`commentary.agents.colour.may_speak`, with the corpus numbers
+        beside it. Nothing about it is here.
+        """
+        if not self.colour.enabled or self._colour_turn is not None:
+            return False
+        cursor = self.cursor_ts
+        offer = self.colour.offer(cursor)
+        if not offer.allowed:
+            return False
+
+        turn = await self.colour.turn(offer, self.state_tracker.summary(cursor))
+        self.colour.answered(cursor)
+        if turn is None:
+            self._publish(Topic.ERROR, cursor, where="colour", detail=self.colour.last_reason)
+            return False
+        self._publish(
+            Topic.COLOUR,
+            cursor,
+            situation=offer.situation,
+            reason=offer.reason,
+            speak=turn.speak,
+            angle=turn.angle.value,
+            cites=turn.cites,
+            utterances=turn.utterances,
+        )
+        if not turn.speak or not turn.utterances:
+            return False
+
+        spacing = space_out(
+            cursor,
+            len(turn.utterances),
+            gap=self.settings.colour.utterance_gap_s,
+        )
+        self._colour_turn = asyncio.create_task(
+            self._say_colour(turn.utterances, spacing, offer.situation)
+        )
+        self.stats.analyst_calls += 1
+        return True
+
+    async def _say_colour(
+        self, utterances: list[str], spacing: list[float], situation: str
+    ) -> None:
+        """Put one turn on the channel, an utterance at a time, and stop early.
+
+        The corpus's colour voice "hands back by stopping mid-thought when
+        the ball moves" (section 4.6) — there is no verbal hand-back anywhere
+        in it — so the moment the lead submits a beat, the rest of the turn
+        is dropped rather than queued behind it.
+        """
+        started = self._lead_beats
+        said: list[str] = []
+        try:
+            for index, (text, at) in enumerate(zip(utterances, spacing, strict=False)):
+                if index:
+                    await asyncio.sleep(max(0.0, at - spacing[index - 1]))
+                    if self._lead_beats != started:
+                        break
+                verdict = judge_utterance(
+                    text,
+                    self.state,
+                    self.pack,
+                    self.gate,
+                    goal_in_state=self._score_counts_the_goal(self.cursor_ts),
+                    at=self.cursor_ts,
+                )
+                self._publish(
+                    Topic.GATE, self.cursor_ts, verdict, event=Event.NONE.value, where="colour"
+                )
+                if not verdict.passed:
+                    continue
+                self.director.submit(
+                    Beat(
+                        id=next_beat_id("c"),
+                        voice=Voice.ANALYST,
+                        text=verdict.line,
+                        video_ts=self.cursor_ts,
+                        created_ts=time.monotonic(),
+                        live_ts=self.live_ts,
+                        excitement=EXCITEMENT.get(situation, 0.2),
+                        preemptable=True,
+                    )
+                )
+                said.append(verdict.line)
+                self._mark_spoken(self.cursor_ts, verdict.line)
+        finally:
+            self.colour.accept(said)
+            self._colour_turn = None
 
     async def _maybe_analyst(self) -> bool:
         """Offer the analyst a turn. Returns whether it took one."""
@@ -599,6 +726,10 @@ class Runtime:
             return
 
         self._publish(Topic.CALLER, cursor, line)
+        # The colour seat reads the phase off the forms, spoken or not: a
+        # form the caller filled in and chose not to say is still the best
+        # evidence there is about what the picture was.
+        self.colour.saw_form(cursor, line)
         self.state_tracker.apply_caller(line, cursor)
         self._note_restart(line, cursor)
         self._bind_sightings(line, cursor)
@@ -610,7 +741,12 @@ class Runtime:
         # is checked against the roster and the scoreline exactly as the
         # caller's would have been. Nothing the phraser writes gets past a
         # check the caller's line had to pass.
-        judged, excitement = await self._phrase(line, cursor)
+        said = await self._phrase(line, cursor)
+        if said is None:
+            # The phraser chose silence. No beat, no gate row, and the
+            # `phrased` row it published is the record that it was a choice.
+            return
+        judged, excitement = said
 
         verdict = self.gate.judge(
             judged,
@@ -652,24 +788,34 @@ class Runtime:
             preemptable=event not in (Event.GOAL, Event.PENALTY),
         )
         self.director.submit(beat)
+        self._lead_beats += 1
+        self.colour.saw_lead_line(cursor, verdict.line)
         if self.phraser is not None:
-            self.phraser.accept(verdict.line)
+            self.phraser.accept(verdict.line, line.event)
         self._remember_on_the_ball(line, verdict.line, cursor)
-        self._mark_spoken(cursor, verdict.line)
+        self._mark_spoken(cursor, verdict.line, line.event)
         if line.event is not Event.NONE:
             self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
 
-    async def _phrase(self, line: CallerLine, cursor: float) -> tuple[CallerLine, float]:
+    async def _phrase(self, line: CallerLine, cursor: float) -> tuple[CallerLine, float] | None:
         """Say the caller's form the way a commentator would, or keep its words.
 
         Returns the form the gate should judge and the excitement to hang on
         the beat. With the stage off, or when it fails, that is the caller's
         own line untouched: a line the caller wrote and the gate has yet to
         see is worth more spoken badly than not spoken at all, so a phraser
-        that errors or comes back empty is an error row on the bus and never
-        a silent drop.
+        that errors is an error row on the bus and never a silent drop.
+
+        ``None`` is the one case that is a silent drop, and it is the
+        phraser *choosing* one: a quarter of build-up touches and 43% of
+        goal kicks pass with nothing said in real commentary
+        (``docs/research/real-commentary-corpus.md`` section 3), and the
+        phraser's prompt now names the moments to pass over. A chosen
+        silence publishes a `phrased` row with an empty line and a reason,
+        so the trace can be counted, and no beat and no gate row, because
+        nothing was said.
         """
         if self.phraser is None:
             return line, 0.0
@@ -680,6 +826,17 @@ class Runtime:
             on_the_ball=carried,
             notes=self.state_tracker.pack_notes_for(self._named_by(line, carried)),
         )
+        if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:
+            self._publish(
+                Topic.PHRASED,
+                cursor,
+                original=line.line,
+                line="",
+                excitement=0.0,
+                reason=self.phraser.last_reason or "the phraser chose silence",
+            )
+            self._last_quiet_ts = cursor
+            return None
         if phrased is None or not phrased.line.strip():
             self._publish(
                 Topic.ERROR,
@@ -710,7 +867,7 @@ class Runtime:
         names += [s.name for s in line.sightings if s.name]
         return names
 
-    def _mark_spoken(self, cursor: float, text: str) -> None:
+    def _mark_spoken(self, cursor: float, text: str, event: Event | None = None) -> None:
         """Remember when the voice was last given a line, and how long a one.
 
         The length is the speaker's own arithmetic — words over
@@ -721,6 +878,8 @@ class Runtime:
         every short line's window using the previous line's length.
         """
         self._last_spoken_video_ts = cursor
+        self._last_spoken_event = event
+        self._last_quiet_ts = None
         words = len(text.split())
         self._last_spoken_seconds = words / WORDS_PER_SECOND if words else None
 
