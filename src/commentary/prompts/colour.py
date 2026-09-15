@@ -358,6 +358,7 @@ def colour_blocks(
     *,
     about: str = "",
     last_angle: str = "",
+    most: int = 4,
 ) -> list[Block]:
     """One turn's content. All text, one block, nothing to look at.
 
@@ -376,6 +377,7 @@ def colour_blocks(
                 material,
                 about=about,
                 last_angle=last_angle,
+                most=most,
             )
         )
     ]
@@ -391,6 +393,7 @@ def _body(
     *,
     about: str = "",
     last_angle: str = "",
+    most: int = 4,
 ) -> str:
     """The volatile half of one turn's prompt: the material, and nothing else.
 
@@ -429,7 +432,7 @@ def _body(
                 else ""
             ),
             _cue_note(said),
-            _how_long(material),
+            _how_long(material, most),
         ]
     )
 
@@ -457,20 +460,31 @@ def _material_note(material: Sequence[str], about: str) -> str:
     return "\n".join(head) + "\n" + _bullets(material, "(nothing — set speak to false)")
 
 
-def _how_long(material: Sequence[str]) -> str:
-    """How many utterances this turn is worth, off how much material there is.
+def _how_long(material: Sequence[str], most: int) -> str:
+    """How many utterances this turn is worth, and how many there is room for.
 
-    Section 4.4's median run is four utterances, but that is a voice with a
-    whole match in its head. One item of material stretched to four gives one
-    thought and three restatements, which is what the judge heard.
+    Two things decide it. Section 4.4's median run is four utterances, but
+    that is a voice with a whole match in its head: one item of material
+    stretched to four gives one thought and three restatements, which is what
+    the judge heard. And your colleague is still talking — offline his next
+    lines are known, so anything past ``most`` would be scheduled into them
+    and thrown away, paid for and never heard.
     """
+    if most <= 1:
+        return (
+            "ONE UTTERANCE, and then you are done. Your colleague comes back in. Make it "
+            "the one thing worth saying, or speak false. Fill in the form."
+        )
     if len(material) <= 1:
         return (
-            "ONE OR TWO UTTERANCES. You have one thing. Say it, and if you add a second "
-            "utterance it has to say why it matters — not say the same thing again in "
-            "other words. Or speak false. Fill in the form."
+            f"ONE OR TWO UTTERANCES, no more than {most}. You have one thing. Say it, and "
+            "if you add a second utterance it has to say why it matters — not say the "
+            "same thing again in other words. Or speak false. Fill in the form."
         )
-    return "Two to four short utterances, or speak false. Fill in the form."
+    return (
+        f"NO MORE THAN {most} SHORT UTTERANCES, or speak false. Anything past that is "
+        "scheduled into your colleague's lines and thrown away. Fill in the form."
+    )
 
 
 def _cue_note(said: Sequence[str]) -> str:

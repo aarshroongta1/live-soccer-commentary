@@ -15,6 +15,7 @@ Every number asserted below is cited to a section of
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -439,6 +440,23 @@ async def test_a_long_utterance_is_trimmed_and_a_long_turn_is_cut() -> None:
 
 
 @pytest.mark.asyncio
+async def test_a_turn_is_cut_to_the_room_the_lead_has_left() -> None:
+    """Anything past the room is scheduled into his lines and thrown away.
+
+    "Argentina two up, and this is the moment that changes it" was written,
+    paid for, judged and refused as ``pushed_out`` on the measured pass, all
+    because the model was asked for four utterances in a hole that fitted
+    two.
+    """
+    backend = speaking(a_turn("Well, Messi again.", "And that is the corner.", "Third one."))
+    seat = a_seat(backend)
+    offer = replace(may_speak(a_moment(40.0)), room=1)
+    turn = await seat.turn(offer, "", now=40.0)
+    assert turn is not None
+    assert turn.utterances == ["Well, Messi again."]
+
+
+@pytest.mark.asyncio
 async def test_the_goal_reaction_is_one_utterance_and_not_a_turn() -> None:
     """Section 4.3's four in-window examples are all one fragment.
 
@@ -649,7 +667,23 @@ def test_the_prompt_shows_the_material_and_says_there_is_nothing_else() -> None:
     assert "WHAT THIS TURN IS ABOUT" in body
     assert "3 fouls on Nicolás Otamendi" in body
     assert "card, Nicolás Otamendi" in body
-    assert "Two to four short utterances" in body
+    assert "NO MORE THAN 4 SHORT UTTERANCES" in body
+
+
+def test_a_turn_with_room_for_one_utterance_is_asked_for_one() -> None:
+    """The lead is still talking, so a second utterance would never be heard."""
+    body = text_of(
+        colour_blocks(
+            AT_A_DEAD_BALL,
+            "the ball is dead",
+            "",
+            [],
+            [],
+            ["REPEATED: 3 fouls on Nicolás Otamendi", "EVENT: card, Nicolás Otamendi"],
+            most=1,
+        )
+    )
+    assert "ONE UTTERANCE" in body
 
 
 def test_one_item_of_material_asks_for_one_or_two_utterances() -> None:

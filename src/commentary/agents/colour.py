@@ -52,7 +52,7 @@ from __future__ import annotations
 import re
 from collections import Counter, deque
 from collections.abc import Callable, Iterable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from commentary.agents.analyst import restates_score
@@ -235,6 +235,13 @@ class Offer:
     #: examples are all one fragment — "Well, well, well." — so the turn is
     #: capped at a single utterance when this is set.
     reaction: bool = False
+    #: How many utterances there is actually room for before the lead comes
+    #: back, or zero where nobody has worked it out. Offline the lead's next
+    #: beats are known, so the model can be asked for the number that will
+    #: fit rather than for four of which two are scheduled into his lines and
+    #: thrown away — which is what happened to "Argentina two up, and this is
+    #: the moment that changes it", paid for and never heard.
+    room: int = 0
 
 
 def may_speak(moment: Moment, cfg: ColourConfig | None = None) -> Offer:
@@ -1235,6 +1242,7 @@ class ColourSeat:
         at = self._offered_at if now is None else now
         material = self.material(at, reaction=offer.reaction)
         self.last_material = material
+        most = self._how_many(offer, material)
         blocks = colour_blocks(
             offer.situation,
             offer.reason,
@@ -1244,6 +1252,7 @@ class ColourSeat:
             material.lines(),
             about=material.about,
             last_angle=self._last_angle,
+            most=most,
         )
         try:
             parsed = await self.backend.parse(
@@ -1260,7 +1269,7 @@ class ColourSeat:
             self.last_reason = f"model call failed: {exc}"
             return None
         self.last_usage = parsed.usage
-        return self._settle(parsed.value, self._how_many(offer, material))
+        return self._settle(parsed.value, most)
 
     def _how_many(self, offer: Offer, material: Material) -> int:
         """How many utterances this turn is allowed to be.
@@ -1275,9 +1284,12 @@ class ColourSeat:
         """
         if offer.reaction:
             return 1
+        limit = self.config.max_utterances
         if len(material.lines()) <= 1:
-            return min(2, self.config.max_utterances)
-        return self.config.max_utterances
+            limit = min(2, limit)
+        if offer.room:
+            limit = min(limit, offer.room)
+        return max(1, limit)
 
     def _settle(self, proposed: ColourTurn, limit: int) -> ColourTurn:
         """Trim, cap and count, before anyone sees the turn.
@@ -1506,7 +1518,10 @@ async def colour_pass(
             cursor += 1
 
         offer = seat.offer(now)
-        if offer.allowed and not _has_room(now, beat_ts, cfg):
+        room = _room_for(now, beat_ts, cfg) if offer.allowed else 0
+        if offer.allowed and room >= cfg.min_utterances:
+            offer = replace(offer, room=room)
+        elif offer.allowed:
             # The phase says yes and the lead has not drawn breath. Checked
             # before the call rather than after it, because a turn that ends
             # up entirely inside the lead's lines is a turn that was paid for
@@ -1582,28 +1597,25 @@ async def colour_pass(
     return out
 
 
-def _has_room(
-    now: float, beats: Sequence[tuple[float, float]], cfg: ColourConfig
-) -> bool:
-    """Is there a hole in the lead's cadence big enough for a short turn?
+def _room_for(now: float, beats: Sequence[tuple[float, float]], cfg: ColourConfig) -> int:
+    """How many utterances fit in the hole in the lead's cadence.
 
-    ``min_utterances`` of them, inside ``turn_span_s``. Real commentary's
-    colour voice comes in when the ball is dead and the lead has stopped,
-    and on a trace where the lead speaks every four seconds and takes two of
-    them to say it there is simply nowhere to stand.
+    ``max_utterances`` asked for, inside ``turn_span_s``, and however many of
+    them clear his beats is the answer. Real commentary's colour voice comes
+    in when the ball is dead and the lead has stopped, and on a trace where
+    the lead speaks every four seconds and takes two of them to say it there
+    is simply nowhere to stand — so fewer than ``min_utterances`` means no
+    turn at all, and the rest is what the model is asked for.
     """
-    return (
-        len(
-            space_out(
-                now,
-                cfg.min_utterances,
-                gap=cfg.utterance_gap_s,
-                avoid=beats,
-                clear=cfg.clear_of_caller_s,
-                span=cfg.turn_span_s,
-            )
+    return len(
+        space_out(
+            now,
+            cfg.max_utterances,
+            gap=cfg.utterance_gap_s,
+            avoid=beats,
+            clear=cfg.clear_of_caller_s,
+            span=cfg.turn_span_s,
         )
-        >= cfg.min_utterances
     )
 
 
