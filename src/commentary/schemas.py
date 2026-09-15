@@ -125,6 +125,23 @@ class CallerLine(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     speak: bool = Field(description="False is a valid answer; silence is allowed")
     line: str = Field(default="", max_length=200)
+    #: The one thing in the picture a listener could not have guessed. It is
+    #: here because the phrasing stage kept throwing it away: "France drive
+    #: into the box, and it's in! Mbappé, off the ground in a flash" came back
+    #: as "Mbappé!", which is true, short, and says nothing. Compressing a
+    #: line means choosing what survives, and a model that has to choose while
+    #: it writes chooses the name every time. So the choice is made here, by
+    #: the one agent that actually saw it happen, and handed over as its own
+    #: field. Older traces have no such field and the phraser falls back to
+    #: reading the detail out of ``line`` itself.
+    detail: str | None = Field(
+        default=None,
+        max_length=80,
+        description=(
+            "the single most concrete detail of the action: the finish, the direction, "
+            "the body part, the distance, the speed; null if none"
+        ),
+    )
 
 
 class PhrasedLine(BaseModel):

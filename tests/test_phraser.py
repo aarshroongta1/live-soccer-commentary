@@ -36,7 +36,9 @@ from commentary.schemas import (
     Beat,
     CallerLine,
     Event,
+    Incident,
     KnowledgePack,
+    MatchState,
     Note,
     PhrasedLine,
     Player,
@@ -59,6 +61,7 @@ def a_form(
     *,
     event: Event = Event.CARRY,
     sightings: list[Sighting] | None = None,
+    detail: str | None = None,
 ) -> CallerLine:
     return CallerLine(
         scene=Scene.LIVE_PLAY,
@@ -69,6 +72,7 @@ def a_form(
         confidence=0.7,
         speak=True,
         line=line,
+        detail=detail,
     )
 
 
@@ -182,6 +186,90 @@ def test_every_example_is_shorter_than_a_commentator_ever_goes() -> None:
 def test_the_example_set_is_big_enough_to_be_a_register_and_small_enough_to_cache() -> None:
     total = sum(len(EXAMPLES[kind]) for kind in KINDS)
     assert 150 <= total <= 300, total
+
+
+def test_the_example_set_holds_enough_goals_and_chances_to_teach_one() -> None:
+    """The loud moments are the ones the phraser was flattening to a surname."""
+    loud = sum(len(EXAMPLES[kind]) for kind in ("goal", "shot", "save"))
+    assert loud >= 30, loud
+
+
+# -- keeping the detail, and whose line it is --------------------------------
+
+
+def test_the_rules_ask_for_one_concrete_detail_and_say_which_lines_were_thin() -> None:
+    """"Mbappé!" over a volley is true, short, and says nothing."""
+    rules = phraser_system()
+    assert "COMPRESSING IS NOT DELETING" in rules
+    assert "One, not two, and not the whole clause" in rules
+    assert "kept:  Mbappé! Off the ground!" in rules
+    assert "kept:  France, through the middle at speed." in rules
+
+
+def test_the_rules_forbid_a_subject_that_is_only_on_the_sightings_list() -> None:
+    """A France break called "Otamendi." because Otamendi's shirt was legible."""
+    rules = phraser_system()
+    assert "WHO THE LINE IS ABOUT" in rules
+    assert "may not be your subject" in rules
+    assert "Never the\nsubject of the line." in rules
+
+
+def test_the_goal_example_is_the_name_then_how_then_the_score() -> None:
+    rules = phraser_system()
+    assert "A GOAL IS THREE BEATS" in rules
+    assert "Mbappé! On the volley! Two-two." in rules
+    assert "Ronaldo! Over the wall! Three-three." in rules
+
+
+def test_the_rules_ask_the_excitement_and_the_words_to_move_together() -> None:
+    rules = phraser_system()
+    assert "EXCITEMENT, AND IT HAS TO MOVE" in rules
+    assert "a break at speed, a run at a defender" in rules
+    assert "DO NOT SOUND LIKE THE LINE BEFORE IT" in rules
+    assert "same two words as the one above it" in rules
+
+
+def test_a_form_that_carries_a_detail_puts_it_in_front_of_the_phraser() -> None:
+    body = text_of(
+        phraser_blocks(
+            a_form(
+                "Mbappé hooks it out of the air and the net bulges behind Martínez.",
+                event=Event.GOAL,
+                detail="off the ground, on the volley",
+            ),
+            "Argentina 2-1 France\n81:03",
+            [],
+            home="Argentina",
+            away="France",
+        )
+    )
+    assert "detail: off the ground, on the volley" in body
+    assert "could not guess. Keep it." in body
+
+
+def test_a_form_without_one_says_nothing_about_a_detail() -> None:
+    """Older traces have no such field, and an empty label teaches nothing."""
+    body = text_of(phraser_blocks(a_form(), "", [], home="Argentina", away="France"))
+    assert "detail:" not in body
+    assert "keeping one concrete detail" in body
+
+
+def test_only_a_goal_is_told_the_score_is_the_third_beat() -> None:
+    """Everywhere else MATCH STATE is context and repeating it is a score claim."""
+    ordinary = text_of(phraser_blocks(a_form(), "Argentina 2-1 France", [], home="A", away="F"))
+    assert "for context only. Never say the score" in ordinary
+
+    goal = text_of(
+        phraser_blocks(
+            a_form("Mbappé turns away, arms wide.", event=Event.GOAL),
+            "Argentina 2-1 France",
+            [],
+            home="A",
+            away="F",
+        )
+    )
+    assert "third beat of this goal" in goal
+    assert "for context only" not in goal
 
 
 # -- the agent ---------------------------------------------------------------
@@ -562,6 +650,93 @@ async def test_a_phrased_line_that_claims_the_wrong_score_never_reaches_a_beat()
     assert len(refused) == 1
     assert any("score_claim" in reason for reason in refused[0]["reasons"])
     assert result.rejected == 1
+
+
+def test_the_score_is_settled_only_once_the_state_has_taken_the_goal_in() -> None:
+    """The gate is handed the state row at ``ts``, so this has to match it.
+
+    The cover question — is this a line about a goal — starts ten seconds
+    before the graphic catches up, because a caller watching the ball cross
+    the line is talking about the goal the board is about to show. The
+    arithmetic question cannot start there: in that gap the board still reads
+    2-0 while the ball is in the net for 2-1, and telling the gate the number
+    was settled struck out two correct scorelines on the Mbappé trace.
+    """
+    from commentary.rephrase import Cover
+
+    states = [
+        (0.0, MatchState(home="Argentina", away="France", home_score=2, away_score=0)),
+        (
+            86.3,
+            MatchState(
+                home="Argentina",
+                away="France",
+                home_score=2,
+                away_score=1,
+                incidents=[
+                    Incident(
+                        event=Event.GOAL,
+                        side=Side.AWAY,
+                        player=None,
+                        video_ts=82.5,
+                        source="board",
+                    )
+                ],
+            ),
+        ),
+    ]
+    cover = Cover(states)
+    assert not cover.goal_in_state(82.5)
+    assert cover.goal_in_state(86.8)
+    assert cover.goal_in_state(200.0)
+
+
+def test_a_second_goal_arriving_unsettles_a_number_the_first_one_settled() -> None:
+    """The line at 176.7 is about the goal the state takes in at 180.9.
+
+    Counting any earlier goal as proof that the number is settled rejected
+    "Mbappé! Off the ground! Two-two." against a row still reading 2-1 — the
+    right score, and the second one this rule threw away.
+    """
+    from commentary.rephrase import Cover
+
+    def scored(home: int, away: int, goals: int) -> MatchState:
+        return MatchState(
+            home="Argentina",
+            away="France",
+            home_score=home,
+            away_score=away,
+            incidents=[
+                Incident(
+                    event=Event.GOAL, side=Side.AWAY, player=None, video_ts=0.0, source="board"
+                )
+            ]
+            * goals,
+        )
+
+    cover = Cover([(0.0, scored(2, 0, 0)), (86.3, scored(2, 1, 1)), (180.9, scored(2, 2, 2))])
+    assert not cover.goal_in_state(82.5)
+    assert cover.goal_in_state(86.8)
+    assert cover.goal_in_state(120.0)
+    assert not cover.goal_in_state(176.7)
+    assert cover.goal_in_state(180.9)
+
+
+@pytest.mark.asyncio
+async def test_a_goal_may_be_one_ahead_of_a_board_that_has_not_moved() -> None:
+    """"Two-one." over a state row that still says 2-0 is the third beat working."""
+    rows = a_trace()
+    rows[2] = rows[2] | {"event": "goal", "line": "Molina turns it in at the near post."}
+    rows[3] = rows[3] | {"event": "goal", "line": "Molina turns it in at the near post."}
+    rows[4] = rows[4] | {"event": "goal"}
+    backend = saying(
+        PhrasedLine(line="Molina! At the near post! Two-nil.", excitement=1.0),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+    )
+    result = await rephrase(rows, backend, pack=a_pack())
+
+    assert result.lines[0].passed, result.lines[0].reason
+    assert {row["id"] for row in rows_of(result.rows, "beat")} == {"b1", "b2", "b3"}
 
 
 @pytest.mark.asyncio

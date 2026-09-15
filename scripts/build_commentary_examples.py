@@ -215,12 +215,19 @@ KIND_ORDER = ("build_up", "pass", "shot", "save", "goal", "foul", "dead_ball", "
 
 #: How many of each to keep. Build-up and passing are most of live commentary
 #: and most of what the caller writes badly, so they get the room.
+#:
+#: The loud three — goal, shot, save — are set above anything these captions
+#: can supply, so every chance utterance that survives the filters is kept.
+#: They were a cap before, and the goal bucket was losing seven of the
+#: twenty-seven found for no better reason than a round number, while the
+#: phraser was writing "Mbappé!" over a volley. There is no reason to ration
+#: the examples of the thing being got wrong.
 QUOTA = {
     "build_up": 60,
     "pass": 55,
-    "shot": 35,
-    "save": 20,
-    "goal": 20,
+    "shot": 40,
+    "save": 25,
+    "goal": 30,
     "foul": 35,
     "dead_ball": 30,
     "aside": 25,

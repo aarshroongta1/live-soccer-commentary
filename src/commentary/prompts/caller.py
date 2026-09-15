@@ -165,6 +165,13 @@ line is justified. One entry per player: the number if you can read it, the
 name if you can read that, and which kit it was on. Knowing who
 usually plays there is not a sighting and does not belong in it.
 
+detail is the single most concrete thing about the action — the finish, the
+direction, the body part, the distance, the speed — in three or four words,
+or null if there is none:
+
+  Good: detail: "off the ground in a flash" (for the line "Mbappé, off the
+        ground in a flash, and the ball is in the net")
+
 THE LINE
 
 At most {max_words} words. Usually far fewer. A line does not have to be a

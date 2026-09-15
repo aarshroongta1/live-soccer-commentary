@@ -93,9 +93,7 @@ A full sentence is for the moment that earned it — a shot, a save, a foul, a
 card, a goal — and it is still short: "De Paul strikes." "Messi is offside."
 "Save. The deflection off Varane flies wide."
 
-A goal is shouted, not narrated. Three to eight words, then the scorer's
-name. "Di María! Glorious goal." "And Messi!" Never the score, never the
-arithmetic, never "his second" — somebody else is reading the scoreboard.
+A goal is shouted, not narrated, and it has a shape of its own, below.
 
 YOU COMPRESS. YOU NEVER ADD.
 
@@ -106,6 +104,84 @@ your line has to be one that is already in the form — in the event field, in
 the players identified, or in the description of what was seen. Reuse its
 nouns and its names. A word you reached for that is not in front of you is a
 claim about a football match that nobody made.
+
+COMPRESSING IS NOT DELETING
+
+Say less of the form, not none of it. Somebody watched this and wrote down
+one thing a listener could not have guessed — the finish, the body part, the
+direction, the distance, the speed. That thing is the line. Cut it and what
+is left is a name, which is true and empty.
+
+So: whenever the form carries a concrete detail, your line keeps exactly one
+of them. One, not two, and not the whole clause it sat in.
+
+  seen: "France drive into the box — and it's in! Mbappé, off the ground in
+  a flash, wheeling away."
+    thin:  Mbappé!
+    kept:  Mbappé! Off the ground!
+
+  seen: "Mbappé roars away towards the corner, arms wide, the volley buried
+  past Martínez."
+    thin:  Mbappé! Into the net.
+    kept:  Mbappé! The volley, buried.
+
+  seen: "France break through the middle at speed, Argentina scrambling back
+  towards their own area."
+    thin:  Otamendi.
+    kept:  France, through the middle at speed.
+
+  seen: "Upamecano strides forward with it, France in no rush to give it
+  away."
+    thin:  Upamecano carries it forward.
+    kept:  Upamecano, striding out.
+
+If the form carries a line headed `detail:`, that is the detail the person
+watching picked out for you, and it is the one to keep.
+
+WHO THE LINE IS ABOUT
+
+The subject is the player, or the side, that the description is about. Not
+the first name on the list of players identified. That list is every shirt
+that happened to be legible, including men nowhere near the ball, and a name
+that appears there and nowhere in the description may not be your subject.
+
+  seen: "France break through the middle at speed, Argentina scrambling back
+  towards their own area."   players identified: Otamendi
+    wrong: Otamendi.                 (France are the ones doing something)
+    right: France, through the middle at speed.
+
+  seen: "France break forward into the Argentina half, navy shirts arriving
+  in numbers — and Mbappé is the danger."   players identified: Mbappé
+    wrong: Mbappé forward.           (nobody said Mbappé has the ball)
+    right: France arriving in numbers.
+
+A name on that list that the description does not use has exactly one use: it
+may be the subject of a `context:` clause in a quiet moment. Never the
+subject of the line.
+
+A GOAL IS THREE BEATS
+
+The name, then how, then the score. The how comes out of the description; the
+score comes out of MATCH STATE and nowhere else.
+
+  Mbappé! On the volley! Two-two.
+  Ronaldo! Over the wall! Three-three.
+  Di María! Glorious goal.
+
+The third beat is the only number you are ever allowed to say, and it is not
+yours to choose: it is the score in MATCH STATE, with one added to the
+scoring side if the state has not taken this goal in yet. Say it bare and in
+words — "Two-two." — and never "levels it", "the equaliser", "ahead", "his
+second", or anything else that does the arithmetic out loud. If MATCH STATE
+does not give you a score you are sure of, leave the beat off; the name and
+the how are a whole line. Two beats are still a goal, and none of this buys
+you a longer one.
+
+Once, and only on the goal itself. The celebration, the ball carried back,
+the scorer's face are all lines about a goal already called, and a second
+scoreline over them is the same claim made twice — and made against a board
+that has moved since, so it is usually wrong as well. "Mbappé! Into the net!
+Two-two." over a state reading 2-1 was struck out for exactly that.
 
 THE EVENT FIELD IS BINDING. The form says what happened, in one word, and
 your line has to be about that and not about the next thing. Making it bigger
@@ -122,11 +198,12 @@ is inventing it:
     is not even that, return an empty line.
   - only a form that says goal is a goal.
 
-THE SCORE IS NOT YOURS, AND IT HIDES IN ORDINARY WORDS. These are forbidden
-however true they feel: "levels it", "level", "the equaliser", "equalises",
-"all square", "ahead", "in front", "behind", "back in it", "his second",
-"one-nil", "the winner". Somebody else is reading the scoreboard, and a line
-that implies a score contradicts them.
+THE SCORE IS NOT YOURS, except as the bare third beat of a goal, above, read
+off MATCH STATE — and it hides in ordinary words. These are forbidden however
+true they feel, on a goal as much as anywhere else: "levels it", "level",
+"the equaliser", "equalises", "all square", "ahead", "in front", "behind",
+"back in it", "his second", "one-nil", "the winner". Somebody else is reading
+the scoreboard, and a line that implies a score contradicts them.
 
 Three rewrites that went out and should not have, so that you can see the
 shape of the mistake:
@@ -183,12 +260,39 @@ The limits, all of which are checked:
   - You may ignore it. Most lines should. A bare surname is still the honest
     line, and a commentator who used every fact he had would be unlistenable.
 
-EXCITEMENT
+EXCITEMENT, AND IT HAS TO MOVE
 
-A number from 0 to 1 for how this should be said. Ordinary build-up is 0.1 to
-0.3. A chance or a foul is around 0.5. A shot on target, a save, a penalty
-given: 0.7 to 0.85. A goal is 1.0. Nothing else reads it yet; it is the
-volume knob for the voice that will say this.
+A number from 0 to 1 for how this is said. It is the volume knob for the
+voice that will speak the line, and a passage of play held at one number is a
+passage of play that sounds the same all the way through.
+
+  a sideways pass, a ball rolled back, a restart        0.1 - 0.2
+  the ball moving forward with intent                   0.3 - 0.4
+  a break at speed, a run at a defender, a ball into
+  the box, a cross                                      0.4 - 0.6
+  a chance, a foul, a card                              0.5 - 0.7
+  a shot on target, a save, a penalty given             0.7 - 0.85
+  a goal                                                1.0
+
+The number and the words move together. If you wrote 0.5, the thing that
+earned the 0.5 has to be in the line.
+
+DO NOT SOUND LIKE THE LINE BEFORE IT
+
+The last lines spoken are printed below for this. No line begins with the
+same two words as the one above it, and least of all in build-up, where
+everything is nearly the same and the temptation is worst.
+
+  said:  France push forward.
+    wrong: France push forward down the left.
+    right: Down the left now.
+
+  said:  Argentina press.
+    wrong: Argentina press again.
+    right: Squeezed back towards halfway.
+
+Change the subject, change the verb, or say the detail instead. If the only
+thing left is the same thing, a bare surname is the honest line.
 
 THE LINE
 
@@ -318,7 +422,7 @@ def _body(
     state = state_summary.strip() or "Not established yet."
     return (
         f"THE TEAMS\n  {home} (home) v {away} (away)\n\n"
-        "MATCH STATE — for context only. Never say the score or the clock.\n"
+        f"{_state_heading(line)}\n"
         f"{state}\n\n"
         "WHAT THE EYES SAW — the form, filled in by whoever is watching\n"
         f"{_form(line, home, away, on_the_ball)}\n\n"
@@ -326,6 +430,23 @@ def _body(
         "THE LAST LINES SPOKEN — do not repeat or paraphrase these\n"
         f"{said}\n\n"
         "Say it."
+    )
+
+
+def _state_heading(line: CallerLine) -> str:
+    """What MATCH STATE is for on this call, which depends on the event.
+
+    Everywhere else the state is context and saying any of it out loud is a
+    score claim. On a goal it is also the source of the third beat, and the
+    heading has to say so or the rule about not repeating the score wins the
+    argument and the beat never appears.
+    """
+    if line.event is not Event.GOAL:
+        return "MATCH STATE — for context only. Never say the score or the clock."
+    return (
+        "MATCH STATE — the clock is never yours. The score is, once, as the\n"
+        "third beat of this goal: these numbers, with one added to the side\n"
+        "that has just scored if the board has not counted it yet."
     )
 
 
@@ -391,10 +512,19 @@ def _form(line: CallerLine, home: str, away: str, on_the_ball: str | None) -> st
         rows.append("  players identified: none read off the picture this call")
         rows.append("  (you may still use a name that appears in the description below)")
     rows.append(f"  confidence in all of the above: {line.confidence:.2f}")
+    detail = (line.detail or "").strip()
+    if detail:
+        # Named rather than folded into the description, because the whole
+        # trouble is that a model compressing a sentence keeps the name and
+        # drops everything that made the sentence worth saying. Pulled out
+        # and labelled, the thing to keep is not a judgement call any more.
+        rows.append(f"  detail: {detail}")
+        rows.append("  (the one concrete thing here a listener could not guess. Keep it.)")
     rows.append("")
     rows.append("  what was seen, written down as a description. DO NOT say this back.")
     rows.append("  Take the facts out of it and say them the way a commentator would,")
-    rows.append(f"  using only what is here and only about a {_event(line.event)}:")
+    rows.append(f"  using only what is here and only about a {_event(line.event)},")
+    rows.append("  keeping one concrete detail of the action and dropping the rest:")
     rows.append(f"    {line.line.strip()}")
     return "\n".join(rows)
 

@@ -622,7 +622,7 @@ class Runtime:
             # state already holds is a goal the score already counts, and the
             # gate's arithmetic needs to know that the number is settled
             # rather than arriving.
-            goal_in_state=self._goal_already_in_the_state(cursor),
+            goal_in_state=self._score_counts_the_goal(cursor),
             carried=self._carried_name(line, cursor),
             at=cursor,
         )
@@ -943,6 +943,38 @@ class Runtime:
         if not -GOAL_GRAPHIC_LAG_S <= since <= GOAL_TALK_CAP_S:
             return False
         return self._restart_ts is None or cursor < self._restart_ts
+
+    def _score_counts_the_goal(self, cursor: float) -> bool:
+        """Does the score the gate is about to read already include this goal?
+
+        A narrower question than :meth:`_goal_already_in_the_state`, and the
+        two were one method until a line said a score out loud. That one runs
+        from ten seconds *before* the state caught up, because a caller who
+        watched the ball cross the line is talking about the same goal the
+        graphic is about to show, and a line in that gap deserves its cover.
+
+        The arithmetic cannot use the same window. In that gap the state still
+        reads 2-0 while the ball is in the net for 2-1, and answering
+        "settled" there is what struck out two correct scorelines on the
+        Mbappé trace — "Mbappé! The volley, buried! Two-one." against a state
+        row that still said 2-0 — as scoreline_mismatch, for being one goal
+        ahead of a board that had not moved. One goal ahead of a board that
+        has not moved is precisely the latitude the gate grants, and it was
+        granting it nowhere.
+
+        So: a goal change still queued for the state is a goal the score does
+        not count, whatever earlier goals it does count. ``_board_changes``
+        holds only what has not been applied — :meth:`_apply_due_board_changes`
+        takes each one out as the cursor reaches it — so a queued goal within
+        the graphic's own lag is this goal, arriving.
+        """
+        arriving = any(
+            change.is_goal and change.ts - cursor <= GOAL_GRAPHIC_LAG_S
+            for change in self._board_changes
+        )
+        if arriving:
+            return False
+        return self._last_goal_ts is not None and cursor >= self._last_goal_ts
 
     def _board_changed_near(self, cursor: float) -> bool:
         """Did the scoreboard move around the moment being called?

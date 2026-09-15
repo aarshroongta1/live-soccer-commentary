@@ -31,14 +31,11 @@ own head rather than on the bus:
     Whether the score already counts the goal this line is about. Rebuilt
     from the ``incidents`` list on the ``state`` rows, which does carry it:
     the first state row whose incidents include a goal is the moment the
-    state took that goal in, and the runtime's own window runs from
-    ``GOAL_GRAPHIC_LAG_S`` before it to ``GOAL_TALK_CAP_S`` after. Two small
-    differences from the runtime, both in the permissive direction and both
-    only reachable in the seconds around a second goal: the restart cannot be
-    rebuilt (``_restart_ts`` is a caller line the runtime noticed and never
-    published), so goal talk here is capped by the clock alone and never by
-    the kickoff; and every goal's window is checked rather than only the
-    latest one's.
+    state took that goal in. A goal taken in within ``GOAL_GRAPHIC_LAG_S``
+    after the line is the goal the line is about, arriving, and the number is
+    not settled yet; anything earlier is. The same question
+    ``Runtime._score_counts_the_goal`` answers, asked of the very state row
+    the gate is handed here, so the two cannot disagree.
 
 ``carried``
     The name the previous line had on the ball. The registry is not in the
@@ -70,7 +67,7 @@ from commentary.bus import Topic
 from commentary.config import SETTINGS, Settings
 from commentary.gate import FactGate, claims_goal, fold
 from commentary.llm.base import LLMBackend
-from commentary.runtime import CARRY_NAME_S, GOAL_GRAPHIC_LAG_S, GOAL_TALK_CAP_S
+from commentary.runtime import CARRY_NAME_S, GOAL_GRAPHIC_LAG_S
 from commentary.schemas import (
     Beat,
     CallerLine,
@@ -236,7 +233,22 @@ class Cover:
         self._held: tuple[str, float] | None = None
 
     def goal_in_state(self, ts: float) -> bool:
-        return any(-GOAL_GRAPHIC_LAG_S <= ts - at <= GOAL_TALK_CAP_S for at in self._goals)
+        """Does the score the gate is about to read already include this goal?
+
+        Mirror of ``Runtime._score_counts_the_goal``, asked of the very state
+        row the gate is handed. A goal the state takes in within the graphic's
+        own lag *after* ``ts`` is the goal this line is about, arriving: the
+        row in the gate's hand still says 2-1 and the ball is in the net for
+        2-2. Any earlier goal is settled and stays settled.
+
+        Asking the wider "is this a line about a goal" — the cover question,
+        which runs from ten seconds before the state catches up — told the
+        gate the number was settled in exactly that gap, and struck out two
+        correct scorelines on the Mbappé trace.
+        """
+        if any(0.0 < at - ts <= GOAL_GRAPHIC_LAG_S for at in self._goals):
+            return False
+        return any(at <= ts for at in self._goals)
 
     def board_changed(self, line: CallerLine, gate_row: dict[str, Any] | None) -> bool:
         """Did the scoreboard back a goal here? Only a passed goal claim says so."""
