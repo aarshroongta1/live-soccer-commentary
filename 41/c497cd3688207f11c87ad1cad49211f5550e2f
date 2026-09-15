@@ -1,0 +1,46 @@
+src/commentary/config.py
+  s_b9d647e85fe0bb::t_ac0024fb59ab51 254-264
+tests/test_gate.py
+  s_b9d647e85fe0bb::t_9d0aae100058c7 1564-1566
+  s_b9d647e85fe0bb::t_f62535bbebd5d4 1541-1563,1567-1579
+src/commentary/threads.py
+  s_b9d647e85fe0bb::t_fb5cf7cfa4c0c3 39-40,76-81,89,92-93,201,219-230,258,272-284,286-287,302-335
+  s_b9d647e85fe0bb::t_4a792504b9c03a 336-337
+src/commentary/agents/phraser.py
+  s_b9d647e85fe0bb::t_d5db23a1d32634 715
+  s_b9d647e85fe0bb::t_7e383bd0830d58 751-752,768-779,782,784-791
+  s_b9d647e85fe0bb::t_ac0024fb59ab51 511-554,570,749,753-767,1091-1109
+  s_b9d647e85fe0bb::t_2f92e97c6f7740 1110
+src/commentary/rephrase.py
+  s_b9d647e85fe0bb::t_376c3bacf04842 88,449-453,457-460,537,641-643,925,1110-1112
+  s_b9d647e85fe0bb::t_d5db23a1d32634 67,1105
+tests/test_dead_ball.py
+  s_b9d647e85fe0bb::t_f1f1613e7bee71 570-572,608
+  s_b9d647e85fe0bb::t_cd054075a779bf 158-165,169,172,174,176-189,204,219,232-241,245,259,298-302,575-578
+tests/test_threads.py
+  s_b9d647e85fe0bb::t_9d0aae100058c7 325-353
+  s_b9d647e85fe0bb::t_1015065a5f3f82 11,24-29,311-324,354-372
+src/commentary/runtime.py
+  s_b9d647e85fe0bb::t_d5db23a1d32634 54,1250
+  s_b9d647e85fe0bb::t_376c3bacf04842 85,389-391,1261-1263,1352-1354
+src/commentary/gate.py
+  s_b9d647e85fe0bb::t_616ab8b8bf4397 1489-1515,1531-1532,1539-1540,1542-1546,1549-1550,1939-1941
+tests/test_goal_sequence.py
+  s_b9d647e85fe0bb::t_22087c63948b73 36,850-906
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "41c497cd3688207f11c87ad1cad49211f5550e2f",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
