@@ -278,6 +278,62 @@ class Stripped:
         return bool(self.removed)
 
 
+#: A goal's "how" that belongs to exactly one kind of kick, and the word the
+#: form's own description has to carry before that how is allowed to stand.
+#: The Mbappé penalty at 82.5 was called "Mbappé! Over the wall! Two-one to
+#: Argentina." — the phraser reached for the free kick's own worked example
+#: on a penalty, because the shape of the last goal it wrote is a stronger
+#: pull than the form in front of it. "Over the wall" is a free kick's how,
+#: "the volley" and "the header" are a struck or headed goal's, and none of
+#: the three is a penalty's — which is why this only ever fires beside a
+#: penalty, never generally: a free kick that really was over the wall keeps
+#: saying so.
+_PENALTY_BORROWED_HOW: dict[str, str] = {
+    "over the wall": "wall",
+    "the volley": "volley",
+    "the header": "header",
+    "from the corner": "corner",
+}
+
+_HOW_PHRASE = re.compile(
+    "|".join(re.escape(phrase) + r"!?" for phrase in _PENALTY_BORROWED_HOW), re.IGNORECASE
+)
+
+
+def strip_how_not_in_form(text: str, *, description: str, penalty: bool) -> Stripped:
+    """Cut a goal's "how" when the caller's own form never said it.
+
+    ``penalty`` is the caller's answer to "is this goal a penalty" — its own
+    form said so, or the form just before it did within the ten seconds a
+    penalty's kick and its goal sit apart. Nothing here runs otherwise: a
+    goal the caller called a header keeps "the header" without this function
+    ever looking at it, because a wrong how on a goal that was never a
+    penalty is not the failure this backstop exists for.
+
+    Deterministic and no model call, the same promise the rest of this
+    module and :mod:`commentary.gate` make: a how the form never gave a
+    reason for is cut outright rather than guessed at, whatever the model
+    wrote.
+    """
+    if not penalty or not text:
+        return Stripped(text)
+    folded = description.lower()
+    removed: list[str] = []
+
+    def _cut(match: re.Match[str]) -> str:
+        phrase = match.group().rstrip("!").lower()
+        keyword = _PENALTY_BORROWED_HOW.get(phrase)
+        if keyword is not None and keyword in folded:
+            return match.group()
+        removed.append(match.group().rstrip("!"))
+        return ""
+
+    cut = _HOW_PHRASE.sub(_cut, text)
+    if not removed:
+        return Stripped(text)
+    return Stripped(_tidy(cut), tuple(removed))
+
+
 def _spans(text: str) -> list[tuple[int, int]]:
     """Every run of characters in the line that asserts a score."""
     found = [(span.start, span.end) for span in score_spans(text)]
@@ -357,10 +413,13 @@ class Numbers:
     line: str
     stripped: tuple[str, ...] = ()
     appended: str = ""
+    #: A goal's how, taken out because the form never earned it — see
+    #: :func:`strip_how_not_in_form`. Empty on every line this never runs on.
+    how_removed: tuple[str, ...] = ()
 
     @property
     def changed(self) -> bool:
-        return bool(self.stripped or self.appended)
+        return bool(self.stripped or self.appended or self.how_removed)
 
 
 def settle_numbers(
@@ -371,6 +430,8 @@ def settle_numbers(
     goal_in_state: bool = False,
     append: bool = False,
     index: int | None = None,
+    description: str = "",
+    penalty: bool = False,
 ) -> Numbers:
     """Strip whatever number the model wrote; append the one the state supports.
 
@@ -379,15 +440,23 @@ def settle_numbers(
     "is this the goal-calling line?" — true on the first line of a goal and
     false on every line after it, which is what keeps the scoreline to once
     per goal.
+
+    ``description`` and ``penalty`` are the same question asked of the how
+    rather than the score: ``penalty`` is whether this goal's own form, or
+    the form just before it, was a penalty, and ``description`` is that
+    form's own words, checked by :func:`strip_how_not_in_form` before
+    anything else runs. Left at their defaults, no line is touched — every
+    caller of this before the how-backstop existed.
     """
-    stripped = strip_score(text)
+    how = strip_how_not_in_form(text, description=description, penalty=penalty)
+    stripped = strip_score(how.text)
     line = stripped.text
     score = (
         say_score(state, side, goal_in_state=goal_in_state, index=index) if append else ""
     )
     if score:
         line = f"{line} {score}".strip() if line else score
-    return Numbers(line=line, stripped=stripped.removed, appended=score)
+    return Numbers(line=line, stripped=stripped.removed, appended=score, how_removed=how.removed)
 
 
 @dataclass

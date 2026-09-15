@@ -203,7 +203,12 @@ def _speaker(args: argparse.Namespace) -> Speaker:
     return LogSpeaker(echo=True)
 
 
-def _pack_for_air(path: Path, *, trust_unchecked: bool = False) -> KnowledgePack:
+def _pack_for_air(
+    path: Path,
+    *,
+    trust_unchecked: bool = False,
+    trust_floor: float = SETTINGS.researcher.trust_floor,
+) -> KnowledgePack:
     """The pack as a match may use it: checked notes only, unless told otherwise.
 
     A note is a figure said out loud in a confident voice, and the fact gate
@@ -215,20 +220,32 @@ def _pack_for_air(path: Path, *, trust_unchecked: bool = False) -> KnowledgePack
     ``--trust-unchecked`` is the rehearsal switch. It is how a rephrase over
     a trace finds out whether a bigger pack changes anything before the
     twenty minutes of checking are spent, and it is never the right flag for
-    a broadcast.
+    a broadcast. It does not mean "say all of it" any more: ``trust_floor``
+    is the line below which even the rehearsal declines an unchecked note,
+    because a note the researcher itself marked at confidence 0.1 is not
+    "unverified but probably fine", it is a guess the researcher is on record
+    doubting.
 
     What was skipped is printed rather than logged, because a run that
     silently has no context looks exactly like a run whose notes were all
     unusable, and those want different fixes.
     """
-    from commentary.agents.researcher import load_pack, only_checked
+    from commentary.agents.researcher import above_trust_floor, load_pack, only_checked
 
     pack = load_pack(path)
     if trust_unchecked:
-        unchecked = sum(1 for note in pack.notes if not note.checked)
+        trusted, below_floor = above_trust_floor(pack, floor=trust_floor)
+        if below_floor:
+            print(
+                f"--trust-unchecked: {below_floor} of {len(pack.notes)} notes are unchecked and "
+                f"below the trust floor ({trust_floor:g}) and will not be said"
+            )
+        unchecked = sum(1 for note in trusted.notes if not note.checked)
         if unchecked:
-            print(f"--trust-unchecked: {unchecked} of {len(pack.notes)} notes nobody has checked")
-        return pack
+            print(
+                f"--trust-unchecked: {unchecked} of {len(trusted.notes)} notes nobody has checked"
+            )
+        return trusted
     trimmed, skipped = only_checked(pack)
     if skipped:
         print(
@@ -259,7 +276,9 @@ async def cmd_run(args: argparse.Namespace) -> int:
         source = ScreenCapture(settings.capture)
 
     if args.pack:
-        pack = _pack_for_air(Path(args.pack), trust_unchecked=args.trust_unchecked)
+        pack = _pack_for_air(
+            Path(args.pack), trust_unchecked=args.trust_unchecked, trust_floor=args.trust_floor
+        )
 
     wire = _wire(args, sim, pack)
 
@@ -476,7 +495,9 @@ async def cmd_rephrase(args: argparse.Namespace) -> int:
 
     rows = load(args.trace)
     pack = (
-        _pack_for_air(Path(args.pack), trust_unchecked=args.trust_unchecked)
+        _pack_for_air(
+            Path(args.pack), trust_unchecked=args.trust_unchecked, trust_floor=args.trust_floor
+        )
         if args.pack
         else None
     )
@@ -957,6 +978,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="say the pack notes nobody has hand-checked; off by default",
     )
+    run.add_argument(
+        "--trust-floor",
+        type=float,
+        default=SETTINGS.researcher.trust_floor,
+        help=(
+            "with --trust-unchecked, the lowest confidence an unchecked note may still say "
+            f"(default {SETTINGS.researcher.trust_floor:g})"
+        ),
+    )
     run.add_argument("--seconds", type=float, default=60.0, help="wall-clock run length")
     run.add_argument("--duration", type=float, default=600.0, help="sim match length")
     run.add_argument("--delay", type=float, default=None, help="override the buffer depth")
@@ -1025,6 +1055,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--trust-unchecked",
         action="store_true",
         help="say the pack notes nobody has hand-checked; off by default",
+    )
+    rph.add_argument(
+        "--trust-floor",
+        type=float,
+        default=SETTINGS.researcher.trust_floor,
+        help=(
+            "with --trust-unchecked, the lowest confidence an unchecked note may still say "
+            f"(default {SETTINGS.researcher.trust_floor:g})"
+        ),
     )
     rph.add_argument(
         "--model",

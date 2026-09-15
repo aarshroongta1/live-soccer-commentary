@@ -395,6 +395,30 @@ class PredictorConfig:
 
 
 @dataclass(frozen=True)
+class ResearcherConfig:
+    """How much of an unresearched note ``--trust-unchecked`` is willing to say.
+
+    A checked note is a person's own verification and nothing here touches
+    it. An unchecked one carries only the researcher's own ``confidence``,
+    and ``--trust-unchecked`` used to mean "say the whole pack" — a note at
+    confidence 0.1, marked as such because the researcher itself was not
+    sure, aired at 20.5 s on a rehearsal because the flag trusted everything
+    below it as readily as everything above. ``trust_floor`` is where that
+    stops: an unchecked note below it is exactly as absent as it would be
+    with the flag off.
+
+    0.6 sits below :data:`~commentary.agents.researcher.SHAKY_CONFIDENCE`
+    (0.7) on purpose. That number orders the hand-check list — it flags a
+    note for a person to look at, it drops nothing — and a floor this module
+    enforces without a person in the loop has to be the more conservative of
+    the two, or an unchecked note the hand-check list would flag as shaky
+    would still reach air un-vetted.
+    """
+
+    trust_floor: float = field(default_factory=lambda: _env_float("TRUST_FLOOR", 0.6))
+
+
+@dataclass(frozen=True)
 class GateConfig:
     """The fact gate's strictness."""
 
@@ -608,6 +632,7 @@ class Settings:
     analyst: AnalystConfig = field(default_factory=AnalystConfig)
     colour: ColourConfig = field(default_factory=ColourConfig)
     predictor: PredictorConfig = field(default_factory=PredictorConfig)
+    researcher: ResearcherConfig = field(default_factory=ResearcherConfig)
     gate: GateConfig = field(default_factory=GateConfig)
     director: DirectorConfig = field(default_factory=DirectorConfig)
     restatement: RestatementConfig = field(default_factory=RestatementConfig)

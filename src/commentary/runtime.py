@@ -1161,13 +1161,28 @@ class Runtime:
         # goal, and never on the celebration after it. The same call the
         # offline rephrase makes, so the two cannot drift.
         # ``docs/HANDOFF.md`` section 3d.
+        #
+        # The how gets the same treatment beside a penalty: this form's own
+        # event, or the last spoken form's within ten seconds — the gap a
+        # penalty's kick and its goal sit apart — is what "82.5 Mbappé! Over
+        # the wall!" was missing a check on.
+        penalty = line.event is Event.PENALTY or self._recent_event_within(10.0) is Event.PENALTY
         settled = settle_numbers(
             phrased.line,
             state=self.state,
             side=line.side,
             goal_in_state=self._score_counts_the_goal(cursor),
             append=self.follow.is_the_call(cursor) and claims_goal(phrased.line, line.event),
+            description=line.line,
+            penalty=penalty,
         )
+        if settled.how_removed:
+            self._publish(
+                Topic.STATUS,
+                cursor,
+                reason="how_not_in_form",
+                removed=list(settled.how_removed),
+            )
         self._publish(
             Topic.PHRASED,
             cursor,
@@ -1178,6 +1193,7 @@ class Runtime:
             name_retry=phrased.name_retry,
             score_appended=settled.appended,
             score_stripped=list(settled.stripped),
+            how_stripped=list(settled.how_removed),
         )
         return line.model_copy(update={"line": settled.line}), phrased.excitement
 

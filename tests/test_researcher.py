@@ -23,6 +23,7 @@ from commentary.agents.researcher import (
     WEB_SEARCH_TOOL,
     Researcher,
     _tools_enabled,
+    above_trust_floor,
     check_notes,
     freeze,
     hand_check_list,
@@ -690,6 +691,42 @@ def test_a_pack_whose_notes_are_all_checked_comes_back_untouched() -> None:
     pack = a_pack().model_copy(update={"notes": [a_checked_note()]})
     trimmed, skipped = only_checked(pack)
     assert trimmed is pack
+    assert skipped == 0
+
+
+# -- the trust floor under --trust-unchecked ---------------------------------
+
+
+def test_a_shaky_unchecked_note_is_skipped_under_the_trust_floor() -> None:
+    """The real failure: a 0.1-confidence note, known wrong, aired at 20.5s."""
+    shaky = Note(about="Cole Palmer", text="on a hat-trick tonight", confidence=0.1)
+    pack = a_pack().model_copy(update={"notes": [shaky]})
+    trusted, skipped = above_trust_floor(pack, floor=0.6)
+    assert trusted.notes == []
+    assert skipped == 1
+
+
+def test_a_confident_unchecked_note_clears_the_floor() -> None:
+    confident = Note(about="Cole Palmer", text="eleven goals this season", confidence=0.9)
+    pack = a_pack().model_copy(update={"notes": [confident]})
+    trusted, skipped = above_trust_floor(pack, floor=0.6)
+    assert trusted.notes == [confident]
+    assert skipped == 0
+
+
+def test_a_checked_note_clears_the_floor_whatever_its_confidence() -> None:
+    """Checking is the verification; a floor on top of it judges nothing new."""
+    checked_but_shaky = a_checked_note().model_copy(update={"confidence": 0.1})
+    pack = a_pack().model_copy(update={"notes": [checked_but_shaky]})
+    trusted, skipped = above_trust_floor(pack, floor=0.6)
+    assert trusted.notes == [checked_but_shaky]
+    assert skipped == 0
+
+
+def test_a_pack_with_nothing_below_the_floor_comes_back_untouched() -> None:
+    pack = a_pack().model_copy(update={"notes": [a_checked_note()]})
+    trusted, skipped = above_trust_floor(pack, floor=0.6)
+    assert trusted is pack
     assert skipped == 0
 
 

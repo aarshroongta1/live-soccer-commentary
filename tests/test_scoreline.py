@@ -54,6 +54,7 @@ from commentary.scoreline import (
     restatement,
     say_score,
     settle_numbers,
+    strip_how_not_in_form,
     strip_score,
 )
 from commentary.sim import MatchSim, SimOracle, SimSource
@@ -181,6 +182,70 @@ def test_the_goal_line_gets_one_number_and_the_celebration_gets_none() -> None:
     after = settle_numbers("Mbappé! Three-two.", state=state, side=Side.AWAY, append=False)
     assert after.line == "Mbappé!"
     assert after.appended == ""
+
+
+# -- a penalty does not inherit a free kick's or a strike's how --------------
+#
+# The real line, off ``runs/rephrased/mbappe-final``: the caller's form at
+# 82.5 tagged the goal ``penalty``, described it as "Mbappé steps up and
+# strikes it — Martínez goes the other way. Buried.", and the phraser still
+# wrote "Mbappé! Over the wall!" — the free kick worked example's own how,
+# borrowed onto a penalty that was never over a wall.
+
+
+def test_a_penalty_does_not_keep_a_how_its_form_never_gave_it() -> None:
+    stripped = strip_how_not_in_form(
+        "Mbappé! Over the wall!",
+        description="Mbappé steps up and strikes it — Martínez goes the other way. Buried.",
+        penalty=True,
+    )
+    assert stripped.text == "Mbappé!"
+    assert stripped.removed == ("Over the wall",)
+
+
+def test_a_how_the_forms_own_words_back_is_left_alone() -> None:
+    """A free kick that really was over the wall keeps saying so."""
+    stripped = strip_how_not_in_form(
+        "Griezmann! Over the wall!",
+        description="Griezmann strikes it over the wall and in.",
+        penalty=True,
+    )
+    assert stripped.text == "Griezmann! Over the wall!"
+    assert not stripped.changed
+
+
+def test_the_backstop_only_ever_runs_beside_a_penalty() -> None:
+    """A goal that was never a penalty keeps whatever how it was given."""
+    stripped = strip_how_not_in_form(
+        "Mbappé! Over the wall!", description="Mbappé strikes it.", penalty=False
+    )
+    assert stripped.text == "Mbappé! Over the wall!"
+    assert not stripped.changed
+
+
+def test_the_82_5_penalty_line_settles_with_the_how_gone_and_the_score_on() -> None:
+    """The 82.5 case end to end, at the module's single call site."""
+    state = a_state(2, 1)
+    settled = settle_numbers(
+        "Mbappé! Over the wall!",
+        state=state,
+        side=Side.AWAY,
+        append=True,
+        description="Mbappé steps up and strikes it — Martínez goes the other way. Buried.",
+        penalty=True,
+    )
+    assert settled.line == "Mbappé! Two-two."
+    assert settled.how_removed == ("Over the wall",)
+
+
+def test_a_settled_line_with_nothing_borrowed_carries_no_how_removed() -> None:
+    state = a_state(2, 1)
+    settled = settle_numbers(
+        "Mbappé! From the spot!", state=state, side=Side.AWAY, append=True, penalty=True
+    )
+    assert settled.line == "Mbappé! From the spot! Two-two."
+    assert settled.how_removed == ()
+    assert settled.changed  # a score was still appended
 
 
 # -- the score and the clock, on a timer -------------------------------------
@@ -540,12 +605,12 @@ async def test_a_followup_call_goes_out_on_the_beat_that_is_due() -> None:
     form = a_goal_form(runtime)
     surname = form.sightings[0].name.rsplit(" ", 1)[-1]
     runtime.follow.arm(runtime.cursor_ts - 3.0, form, f"{surname}!")
-    phraser_saying(runtime, PhrasedLine(line="And the bench is up. Two-one.", excitement=0.9))
+    phraser_saying(runtime, PhrasedLine(line="And he wheels away. Two-one.", excitement=0.9))
     beats = caught_beats(runtime)
 
     assert await runtime._say_followup(runtime.cursor_ts)
 
-    assert [beat.text for beat in beats] == ["And the bench is up."]
+    assert [beat.text for beat in beats] == ["And he wheels away."]
     assert beats[0].event is Event.GOAL
     assert not beats[0].preemptable
     assert runtime.follow.synthesised == 1

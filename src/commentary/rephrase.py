@@ -124,6 +124,10 @@ class Line:
     #: words before the gate saw them. Every one of these used to be a line
     #: refused whole.
     stripped: tuple[str, ...] = ()
+    #: What :func:`commentary.scoreline.strip_how_not_in_form` took out
+    #: beside a penalty: a how the model reached for that this goal's own
+    #: form never gave it. "82.5 Mbappé! Over the wall!" is why this exists.
+    how_stripped: tuple[str, ...] = ()
     #: The phraser was never called for this line: code wrote it, off the
     #: state. The score-and-clock restatement, and nothing else so far.
     written_by_code: bool = False
@@ -266,12 +270,21 @@ class Cover:
     See this module's docstring for what each one is and how faithfully it
     can be rebuilt. Kept together in one object so that the approximations
     are in one place rather than spread through the loop.
+
+    A fourth fact lives here too, for the how-backstop rather than the gate:
+    the last spoken form's event and when, mirroring ``Runtime._recent_event``
+    so that :func:`commentary.scoreline.strip_how_not_in_form` sees the same
+    "was the form just before this one a penalty" that the live runtime does.
     """
 
     def __init__(self, states: list[tuple[float, MatchState]]) -> None:
         self._goals = _goal_taken_in(states)
         #: The last name a spoken line put on the ball, and when.
         self._held: tuple[str, float] | None = None
+        #: The last spoken form's event, and when. Set after a line is
+        #: judged, not before, so the line being judged still sees whatever
+        #: was true of the one before it.
+        self._recent_event: tuple[Event, float] | None = None
 
     def goal_in_state(self, ts: float) -> bool:
         """Does the score the gate is about to read already include this goal?
@@ -316,6 +329,18 @@ class Cover:
             if fold(name.rsplit(" ", 1)[-1]) in fold(spoken):
                 self._held = None if dead else (name, ts)
                 return
+
+    def recent_event_within(self, ts: float, seconds: float) -> Event | None:
+        """Mirror of ``Runtime._recent_event_within``: whatever was just spoken."""
+        if self._recent_event is None:
+            return None
+        event, at = self._recent_event
+        return event if ts - at <= seconds else None
+
+    def note_event(self, line: CallerLine, ts: float) -> None:
+        """Mirror of the line at the end of ``Runtime._call``: remember what aired."""
+        if line.event is not Event.NONE:
+            self._recent_event = (line.event, ts)
 
 
 async def rephrase(
@@ -686,12 +711,21 @@ async def rephrase(
             # on — once, on the line that calls the goal, and never on the
             # celebration after it. ``docs/HANDOFF.md`` section 3d.
             is_call = follow.is_the_call(ts) and claims_goal(phrased.line, form.event)
+            # The how gets the same treatment beside a penalty: this form's
+            # own event, or the last spoken form's within the ten seconds a
+            # penalty's kick and its goal sit apart — the check "82.5 Mbappé!
+            # Over the wall!" went out without.
+            penalty = form.event is Event.PENALTY or (
+                cover.recent_event_within(ts, 10.0) is Event.PENALTY
+            )
             settled = settle_numbers(
                 phrased.line,
                 state=state,
                 side=form.side,
                 goal_in_state=cover.goal_in_state(ts),
                 append=is_call,
+                description=form.line,
+                penalty=penalty,
             )
             # A line that was nothing but a number now has nothing in it, and
             # the gate refuses it as empty. That is the right answer: the model
@@ -725,6 +759,7 @@ async def rephrase(
                     "name_retry": phrased.name_retry,
                     "score_appended": settled.appended,
                     "score_stripped": list(settled.stripped),
+                    "how_stripped": list(settled.how_removed),
                     # Per call, because the aggregate cannot say whether the
                     # cached prefix was ever read: a run where every call
                     # shows cache_read zero is paying full price for two
@@ -763,12 +798,14 @@ async def rephrase(
                 fallback=fell_back,
                 appended=settled.appended,
                 stripped=settled.stripped,
+                how_stripped=settled.how_removed,
             )
         )
         if not verdict.passed:
             continue
         phraser.accept(verdict.line, form.event)
         cover.remember(form, verdict.line, ts)
+        cover.note_event(form, ts)
         thread_rows(ts, threads.said(verdict.line, ts=ts, pack=pack), "used")
         ledger_rows(ts, counts_said(verdict.line, ts, names), "used")
 

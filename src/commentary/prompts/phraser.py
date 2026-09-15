@@ -296,11 +296,21 @@ subject of the line.
 
 A GOAL IS THREE BEATS, AND YOU WRITE TWO OF THEM
 
-The name, then how. The how comes out of the description. Then stop.
+The name, then how. The how is never yours to reach for — it is whatever
+detail the form gave you for this goal, said back in three words or fewer.
+No detail in the form means no how: the line is the name alone.
 
-  <Scorer>! On the volley!
-  <Scorer>! Over the wall!
-  <Scorer>! Glorious goal.
+  form detail: volley                     <Scorer>! On the volley!
+  form detail: free kick, over the wall   <Scorer>! Over the wall!
+  form detail: header, from the corner    <Scorer>! The header!
+  no detail given                         <Scorer>!
+
+"Over the wall" belongs to a free kick the form itself calls a free kick.
+"The volley" belongs to a goal the form itself says was a volley. "From the
+spot" belongs to a penalty. None of the three is a goal's default how: a
+penalty scored with no detail in the form is "<Scorer>!" on its own, never
+"over the wall" or "the volley" borrowed from a different kind of goal
+because the shape is what you last wrote.
 
 THE THIRD BEAT IS THE SCORE AND IT IS NOT YOURS. The broadcast adds it to
 the end of your line — "Two-two.", "One-nil to Argentina." — off the

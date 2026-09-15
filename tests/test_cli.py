@@ -113,3 +113,32 @@ def test_a_pack_for_air_leaves_the_unchecked_notes_behind(tmp_path, capsys):
 
     trusted = _pack_for_air(target, trust_unchecked=True)
     assert len(trusted.notes) == 14
+
+
+def test_run_and_rephrase_both_take_a_trust_floor():
+    from commentary.config import SETTINGS
+
+    assert build_parser().parse_args(["run"]).trust_floor == SETTINGS.researcher.trust_floor
+    args = build_parser().parse_args(
+        ["rephrase", "--trace", "t.jsonl", "--trust-unchecked", "--trust-floor", "0.6"]
+    )
+    assert args.trust_floor == 0.6
+
+
+def test_a_pack_for_air_trusts_only_what_clears_the_floor(tmp_path, capsys):
+    """The real failure: a 0.1-confidence note, known wrong, aired at 20.5s."""
+    pack = load_pack(Path("clips/pack-argfra-2022.json"))
+    notes = [
+        *pack.notes,
+        Note(about="Lionel Messi", text="on a hat-trick tonight", confidence=0.1),
+        Note(about="Lionel Messi", text="nine goals this year", confidence=0.9),
+    ]
+    target = tmp_path / "pack.json"
+    save_pack(pack.model_copy(update={"notes": notes}), target)
+
+    trusted = _pack_for_air(target, trust_unchecked=True, trust_floor=0.6)
+    said = {note.text for note in trusted.notes}
+    assert "on a hat-trick tonight" not in said
+    assert "nine goals this year" in said
+    out = capsys.readouterr().out
+    assert "1 of 15 notes are unchecked and below the trust floor (0.6)" in out

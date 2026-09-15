@@ -1347,18 +1347,36 @@ def _elsewhere_place(text: str) -> str | None:
 #: sense only ("the corner erupts"), which is safe to catch because nothing
 #: on this list is also on ``_ATMOSPHERE_VERB`` — a corner *kick* is never
 #: said to erupt, rise, roar, go wild, or sit on its feet.
+#:
+#: ``bench``, ``fans``, ``supporters`` and ``end`` carry an extra, optional
+#: word in front of the article: "the *Argentina* bench", "*their own*
+#: supporters", "the *away* end" are all still a crowd noun, and a side's
+#: name in front of one is not what turns it into a player. Nothing on the
+#: other nouns takes that qualifier — "the France corner" is not a shape
+#: real commentary uses and widening the match there buys nothing.
+_DECORATION_SIDE_WORD = (
+    r"(?:the\s+(?:whole\s+|entire\s+)?|their\s+own\s+|his\s+own\s+|her\s+own\s+)?"
+)
 _DECORATION_SUBJECT = (
-    r"(?:the\s+(?:whole\s+|entire\s+)?)?"
-    r"(?:crowd|fans|supporters|stadium|ground|bench(?:es)?|dugout|corner|stands?|place)"
+    rf"{_DECORATION_SIDE_WORD}(?:[A-Za-z][\w'’-]*\s+)?(?:bench(?:es)?|fans|supporters|end)"
+    rf"|(?:the\s+(?:whole\s+|entire\s+)?)?(?:crowd|stadium|ground|dugout|corner|stands?|place)"
     r"|everyone"
 )
 
 #: The verbs a crowd noun is never allowed. Spelled out rather than stemmed,
 #: because a stem wide enough to catch "erupted" is wide enough to catch
 #: "erupting into song" being sung by a player, which is nobody's decoration.
+#:
+#: "Up" is bare rather than three separate phrases because the claim only
+#: has to match where the sentence *opens*, not where it ends: "up", "up on
+#: their feet" and "up as one" are all caught by the one word. "The whole
+#: bench is up!" (86.8) and "the whole bench celebrates in front of their
+#: own supporters" (193.7) are the two real lines this list was missing.
 _ATMOSPHERE_VERB = (
-    r"erupt(?:s|ed)?|rises?|roars?|goes?\s+wild|on\s+their\s+feet|"
-    r"in\s+raptures|bouncing|silenced|stunned"
+    r"erupt(?:s|ed)?|rises?|roars?|go(?:es|ing)?\s+(?:wild|mad|crazy|berserk)|"
+    r"on\s+their\s+feet|up|off\s+their\s+seats|"
+    r"in\s+raptures|in\s+dreamland|in\s+full\s+voice|bouncing|silenced|stunned|"
+    r"celebrat(?:es?|ing)|jumping|waving|dancing|singing"
 )
 
 #: A decoration claim only if the crowd noun *opens* the sentence — the
@@ -1367,7 +1385,7 @@ _ATMOSPHERE_VERB = (
 #: and anchoring the pattern at the start of the sentence is what tells the
 #: two apart without parsing the rest of the grammar.
 _DECORATION_CLAIM = re.compile(
-    rf"^(?:{_DECORATION_SUBJECT})\b(?:['’]s)?\s+(?:is\s+|are\s+|was\s+|were\s+)?"
+    rf"^(?:(?:and|but)\s+)?(?:{_DECORATION_SUBJECT})\b(?:['’]s)?\s+(?:is\s+|are\s+|was\s+|were\s+)?"
     rf"(?:{_ATMOSPHERE_VERB})\b",
     re.IGNORECASE,
 )
@@ -1385,11 +1403,15 @@ def decoration_claim(text: str) -> list[tuple[int, int]]:
 
     A sentence — split on ``.``, ``!``, ``?`` — is a decoration claim when it
     opens with a crowd noun (the crowd, the fans, the stadium, the bench, the
-    dugout, the corner, the stands, everyone...) holding an atmosphere verb
-    (erupts, rises, roars, goes wild, on their feet, in raptures, bouncing,
+    dugout, the corner, the stands, an end, a side's own supporters,
+    everyone...), an optional "and" or "but" allowed in front of it the way a
+    commentator actually opens a sentence, holding an atmosphere verb (erupts,
+    rises, roars, goes wild, up, off their seats, in raptures, in dreamland,
+    in full voice, bouncing, celebrating, jumping, waving, dancing, singing,
     silenced, stunned). "Mbappé! The volley, buried!" has neither sentence
     open that way and is untouched; "Mbappé! Into the net! The whole bench
-    erupts!" has its third sentence flagged.
+    erupts!" has its third sentence flagged, and so does "And the whole bench
+    celebrates in front of their own supporters."
 
     Spans are of the whole sentence, punctuation included, so a caller can
     cut one out of the line and be left with a line rather than a stub with

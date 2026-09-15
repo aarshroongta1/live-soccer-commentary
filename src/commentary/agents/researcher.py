@@ -309,6 +309,29 @@ def merge_notes(existing: Sequence[Note], fresh: Sequence[Note]) -> Merge:
     )
 
 
+def above_trust_floor(pack: KnowledgePack, *, floor: float) -> tuple[KnowledgePack, int]:
+    """The pack under ``--trust-unchecked``, with the shakiest notes still held back.
+
+    A hand-checked note is untouched here whatever its confidence — checking
+    is the verification, and a floor on top of it would be judging a person's
+    look at the source rather than the researcher's own guess. An unchecked
+    note is kept only when its ``confidence`` clears ``floor``; below it, it
+    is exactly as absent as it would be with ``--trust-unchecked`` off. A note
+    at confidence 0.1 that the researcher itself was not sure of, and that
+    turned out to be wrong, is what this stops from reaching air on a
+    rehearsal.
+
+    Returns the pack unchanged, and zero, when nothing falls below the floor,
+    so the common case allocates nothing and compares equal.
+    """
+    below = [note for note in pack.notes if not note.checked and note.confidence < floor]
+    if not below:
+        return pack, 0
+    fields = dict(pack)
+    fields["notes"] = [note for note in pack.notes if note.checked or note.confidence >= floor]
+    return KnowledgePack(**fields), len(below)
+
+
 def only_checked(pack: KnowledgePack) -> tuple[KnowledgePack, int]:
     """The pack with every unchecked note removed, and how many went.
 

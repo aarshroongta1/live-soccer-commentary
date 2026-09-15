@@ -1267,3 +1267,34 @@ def test_a_note_backed_crowd_line_is_not_decoration(pack, state) -> None:
     assert verdict.passed, verdict.reasons
     assert verdict.line == "Northvale come forward. The Northvale crowd is bouncing."
     assert verdict.reasons == []
+
+
+def test_a_bench_is_up_is_decoration_too() -> None:
+    """The real line, off ``runs/rephrased/mbappe-final``, at 86.8."""
+    assert decoration_claim("The whole bench is up!") == [(0, len("The whole bench is up!"))]
+
+
+def test_a_bench_that_celebrates_behind_a_leading_and_is_decoration() -> None:
+    """The real line, off ``runs/rephrased/mbappe-final``, at 193.7."""
+    text = "And the whole bench celebrates in front of their own supporters."
+    assert decoration_claim(text) == [(0, len(text))]
+
+
+def test_the_86_8_bench_up_line_is_trimmed_to_the_goal_call(pack, state) -> None:
+    verdict = FactGate().judge(
+        call("Peñaló! Into the net! The whole bench is up!", event=Event.GOAL),
+        state,
+        pack,
+        board_changed=True,
+    )
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == "Peñaló! Into the net!"
+    assert "decoration: The whole bench is up!" in verdict.reasons
+
+
+def test_the_193_7_bench_celebrates_line_is_refused_whole(pack, state) -> None:
+    verdict = FactGate().judge(
+        call("And the whole bench celebrates in front of their own supporters."), state, pack
+    )
+    assert not verdict.passed
+    assert verdict.line == ""
