@@ -5,7 +5,7 @@ evidence.
 
 **HEAD:** branch `corpus-british` in
 `/Users/Aarsh/Desktop/commentary/.claude/worktrees/corpus`, pushed to origin,
-thirty-seven commits ahead of `main` and not merged. Everything from 15-16
+forty-one commits ahead of `main` and not merged. Everything from 15-16
 September (section 3f) and the evening of 15 September (section 3g) is on
 it. `.env` at the root. `clips/` and `runs/` are
 in the repo and gitignored — the clips are 26 MB each and the traces are
@@ -592,6 +592,46 @@ a dangerous spot." / "Portugal to restart. First free kick of the night for
 them, edge of the box." / "Over the wall and into the top corner!
 Three-three." / "Cristiano Ronaldo, and he wheels away towards the corner
 flag." / "It was a long time over that wall, and De Gea had no answer."
+
+## 3h. After the first listen
+
+The user heard round eight through the two designed voices on the watch page
+(`runs/voice/r8-mbappe`, 28 lines, about 720 credits, first audio a median
+0.63 s, no preemptions) and said: **"too much silence, no excitement around
+goals, very lackluster during big moments"** and **"barely any comments from
+the second commentator, it's all lead."** Both were true and both were this
+system's own rules over-corrected in the evening's rounds. Four commits:
+
+| commit | |
+|---|---|
+| `2b28890` | A beat the offline pass makes up (synthesised, replay, restatement) is stamped with the run's own lag; they had `live_ts` equal to video time and the replay played the tally before the celebration and "Seven in the tournament" before the goal it was about. |
+| `1c65382` | A nameless line waits 5 s, not 12, and needs no detail (gaps over 4 s were 83% against a real 53%). Beat two is two or three shouted fragments. The goal window may synthesise four beats. The caller's excited end of the voice curve pushed to stability 0.10, style 0.85, speed 1.25 — still a guess, still to be tuned by ear. |
+| `7a21c4c` | The lead's last lines are a `LEAD` material kind and an opinion on them is a turn; a side plus a judgement word is not filler; a continuation of eight words or fewer without a bare pronoun is a reaction; a goal gets two turns; the build-up rate is 25 s; an opener that reads the picture is re-asked once. Round eleven: six colour lines against thirty, in build-up as well as after incidents, all fabrication checks intact. |
+
+**worldcupvoice, checked** (github.com/zicojiao/worldcupvoice, read in full,
+not run). One voice, no second seat. GPT-5.4-mini on four frames every
+4.0 s, one sentence of 4 to 16 words per call, `NO_CALL` on replays and
+static shots, a repetition filter over the last four calls; ElevenLabs Flash
+at fixed stability 0.35, style 0.35, similarity 0.8, speed 1.12 on a
+Voice-Design sportscaster; names off a hand-written roster with "if the
+number is not readable, fall back to a generic role"; no score bug read, the
+final score handed in as metadata and told not to be announced; no gate. It
+would sound busier than ours — a line every four seconds, always — and its
+prompt asks for "urgency on attacks". It would also say whatever the vision
+model wrote: nothing checks a name, a score or a goal claim, and a replay is
+skipped rather than called. Worth borrowing: nothing structural. Its
+fixed voice settings are the ones this project already measured against and
+replaced with a curve. Its cadence is the one thing the user's complaint
+points at, and that is a knob here (`SilenceConfig`, the three rate caps),
+not a design.
+
+**What the listen still needs, in order.** (1) The voice curve tuned by ear:
+`scripts/voice_sweep.py` on a trimmed grid, and the two designed voices
+heard at excitement 1.0 — text cannot fix a flat delivery. (2) Colour share
+is 17% against 31%; the seat now has material every turn, so the next lever
+is `min_gap_s` and letting the second utterance through more often. (3) The
+after-goal window: the tally and the rebuild are there; the corpus's seven
+utterances need the colour reaction fragment inside the window every time.
 
 ## 4. Known gaps
 
