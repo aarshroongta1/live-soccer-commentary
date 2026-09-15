@@ -1109,7 +1109,13 @@ def test_a_cue_and_a_name_is_not_an_utterance() -> None:
     pack = the_2022_pack()
     assert says_only_a_name("Well, Mbappé.", pack) == "Kylian Mbappé"
     assert says_only_a_name("Yeah, Otamendi.", pack) == "Nicolás Otamendi"
+    # A name and a phrase saying where he was is not a thing said about him
+    # either. The judge caught "Yeah, Mbappé from the spot." after the word
+    # count let it through.
+    assert says_only_a_name("Yeah, Mbappé from the spot.", pack) == "Kylian Mbappé"
+    assert says_only_a_name("Well, Otamendi in the box.", pack) == "Nicolás Otamendi"
     assert says_only_a_name("Well, Mbappé struck that before it dropped.", pack) == ""
+    assert says_only_a_name("Well, Mbappé, off the ground and buried it.", pack) == ""
     assert says_only_a_name("Well, they have gone down that side again.", pack) == ""
 
 

@@ -247,8 +247,10 @@ the next utterance has to say which of them it means.
 
 And the opener has to say something *about* him. "Well, <PLAYER>." is a name \
 and a cue and nothing else; it is your colleague's shape, not yours, and it \
-is thrown away. Give it a verb or give it an adjective: "Well, <PLAYER> was \
-never getting there", "Yeah, <PLAYER> knew straight away".
+is thrown away. So is "Yeah, <PLAYER> from the spot." — a name and a phrase \
+saying where he was is not a thing said about him either. Give it a verb or \
+give it an adjective: "Well, <PLAYER> was never getting there", "Yeah, \
+<PLAYER> knew straight away", "Well, <PLAYER> buried that from the spot".
 
 Every worked example in these rules writes the name as <PLAYER> or <SIDE>. \
 That is not a name to say: it is the slot your own material fills. A line \

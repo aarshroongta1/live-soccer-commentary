@@ -1582,6 +1582,24 @@ def says_nothing(text: str) -> str:
     return shape.group(0) if shape else ""
 
 
+#: Words that open a phrase rather than a predicate. "Mbappé from the spot"
+#: says where he was, not what he did, and it is the lead's shape: he calls
+#: build-up in exactly this — "Here's Salah", "Now Griezmann", "Mbappé, off
+#: the left".
+_A_PHRASE_NOT_A_PREDICATE = frozenset(
+    {
+        "from", "on", "in", "into", "at", "off", "over", "under", "down", "up",
+        "across", "through", "past", "behind", "beyond", "inside", "outside",
+        "near", "with", "without", "for", "to", "by", "against", "around", "after",
+    }
+)
+
+#: How long a phrase opening on one of those has to be before it is doing a
+#: predicate's work. Four words is "from the spot" and "on the ball" and "in
+#: the box"; five is "off the ground and buried it", which has a verb in it.
+_PHRASE_WORDS = 5
+
+
 def says_only_a_name(text: str, pack: KnowledgePack | None) -> str:
     """The name this utterance is, if it is nothing but a name, else ``""``.
 
@@ -1604,7 +1622,16 @@ def says_only_a_name(text: str, pack: KnowledgePack | None) -> str:
     for name in found:
         surname = fold(name).rsplit(" ", 1)[-1]
         rest = re.sub(rf"\b{re.escape(fold(name))}\b|\b{re.escape(surname)}\b", " ", fold(rest))
-    return found[0] if len(_NOT_A_WORD.sub(" ", rest).split()) < 2 else ""
+    left = _NOT_A_WORD.sub(" ", rest).split()
+    if len(left) < 2:
+        return found[0]
+    # "Yeah, Mbappé from the spot." — a cue, a name and a prepositional
+    # phrase, and no verb and no adjective anywhere in it. It got past the
+    # word count and the judge caught it. Where the phrase runs on it is
+    # doing a predicate's work and is left alone.
+    if left[0] in _A_PHRASE_NOT_A_PREDICATE and len(left) < _PHRASE_WORDS:
+        return found[0]
+    return ""
 
 
 #: The cues a turn may be swapped onto. All four take a comma, which is what
