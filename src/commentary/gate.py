@@ -1234,6 +1234,16 @@ _LEVEL_CLAIMS = tuple(
         r"\blevel\s+(?:terms|pegging)\b",
         r"\bthe\s+scores?\s+(?:are|is)\s+level\b",
         r"\bit(?:'?s|\s+is)\s+(?:all\s+)?level\b(?!\s+with\b)",
+        # A side simply *being* level: "France level from the spot", "they're
+        # level again", "back level", "parity restored". The colour seat said
+        # the first of those at 2-1 and none of the shapes above has a
+        # predicative adjective in it. "level with" stays out: that is a
+        # player and the last defender, not the score; and "are level" stays
+        # out too, because "the back four are level" is a defensive line.
+        r"\blevel\s+(?:from|at|again|now|once\s+more)\b",
+        r"\b(?:'re|back)\s+level\b(?!\s+with\b)",
+        r"\bback\s+on\s+terms\b",
+        r"\bparity\b",
     )
 )
 
