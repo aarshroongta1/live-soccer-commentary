@@ -1038,6 +1038,8 @@ def test_the_goal_being_called_buys_the_equaliser_the_same_latitude_as_a_number(
     [
         "Mbappé is level with the last man.",
         "The back four are level.",
+        "Mbappé stays level at the top now.",
+        "This is what experience at this level looks like.",
         "It is level with the far post.",
         "Otamendi squeezes the pass infield.",
     ],

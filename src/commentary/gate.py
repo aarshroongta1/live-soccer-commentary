@@ -1359,7 +1359,10 @@ _LEVEL_CLAIMS = tuple(
         # predicative adjective in it. "level with" stays out: that is a
         # player and the last defender, not the score; and "are level" stays
         # out too, because "the back four are level" is a defensive line.
-        r"\blevel\s+(?:from|at|again|now|once\s+more)\b",
+        # "level at" only with a score after it: "level at the top" is the
+        # scoring charts and "at this level" is the standard of the football.
+        r"\blevel\s+(?:from|again|now|once\s+more)\b",
+        r"\blevel\s+at\s+(?:\d|one|two|three|four|five|nil|zero)\b",
         r"\b(?:'re|back)\s+level\b(?!\s+with\b)",
         r"\bback\s+on\s+terms\b",
         r"\bparity\b",
