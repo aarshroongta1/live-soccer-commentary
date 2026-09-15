@@ -1,0 +1,52 @@
+src/commentary/schemas.py
+  s_d55ab428b62c9f::t_722c19a06036a2 128-144
+src/commentary/prompts/caller.py
+  s_d55ab428b62c9f::t_c3fbd7284a1ea1 168-174
+src/commentary/runtime.py
+  s_d55ab428b62c9f::t_1b22e2a7a9ad67 948,951-953,956-962,965-969,971-976
+  s_d55ab428b62c9f::t_ca7302093d6a61 625
+  s_d55ab428b62c9f::t_3c29823a0ad80b 947,949-950,954-955,963-964,970,977-978
+src/commentary/rephrase.py
+  s_d55ab428b62c9f::t_10877e562302b9 237,248,251
+  s_d55ab428b62c9f::t_32479673a57980 236,238-247,250
+  s_d55ab428b62c9f::t_8759447b0ccd35 34-38,70
+  s_d55ab428b62c9f::t_a45f61bb494dba 249
+src/commentary/prompts/phraser.py
+  s_d55ab428b62c9f::t_65fb2fa5b82b60 515-522,526-527
+  s_d55ab428b62c9f::t_7f2d5b47610ea6 201-206
+  s_d55ab428b62c9f::t_438ddfe00dfbc5 263-288,290-295
+  s_d55ab428b62c9f::t_0066f8db6cbd66 425
+  s_d55ab428b62c9f::t_607ae905a2e744 108-179
+  s_d55ab428b62c9f::t_e1910c728f1331 180-185
+  s_d55ab428b62c9f::t_de8438dc65271d 436-452
+  s_d55ab428b62c9f::t_bf60a18d46b33d 96
+tests/test_phraser.py
+  s_d55ab428b62c9f::t_501f135105f7a1 64,75
+  s_d55ab428b62c9f::t_dc7158d61ab1be 655-675,685-693,725-741
+  s_d55ab428b62c9f::t_e2ea8791baebe0 39,41
+  s_d55ab428b62c9f::t_9c4ad2f71fef12 191-203,207-274
+  s_d55ab428b62c9f::t_b93ab56ddf3336 694-724
+  s_d55ab428b62c9f::t_c5d64e6930e348 204
+  s_d55ab428b62c9f::t_5e02d45cb7de2f 205-206
+  s_d55ab428b62c9f::t_7a025a1935b653 676-684
+scripts/build_commentary_examples.py
+  s_d55ab428b62c9f::t_e312a6e6fd41b1 218-224,228-230
+src/commentary/prompts/commentary_examples.py
+  s_d55ab428b62c9f::t_fe917be960772f 6,171,175,179,183,187,191,194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "233b313a6a32a577658bbfa106faf8ad4093476d",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
