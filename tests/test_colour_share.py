@@ -35,6 +35,7 @@ import pytest
 from commentary.agents.colour import (
     AT_A_DEAD_BALL,
     IN_BUILD_UP,
+    LEAD_ECHO_LINES,
     REPEAT_GRAM,
     REPEAT_HISTORY,
     ColourSeat,
@@ -46,6 +47,7 @@ from commentary.agents.colour import (
     already_happened,
     colour_pass,
     gap_when_behind,
+    is_filler,
     judge_utterance,
     may_speak,
     repeats_itself,
@@ -57,6 +59,7 @@ from commentary.agents.colour import (
 from commentary.config import CallerConfig, ColourConfig, PredictorConfig
 from commentary.gate import FactGate
 from commentary.grading import register as reg
+from commentary.ledger import Fact
 from commentary.llm.fake import ScriptedBackend
 from commentary.predictor import SpeakPredictor
 from commentary.prompts.colour import COLOUR_EXAMPLES, COLOUR_RULES
@@ -1128,3 +1131,108 @@ def test_a_note_about_a_man_as_he_was_is_labelled_as_such() -> None:
     assert not already_happened(now)
     assert Material(notes=(was,)).lines()[0].endswith("that was then, not now")
     assert not Material(notes=(now,)).lines()[0].endswith("that was then, not now")
+
+
+# -- 9. round four: the count narrated, and the lead paraphrased ------------
+#
+# Off ``runs/rephrased/r4-shape``. The verdict works and the score and number
+# refusals fire; these are the two things that still reached air.
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Well, France keep giving it away from the wing.",
+        "That is where Argentina are finding their space.",
+        "And Argentina keep finding these set plays.",
+    ],
+)
+def test_a_count_is_not_a_licence_to_say_what_is_happening_now(text: str) -> None:
+    """All three went out on the offside clip off one ledger line: Théo
+    Hernández had given away two throw-ins.
+
+    A count is a fact about what has already happened. In the present
+    continuous it becomes a reading of a picture the seat has never seen, and
+    nothing it was given could tell it whether the reading is right. "Keep"
+    used to license the line all by itself, as a repetition word.
+    """
+    assert is_filler(text, the_2022_pack()), text
+    verdict = judge_utterance(
+        text,
+        MatchState(home="Argentina", away="France"),
+        the_2022_pack(),
+        FactGate(),
+        only_repeated=True,
+    )
+    assert not verdict.passed
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Another throw-in given away down that left side, Hernández again.",
+        "Yeah, France down that flank again.",
+    ],
+)
+def test_the_count_said_as_a_count_is_the_line_that_was_wanted(text: str) -> None:
+    verdict = judge_utterance(
+        text,
+        MatchState(home="Argentina", away="France"),
+        the_2022_pack(),
+        FactGate(),
+        only_repeated=True,
+    )
+    assert verdict.passed, verdict.reasons
+
+
+def test_a_turn_built_on_a_count_alone_has_to_say_it_happened_again() -> None:
+    """``pattern_unsaid``: the count is the only reason the line is allowed,
+    so the line has to be the count."""
+    verdict = judge_utterance(
+        "Well, Mbappé has had a difficult night down that side.",
+        MatchState(home="Argentina", away="France"),
+        the_2022_pack(),
+        FactGate(),
+        only_repeated=True,
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("pattern_unsaid:")
+
+
+def test_what_counts_as_a_turn_with_nothing_but_a_count_behind_it() -> None:
+    count = Fact(kind="throw_in", about="Théo Hernández", count=2, text="2", clause="another")
+    assert Material(ledger=(count,)).only_a_count
+    assert Material(patterns=("2 corners on Molina",)).only_a_count
+    assert not Material(ledger=(count,), last_event="foul, Otamendi").only_a_count
+    assert not Material(ledger=(count,), notes=(Note(about="a", text="b"),)).only_a_count
+
+
+def test_the_seat_may_not_say_what_the_lead_has_just_said() -> None:
+    """The free-kick pass: he said it at 28.6 s, this said it at 39.8 s, and a
+    listener heard one man say the same thing twice."""
+    verdict = judge_utterance(
+        "Yeah, Mbappé knew that was in the moment it left his foot.",
+        MatchState(home="Argentina", away="France"),
+        the_2022_pack(),
+        FactGate(),
+        lead_said=["He knew it from the moment it left his boot."],
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("echoes_lead:")
+    assert "moment it left his" in verdict.reasons[0]
+
+
+def test_only_the_leads_last_few_lines_are_held_against_the_seat() -> None:
+    """Five, which at his rate is the last twenty to thirty seconds. A line
+    from the first half is not in anybody's head."""
+    old = ["He knew it from the moment it left his boot."] + [
+        f"Line number {n} about the game." for n in range(LEAD_ECHO_LINES)
+    ]
+    verdict = judge_utterance(
+        "Yeah, Mbappé knew that was in the moment it left his foot.",
+        MatchState(home="Argentina", away="France"),
+        the_2022_pack(),
+        FactGate(),
+        lead_said=old,
+    )
+    assert verdict.passed, verdict.reasons

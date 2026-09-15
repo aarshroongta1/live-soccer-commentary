@@ -957,6 +957,8 @@ def judge_utterance(
     attributed: Attributed | None = None,
     named_before: Sequence[str] = (),
     after: str = "",
+    lead_said: Sequence[str] = (),
+    only_repeated: bool = False,
 ) -> GateVerdict:
     """One colour utterance, judged exactly as a phrased caller line is.
 
@@ -983,10 +985,21 @@ def judge_utterance(
     given "I think this is what it comes down to", then "And that is the
     price of it right there".
 
-    Then :func:`repeats_itself`, against ``said_before`` — the seat's own
-    last :data:`REPEAT_HISTORY` utterances in this match. Same reason, one
-    step further on: the prompt is shown what the seat has said and said
-    "has been here before" seventeen times in eighty lines anyway.
+    ``only_repeated`` says the turn's whole material was a count, and then
+    the line has to say the thing happened *again*. Without that the count is
+    doing no work in the sentence and what comes out is a reading of the
+    picture with a number's permission slip: "Well, France keep giving it
+    away from the wing", off a ledger line saying Théo Hernández had given
+    away two throw-ins.
+
+    Then :func:`repeats_itself` twice over. Against ``said_before`` — the
+    seat's own last :data:`REPEAT_HISTORY` utterances — because the prompt is
+    shown what the seat has said and said "has been here before" seventeen
+    times in eighty lines anyway. And against ``lead_said``, the lead's last
+    :data:`LEAD_ECHO_LINES` aired lines, because two voices sharing four
+    words in a row eleven seconds apart is one voice: "He knew it from the
+    moment it left his boot", then "Yeah, Ronaldo knew that was in the moment
+    it left his foot."
 
     And last of the code checks, :func:`misattributes`, against
     ``attributed`` — who the caller's own forms put on each event — with
@@ -1045,11 +1058,27 @@ def judge_utterance(
             ],
             line=text,
         )
+    if only_repeated and not SAYS_AGAIN.search(text):
+        return GateVerdict(
+            passed=False,
+            reasons=[
+                "pattern_unsaid: the only material is a count, and the line does not say "
+                "the thing happened again"
+            ],
+            line=text,
+        )
     shared = repeats_itself(text, said_before)
     if shared:
         return GateVerdict(
             passed=False,
             reasons=[f'colour_repeat: you have already said "{shared}" this match'],
+            line=text,
+        )
+    borrowed = repeats_itself(text, list(lead_said)[-LEAD_ECHO_LINES:])
+    if borrowed:
+        return GateVerdict(
+            passed=False,
+            reasons=[f'echoes_lead: your colleague has just said "{borrowed}"'],
             line=text,
         )
     wrong = misattributes(
@@ -1187,6 +1216,44 @@ REPEATS = frozenset(
     }
 )
 
+#: The half of :data:`REPEATS` that looks backwards. "Again", "another",
+#: "the same man" say a thing has happened before, which is what a count
+#: entitles the seat to say. "Keep" and "keeps" do not: they say a thing is
+#: happening now and will go on happening, which is a claim about a pitch
+#: this seat cannot see. It made it twice on the offside clip off one
+#: ledger count of two throw-ins — "Well, France keep giving it away from
+#: the wing" and "And Argentina keep finding these set plays" — and both
+#: were licensed by this set.
+SAID_AGAIN = REPEATS - {"keep", "keeps"}
+
+#: Saying what a side is doing as it is being done. A ledger count is a fact
+#: about the past; turned into the present continuous it becomes a reading of
+#: the picture, and the picture is the one thing this seat is never shown.
+#: "That is where Argentina are finding their space" is the whole failure in
+#: one line: true or false, nothing the seat was given could tell it which.
+_PRESENT_TACTICAL = re.compile(
+    r"\b(?:keep|keeps|are|is|were|was|been)\s+(?:\w+\s+){0,2}?\w+ing\b", re.IGNORECASE
+)
+
+#: The words that say a count out loud. An utterance built on nothing but a
+#: REPEATED line has to carry one: the count is the only reason the line is
+#: allowed, and "again" is the only part of it that reaches air, since
+#: :func:`says_a_number` refuses the figure. "Once more" is not here and is
+#: not offered in the rules either: "once" is a number word and
+#: :func:`says_a_number` would refuse the line two checks earlier.
+SAYS_AGAIN = re.compile(
+    r"\b(?:again|another|the\s+same|same\s+(?:man|side|flank|end)|still)\b",
+    re.IGNORECASE,
+)
+
+#: How many of the lead's aired lines a colour utterance is checked against.
+#: Five, which at his rate is the last twenty to thirty seconds — everything
+#: a listener still has in their head. The rules have forbidden paraphrasing
+#: him since the seat existed and the free-kick pass produced "Yeah, Ronaldo
+#: knew that was in the moment it left his foot" eleven seconds after he said
+#: "He knew it from the moment it left his boot."
+LEAD_ECHO_LINES = 5
+
 #: Words that name something that happened rather than something that is
 #: happening. The other half of the material check. Deliberately short and
 #: concrete: a line with one of these in it is about an event, and a line
@@ -1301,6 +1368,19 @@ class Material:
         """Is there anything specific enough here to make a turn out of?"""
         return bool(
             self.notes or self.patterns or self.last_event or self.ledger or self.replays
+        )
+
+    @property
+    def only_a_count(self) -> bool:
+        """Is a count of something the whole of what this turn may say?
+
+        A turn with a note or a finished event behind it has a subject. A
+        turn with nothing but ``patterns`` and ``ledger`` has an arithmetic,
+        and the only sentence an arithmetic licenses is that the thing has
+        happened again.
+        """
+        return bool(self.patterns or self.ledger) and not (
+            self.notes or self.last_event or self.replays
         )
 
     def lines(self) -> list[str]:
@@ -1603,9 +1683,12 @@ def is_filler(text: str, pack: KnowledgePack | None, *, after: str = "") -> bool
     needs one of them:
 
     - it names somebody on a team sheet;
-    - it names a side **and** claims a repetition — "France down that side
-      again" is an observation, "France keeping it simple" is a guess at a
-      picture the seat cannot see;
+    - it names a side **and** says they have done it **again** — "France down
+      that side again" is an observation, "France keeping it simple" is a
+      guess at a picture the seat cannot see, and "France keep giving it away
+      from the wing" is the same guess wearing a count's clothes: the word
+      that licenses it has to look backwards (:data:`SAID_AGAIN`) and the
+      verb must not be the present continuous;
     - it names an event: a goal, a penalty, a save, a card, a foul, a corner.
 
     ``after`` is the utterance of this turn that has just gone out, and a
@@ -1633,7 +1716,7 @@ def is_filler(text: str, pack: KnowledgePack | None, *, after: str = "") -> bool
     if any(mentions(text, name) for name in roster_names(pack)):
         return False
     named_side = any(mentions(text, word) for word in team_words(pack))
-    if named_side and words & REPEATS:
+    if named_side and words & SAID_AGAIN and not _PRESENT_TACTICAL.search(text):
         return False
     return not (after and one_subject(after, pack) and bool(_CARRIES_ON.search(text)))
 
@@ -2694,6 +2777,8 @@ def _schedule(
             attributed=attributed,
             named_before=[referent] if referent else (),
             after=spoken,
+            lead_said=seat.lead_lines,
+            only_repeated=seat.last_material.only_a_count,
         )
         utterance = ColourUtterance(
             ts=at,
