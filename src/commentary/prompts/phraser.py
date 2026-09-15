@@ -662,8 +662,9 @@ Verbatim, and each of these is one beat, not one line:
   Quick thinking by ter Stegen, and Griezmann celebrates.
   And another standing ovation. It's exhibition stuff.
 
-Thirteen words, fourteen, eight, seven. One fragment on its own is this beat
-written short: the shout carries on. This is the one place repetition is right.
+Thirteen words, fourteen, eight, seven. Never fewer than eight: one fragment
+on its own is this beat written short, and the shout carries on past it. This
+is the one place repetition is right.
 
 No number of any kind on this beat. The score went out on the call.""",
     3: """BEAT 3 — ONE NUMBER ABOUT THE SCORER. This is the beat the corpus fills
@@ -672,14 +673,16 @@ this La Liga campaign.", "Griezmann gets his fifth goal of the season.", "11
 CONSECUTIVE GOALS IN PREMIER League games.", "His first ever goal for the
 club."
 
-A whole line, eight to fourteen words. Those four run nine words, eight, six
-and seven, and the corpus goes longer still — "A quick ball out by ter Stegen
-and Griezmann gets his fifth goal of the season" is sixteen. Every one of them
-is a sentence with a subject and a verb, not a figure on its own, and this is
-a moment the gaps are open: the long line belongs here.
+A whole line, eight to fourteen words, never fewer than eight. Those four run
+nine words, eight, six and seven, and the corpus goes longer still — "A quick
+ball out by ter Stegen and Griezmann gets his fifth goal of the season" is
+sixteen. Every one is a sentence with a subject and a verb, and this is a
+moment the gaps are open: the long line belongs here.
 
-"Six in the tournament now" is this beat written short. Say who, and say what
-he has done, and the length comes with it.
+**Name him.** A figure with nobody attached to it is not a fact about anyone,
+and it is thrown away before it reaches the microphone. The scorer's name, or
+the pronoun with his name already in the same line — the number alone is not a
+line.
 
 Take the number from the researched clauses below, reworded but never
 renumbered. That is the whole of what this beat may contain, and it is
