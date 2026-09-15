@@ -231,6 +231,11 @@ class PhrasedLine(BaseModel):
     #: True when a dash welding two halves of a line together was replaced by
     #: a comma or a full stop.
     unwelded: bool = Field(default=False)
+    #: True when the line gave a side's verb to one player — "Mbappé,
+    #: arriving in numbers" — and the phraser was re-asked. A second one comes
+    #: back empty: the line is about the wrong subject and there is no half of
+    #: it worth keeping.
+    plural_retry: bool = Field(default=False)
     #: True when a trailing "now" was taken off in code because a line already
     #: aired had the same tail.
     now_stripped: bool = Field(default=False)

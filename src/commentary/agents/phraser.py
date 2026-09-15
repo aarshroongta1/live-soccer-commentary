@@ -63,12 +63,13 @@ from commentary.schemas import (
 SCORER_BEAT = 3
 
 #: The beats that are *not* the call, and so may not be shouted on a name.
-#: Beat 1 is the goal call and "<Scorer>!" is exactly what it should be; beats
-#: 2 and 3 are the celebration and the tally, and on
-#: ``runs/rephrased/r1-replay/mbappe`` all three opened "Mbappé!" — a listener
-#: hearing three goals in twelve seconds. Beat 4 is past tense and has never
-#: done it.
-UNSHOUTED_BEATS = frozenset({2, 3})
+#: Beat 1 is the goal call and "<Scorer>!" is exactly what it should be; every
+#: beat after it is a line about a goal the listener has already been told
+#: about. On ``runs/rephrased/r1-replay/mbappe`` beats 2 and 3 both opened
+#: "Mbappé!"; beat 4 was left out of this set because it is written in the
+#: past tense and had never done it, and on ``runs/rephrased/r5b`` it did it
+#: twice — "Mbappé! Over the keeper!" and "Mbappé! Off the ground!".
+UNSHOUTED_BEATS = frozenset({2, 3, 4})
 
 #: The value of ``PHRASER_MODEL`` that means "do not run this stage".
 OFF = "off"
@@ -181,12 +182,13 @@ def _register_retry_note(opener: str, closer: str) -> str:
     )
 
 
-def _shout_retry_note(name: str, beat: int) -> str:
+def _shout_retry_note(name: str, beat: int | None) -> str:
     """Say which shape was written, why it is beat 1's and not this one's."""
+    this = f"Beat {beat}" if beat is not None else "A line over a replay"
     return (
         f'THAT OPENED ON "{name}!", WHICH IS THE GOAL CALL\'S OWN SHAPE. The call has '
         "already gone out with the score on the end of it, and a second line in that "
-        f"shape is a second goal to whoever is listening. Beat {beat} is not a shout.\n"
+        f"shape is a second goal to whoever is listening. {this} is not a shout.\n"
         "Write it again without the name-and-exclamation-mark at the front: the name "
         "may be anywhere else in the line."
     )
@@ -299,6 +301,143 @@ def is_a_thin_call(text: str, described: str) -> bool:
     return len(said) <= 2 and len(_WORD.findall(described)) >= 6
 
 
+#: Words that may drop out of a protected phrase without making it a
+#: different phrase. "Off the ground" and "off ground" are one thing said
+#: twice; the corpus's own repeats never turn on an article.
+_DROPPABLE = frozenset({"the", "a", "an", "of", "in", "on", "at", "it", "and"})
+
+
+def protected_phrases(call: str, detail: str = "") -> list[str]:
+    """The phrases the call spent, which no line after it may spend again.
+
+    Two sources and both are the same thing said twice. The form's own
+    ``detail`` is the one concrete thing the eyes picked out, and the goal
+    call is built to carry it — so once the call has said it, it is on air.
+    And the call itself, minus the name it shouts and the score the broadcast
+    wrote on the end: what is left of "Mbappé! Off the ground! Two-two." is
+    "off the ground", and beat 4 said it again ninety-four seconds in.
+
+    Shorter than :data:`REPEAT_RUN` on purpose. "Off the ground" is three
+    words and two of them are ordinary, so the shared-run check waves it
+    through; as the call's own detail it is the most memorable phrase in the
+    sequence and the one a listener notices twice.
+    """
+    found: list[str] = []
+    if detail.strip():
+        found.append(detail.strip())
+    for fragment in re.split(r"[.!?]", call):
+        words = _WORD.findall(fragment)
+        if len(words) < 2 or _score_words(words):
+            continue
+        found.append(" ".join(words))
+    return found
+
+
+def _score_words(words: Sequence[str]) -> bool:
+    """Is this fragment the score the broadcast appended, rather than words?
+
+    Any figure in it is enough. A goal call may not write a number at all —
+    the broadcast puts the score on the end in code — so a fragment carrying
+    one is the score, and the score is not a detail anybody spent.
+    """
+    # Split on the hyphen as well: a scoreline arrives as one token,
+    # "Two-one", and neither half of it is a word anybody spent.
+    return any(
+        part.casefold() in _FIGURES or part.isdigit()
+        for word in words
+        for part in word.split("-")
+    )
+
+
+def repeats_the_detail(text: str, phrases: Sequence[str]) -> str:
+    """The protected phrase this line says again, or ``""``.
+
+    Verbatim, or with one droppable word left out of either side: a line that
+    says the call's detail back is saying the call back, whatever it does
+    with the articles.
+    """
+    said = [word.casefold() for word in _WORD.findall(text)]
+    for phrase in phrases:
+        wanted = [word.casefold() for word in _WORD.findall(phrase)]
+        if len(wanted) < 2:
+            continue
+        bare = [word for word in said if word not in _DROPPABLE]
+        for variant in _variants(wanted):
+            if _contains(said, variant) or _contains(bare, variant):
+                return phrase
+    return ""
+
+
+def _variants(words: list[str]) -> list[list[str]]:
+    """The phrase, and the phrase with one droppable word taken out."""
+    out = [words]
+    for index, word in enumerate(words):
+        if word in _DROPPABLE and len(words) > 2:
+            out.append(words[:index] + words[index + 1 :])
+    return out
+
+
+def _contains(haystack: list[str], needle: list[str]) -> bool:
+    if not needle or len(needle) > len(haystack):
+        return False
+    return any(
+        haystack[index : index + len(needle)] == needle
+        for index in range(len(haystack) - len(needle) + 1)
+    )
+
+
+#: Phrases that describe a group of people. One man is not "numbers", and a
+#: line that gives him a side's verb is a line about the wrong subject: the
+#: caller wrote "navy shirts arriving in numbers — and Mbappé is the danger"
+#: and what went out was "Mbappé, arriving in numbers."
+PLURAL_ONLY = (
+    "in numbers",
+    "as a unit",
+    "pour forward",
+    "pouring forward",
+    "swarm",
+    "swarming",
+    "stream forward",
+    "streaming forward",
+    "flood forward",
+    "flooding forward",
+)
+
+
+def plural_on_one_man(text: str, *, names: Sequence[str], sides: Sequence[str]) -> str:
+    """The plural phrase this line hangs on a single player, or ``""``.
+
+    A side may do all of these and a man may not. The test for "a single
+    player" is that the line names one man on the sheets and no side at all:
+    with a side in it, the plural has something to belong to.
+    """
+    lowered = text.casefold()
+    found = next((phrase for phrase in PLURAL_ONLY if phrase in lowered), "")
+    if not found:
+        return ""
+    if any(side.strip() and side.casefold() in lowered for side in sides):
+        return ""
+    # Distinct men, not distinct spellings: the same player arrives here from
+    # the form and from the team sheet, and counting him twice would let the
+    # rule pass every line it exists for.
+    named = {
+        name.strip().rsplit(" ", 1)[-1].casefold()
+        for name in names
+        if name.strip() and mentions(text, name)
+    }
+    return found if len(named) == 1 else ""
+
+
+def _plural_retry_note(phrase: str, name: str) -> str:
+    """Say which phrase belongs to eleven people, and who it was given to."""
+    return (
+        f'THAT GIVES "{phrase}" TO ONE MAN. {name} is one player; that phrase is about '
+        "a group of them, and the description said so — the side is doing it and he is "
+        "the one on the end of it.\n"
+        "Write it about the side, or write what he is doing, or return an empty line."
+    )
+
+
 def _repeat_retry_note(phrase: str) -> str:
     """Name the phrase that is already on air, and ask for the other thing."""
     return (
@@ -392,6 +531,14 @@ def _lead_with(text: str, scorer: str, names: Sequence[str]) -> str:
     if not _is_a_name(head, names):
         said = said[0].lower() + said[1:]
     return f"{surname}, {said}"
+
+
+def _ends_on_a_stop(text: str) -> str:
+    """The line with a full stop on it, if it had no end of its own."""
+    said = text.strip()
+    if not said or said.endswith((".", "!", "?", "…")):
+        return said
+    return f"{said}."
 
 
 def _is_a_name(word: str, names: Sequence[str]) -> bool:
@@ -990,7 +1137,9 @@ class Phraser:
         )
         shout_retry = False
         shout_rewritten = False
-        if goal_beat in UNSHOUTED_BEATS:
+        # A replay line is past-tense and about something already called, so
+        # the shout is beat 1's there too.
+        if goal_beat in UNSHOUTED_BEATS or line.scene is Scene.REPLAY:
             shouted = opening_shout(proposed.line, names)
             if shouted is not None:
                 retry = await self._reask(blocks, _shout_retry_note(shouted, goal_beat))
@@ -1012,7 +1161,14 @@ class Phraser:
         # saying of one phrase.
         repeat_retry = False
         if (goal_beat is not None or line.scene is Scene.REPLAY) and already_said:
-            repeated = shared_run(proposed.line, already_said)
+            # The call's own detail is protected whatever its length: "off the
+            # ground" is three words and two of them ordinary, so the shared
+            # run waves it through, and it is the most memorable phrase in the
+            # sequence.
+            spent = protected_phrases(already_said[0], line.detail or "")
+            repeated = shared_run(proposed.line, already_said) or repeats_the_detail(
+                proposed.line, spent
+            )
             if repeated:
                 retry = await self._reask(blocks, _repeat_retry_note(repeated))
                 if retry is not None:
@@ -1021,16 +1177,15 @@ class Phraser:
                     repeat_retry = True
                     # The fresh answer has not been through the shout check,
                     # and it is not worth a third call: fixed in code.
-                    if goal_beat in UNSHOUTED_BEATS and opening_shout(proposed.line, names):
-                        proposed = proposed.model_copy(
-                            update={
-                                "line": unshout(
-                                    proposed.line, keep_name=keep_name, names=names
-                                )
-                            }
-                        )
-                        shout_rewritten = True
-                still = shared_run(proposed.line, already_said)
+                unshouted = goal_beat in UNSHOUTED_BEATS or line.scene is Scene.REPLAY
+                if unshouted and opening_shout(proposed.line, names):
+                    proposed = proposed.model_copy(
+                        update={"line": unshout(proposed.line, keep_name=keep_name, names=names)}
+                    )
+                    shout_rewritten = True
+                still = shared_run(proposed.line, already_said) or repeats_the_detail(
+                    proposed.line, spent
+                )
                 if still:
                     self.last_usage = usage
                     self.chose_silence = True
@@ -1108,6 +1263,38 @@ class Phraser:
                 repeat_retry=repeat_retry,
             )
 
+        # A side's verb on one man. Asked once, then dropped: the line is
+        # about the wrong subject and there is no half of it to keep.
+        plural_retry = False
+        plural = plural_on_one_man(
+            proposed.line, names=names, sides=[self.home, self.away]
+        )
+        if plural:
+            retry = await self._reask(
+                blocks, _plural_retry_note(plural, scorer or "one player")
+            )
+            if retry is not None:
+                usage = usage + retry.usage
+                proposed = retry.value
+                plural_retry = True
+            if plural_on_one_man(proposed.line, names=names, sides=[self.home, self.away]):
+                self.last_usage = usage
+                self.chose_silence = True
+                self.last_reason = f'plural_on_one_man: "{plural}" is a side, not a player'
+                return PhrasedLine(
+                    line="",
+                    excitement=0.0,
+                    opener_retry=opener_retry,
+                    closer_retry=closer_retry,
+                    name_retry=name_retry,
+                    swap_retry=swap_retry,
+                    figure_retry=figure_retry,
+                    shout_retry=shout_retry,
+                    shout_rewritten=shout_rewritten,
+                    repeat_retry=repeat_retry,
+                    plural_retry=True,
+                )
+
         # The jingle, taken off in code. One line ending a clause on "now" is
         # a commentator; four in twenty-one is a tic, and the closer check
         # cannot see it because three of the four end on another word
@@ -1128,6 +1315,7 @@ class Phraser:
                 "opener_retry": opener_retry,
                 "closer_retry": closer_retry,
                 "now_stripped": now_stripped,
+                "plural_retry": plural_retry,
                 "thin_retry": thin_retry,
                 "unwelded": welded,
                 "swap_retry": swap_retry,
@@ -1259,8 +1447,13 @@ class Phraser:
 
         ``max_words`` is the moment's cap rather than the config's, because
         the cap is per kind now: see :meth:`_word_cap`.
+
+        And the line ends on a stop. "France through the middle at speed"
+        went out without one on ``runs/rephrased/r5b/offside``: a trim or a
+        strip had taken the end of the sentence with the thing it removed,
+        and a synthesiser reads an unpunctuated line straight into the next.
         """
-        text = trim_words(clean_line(proposed.line), max_words)
+        text = _ends_on_a_stop(trim_words(clean_line(proposed.line), max_words))
         if not text:
             # An empty answer is a choice; an answer that was only a label
             # or a pair of quotation marks is a failed one. The difference

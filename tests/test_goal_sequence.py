@@ -36,6 +36,9 @@ from commentary.agents.phraser import (
     is_a_bare_name,
     is_a_thin_call,
     opening_shout,
+    plural_on_one_man,
+    protected_phrases,
+    repeats_the_detail,
     roster_names,
     shared_run,
     unshout,
@@ -275,8 +278,12 @@ async def test_the_goal_call_itself_is_still_shouted() -> None:
 
 
 @pytest.mark.asyncio
-async def test_the_rebuild_beat_may_still_carry_the_name_first() -> None:
-    """Beat 4 is past tense and has never written the shout. It is not checked."""
+async def test_the_rebuild_beat_loses_the_shout_like_every_other_beat() -> None:
+    """Beat 4 was left out of the rule because it had never written the shout.
+
+    On ``runs/rephrased/r5b`` it wrote it twice — "Mbappé! Over the keeper!"
+    and "Mbappé! Off the ground!" — so every line after the call is checked.
+    """
     backend = saying(
         PhrasedLine(line="Mbappé! It was the ball in, and he buried it.", excitement=0.6)
     )
@@ -292,8 +299,8 @@ async def test_the_rebuild_beat_may_still_carry_the_name_first() -> None:
     )
 
     assert phrased is not None
-    assert phrased.line.startswith("Mbappé!")
-    assert not phrased.shout_retry
+    assert phrased.line == "It was the ball in, and he buried it."
+    assert phrased.shout_retry and phrased.shout_rewritten
 
 
 # -- the replay is the rebuild ----------------------------------------------
@@ -904,3 +911,90 @@ async def test_the_goal_call_may_still_be_the_name_alone() -> None:
 
     assert phrased is not None
     assert phrased.line == "Mbappé!"
+
+
+# -- the call's own detail, spent -------------------------------------------
+
+
+CALL_WITH_A_HOW = "Mbappé! Off the ground! Two-two."
+
+
+def test_the_call_spends_its_detail_and_the_score_is_not_one() -> None:
+    assert protected_phrases(CALL_WITH_A_HOW) == ["Off the ground"]
+    assert protected_phrases("Mbappé! Two-one to Argentina.") == []
+    assert protected_phrases("", "the volley buried") == ["the volley buried"]
+
+
+def test_a_beat_that_says_the_call_s_detail_again_is_caught_under_three_words() -> None:
+    """"Off the ground" is two content words and an article.
+
+    The shared-run check needs three words in a row and waves it through; as
+    the call's own detail it is the phrase the listener remembers.
+    """
+    spent = protected_phrases(CALL_WITH_A_HOW)
+
+    assert repeats_the_detail("Mbappé! Off the ground!", spent) == "Off the ground"
+    assert repeats_the_detail("He came off the ground to bury it.", spent) == "Off the ground"
+    assert repeats_the_detail("The keeper never moved a muscle.", spent) == ""
+
+
+@pytest.mark.asyncio
+async def test_a_beat_that_repeats_the_detail_is_dropped() -> None:
+    backend = saying(PhrasedLine(line="It was Mbappé, off the ground.", excitement=0.6))
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Argentina 2 France 2",
+        goal_beat=REBUILD_BEAT,
+        scorer="Kylian Mbappé",
+        roster=["Kylian Mbappé"],
+        already_said=[CALL_WITH_A_HOW],
+        followup=GOAL_BEATS[REBUILD_BEAT],
+    )
+
+    assert phrased is not None
+    assert phrased.line == ""
+    assert phraser.last_reason.startswith("repeat:")
+
+
+# -- a side's verb on one man -----------------------------------------------
+
+
+def test_one_man_is_not_numbers() -> None:
+    sides = ["Argentina", "France"]
+    names = ["Kylian Mbappé"]
+
+    assert plural_on_one_man("Mbappé, arriving in numbers.", names=names, sides=sides)
+    assert plural_on_one_man("Mbappé swarming forward.", names=names, sides=sides)
+    assert not plural_on_one_man("France arriving in numbers.", names=names, sides=sides)
+    assert not plural_on_one_man("Mbappé drives at the defender.", names=names, sides=sides)
+
+
+@pytest.mark.asyncio
+async def test_a_plural_phrase_on_one_man_is_asked_again_and_then_dropped() -> None:
+    backend = saying(PhrasedLine(line="Mbappé, arriving in numbers.", excitement=0.4))
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form().model_copy(update={"event": Event.BUILD_UP}),
+        "Argentina 2 France 1",
+        roster=["Kylian Mbappé"],
+    )
+
+    assert phrased is not None
+    assert phrased.line == ""
+    assert phrased.plural_retry
+    assert phraser.last_reason.startswith("plural_on_one_man:")
+
+
+@pytest.mark.asyncio
+async def test_every_line_that_airs_ends_on_a_stop() -> None:
+    """"France through the middle at speed" went out without one."""
+    backend = saying(PhrasedLine(line="France through the middle at speed", excitement=0.4))
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(a_goal_form().model_copy(update={"event": Event.BUILD_UP}), "")
+
+    assert phrased is not None
+    assert phrased.line == "France through the middle at speed."
