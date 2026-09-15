@@ -1,0 +1,26 @@
+src/commentary/agents/colour.py
+  s_b9d647e85fe0bb::t_fd5f86f7281a2b 2094-2098,2104-2120
+  s_b9d647e85fe0bb::t_e2c658d356e2e1 1780-1788,1790
+  s_b9d647e85fe0bb::t_b71138d43d2764 1467-1490
+  s_b9d647e85fe0bb::t_06d58806d0fb8e 726-731,735-740
+  s_b9d647e85fe0bb::t_6d07b23fd6a729 2121
+tests/test_colour_share.py
+  s_b9d647e85fe0bb::t_8935bcdda3b21a 1291-1295
+  s_b9d647e85fe0bb::t_5433dde8006967 1245-1290,1296-1349
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9de1ed96a4b9a642e85cedb712d168fe516ef975",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
