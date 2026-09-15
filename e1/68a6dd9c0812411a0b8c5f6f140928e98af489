@@ -1,0 +1,29 @@
+docs/research/finetune-plan.md
+  s_d55ab428b62c9f::t_1aa5e834c2b5a3 1-104
+docs/research/tts-research.md
+  s_d55ab428b62c9f::t_1aa5e834c2b5a3 1-58
+docs/HANDOFF.md
+  s_d55ab428b62c9f::t_b51b503ee3392d 6-9
+  s_d55ab428b62c9f::t_13bc8356d2f3ba 10-12
+  s_d55ab428b62c9f::t_e1f54c1825ae87 368-394,410-417,422,428-429,444-493,499-501,505-520,528-532,534-535,548-549,552-553
+  s_d55ab428b62c9f::t_257d3fa08abf36 52-65,68-70,230-234,243-364
+  s_d55ab428b62c9f::t_9714eac03862aa 365,604-608
+README.md
+  s_d55ab428b62c9f::t_d5e78b63d96289 132,390-392
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e168a6dd9c0812411a0b8c5f6f140928e98af489",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
