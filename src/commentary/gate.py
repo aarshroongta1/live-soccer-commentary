@@ -497,12 +497,34 @@ def ordinal_score_spans(text: str) -> list[tuple[int, int]]:
     return sorted(found)
 
 
-def level_claim_spans(text: str) -> list[tuple[int, int]]:
-    """Where the line says the scores are equal without saying a number."""
+def level_claim_spans(text: str, teams: Sequence[str] = ()) -> list[tuple[int, int]]:
+    """Where the line says the scores are equal without saying a number.
+
+    ``teams`` are the two sides' names, for the shape with no verb at all:
+    "France level!" went out at 2-1 and matches nothing that needs a verb.
+    """
     found: list[tuple[int, int]] = []
-    for pattern in _LEVEL_CLAIMS:
+    for pattern in _LEVEL_CLAIMS + team_level_claims(teams):
         found += [(match.start(), match.end()) for match in pattern.finditer(text)]
     return sorted(found)
+
+
+def team_level_claims(teams: Sequence[str]) -> tuple[re.Pattern[str], ...]:
+    """``<Side> level``, ``they're level``: a side named and then the adjective.
+
+    Built per call because the side's name is the match's, not the gate's.
+    "level with" is still an offside and stays out.
+    """
+    names = [re.escape(name.strip()) for name in teams if name and name.strip()]
+    if not names:
+        return ()
+    alternatives = "|".join(names + ["they", "we"])
+    return (
+        re.compile(
+            rf"\b(?:{alternatives})\s+(?:are\s+|is\s+)?(?:all\s+|back\s+)?level\b(?!\s+with\b)",
+            re.IGNORECASE,
+        ),
+    )
 
 
 def _stated_scores(line: str) -> list[tuple[int, int]]:
@@ -1985,7 +2007,7 @@ class FactGate:
         be one ahead of the graphic, so a side a goal behind may be said to
         be levelling while it scores. Nothing else, and the whole line goes.
         """
-        said = _first_match(text, _LEVEL_CLAIMS)
+        said = _first_match(text, _LEVEL_CLAIMS + team_level_claims((state.home, state.away)))
         if said is None:
             return []
         home, away = state.home_score, state.away_score

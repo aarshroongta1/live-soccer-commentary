@@ -994,6 +994,9 @@ def scoreline(home: int, away: int, **kwargs: object) -> MatchState:
         "They're level now.",
         "Back on terms, France.",
         "Parity restored.",
+        "Mbappé! The ball back to centre. France level!",
+        "They're level.",
+        "France are all level.",
     ],
 )
 def test_a_line_that_says_the_scores_are_equal_is_a_scoreline_claim(text: str) -> None:
