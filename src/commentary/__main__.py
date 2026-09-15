@@ -8,6 +8,7 @@
     uv run python -m commentary run --serve          # call a match, in a browser
     uv run python -m commentary replay --trace ... --path clip.mp4 --serve
     uv run python -m commentary rephrase --trace ... --pack clips/pack-x.json
+    uv run python -m commentary register runs/rephrased/x/*.jsonl --no-model
     uv run python -m commentary grade runs/*.jsonl
 """
 
@@ -25,7 +26,7 @@ import numpy as np
 
 from commentary.bus import Bus
 from commentary.capture import DelayBuffer, FileCapture, FrameSource, ScreenCapture
-from commentary.config import SETTINGS, Settings
+from commentary.config import JUDGE_MODEL, SETTINGS, Settings
 from commentary.llm.base import LLMBackend, LLMError
 from commentary.runtime import Runtime, trace_path
 from commentary.trace import RunTrace
@@ -633,6 +634,69 @@ async def cmd_feed(args: argparse.Namespace) -> int:
     return 0
 
 
+def _judge_backend(timeout_s: float) -> LLMBackend:
+    """A backend for grading, which is the opposite of the one for a match.
+
+    :func:`commentary.llm.default_backend` gives every agent the runtime's
+    client: an eight-second timeout and one retry, because a caller line that
+    arrives after the moment has passed is worse than no line. Both settings
+    are wrong here and the first one is what made the first real
+    ``register`` call fail. This is one Opus call reading a whole passage at
+    high effort; it takes minutes, not seconds.
+
+    ``max_retries=0`` matters just as much and for a different reason. A
+    request that times out on the client has very likely been billed on the
+    server, and a retry doubles that spend for an answer nobody ever sees.
+    One invocation of this command is at most one billed call.
+    """
+    import os
+
+    from commentary.llm.base import LLMError
+
+    if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
+        raise LLMError("no Anthropic credentials: set ANTHROPIC_API_KEY in .env, or use --no-model")
+    from commentary.llm.anthropic_backend import AnthropicBackend
+
+    return AnthropicBackend(timeout_s=timeout_s, max_retries=0)
+
+
+async def cmd_register(args: argparse.Namespace) -> int:
+    """Score a trace's commentary against real commentary, and say what it cost.
+
+    Two layers, printed side by side and never averaged. The free one counts
+    line lengths, bare names, repeated openers, gaps and numbers, each beside
+    what a real broadcast measures. The paid one is a single Opus call over
+    the whole line sequence, scoring nine dimensions of register out of ten
+    and quoting the three worst lines back.
+
+    ``--no-model`` runs only the free layer, which is the one to watch from
+    iteration to iteration: it costs nothing, so it can be run on every trace
+    after every phraser change without asking anybody.
+    """
+    from commentary.agents.researcher import load_pack
+    from commentary.grading import register
+
+    pack = load_pack(Path(args.pack)) if args.pack else None
+    backend = None if args.no_model else _judge_backend(args.timeout)
+    if pack is None:
+        # Said out loud, like `rephrase` does: without a team sheet the only
+        # names to check a line against are the ones the trace itself read
+        # off the pictures, so the bare-name and name shares are floors.
+        print("no --pack: names come from the trace's own sightings, so name shares are floors")
+
+    for raw in args.traces:
+        path = Path(raw)
+        report = await register.score_trace(
+            path, pack=pack, backend=backend, model=args.model
+        )
+        out = register.report_path(path)
+        report.write(out)
+        print()
+        print(report.table())
+        print(f"report: {out}")
+    return 0
+
+
 async def cmd_grade(args: argparse.Namespace) -> int:
     """Score traces. With a pack and StatsBomb's files, the whole definition of done.
 
@@ -881,6 +945,25 @@ def build_parser() -> argparse.ArgumentParser:
     fd.add_argument("--away", required=True)
     fd.add_argument("--out", default="feed.json")
     fd.set_defaults(func=cmd_feed)
+
+    reg = sub.add_parser(
+        "register", help="score a trace's commentary against real commentary (needs a key)"
+    )
+    reg.add_argument("traces", nargs="+", help="trace .jsonl files; a rephrased one for the words")
+    reg.add_argument("--pack", help="knowledge pack JSON: the roster a name is counted against")
+    reg.add_argument(
+        "--no-model",
+        action="store_true",
+        help="the counted layer only. Free, no key, no call, and the one to watch per iteration",
+    )
+    reg.add_argument("--model", default=JUDGE_MODEL, help="the judge; one call for the whole trace")
+    reg.add_argument(
+        "--timeout",
+        type=float,
+        default=600.0,
+        help="seconds to wait for the judge. Grading has no deadline; the runtime's eight is wrong",
+    )
+    reg.set_defaults(func=cmd_register)
 
     grade = sub.add_parser("grade", help="score saved traces against StatsBomb")
     grade.add_argument("traces", nargs="+")

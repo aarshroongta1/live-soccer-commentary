@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from commentary.__main__ import _crop_preview, build_parser, cmd_notes, crop_box
+from commentary.config import JUDGE_MODEL
 
 
 def test_a_crop_box_is_four_fractions():
@@ -53,3 +54,15 @@ def test_notes_can_write_somewhere_else():
 def test_notes_needs_a_pack_to_add_notes_to():
     with pytest.raises(SystemExit):
         build_parser().parse_args(["notes"])
+
+
+def test_register_defaults_to_the_judge_and_takes_more_than_one_trace():
+    args = build_parser().parse_args(["register", "a.jsonl", "b.jsonl"])
+    assert args.traces == ["a.jsonl", "b.jsonl"]
+    assert args.no_model is False
+    assert args.model == JUDGE_MODEL
+
+
+def test_register_can_be_run_for_nothing():
+    args = build_parser().parse_args(["register", "a.jsonl", "--no-model"])
+    assert args.no_model is True
