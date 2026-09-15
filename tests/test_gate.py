@@ -47,9 +47,22 @@ def pack() -> KnowledgePack:
     )
 
 
+class _State(MatchState):
+    """The fixture state, plus one shorthand the replay tests lean on.
+
+    A replay rule turns on what the match has already had, so every one of
+    those tests needs the same state with a different ``last_events``. A
+    method on the fixture keeps that one word wide instead of a
+    ``model_copy`` per test.
+    """
+
+    def _replace_events(self, events: list[Event]) -> MatchState:
+        return self.model_copy(update={"last_events": events})
+
+
 @pytest.fixture
-def state() -> MatchState:
-    return MatchState(
+def state() -> _State:
+    return _State(
         home="Northvale United", away="Carrowmere City", home_score=2, away_score=1, clock="61:20"
     )
 
@@ -227,16 +240,120 @@ def test_a_past_tense_goal_backed_by_a_pack_note_is_not_a_claim(pack, state):
     assert gate.judge(call("It is a goal kick to Carrowmere"), state, pack).passed
 
 
-def test_a_replay_never_passes(pack, state):
+def test_a_replay_is_called_as_a_replay(pack, state):
+    """The blanket refusal is gone, and what replaced it is three questions.
+
+    ``scene_replay`` refused every replay-scene line outright, and on
+    ``runs/trigger/mbappe/file-20260913-185228.jsonl`` that is thirty-six
+    seconds of silence after a penalty while the caller wrote four accurate
+    replay lines. Real commentary talks over replays more than anywhere else
+    (``docs/research/real-commentary-corpus.md`` section 3.2), so the scene is
+    not the refusal any more.
+    """
     gate = FactGate()
     verdict = gate.judge(
-        call("Krastanov turns his man beautifully", scene=Scene.REPLAY),
+        call(
+            "Krastanov turned his man beautifully",
+            scene=Scene.REPLAY,
+            event=Event.SHOT,
+        ),
+        state._replace_events([Event.SHOT]),
+        pack,
+    )
+    assert verdict.passed
+    assert verdict.line == "Krastanov turned his man beautifully"
+
+
+def test_a_replay_of_something_that_never_happened_is_refused(pack, state):
+    """A replay is a second look. There has to have been a first one."""
+    gate = FactGate()
+    verdict = gate.judge(
+        call("Ferreiro was caught late by the trailing leg", scene=Scene.REPLAY, event=Event.FOUL),
         state,
+        pack,
+    )
+    assert not verdict.passed
+    assert verdict.reasons == ["replay_of_nothing: no foul in the state for this replay"]
+
+
+def test_a_replay_of_a_foul_the_state_holds_passes(pack, state):
+    gate = FactGate()
+    verdict = gate.judge(
+        call("Ferreiro was caught late by the trailing leg", scene=Scene.REPLAY, event=Event.FOUL),
+        state._replace_events([Event.FOUL]),
+        pack,
+    )
+    assert verdict.passed
+
+
+def test_a_replay_never_restates_the_score(pack, state):
+    """The score went out on the live call, and the bug is off the screen."""
+    gate = FactGate()
+    verdict = gate.judge(
+        call("That was the goal that made it two-one", scene=Scene.REPLAY, event=Event.GOAL),
+        state._replace_events([Event.GOAL]),
+        pack,
+        goal_in_state=True,
+    )
+    assert not verdict.passed
+    assert "replay_score: a replay line never restates the score" in verdict.reasons
+
+
+def test_a_replay_that_reads_as_live_is_refused(pack, state):
+    gate = FactGate()
+    verdict = gate.judge(
+        call("Peñaló swings a leg and it's in", scene=Scene.REPLAY, event=Event.GOAL),
+        state._replace_events([Event.GOAL]),
+        pack,
+        goal_in_state=True,
+    )
+    assert not verdict.passed
+    assert "replay_as_live: it's in" in verdict.reasons
+
+
+def test_a_replay_may_rebuild_a_goal_the_score_already_counts(pack, state):
+    """Beat 4 over the replay: past tense, named, and no number in it."""
+    gate = FactGate()
+    verdict = gate.judge(
+        call(
+            "Kimbanda dug it out of his feet and Peñaló buried the rebound",
+            scene=Scene.REPLAY,
+            event=Event.GOAL,
+        ),
+        state._replace_events([Event.GOAL]),
+        pack,
+        goal_in_state=True,
+    )
+    assert verdict.passed
+
+
+def test_a_replay_may_not_claim_a_goal_the_score_does_not_count(pack, state):
+    gate = FactGate()
+    verdict = gate.judge(
+        call("Peñaló had buried the rebound", scene=Scene.REPLAY, event=Event.GOAL),
+        state._replace_events([Event.SHOT]),
         pack,
         board_changed=True,
     )
     assert not verdict.passed
-    assert verdict.reasons == ["scene_replay: a replay is never called as live"]
+    assert "replay_goal: a goal on a replay the score does not count" in verdict.reasons
+
+
+def test_every_other_rule_still_runs_on_a_replay(pack, state):
+    """A name on no roster is still a name on no roster, replay or not."""
+    gate = FactGate()
+    verdict = gate.judge(
+        call(
+            "The ball came off Zaltimore and away it went",
+            scene=Scene.REPLAY,
+            event=Event.BUILD_UP,
+        ),
+        state,
+        pack,
+    )
+    assert verdict.passed
+    assert "Zaltimore" not in verdict.line
+    assert any(r.startswith("trimmed_name: Zaltimore") for r in verdict.reasons)
 
 
 def test_trimming_an_unverifiable_name_leaves_a_line_worth_saying(pack, state):

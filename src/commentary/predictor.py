@@ -84,12 +84,21 @@ DEAD_BALL = frozenset(
 )
 
 
-def phase_of(event: Event | None) -> str:
+def phase_of(event: Event | None, *, replay: bool = False) -> str:
     """Which of the three rates a line about ``event`` earns.
 
     ``None`` is a line filed under no phase — the colour seat's — and takes
     the default cap rather than a guess.
+
+    ``replay`` is the broadcast's own dead ball and outranks the event. A
+    replay of a shot is not an attacking move: the ball is not in play behind
+    it, nobody is about to score, and the 2.5 s cap an attacking move earns
+    would have the voice back over the next replay angle before the last line
+    had landed. Study section 2.3's dead-ball gap is 4.5 s and a stoppage's
+    is 4.6, and a replay is what a broadcast shows during both.
     """
+    if replay:
+        return "dead_ball"
     if event is None or event is Event.NONE:
         return "none"
     if event in ATTACKING:
@@ -126,7 +135,13 @@ class SpeakPredictor:
             return 0.0
         return (silence_s - start) / (forces - start)
 
-    def cap_for(self, last_event: Event | None, colour_stretch: float = 0.0) -> float:
+    def cap_for(
+        self,
+        last_event: Event | None,
+        colour_stretch: float = 0.0,
+        *,
+        last_was_replay: bool = False,
+    ) -> float:
         """The longest the voice ever waits after a line about ``last_event``.
 
         ``colour_stretch`` is the second voice's shortfall, 0 to 1, out of
@@ -147,7 +162,7 @@ class SpeakPredictor:
             "build_up": self._build_up_cap(colour_stretch),
             "dead_ball": self.caller.min_gap_dead_ball_s,
         }
-        return caps.get(phase_of(last_event), self.caller.min_gap_s)
+        return caps.get(phase_of(last_event, replay=last_was_replay), self.caller.min_gap_s)
 
     def _build_up_cap(self, colour_stretch: float) -> float:
         reach = max(0.0, min(1.0, colour_stretch))
@@ -159,13 +174,15 @@ class SpeakPredictor:
         last_spoken_seconds: float | None,
         last_event: Event | None = None,
         colour_stretch: float = 0.0,
+        *,
+        last_was_replay: bool = False,
     ) -> float:
         """How long the voice owes the last line before the next one.
 
         ``None`` for the length means nobody recorded how long it took, and
         the honest answer then is the phase's cap on its own.
         """
-        cap = self.cap_for(last_event, colour_stretch)
+        cap = self.cap_for(last_event, colour_stretch, last_was_replay=last_was_replay)
         if last_spoken_seconds is None:
             return cap
         earned = last_spoken_seconds + self.caller.gap_after_line_s
@@ -180,12 +197,15 @@ class SpeakPredictor:
         after_goal: bool = False,
         last_spoken_seconds: float | None = None,
         last_event: Event | None = None,
+        last_was_replay: bool = False,
         last_quiet_ts: float | None = None,
         colour_stretch: float = 0.0,
     ) -> SpeakDecision:
         """One tick's verdict, with a reason a human reading a trace can act on.
 
-        ``last_event`` is what the last line was about and picks the rate.
+        ``last_event`` is what the last line was about and picks the rate,
+        unless ``last_was_replay`` says the last line was said over a replay,
+        which takes the dead-ball rate whatever the event was.
         ``last_quiet_ts`` is when the phraser last chose to say nothing: it
         holds the rate cap off without touching the pressure that stops the
         broadcast going mute. ``colour_stretch`` is how far the second voice
@@ -210,7 +230,9 @@ class SpeakPredictor:
         urgency = min(1.0, base + pressure * (1.0 - base))
 
         forced = silence_s >= self.cfg.silence_forces_at_s
-        gap = self.gap_after(last_spoken_seconds, last_event, colour_stretch)
+        gap = self.gap_after(
+            last_spoken_seconds, last_event, colour_stretch, last_was_replay=last_was_replay
+        )
         # The cap runs from whichever came later, the last line or the last
         # decision to pass over a moment. Pressure, above, runs from the last
         # line only: a chosen silence is still silence to a listener.

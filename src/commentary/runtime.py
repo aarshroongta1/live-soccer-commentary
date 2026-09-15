@@ -48,7 +48,7 @@ from commentary.agents.phraser import Phraser
 from commentary.bus import Bus, Topic
 from commentary.capture.audio import CutDetector
 from commentary.capture.buffer import DelayBuffer, Frame
-from commentary.config import SETTINGS, Settings
+from commentary.config import SETTINGS, ReplayTalkConfig, Settings
 from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate, claims_goal, facts_used, fold, is_the_same_name
 from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
@@ -107,6 +107,56 @@ GOAL_GRAPHIC_LAG_S = 10.0
 #: The cap exists because the restart can be missed: no kickoff line
 #: written. Past it the picture has moved on whatever the caller says.
 GOAL_TALK_CAP_S = 150.0
+
+@dataclass
+class ReplaySequence:
+    """How many lines this run of replay pictures has had, and when.
+
+    Two things the model cannot know and a rate cap cannot decide. Whether
+    the replay has already been named as one — "as we see it again" belongs
+    to the first line of a sequence and nowhere else
+    (``docs/research/real-commentary-corpus.md`` section 3.2: "Watch this." /
+    "Rakitic into Messi." / "Brilliant touch … and a fine finish" is one
+    sequence at 37:24, and only the first of the three says it is a replay) —
+    and how many angles of the same tackle the voice has already talked over.
+    Three is the longest run in the corpus.
+
+    Fed every replay *look*, spoken or not, because the sequence is a fact
+    about the pictures rather than about this system: a broadcaster cutting
+    back to the game and then to another replay has started a second one.
+    """
+
+    cfg: ReplayTalkConfig = field(default_factory=ReplayTalkConfig)
+    #: When the last replay form arrived, which is what separates sequences.
+    last_look: float | None = None
+    #: When the last replay line was *spoken*, for the spacing.
+    last_said: float | None = None
+    #: How many have been spoken in this sequence.
+    said: int = 0
+
+    def look(self, ts: float) -> None:
+        """A replay form arrived. Starts a new sequence if the gap is long."""
+        if self.last_look is None or ts - self.last_look > self.cfg.sequence_gap_s:
+            self.said = 0
+            self.last_said = None
+        self.last_look = ts
+
+    @property
+    def first(self) -> bool:
+        """Is the next line the first of this sequence, and so allowed to name it?"""
+        return self.said == 0
+
+    def may_speak(self, ts: float) -> bool:
+        """Is there room in this sequence for a line at ``ts``?"""
+        if self.said >= self.cfg.max_lines:
+            return False
+        return self.last_said is None or ts - self.last_said >= self.cfg.min_gap_s
+
+    def spoke(self, ts: float) -> None:
+        """A replay line went out."""
+        self.said += 1
+        self.last_said = ts
+
 
 #: How long a name stays on the ball. The caller reads a shirt, the player
 #: turns, and the number is gone while the move it is part of is still going
@@ -268,6 +318,12 @@ class Runtime:
         #: What the last line was about, which picks which of the three rates
         #: the cap uses. See :func:`commentary.predictor.phase_of`.
         self._last_spoken_event: Event | None = None
+        #: Whether that last line was about a replay, which takes the
+        #: dead-ball rate whatever the event was. See :meth:`_mark_spoken`.
+        self._last_spoken_replay: bool = False
+        #: The run of replay pictures the broadcast is on, and how much of it
+        #: has been talked over.
+        self.replays = ReplaySequence(cfg=self.settings.replay_talk)
         #: When the phraser last chose to say nothing. It holds the rate cap
         #: off so the next tick does not send the caller straight back out,
         #: and it deliberately does not touch the silence pressure: a chosen
@@ -580,6 +636,7 @@ class Runtime:
                 after_goal=self._said_a_goal,
                 last_spoken_seconds=self._last_spoken_seconds,
                 last_event=self._last_spoken_event,
+                last_was_replay=self._last_spoken_replay,
                 last_quiet_ts=self._last_quiet_ts,
                 # The lead's build-up cap opens while the second voice is
                 # short of its share of the channel. See
@@ -983,10 +1040,37 @@ class Runtime:
         # says none of them, and those forms are the only account anywhere of
         # how the goal was scored. Beat 4 rebuilds the move out of them.
         self.follow.saw_form(line)
+        # A replay moves nothing. ``apply_caller`` and ``Ledger.saw_form``
+        # each drop a replay form of their own accord — the second goal of a
+        # match must not become the third because the broadcast showed the
+        # first one again — and the restart is the third of the same kind: the
+        # caller wrote "kickoff, live play" over a replay of a goal on the
+        # second real run and ended goal talk sixty seconds early. The
+        # sightings are the exception and stay: a shirt number legible in a
+        # replay is a number that was legible, and the registry is a map from
+        # numbers to names rather than a record of what has happened.
+        replay = line.scene is Scene.REPLAY
+        if replay:
+            # Every look, spoken or not: the sequence is a fact about what
+            # the broadcast is showing, not about what this system said.
+            self.replays.look(cursor)
         self.state_tracker.apply_caller(line, cursor)
-        self._note_restart(line, cursor)
+        if not replay:
+            self._note_restart(line, cursor)
         self._bind_sightings(line, cursor)
         if not line.speak or not line.line.strip():
+            return
+        if replay and not self.replays.may_speak(cursor):
+            # Three angles of the same tackle is where a commentator stops,
+            # and two lines four seconds apart is as fast as the corpus's own
+            # replay runs go. Refused here rather than after the phraser,
+            # because the model call is the expensive half.
+            self._publish(
+                Topic.STATUS,
+                cursor,
+                reason="replay_spent",
+                said=self.replays.said,
+            )
             return
 
         # Seeing is done; speaking is a separate call. What the gate judges
@@ -1032,7 +1116,12 @@ class Runtime:
         # camera cut that every broadcaster makes the instant a goal goes in.
         # A goal is a goal whatever put the ball there.
         event = Event.GOAL if claims_goal(verdict.line, line.event) else line.event
-        self._said_a_goal = event is Event.GOAL
+        # A replay is not an event happening. It does not open the four
+        # seconds after a goal that the rate cap is told never to hold, and
+        # it never holds the channel against live football: the whole of what
+        # makes a replay line safe to say is that the moment the game is back
+        # on the screen, the line about the last one can be dropped.
+        self._said_a_goal = event is Event.GOAL and not replay
         beat = Beat(
             id=next_beat_id(),
             voice=Voice.CALLER,
@@ -1043,15 +1132,21 @@ class Runtime:
             event=event,
             excitement=excitement,
             triggers=triggers,
-            preemptable=event not in (Event.GOAL, Event.PENALTY),
+            preemptable=replay or event not in (Event.GOAL, Event.PENALTY),
         )
         self.director.submit(beat)
+        if replay:
+            self.replays.spoke(cursor)
         self._lead_beats += 1
         self.colour.saw_lead_line(cursor, verdict.line)
         if self.phraser is not None:
             self.phraser.accept(verdict.line, line.event)
-        self._remember_on_the_ball(line, verdict.line, cursor)
-        self._mark_spoken(cursor, verdict.line, line.event)
+        if not replay:
+            # Who was on the ball in a replay is who was on the ball a minute
+            # ago. Carrying that name into the next live line would name the
+            # wrong man for the phase that is actually on the screen.
+            self._remember_on_the_ball(line, verdict.line, cursor)
+        self._mark_spoken(cursor, verdict.line, line.event, replay=replay)
         self._publish_threads(
             cursor, self.threads.said(verdict.line, ts=cursor, pack=self.pack), "used"
         )
@@ -1061,7 +1156,7 @@ class Runtime:
         # spends one of its beats. Then, if the caller leaves the kind of
         # silence it left after the Mbappé penalty — 24 seconds, because
         # every picture in between was a replay — the gap is filled.
-        if event is Event.GOAL and self.follow.is_the_call(cursor):
+        if event is Event.GOAL and self.follow.is_the_call(cursor) and not replay:
             self.follow.arm(cursor, line, verdict.line, self.pack)
             # Whose goal it was is the one thing the board never knows, and
             # every running count about him is wrong from this second on.
@@ -1072,7 +1167,11 @@ class Runtime:
         if self.follow.active(cursor) and self._goal_turn is None:
             self._goal_turn = asyncio.create_task(self._fill_the_goal_window())
         # -- end of the goal window --------------------------------------
-        if line.event is not Event.NONE:
+        if line.event is not Event.NONE and not replay:
+            # "Whatever just happened" is a question about the live picture.
+            # A replay of the foul is not a second foul, and the ten seconds
+            # in which a penalty's kick and its goal sit apart do not restart
+            # because the broadcast showed the kick again.
             self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
@@ -1131,6 +1230,7 @@ class Runtime:
             followup=followup,
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
+            replay_first=self.replays.first,
         )
         if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:
             self._publish(
@@ -1272,7 +1372,9 @@ class Runtime:
         names += [s.name for s in line.sightings if s.name]
         return names
 
-    def _mark_spoken(self, cursor: float, text: str, event: Event | None = None) -> None:
+    def _mark_spoken(
+        self, cursor: float, text: str, event: Event | None = None, *, replay: bool = False
+    ) -> None:
         """Remember when the voice was last given a line, and how long a one.
 
         The length is the speaker's own arithmetic — words over
@@ -1281,9 +1383,17 @@ class Runtime:
         come half a second after the beat is submitted, before a word of it
         has been spoken, and a cap that waits for the measurement would spend
         every short line's window using the previous line's length.
+
+        ``replay`` picks the rate rather than the event does. A replay is the
+        broadcast's own dead ball — the ball is not in play behind it and the
+        corpus's gaps over one run with the restarts, not with the move being
+        shown (``docs/research/real-commentary-corpus.md`` section 2.3) — so a
+        line about a replayed shot takes the 5.0 s dead-ball cap and not the
+        2.5 s of an attacking move.
         """
         self._last_spoken_video_ts = cursor
         self._last_spoken_event = event
+        self._last_spoken_replay = replay
         self._last_quiet_ts = None
         words = len(text.split())
         self._last_spoken_seconds = words / WORDS_PER_SECOND if words else None

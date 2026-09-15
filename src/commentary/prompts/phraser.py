@@ -67,6 +67,7 @@ KIND_LABELS = {
     "substitution": "A substitution",
     "injury": "An injury, a stoppage",
     "restatement": "The score and the clock, restated",
+    "replay": "A replay, talked over in the past tense",
     "aside": "The second voice, between passages",
 }
 
@@ -98,6 +99,11 @@ SHOWN = {
     "substitution": 4,
     "injury": 3,
     "restatement": 5,
+    # Six of the ten the captions gave, which is the whole of what this
+    # system has ever been shown about talking over a replay: the mode is
+    # new, the register is unlike anything else in the set (past tense from
+    # the first verb), and there is no neighbouring kind to borrow it from.
+    "replay": 6,
     "aside": 5,
 }
 
@@ -619,8 +625,13 @@ def notes_allowed(line: CallerLine) -> bool:
     Asked here rather than by the runtime so that the answer is part of the
     prompt the prompt module builds, and so that a test can drive the builder
     with a penalty and a goal and see the difference without a model.
+
+    Never on a replay, whatever the event. A replay line is a past-tense
+    account of one concrete thing the picture is showing, and a number
+    dropped into it is the one shape :func:`replay_block` forbids outright —
+    so the clauses are not offered rather than offered and refused.
     """
-    return line.event in QUIET_EVENTS
+    return line.scene is not Scene.REPLAY and line.event in QUIET_EVENTS
 
 
 def phraser_blocks(
@@ -636,6 +647,7 @@ def phraser_blocks(
     last_event: Event | None = None,
     followup: str = "",
     ledger: Sequence[LedgerFact] = (),
+    replay_first: bool = True,
 ) -> list[Block]:
     """One call's content. Text only, and deliberately small.
 
@@ -654,6 +666,11 @@ def phraser_blocks(
     this match, written by :mod:`commentary.ledger` out of the calls already
     made. Shown under the notes, on the same quiet moments and under the same
     rule, and checked afterwards by the gate's ``ledger_claim``.
+
+    ``replay_first`` only means anything when the form is a replay, and it is
+    the one thing about a replay the model cannot see: whether an earlier
+    line in this same sequence has already said we are watching it again. See
+    :func:`replay_block`.
     """
     return [
         text_block(
@@ -669,6 +686,7 @@ def phraser_blocks(
                 last_event,
                 followup,
                 ledger,
+                replay_first,
             )
         )
     ]
@@ -798,6 +816,70 @@ def goal_followup_block(
     return "\n".join(lines)
 
 
+def replay_block(event: Event, *, first: bool) -> str:
+    """What to write over a replay, and whether this is the first of them.
+
+    The lead used to say nothing at all here. On
+    ``runs/trigger/mbappe/file-20260913-185228.jsonl`` the penalty is
+    conceded at 12.9 s and the next spoken line is at 49.0 s, and in between
+    the caller wrote four accurate replay lines that three separate layers
+    refused. Real commentary does the opposite: section 3.2 of
+    ``docs/research/real-commentary-corpus.md`` has the whole vocabulary —
+    "As we see …", "Having seen the replay …", "Watch this." — and section
+    2.4's half-minute after a goal is seven utterances, most of them over a
+    replay.
+
+    ``first`` is the thing the model cannot know and the corpus is strict
+    about: the replay is named once per sequence and then talked through.
+    "Watch this." / "Rakitic into Messi." / "Brilliant touch … and a fine
+    finish" is one sequence at 37:24, and only the first of the three says
+    it is a replay.
+
+    This block replaces the goal follow-up block when a replay arrives
+    inside a goal window, rather than joining it. Beat 4 *is* this line —
+    the past-tense rebuild of the move — and beat 2 is a present-tense
+    shout, which is the one thing a replay line may never be.
+    """
+    named = event.value.replace("_", " ")
+    lines = [
+        f"THIS IS A REPLAY OF A {named.upper()}. The game is not running behind these",
+        "pictures: the viewer is watching the incident again, slowed down or from",
+        "another angle, and what you say is about something that has already",
+        "happened.",
+        "",
+        "PAST TENSE FROM THE FIRST VERB. Not from the second clause — this is the",
+        "one thing this line gets wrong. Real replay talk:",
+        "",
+        "  It was a good first time pass as well from Ivan Rakitić.",
+        "  You see in the replay the ball actually came off Ronaldo's knee.",
+        "  Having seen the replay, Suárez played the ball while he was down on the ground.",
+        "  Wonderful turn to get beyond the full-back.",
+        "",
+        "Six to twenty words. The concrete thing on the form is the point of the",
+        "line — the contact, the touch, the body part, the finish — because that is",
+        "what the replay is showing and the reason it is on screen.",
+        "",
+        "No score, in figures or in words. No tally, no count, no ordinal. Nothing",
+        "in the present tense that could be mistaken for a call: not \"and it's in\",",
+        "not \"he scores\", not a shout.",
+    ]
+    if first:
+        lines += [
+            "",
+            "THIS IS THE FIRST LINE OF THIS REPLAY. You may name it as one, once:",
+            '"as we see it again", "having seen the replay", "watch this". Once is',
+            "the whole allowance for the sequence.",
+        ]
+    else:
+        lines += [
+            "",
+            "THIS REPLAY HAS ALREADY BEEN NAMED. A line earlier in this sequence said",
+            "we were watching it again, so do not say so a second time. Go straight",
+            "at what it shows.",
+        ]
+    return "\n".join(lines)
+
+
 #: The three forms that are one moment for the purposes of silence. The
 #: corpus counts carries and passes in build-up together and finds 24% of
 #: them pass with nothing said at all (study section 3.1a), and the caller
@@ -816,6 +898,11 @@ def _silence_nudge(line: CallerLine, last_event: Event | None) -> str:
     every time. So the condition is computed here, in code, and said again
     where the model is actually looking.
     """
+    if line.scene is Scene.REPLAY:
+        # A replay has its own block and its own reason for existing. The
+        # nudge would tell it to say nothing about a picture that was put on
+        # screen precisely to be talked about.
+        return ""
     if line.event in BUILD_UP_FORMS and last_event in BUILD_UP_FORMS:
         return (
             "\nTHE LAST LINE WAS THIS SAME KIND OF MOMENT. If it was about this same\n"
@@ -843,13 +930,20 @@ def _body(
     last_event: Event | None = None,
     followup: str = "",
     ledger: Sequence[LedgerFact] = (),
+    replay_first: bool = True,
 ) -> str:
     said = (
         "\n".join(f"  - {text.strip()}" for text in recent_lines if text.strip())
         or "  (nothing said yet)"
     )
     state = state_summary.strip() or "Not established yet."
-    after = f"{followup.strip()}\n\n" if followup.strip() else ""
+    if line.scene is Scene.REPLAY:
+        # Instead of the goal follow-up, never alongside it: beat 4 is a
+        # past-tense rebuild of the move and so is this, and beat 2 is a
+        # present-tense shout, which a replay line may never be.
+        after = replay_block(line.event, first=replay_first) + "\n\n"
+    else:
+        after = f"{followup.strip()}\n\n" if followup.strip() else ""
     return (
         f"THE TEAMS\n  {home} (home) v {away} (away)\n\n"
         f"{_state_heading(line)}\n"
@@ -877,7 +971,11 @@ def _state_heading(line: CallerLine) -> str:
     heading has to say so or the rule about not repeating the score wins the
     argument and the beat never appears.
     """
-    if line.event is not Event.GOAL:
+    # A replay takes the plain heading whatever the event: no score is
+    # appended to a replay line, so the goal heading below — which exists to
+    # tell the model the broadcast is about to write the number for it —
+    # would be promising something that does not happen.
+    if line.event is not Event.GOAL or line.scene is Scene.REPLAY:
         return "MATCH STATE — for context only. Never say the score or the clock."
     return (
         "MATCH STATE — for context only, on a goal as much as anywhere else.\n"

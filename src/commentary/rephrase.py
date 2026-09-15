@@ -72,7 +72,7 @@ from commentary.goalfollow import FOLLOWUP_S, GoalFollowup, blocks_restatement
 from commentary.ledger import CONTEXT_FACTS, Ledger
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import LLMBackend
-from commentary.runtime import CARRY_NAME_S, GOAL_GRAPHIC_LAG_S
+from commentary.runtime import CARRY_NAME_S, GOAL_GRAPHIC_LAG_S, ReplaySequence
 from commentary.schemas import (
     Beat,
     CallerLine,
@@ -81,6 +81,7 @@ from commentary.schemas import (
     KnowledgePack,
     MatchState,
     PhrasedLine,
+    Scene,
     Voice,
 )
 from commentary.scoreline import Numbers, Restatements, settle_numbers
@@ -134,6 +135,9 @@ class Line:
     #: An extra call made in a gap the caller left in the thirty seconds
     #: after a goal.
     synthetic: bool = False
+    #: A line said over a replay, out of a caller form the original run
+    #: never spoke. See :func:`rephrase`'s replay handling.
+    replay: bool = False
     #: The phraser chose to say nothing, which is a line in itself. Real
     #: commentary passes over 43% of goal kicks and a quarter of build-up
     #: touches (the corpus study, section 3), and counting the ones this
@@ -157,6 +161,8 @@ class Line:
             marks.append("by code")
         if self.synthetic:
             marks.append("extra")
+        if self.replay:
+            marks.append("replay")
         return "passed " + " ".join(marks) if marks else "passed"
 
     @property
@@ -467,13 +473,36 @@ async def rephrase(
             follow.saw_form(forms[fed][1])
             fed += 1
 
-    #: When the lead speaks, for the gap arithmetic that decides whether a
-    #: follow-up beat has to be synthesised.
-    beat_times = sorted(
+    #: Every replay form with words in it, in order. These are the lines the
+    #: original run never said: the caller filled the form in and three
+    #: layers — its own veto, the gate's ``scene_replay`` and the runtime's
+    #: ``speak`` check — threw it away. Replay mode says them.
+    replay_times = [
+        ts for ts, form in forms if form.scene is Scene.REPLAY and form.line.strip()
+    ]
+
+    #: The run of replay pictures, and how much of it has been talked over.
+    #: The same object the runtime uses, so live and offline agree about what
+    #: a sequence is and how many lines it gets.
+    replays = ReplaySequence(cfg=settings.replay_talk)
+
+    #: When the lead spoke in the original run. What a replay line has to
+    #: stay clear of: everything in this list is already in the trace.
+    lead_times = sorted(
         float(row.get("ts", 0.0))
         for row in rows
         if row.get("topic") == Topic.BEAT.value and row.get("voice") == Voice.CALLER.value
     )
+
+    #: When the lead speaks, for the gap arithmetic that decides whether a
+    #: follow-up beat has to be synthesised. The replay candidates are in
+    #: here too, and that is how the goal window learns to prefer a replay
+    #: rebuild over a synthesised one: ``GoalFollowup.synth_times`` takes the
+    #: next lead line as its ``until``, and a replay four seconds away closes
+    #: the gap the synthesiser was going to fill. Two voices rebuilding the
+    #: same move is worse than one, and the replay is the one with a picture
+    #: behind it.
+    beat_times = sorted([*lead_times, *replay_times])
 
     async def extra(at: float, state: MatchState) -> bool:
         """One phraser call the caller never asked for, inside a goal window.
@@ -596,12 +625,176 @@ async def rephrase(
         )
         return verdict.passed
 
+    async def replay_line(row: dict[str, Any]) -> None:
+        """Say a replay form the original run threw away, in the past tense.
+
+        This is the offline half of replay mode. On
+        ``runs/trigger/mbappe/file-20260913-185228.jsonl`` the penalty is
+        conceded at 12.9 s and the next spoken line is at 49.0 s, and in
+        between sit four accurate replay forms — "The replay: driving across,
+        the leg in behind him, and down he goes." — with ``speak`` false,
+        because the caller vetoed its own replays before the gate ever saw
+        them. Every trace on disk was recorded that way, so eligibility here
+        deliberately ignores ``speak``: the form is the evidence, and the flag
+        is a record of a rule that no longer exists.
+
+        Three things bound it, and none of them is the gate's job:
+
+        * one line per :attr:`~commentary.config.ReplayTalkConfig.min_gap_s`
+          and at most ``max_lines`` per sequence, which is
+          :class:`~commentary.runtime.ReplaySequence` — the same object the
+          live runtime counts with, so the two agree about what a sequence is;
+        * clear of a line the lead already has, by ``clear_of_a_beat_s``: a
+          rewritten trace already has a beat at that second, and two voices on
+          one moment is worse than one;
+        * and the sequence is fed every look, spoken or not, because a
+          broadcaster cutting back to the game and then to another angle has
+          started a second replay.
+
+        What comes out is an ordinary lead beat — ``voice: caller``, at the
+        form's own timestamp — so the register measurement and the colour pass
+        see it as the lead line it is. The ``replay`` flag on the beat and on
+        the phrased row is for the trace printer and the counts; nothing
+        downstream reads it.
+        """
+        ts = float(row.get("ts", 0.0))
+        form = _caller_line({k: v for k, v in row.items() if k not in ("topic", "ts")})
+        if form is None or form.scene is not Scene.REPLAY:
+            return
+        replays.look(ts)
+        if not form.line.strip() or not replays.may_speak(ts):
+            return
+        if any(abs(ts - at) <= settings.replay_talk.clear_of_a_beat_s for at in lead_times):
+            return
+
+        state = _state_at(states, ts) or teams
+        threads.see_state(state)
+        ledger.see_state(state)
+        feed(ts)
+        names = [s.name for s in form.sightings if s.name]
+        names += [state.home, state.away]
+        phrased = await phraser.phrase(
+            form,
+            _summary(state),
+            # No carry, no notes, no counts. A replay line is a past-tense
+            # account of one concrete thing on the picture: who is on the ball
+            # is a fact about live play, and a number is the one shape
+            # ``replay_block`` forbids outright.
+            replay_first=replays.first,
+        )
+        usd = phraser.last_usage.cost_usd
+        out.cost_usd += usd
+        if phrased is None or not phrased.line.strip():
+            return
+        # The score never goes on a replay line, so the strip runs with
+        # nothing to append: whatever number the model reached for comes out
+        # before the gate reads the line.
+        settled = settle_numbers(
+            phrased.line,
+            state=state,
+            side=form.side,
+            goal_in_state=cover.goal_in_state(ts),
+            append=False,
+        )
+        if not settled.line.strip():
+            return
+        verdict = gate.judge(
+            form.model_copy(update={"line": settled.line, "speak": True}),
+            state,
+            pack,
+            # Nothing outside the replay is cover for it. The gate's replay
+            # rule reads ``goal_in_state`` on its own: the score already
+            # counting the goal is the only thing that lets a replay line
+            # mention one at all.
+            board_changed=False,
+            goal_in_state=cover.goal_in_state(ts),
+            at=ts,
+            notes=threads.notes(),
+            ledger=counts_for(ts, names),
+        )
+        out.rows.append(
+            {
+                "topic": Topic.PHRASED.value,
+                "ts": ts,
+                "original": form.line,
+                "line": settled.line,
+                "excitement": phrased.excitement,
+                "event": form.event.value,
+                "form_event": form.event.value,
+                "usd": round(usd, 6),
+                "replay": True,
+                "opener_retry": phrased.opener_retry,
+                "name_retry": phrased.name_retry,
+                "score_stripped": list(settled.stripped),
+                "tokens_in": phraser.last_usage.input_tokens,
+                "cache_read": phraser.last_usage.cache_read_tokens,
+                "cache_write": phraser.last_usage.cache_write_tokens,
+            }
+        )
+        if verdict.passed:
+            out.rows.append(
+                {
+                    "topic": Topic.BEAT.value,
+                    "ts": ts,
+                    "id": f"replay-{ts:.1f}",
+                    "voice": Voice.CALLER.value,
+                    "text": verdict.line,
+                    "video_ts": ts,
+                    "created_ts": 0.0,
+                    "live_ts": ts,
+                    # The form's own event, never promoted to a goal by the
+                    # words, and always preemptable: the whole of what makes a
+                    # replay line safe to say is that the moment the game is
+                    # back on the screen it can be dropped.
+                    "event": form.event.value,
+                    "excitement": phrased.excitement,
+                    "preemptable": True,
+                    "replay": True,
+                }
+            )
+            phraser.accept(verdict.line, form.event)
+            replays.spoke(ts)
+            lead_times.append(ts)
+            if follow.active(ts):
+                # Inside a goal window the replay line *is* the rebuild, so it
+                # spends the beat the synthesiser would have spent on one.
+                follow.said(ts)
+        else:
+            out.rows.append(
+                {
+                    "topic": Topic.GATE.value,
+                    "ts": ts,
+                    "passed": False,
+                    "reasons": verdict.reasons,
+                    "line": settled.line,
+                    "event": form.event.value,
+                    "where": "replay",
+                }
+            )
+        out.lines.append(
+            Line(
+                ts=ts,
+                original=form.line,
+                phrased=verdict.line if verdict.passed else settled.line,
+                excitement=phrased.excitement,
+                passed=verdict.passed,
+                reason="; ".join(verdict.reasons)[:60],
+                usd=usd,
+                event=form.event,
+                form_event=form.event,
+                stripped=settled.stripped,
+                replay=True,
+            )
+        )
+
     for row in rows:
         topic = row.get("topic", "")
         if topic in DROPPED:
             continue
         if topic != Topic.BEAT.value or row.get("voice") != Voice.CALLER.value:
             out.rows.append(row)
+            if topic == Topic.CALLER.value:
+                await replay_line(row)
             continue
 
         ts = float(row.get("ts", 0.0))

@@ -229,6 +229,25 @@ def test_the_cap_is_the_phase_the_last_line_was_about() -> None:
     assert predictor.gap_after(30.0, None) == pytest.approx(MIN_GAP)
 
 
+def test_a_replay_takes_the_dead_ball_rate_whatever_it_is_a_replay_of() -> None:
+    """The broadcast's own dead ball.
+
+    A replay of a shot is not an attacking move: the ball is not in play
+    behind the picture and nobody is about to score. At the 2.5 s attacking
+    cap the voice would be back over the next camera angle before the last
+    line had landed, so the replay outranks the event and takes the restart's
+    rate instead.
+    """
+    predictor = SpeakPredictor()
+    assert predictor.gap_after(30.0, Event.SHOT) == pytest.approx(ATTACKING_GAP)
+    assert predictor.gap_after(30.0, Event.SHOT, last_was_replay=True) == pytest.approx(
+        DEAD_BALL_GAP
+    )
+    assert predictor.gap_after(30.0, Event.BUILD_UP, last_was_replay=True) == pytest.approx(
+        DEAD_BALL_GAP
+    )
+
+
 def test_the_voice_comes_back_faster_in_the_box_than_on_the_halfway_line() -> None:
     predictor = SpeakPredictor()
     after_a_shot = predictor.decide(

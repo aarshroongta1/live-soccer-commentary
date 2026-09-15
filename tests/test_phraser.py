@@ -34,8 +34,10 @@ from commentary.prompts.phraser import (
     GOAL_BEATS,
     PHRASER_RULES,
     _examples,
+    notes_allowed,
     phraser_blocks,
     phraser_system,
+    replay_block,
 )
 from commentary.rephrase import rephrase
 from commentary.runtime import Runtime
@@ -232,6 +234,73 @@ def test_the_system_prompt_carries_real_utterances_from_every_kind() -> None:
 
 def test_the_system_prompt_is_the_same_bytes_every_time() -> None:
     assert phraser_system() == phraser_system()
+
+
+def test_the_prompt_shows_real_replay_talk() -> None:
+    """Replay mode's whole teaching material is this bucket.
+
+    Nothing else in the set is in the past tense, so there is no neighbouring
+    kind to borrow the register from. Section 3.2 of the corpus study is where
+    these come from.
+    """
+    system = phraser_system()
+    assert "replay" in KINDS
+    assert "A replay, talked over in the past tense" in system
+    assert EXAMPLES["replay"], "the replay bucket is empty"
+    assert any("replay" in text.lower() for text in EXAMPLES["replay"])
+
+
+def test_a_replay_form_gets_the_replay_block_and_not_the_goal_followup() -> None:
+    """Beat 4 and a replay rebuild are the same line; two of them is one too many."""
+    body = text_of(
+        phraser_blocks(
+            a_form("The leg was in behind him.", event=Event.FOUL).model_copy(
+                update={"scene": Scene.REPLAY}
+            ),
+            "Argentina 1-0 France",
+            [],
+            home="Argentina",
+            away="France",
+            followup=GOAL_BEATS[4],
+        )
+    )
+    assert "THIS IS A REPLAY OF A FOUL" in body
+    assert "PAST TENSE FROM THE FIRST VERB" in body
+    assert "REBUILD THE MOVE" not in body
+
+
+def test_the_replay_is_named_once_and_only_in_the_first_line_of_a_sequence() -> None:
+    """"Watch this." opens a sequence; the lines after it go straight at it."""
+    first = replay_block(Event.GOAL, first=True)
+    later = replay_block(Event.GOAL, first=False)
+    assert "THIS IS THE FIRST LINE OF THIS REPLAY" in first
+    assert "having seen the replay" in first
+    assert "THIS REPLAY HAS ALREADY BEEN NAMED" in later
+    assert "do not say so a second time" in later
+
+
+def test_a_replay_line_is_offered_no_number_at_all() -> None:
+    """Never a tally on a replay, so the clauses are not offered rather than refused."""
+    quiet = a_form(event=Event.BUILD_UP)
+    assert notes_allowed(quiet) is True
+    assert notes_allowed(quiet.model_copy(update={"scene": Scene.REPLAY})) is False
+
+
+def test_a_replay_takes_the_plain_state_heading_even_on_a_goal() -> None:
+    """No score is appended to a replay line, so nothing may promise one."""
+    body = text_of(
+        phraser_blocks(
+            a_form("It had gone in off the post.", event=Event.GOAL).model_copy(
+                update={"scene": Scene.REPLAY}
+            ),
+            "Argentina 1-0 France",
+            [],
+            home="Argentina",
+            away="France",
+        )
+    )
+    assert "Never say the score or the clock." in body
+    assert "the broadcast\nappends it after your words" not in body
 
 
 def test_the_call_shows_the_form_the_state_and_what_was_just_said() -> None:
@@ -949,6 +1018,155 @@ async def test_a_goal_may_be_one_ahead_of_a_board_that_has_not_moved() -> None:
     extra = [line for line in result.lines if line.synthetic]
     assert [line.ts for line in extra] == [14.0, 18.0]
     assert all(not line.appended for line in extra), "the score goes out once"
+
+
+def a_replay_row(ts: float, line: str, *, event: str = "foul") -> dict[str, Any]:
+    """One replay form as every trace on disk has them: filled in, not spoken.
+
+    ``speak`` is false because the caller vetoed its own replays until replay
+    mode removed that veto, so every recorded trace carries the flag of a rule
+    that no longer exists. The rephrase reads the form, not the flag.
+    """
+    return {
+        "topic": "caller",
+        "ts": ts,
+        "scene": "replay",
+        "event": event,
+        "side": "home",
+        "team": "Argentina",
+        "sightings": [],
+        "confidence": 0.8,
+        "speak": False,
+        "line": line,
+    }
+
+
+def a_trace_with_replays(*replays: dict[str, Any]) -> list[dict[str, Any]]:
+    """The four-row trace with replay forms in it, in timestamp order.
+
+    The state row is given a foul, because the gate's ``replay_of_nothing``
+    rule is exactly that a replay is a second look at something that happened.
+    """
+    rows = a_trace()
+    rows[0] = rows[0] | {"last_events": ["foul"]}
+    return sorted([*rows, *replays], key=lambda row: float(row["ts"]))
+
+
+@pytest.mark.asyncio
+async def test_a_replay_form_the_run_never_said_becomes_a_lead_beat() -> None:
+    """Replay mode, offline.
+
+    The whole point of the offline path: every trace in ``runs/`` was recorded
+    with the veto in place, so the replay lines are sitting in the caller rows
+    with ``speak`` false and nothing downstream ever looked at them.
+    """
+    rows = a_trace_with_replays(
+        a_replay_row(25.0, "The replay: the trailing leg, and down he goes."),
+        a_replay_row(29.0, "Tight in: the foot was never near the ball."),
+    )
+    backend = saying(
+        PhrasedLine(line="Molina, down the right.", excitement=0.3),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+        PhrasedLine(line="Having seen it again, the trailing leg caught him.", excitement=0.4),
+        PhrasedLine(line="The foot was never near the ball there.", excitement=0.4),
+    )
+    result = await rephrase(rows, backend, pack=a_pack(), colour=False)
+
+    beats = [row for row in rows_of(result.rows, "beat") if row.get("replay")]
+    assert [row["id"] for row in beats] == ["replay-25.0", "replay-29.0"]
+    assert [row["ts"] for row in beats] == [25.0, 29.0]
+    # A lead beat, so the register measurement and the colour pass see it as
+    # the lead line it is — and preemptable, whatever it is a replay of.
+    assert all(row["voice"] == "caller" for row in beats)
+    assert all(row["preemptable"] is True for row in beats)
+    assert beats[0]["text"] == "Having seen it again, the trailing leg caught him."
+
+    phrased = [row for row in rows_of(result.rows, "phrased") if row.get("replay")]
+    assert [row["ts"] for row in phrased] == [25.0, 29.0]
+    assert [line.verdict for line in result.lines if line.replay] == ["passed replay"] * 2
+
+
+@pytest.mark.asyncio
+async def test_a_replay_sequence_gets_three_lines_offline_and_no_more() -> None:
+    rows = a_trace_with_replays(
+        *(a_replay_row(ts, f"Another angle, {ts:.0f}.") for ts in (25.0, 29.0, 33.0, 37.0, 41.0))
+    )
+    backend = saying(
+        PhrasedLine(line="Molina, down the right.", excitement=0.3),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+        PhrasedLine(line="The trailing leg caught him and down he went.", excitement=0.4),
+    )
+    result = await rephrase(rows, backend, pack=a_pack(), colour=False)
+
+    assert len([row for row in rows_of(result.rows, "beat") if row.get("replay")]) == 3
+
+
+@pytest.mark.asyncio
+async def test_a_replay_too_close_to_a_line_the_lead_already_has_gives_way() -> None:
+    """Two voices on one moment is worse than one, and the trace already has a beat."""
+    rows = a_trace_with_replays(a_replay_row(21.0, "The replay: the trailing leg."))
+    backend = saying(
+        PhrasedLine(line="Molina, down the right.", excitement=0.3),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+        PhrasedLine(line="The trailing leg caught him.", excitement=0.4),
+    )
+    result = await rephrase(rows, backend, pack=a_pack(), colour=False)
+
+    assert not [row for row in rows_of(result.rows, "beat") if row.get("replay")]
+    assert not [line for line in result.lines if line.replay]
+
+
+@pytest.mark.asyncio
+async def test_a_trace_with_no_replay_forms_rephrases_exactly_as_it_used_to() -> None:
+    """Every trace recorded before replay mode has to come out unchanged."""
+    backend = saying(
+        PhrasedLine(line="Molina, down the right.", excitement=0.3),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+    )
+    result = await rephrase(a_trace(), backend, pack=a_pack(), colour=False)
+
+    assert not [row for row in result.rows if row.get("replay")]
+    assert not [line for line in result.lines if line.replay]
+    beats = {row["id"]: row["text"] for row in rows_of(result.rows, "beat")}
+    assert beats["b1"] == "Molina, down the right."
+    assert beats["b2"] == "Messi strikes."
+
+
+@pytest.mark.asyncio
+async def test_inside_a_goal_window_the_replay_is_the_rebuild() -> None:
+    """One rebuild of one move, and the one with a picture behind it wins.
+
+    Without the replay this trace synthesises two follow-up beats into the
+    gap between 10 s and 20 s (see the test above). A replay form at 14 s is
+    the caller about to fill that gap itself, so the synthesiser stands down
+    and the past-tense rebuild goes out over the pictures it is about.
+    """
+    rows = a_trace()
+    rows[2] = rows[2] | {"event": "goal", "line": "Molina turns it in at the near post."}
+    rows[3] = rows[3] | {"event": "goal", "line": "Molina turns it in at the near post."}
+    rows[4] = rows[4] | {"event": "goal"}
+    rows = sorted(
+        [
+            *rows,
+            a_replay_row(14.0, "The replay: the ball across, and Molina at the near post.",
+                         event="build_up"),
+        ],
+        key=lambda row: float(row["ts"]),
+    )
+    backend = saying(
+        PhrasedLine(line="Molina! At the near post!", excitement=1.0),
+        PhrasedLine(line="The ball had come across and Molina got there first.", excitement=0.5),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+    )
+    result = await rephrase(rows, backend, pack=a_pack(), colour=False)
+
+    beats = {row["id"] for row in rows_of(result.rows, "beat")}
+    assert "replay-14.0" in beats
+    # The two the same trace synthesises without a replay in it. The gap the
+    # synthesiser was going to fill is the gap the replay fills.
+    assert "synth-14.0" not in beats
+    assert "synth-18.0" not in beats
+    assert [line.ts for line in result.lines if line.replay] == [14.0]
 
 
 @pytest.mark.asyncio

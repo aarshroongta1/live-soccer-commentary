@@ -150,6 +150,35 @@ STUDIO = (
 #: instead.
 KIND_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
+        # First, because a replay line is about something else — a goal, a
+        # foul, a save — and every other rule would claim it for that thing
+        # and teach the phraser to call it live. Section 3.2's "VAR and
+        # replay talk": 26 utterances across the four aligned matches, and
+        # the commonest openers are "As we see …", "Having seen the replay
+        # …", "Watch this."
+        "replay",
+        (
+            "as we see",
+            "having seen the replay",
+            "the replay",
+            "in the replay",
+            "watch this",
+            "see it again",
+            "see that again",
+            # Not a bare "once more": it is the commonest replay opener in
+            # the corpus and also an ordinary thing to say about live play —
+            # "Iniesta once more spreads play out to the left" — and six of
+            # the first sixteen this bucket found were that, present tense,
+            # in the one bucket that must not teach it.
+            "look at that incident",
+            "look at that again",
+            "look at it again",
+            "we've just seen",
+            "being checked",
+            "little check",
+        ),
+    ),
+    (
         "substitution",
         (
             "replaced by",
@@ -498,6 +527,7 @@ KIND_ORDER = (
     "substitution",
     "injury",
     "restatement",
+    "replay",
     "aside",
 )
 
@@ -531,6 +561,12 @@ QUOTA = {
     "substitution": 20,
     "injury": 20,
     "restatement": 20,
+    # Everything the corpus has. 26 utterances match the replay vocabulary
+    # across four aligned matches (study section 3.2) and the bucket here is
+    # wider than that vocabulary, so a quota above what is found keeps all
+    # of it: this is the rarest kind in the set and the one the prompt has
+    # nothing else to teach from.
+    "replay": 20,
     "aside": 25,
 }
 

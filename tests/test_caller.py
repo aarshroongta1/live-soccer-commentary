@@ -99,13 +99,36 @@ async def test_low_confidence_forces_silence():
 
 
 async def test_a_replay_is_never_called_as_live():
+    """The scene is no longer the refusal; the words are, and not here.
+
+    This agent used to veto every replay form before the gate saw it, and
+    that is why ``runs/trigger/mbappe/file-20260913-185228.jsonl`` runs from
+    12.9 s to 49.0 s without a word: four accurate replay lines died in this
+    method. A replay form now comes back with ``speak`` intact and no
+    suppression recorded, and whether it may be said is
+    :class:`commentary.gate.FactGate`'s question — it can read the line,
+    which this agent cannot.
+    """
     caller = Caller(backend_saying(line(scene=Scene.REPLAY)), CONFIG)
 
     result = await caller.call(buffer_with(), "0-0", [])
 
     assert result is not None
+    assert result.speak is True
+    assert result.scene is Scene.REPLAY
+    assert caller.suppressed["replay"] == 0
+    assert caller.last_reason == ""
+
+
+async def test_a_replay_the_model_passes_over_is_still_silence():
+    """The model keeps the other half of the decision: nothing new to show."""
+    caller = Caller(backend_saying(line("", scene=Scene.REPLAY, speak=False)), CONFIG)
+
+    result = await caller.call(buffer_with(), "0-0", [])
+
+    assert result is not None
     assert result.speak is False
-    assert caller.suppressed["replay"] == 1
+    assert caller.last_reason == "the model chose silence"
 
 
 async def test_an_empty_line_with_speak_set_is_suppressed():

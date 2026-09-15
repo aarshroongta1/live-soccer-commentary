@@ -9,8 +9,14 @@ eval can report rejection rate broken down by reason and a human can grep a
 
 Four rules, in the order a sceptic would apply them.
 
-* A replay is never called as live. Narrating a replay as though it were
-  happening is the most embarrassing failure available to this system.
+* A replay is called as a replay, never as live. Narrating a replay as
+  though it were happening is the most embarrassing failure available to this
+  system — and refusing every replay line outright, which is what this rule
+  used to do, is how the run went thirty-six seconds without a word after the
+  Mbappé penalty while the caller wrote four accurate replay lines nobody
+  said. So the scene is not the refusal any more: a replay line passes when
+  it is of something the match has actually had, carries no score, and is not
+  written in the present tense of a goal going in.
 * Names must be on a roster in the knowledge pack. A name the caller claims to
   have read off a graphic gets *less* latitude, not more: if it is not on a
   roster then the caller did not read a graphic, it imagined one, and the rest
@@ -672,6 +678,61 @@ _SAID_A_GOAL = tuple(
         rf"\bmakes?\s+it\s+(?:\d|{_WORD_ALT})\b",
     )
 )
+
+
+#: The present-tense half of the goal shapes above: the words that only ever
+#: mean the ball is crossing the line *now*. On a replay they are the whole
+#: of what "called as live" means, and they are cheap to find, which is why
+#: the replay rule reads for them rather than trying to parse tense. The past
+#: tenses of the same verbs — "buried", "scored", "found the net" — are
+#: deliberately absent: a past-tense rebuild of the move is the line this
+#: mode exists to let out.
+_REPLAY_AS_LIVE = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bit'?s\s+in\b",
+        r"\bit\s+is\s+in\b",
+        r"\bscores\b(?!\s+(?:are|level|tied))",
+        r"\bfinds\s+the\s+net\b",
+        r"\bburies\b",
+        r"\bsquirms\s+in\b",
+        rf"\bmakes\s+it\s+(?:\d|{_WORD_ALT})\b",
+    )
+)
+
+#: The events a replay may only be a replay *of* if this match has had one.
+#: A replay is by definition a second look at something that already
+#: happened, so a replay-scene line filed under one of these with nothing of
+#: the kind anywhere in the state is not a second look at anything: it is the
+#: caller inventing an incident behind a slow-motion picture, which is the
+#: failure the blanket refusal was really guarding against. Build-up, a pass,
+#: a carry and a cross are left out — a replay of the move is not a claim
+#: that anything was given.
+REPLAY_NEEDS_PRECEDENT = frozenset(
+    {
+        Event.GOAL,
+        Event.SHOT,
+        Event.SAVE,
+        Event.FOUL,
+        Event.PENALTY,
+        Event.CARD,
+        Event.OFFSIDE,
+    }
+)
+
+
+def _state_has_seen(event: Event, state: MatchState) -> bool:
+    """Has anything in the state's memory been an event of this kind?
+
+    Three places, because three things write to the state and none of them
+    writes to the others: the caller's own recent events, the incidents the
+    board and the wire applied, and the statistician's named events.
+    """
+    return (
+        event in state.last_events
+        or any(incident.event is event for incident in state.incidents)
+        or any(named.event is event for named in state.named)
+    )
 
 
 # -- notes, and the claims that need one ---------------------------------
@@ -1622,10 +1683,6 @@ class FactGate:
         ledger: Sequence[CountFact] = (),
     ) -> GateVerdict:
         text = line.line.strip()
-        if line.scene is Scene.REPLAY:
-            return GateVerdict(
-                passed=False, reasons=["scene_replay: a replay is never called as live"]
-            )
         if not line.speak:
             return GateVerdict(passed=False, reasons=["not_speaking: caller chose silence"])
         if not text:
@@ -1661,16 +1718,28 @@ class FactGate:
         # be one goal ahead of the state.
         goal_incoming = (board_changed or wire_confirmed) and not goal_in_state
         fatal: list[str] = []
+        if line.scene is Scene.REPLAY:
+            fatal += self._check_replay(text, line, state, pack, notes, goal_in_state=goal_in_state)
         fatal += self._check_sightings(line, roster, pack)
         fatal += self._check_scoreline(text, state, goal_incoming=goal_incoming)
         fatal += self._check_score_claims(text, line, state, pack, goal_incoming=goal_incoming)
         fatal += self._check_level_claim(text, state, goal_incoming=goal_incoming)
         fatal += self._check_card_claim(text, line, state, at=at)
         fatal += self._check_counts(text, pack, notes, ledger)
+        # A replay's goal claim is backed by the score already counting it,
+        # which is the only thing a replay can be evidence of: the board moved
+        # while the live call was going out, seconds ago. Without this a
+        # past-tense rebuild over the replay of a goal this system has already
+        # called dies on a rule about calling goals nobody has confirmed.
+        goal_backed = (
+            board_changed
+            or wire_confirmed
+            or (line.scene is Scene.REPLAY and goal_in_state)
+        )
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
-            and not (board_changed or wire_confirmed)
+            and not goal_backed
             and not (
                 line.event is not Event.GOAL
                 and _is_historical_goal_reference(text, pack, notes)
@@ -1686,6 +1755,71 @@ class FactGate:
         if withheld:
             verdict.reasons.append(f"name_withheld: {withheld}")
         return verdict
+
+    def _check_replay(
+        self,
+        text: str,
+        line: CallerLine,
+        state: MatchState,
+        pack: KnowledgePack | None,
+        notes: Sequence[Note] | None,
+        *,
+        goal_in_state: bool,
+    ) -> list[str]:
+        """What a replay-scene line is allowed to be.
+
+        This replaces the blanket ``scene_replay`` refusal. That rule was
+        right about the failure it named and wrong about the cost: on
+        ``runs/trigger/mbappe/file-20260913-185228.jsonl`` the penalty was
+        conceded at 12.9 s and the next line spoken was at 49.0 s, and in
+        between the caller had written four accurate replay lines — "The
+        replay: driving across, the leg in behind him, and down he goes" — and
+        every one of them died here. Real commentary does the opposite: the
+        corpus's half-minute after a goal is seven utterances and sixty words
+        (``docs/research/real-commentary-corpus.md`` section 2.4) and section
+        3.2 shows most of them are over replays.
+
+        So the scene is not the refusal. Three things are:
+
+        ``replay_of_nothing``
+            A replay is a second look at something that happened. A line
+            filed under :data:`REPLAY_NEEDS_PRECEDENT` with nothing of that
+            kind anywhere in the state is not a second look; it is a new
+            claim wearing a slow-motion picture.
+
+        ``replay_score``
+            A replay line never restates the score, in figures, in an ordinal
+            or in "levels it". The score went out on the live call, and a
+            replay is the one place a commentator is furthest from the
+            scoreboard — the bug is usually not even on screen.
+
+        ``replay_as_live``
+            The present-tense shapes that mean the ball is crossing the line
+            now. The rest of the tense question is left to the phraser's
+            prompt: this is the cheap, certain half, and it is the half that
+            embarrasses a broadcast.
+
+        A goal claim is allowed on a replay only when the score already
+        counts that goal, which is the ``goal_in_state`` flag the runtime and
+        the rephrase both already compute.
+        """
+        problems: list[str] = []
+        if score_spans(text) or ordinal_score_spans(text) or level_claim_spans(text):
+            problems.append("replay_score: a replay line never restates the score")
+        said = _first_match(text, _REPLAY_AS_LIVE)
+        if said is not None:
+            problems.append(f"replay_as_live: {said}")
+        historical = line.event is not Event.GOAL and _is_historical_goal_reference(
+            text, pack, notes
+        )
+        if claims_goal(text, line.event) and not goal_in_state and not historical:
+            problems.append("replay_goal: a goal on a replay the score does not count")
+        unseen = line.event in REPLAY_NEEDS_PRECEDENT and not _state_has_seen(line.event, state)
+        if unseen and not (line.event is Event.GOAL and goal_in_state):
+            problems.append(
+                f"replay_of_nothing: no {line.event.value} in the state for this replay"
+            )
+        return problems
 
     def _check_decoration(
         self,

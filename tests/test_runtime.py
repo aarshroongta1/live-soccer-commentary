@@ -124,16 +124,144 @@ async def test_a_run_can_be_graded_from_its_trace_alone(tmp_path: Path) -> None:
     assert "| sim |" in report.table([card])
 
 
-@pytest.mark.asyncio
-async def test_nothing_is_spoken_while_a_replay_is_on_screen(tmp_path: Path) -> None:
-    _runtime, _sim, path = await run_sim(tmp_path, seconds=4.0)
-    rows = metrics.read_trace(path) if hasattr(metrics, "read_trace") else []
-    del rows  # the assertion below is the one that matters
+def watch_the_director(runtime: Runtime) -> list[Any]:
+    """Collect the beats the runtime submits, instead of speaking them."""
+    submitted: list[Any] = []
 
-    run = metrics.load_run(path)
-    # The caller is told to stay quiet over a replay and the gate refuses one
-    # outright, so no spoken line may carry the replay scene.
-    assert all("replay" not in line.text.lower() for line in run.lines)
+    def submit(beat: Any) -> bool:
+        submitted.append(beat)
+        return True
+
+    runtime.director.submit = submit  # type: ignore[method-assign]
+    return submitted
+
+
+async def one_caller_form(runtime: Runtime, line: CallerLine) -> None:
+    """Drive one caller call with a form of our own and let the runtime have it."""
+
+    async def call(*args: Any, **kwargs: Any) -> CallerLine:
+        return line
+
+    runtime.caller.call = call  # type: ignore[method-assign]
+    await runtime._call([])
+
+
+def a_replay(event: Event, text: str) -> CallerLine:
+    return CallerLine(
+        scene=Scene.REPLAY,
+        event=event,
+        side=Side.HOME,
+        confidence=0.9,
+        speak=True,
+        line=text,
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_replay_is_spoken_as_a_replay_and_moves_nothing(tmp_path: Path) -> None:
+    """Replay mode, end to end through the runtime.
+
+    This test used to assert the opposite — that nothing is ever spoken while
+    a replay is on screen — and that rule is why
+    ``runs/trigger/mbappe/file-20260913-185228.jsonl`` runs from 12.9 s to
+    49.0 s in silence with four accurate replay forms in it. A replay line may
+    now be said. What it may not do is count: a replayed foul is not a second
+    foul, and the man on the ball in a replay is not the man on the ball now.
+    """
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    runtime.phraser = None  # the caller's own words, judged as they stand
+    runtime.state.last_events = [Event.FOUL]
+    before = list(runtime.state.last_events)
+    was_recent = runtime._recent_event
+    submitted = watch_the_director(runtime)
+
+    await one_caller_form(
+        runtime, a_replay(Event.FOUL, "The leg was in behind him and down he went.")
+    )
+
+    assert [beat.text for beat in submitted] == ["The leg was in behind him and down he went."]
+    # Preemptable whatever the event: the whole of what makes a replay line
+    # safe is that the moment the game is back on the screen it can be dropped.
+    assert submitted[0].preemptable is True
+    assert runtime.state.last_events == before
+    assert runtime._recent_event == was_recent
+    assert runtime.replays.said == 1
+    assert runtime.replays.first is False
+    # And it takes the dead-ball rate rather than the rate its event would
+    # have earned, because the ball is not in play behind the picture.
+    assert runtime._last_spoken_replay is True
+
+
+@pytest.mark.asyncio
+async def test_a_replay_of_a_goal_never_opens_a_goal_window(tmp_path: Path) -> None:
+    """The second goal of a match must not become the third on a replay."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    cursor = runtime.cursor_ts
+    assert cursor is not None
+    runtime.phraser = None
+    runtime._last_goal_ts = cursor
+    runtime._restart_ts = None
+    runtime.state.last_events = [Event.GOAL]
+    watch_the_director(runtime)
+
+    await one_caller_form(
+        runtime,
+        a_replay(Event.GOAL, "He had swung a leg at it and it had gone in off the post."),
+    )
+
+    assert runtime.follow.armed_at is None
+    assert runtime._said_a_goal is False
+
+
+@pytest.mark.asyncio
+async def test_a_second_replay_line_too_soon_is_not_said(tmp_path: Path) -> None:
+    """Two lines four seconds apart is as fast as the corpus's replay runs go."""
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    cursor = runtime.cursor_ts
+    assert cursor is not None
+    runtime.phraser = None
+    runtime.state.last_events = [Event.FOUL]
+    submitted = watch_the_director(runtime)
+
+    await one_caller_form(runtime, a_replay(Event.FOUL, "The trailing leg caught him."))
+    # Two seconds on, another angle of the same tackle.
+    later = cursor + runtime.settings.capture.delay_s + 2.0
+    runtime.buffer.append(Frame(ts=later, image=np.zeros((4, 4, 3), dtype=np.uint8)))
+    await one_caller_form(runtime, a_replay(Event.FOUL, "From behind, the foot was never near it."))
+
+    assert len(submitted) == 1
+    assert runtime.replays.said == 1
+
+
+def test_a_replay_sequence_counts_looks_not_lines() -> None:
+    """The sequence is a fact about the pictures, not about what was said."""
+    from commentary.config import ReplayTalkConfig
+    from commentary.runtime import ReplaySequence
+
+    seq = ReplaySequence(cfg=ReplayTalkConfig())
+
+    seq.look(10.0)
+    assert seq.first is True
+    assert seq.may_speak(10.0) is True
+    seq.spoke(10.0)
+
+    # Too soon: the corpus's own replay runs are three and four seconds apart.
+    seq.look(12.0)
+    assert seq.may_speak(12.0) is False
+    assert seq.first is False
+
+    seq.look(14.5)
+    assert seq.may_speak(14.5) is True
+    seq.spoke(14.5)
+    seq.look(19.0)
+    seq.spoke(19.0)
+    seq.look(23.5)
+    assert seq.may_speak(23.5) is False, "three is the longest run in the corpus"
+
+    # A cut back to the game and then another replay is a second sequence.
+    seq.look(40.0)
+    assert seq.first is True
+    assert seq.may_speak(40.0) is True
 
 
 @pytest.mark.asyncio

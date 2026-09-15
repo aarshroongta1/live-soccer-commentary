@@ -2,9 +2,21 @@
 
 The model is asked for a form, not a sentence, and what comes back is treated
 as a proposal. Everything after the call is this module deciding whether the
-proposal is fit to say out loud: short enough, confident enough, not a replay.
-A model will do all three of those wrong at some point in ninety minutes, and
-none of them should reach a speaker.
+proposal is fit to say out loud: not empty, and confident enough. A model will
+do both of those wrong at some point in ninety minutes, and neither should
+reach a speaker.
+
+There used to be a third check here, and it was the reason this system went
+dark for thirty-six seconds after the Mbappé penalty: a form marked
+``Scene.REPLAY`` was vetoed outright, so the four accurate replay lines the
+caller wrote between 12.9 s and 49.0 s on
+``runs/trigger/mbappe/file-20260913-185228.jsonl`` were never said. Real
+commentary talks *most* over a replay — the corpus's half-minute after a goal
+is seven utterances and sixty words, and most of them are over replays
+(``docs/research/real-commentary-corpus.md`` sections 2.4 and 3.2). The rule
+"a replay is never called as live" is still true; it is now enforced where it
+belongs, in :mod:`commentary.gate`, which can read the words and refuse a
+present-tense call shape without refusing the line.
 
 There used to be a fourth check, a similarity veto against the last five
 lines, inherited from worldcupvoice. Across 63 real-clip runs and 1,062
@@ -29,7 +41,7 @@ from commentary.capture.buffer import DelayBuffer
 from commentary.config import CALLER_MODEL, CallerConfig
 from commentary.llm.base import LLMBackend, LLMError
 from commentary.prompts.caller import caller_blocks, caller_system
-from commentary.schemas import CallerLine, KnowledgePack, Scene, Trigger
+from commentary.schemas import CallerLine, KnowledgePack, Trigger
 
 #: Openers a model reaches for when it forgets it is talking, not writing.
 _PREAMBLE = re.compile(
@@ -275,8 +287,6 @@ class Caller:
         """``(code, reason)``; an empty code means the line may go."""
         if not text:
             return "empty", "the model set speak but wrote nothing"
-        if proposed.scene is Scene.REPLAY:
-            return "replay", "the scene is a replay, which is never called as live"
         if proposed.confidence < self.config.min_confidence:
             return (
                 "low_confidence",

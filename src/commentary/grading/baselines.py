@@ -139,6 +139,7 @@ class FixedCadence(SpeakPredictor):
         after_goal: bool = False,
         last_spoken_seconds: float | None = None,
         last_event: Event | None = None,
+        last_was_replay: bool = False,
         last_quiet_ts: float | None = None,
         colour_stretch: float = 0.0,
     ) -> SpeakDecision:
@@ -147,8 +148,9 @@ class FixedCadence(SpeakPredictor):
         Every keyword is ignored on purpose: the baseline is a timer, and a
         timer that made an exception for goals, or that shortened its wait
         after a short line, or that ran at one rate in the box and another on
-        the halfway line — or that opened a hole because a second voice was
-        short of the channel — would not be the baseline.
+        the halfway line — or that waited longer over a replay, or that opened
+        a hole because a second voice was short of the channel — would not be
+        the baseline.
 
         The timer runs off this object's own last attempt rather than off the
         runtime's last spoken line. worldcupvoice narrates every four seconds;

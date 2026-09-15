@@ -216,6 +216,7 @@ class Phraser:
         followup: str = "",
         goal_beat: int | None = None,
         scorer: str | None = None,
+        replay_first: bool = True,
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
 
@@ -257,6 +258,12 @@ class Phraser:
         ``note_claim`` in the gate refuses outright. So this stage checks its
         own beat-3 answers the same way it checks a repeated opener: once,
         same call, and whatever comes back is what goes out.
+
+        ``replay_first`` matters only on a replay form and is the one thing
+        the model cannot see for itself: whether an earlier line in this same
+        replay sequence has already named it as a replay. Whoever is counting
+        the sequence — the runtime, or the rephrase — says so here. See
+        :func:`commentary.prompts.phraser.replay_block`.
         """
         self.last_reason = ""
         self.chose_silence = False
@@ -273,6 +280,7 @@ class Phraser:
             ledger=ledger,
             last_event=self._recent[-1][1] if self._recent else None,
             followup=followup,
+            replay_first=replay_first,
         )
         try:
             parsed = await self.backend.parse(

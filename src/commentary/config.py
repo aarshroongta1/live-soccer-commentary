@@ -617,6 +617,41 @@ class RestatementConfig:
 
 
 @dataclass(frozen=True)
+class ReplayTalkConfig:
+    """Talking over a replay: how often, and how many before it is a loop.
+
+    ``docs/research/real-commentary-corpus.md`` section 3.2 has 26 replay
+    utterances across four matches, and section 2.4's half-minute after a
+    goal is seven utterances and sixty words most of which go over replays.
+    They arrive in short runs of two and three — "As we see Leo Messi's
+    goal." / "Wonderful turn to get beyond Dani Carvajal." / "It was a good
+    first time pass as well from Ivan Rakitić." is one sequence at 41:40,
+    41:43, 41:47 — and then the broadcast goes back to the game.
+
+    This is what stops the voice narrating every angle of the same tackle.
+    Nothing here is about whether a replay line is *true*; that is the gate's.
+    """
+
+    #: Two replay looks further apart than this are two different replays. On
+    #: the Mbappé trace the four replay forms sat 7.5, 3.6 and 3.7 seconds
+    #: apart, which is one sequence by this number and four by anything
+    #: under four.
+    sequence_gap_s: float = 12.0
+    #: The least time between two spoken replay lines. The corpus's own
+    #: replay run above is 3 and 4 seconds; under four the second line is
+    #: still landing while the third arrives.
+    min_gap_s: float = 4.0
+    #: The most lines one replay sequence gets. Three is the longest run in
+    #: the corpus and the fourth angle is where a commentator stops.
+    max_lines: int = 3
+    #: How close a line the lead already has may be before a replay line
+    #: gives way. Same number and same reason as
+    #: :attr:`RestatementConfig.clear_of_a_beat_s`: a second voice landing
+    #: three seconds from the first is two people talking.
+    clear_of_a_beat_s: float = 3.0
+
+
+@dataclass(frozen=True)
 class CostConfig:
     """A match that costs more than this stops calling the model."""
 
@@ -636,6 +671,7 @@ class Settings:
     gate: GateConfig = field(default_factory=GateConfig)
     director: DirectorConfig = field(default_factory=DirectorConfig)
     restatement: RestatementConfig = field(default_factory=RestatementConfig)
+    replay_talk: ReplayTalkConfig = field(default_factory=ReplayTalkConfig)
     voice: VoiceConfig = field(default_factory=VoiceConfig)
     cost: CostConfig = field(default_factory=CostConfig)
 
