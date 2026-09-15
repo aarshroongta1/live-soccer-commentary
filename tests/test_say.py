@@ -16,14 +16,17 @@ from pathlib import Path
 
 import pytest
 
+from commentary.config import VoiceConfig
 from commentary.schemas import Beat, Voice
 from commentary.voice.elevenlabs import VoiceUnavailable
-from commentary.voice.say import ANALYST_VOICE, CALLER_VOICE, SaySpeaker
+from commentary.voice.say import ANALYST_VOICE, CALLER_VOICE, RATE_WPM, SaySpeaker
 
 
-def beat(text: str, *, voice: Voice = Voice.CALLER) -> Beat:
+def beat(text: str, *, voice: Voice = Voice.CALLER, excitement: float = 0.0) -> Beat:
     now = time.monotonic()
-    return Beat(id="t1", voice=voice, text=text, video_ts=0.0, created_ts=now)
+    return Beat(
+        id="t1", voice=voice, text=text, video_ts=0.0, created_ts=now, excitement=excitement
+    )
 
 
 def fake_say(tmp_path: Path, *, seconds_per_word: float = 0.05) -> str:
@@ -117,3 +120,46 @@ async def test_the_real_say_binary_can_be_found_and_speaks_a_single_short_word()
 
     assert utterance.completed
     assert utterance.spoken == "hi"
+
+
+@pytest.mark.asyncio
+async def test_a_goal_is_said_faster_than_the_build_up(tmp_path: Path) -> None:
+    """``say`` has one dial, so the whole curve arrives here as words a minute.
+
+    It is not the delivery ElevenLabs gives — nothing here breaks pitch — but
+    the shape is audibly right and it costs nothing to check the plumbing on.
+    """
+    curve = VoiceConfig()
+    spk = SaySpeaker(executable=fake_say(tmp_path), curve=curve)
+
+    goal = await spk.say(beat("it is in", excitement=1.0), asyncio.Event())
+    buildup = await spk.say(beat("down the left", excitement=0.0), asyncio.Event())
+
+    assert goal.voice_settings == {"rate_wpm": curve.say_rate_high}
+    assert buildup.voice_settings == {"rate_wpm": curve.say_rate_low}
+    log = (tmp_path / "calls.log").read_text()
+    assert f"-r {curve.say_rate_high}" in log
+    assert f"-r {curve.say_rate_low}" in log
+
+
+@pytest.mark.asyncio
+async def test_a_pinned_rate_ignores_the_excitement_entirely(tmp_path: Path) -> None:
+    # The escape hatch the old SAY_RATE was, kept working.
+    spk = SaySpeaker(executable=fake_say(tmp_path), rate=300)
+
+    utterance = await spk.say(beat("it is in", excitement=1.0), asyncio.Event())
+
+    assert utterance.voice_settings == {"rate_wpm": 300}
+    assert "-r 300" in (tmp_path / "calls.log").read_text()
+
+
+@pytest.mark.asyncio
+async def test_the_curve_switched_off_speaks_at_the_rate_it_always_did(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("VOICE_CURVE", "off")
+    spk = SaySpeaker(executable=fake_say(tmp_path), curve=VoiceConfig())
+
+    utterance = await spk.say(beat("it is in", excitement=1.0), asyncio.Event())
+
+    assert utterance.voice_settings == {"rate_wpm": RATE_WPM}

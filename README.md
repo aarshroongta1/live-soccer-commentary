@@ -135,6 +135,11 @@ The settings worth knowing, all in `.env`:
 | `MAX_USD_PER_MATCH` | Past this the system stops calling the model. 35. |
 | `AVFOUNDATION_DEVICE` | Capture device, by name. |
 | `ELEVENLABS_API_KEY` and the two voice ids | Only read when `--voice elevenlabs` is on. |
+| `VOICE_CURVE` | How hard a line is said, as a function of its excitement. `off` sends no settings and every voice plays at its library defaults, which is what it did before. |
+| `VOICE_CALLER_*` `VOICE_ANALYST_*` | The two ends of that curve per seat: `STABILITY`, `STYLE` and `SPEED`, each `_LOW` (excitement 0) and `_HIGH` (excitement 1). Caller 0.55/0.15/1.00 to 0.20/0.60/1.15; analyst 0.60/0.10/0.97 to 0.40/0.35/1.05. Guesses, not measurements — see the sweep below. |
+| `VOICE_SIMILARITY_BOOST` `VOICE_SPEAKER_BOOST` | Fixed across the curve. 0.8 and on. |
+| `VOICE_SAY_RATE_LOW` `VOICE_SAY_RATE_HIGH` | The same curve for `--voice say`, which has only speed. 170 to 210 words a minute. |
+| `VOICE_SHAPING` | Punctuation shaping on the caller's loud and quiet lines. Off by default; it edits a line the gate already passed. |
 
 ## Playground
 
@@ -389,6 +394,7 @@ ablations are wired correctly enough to run against the real thing.
 | `grade runs/*.jsonl` | Metrics for saved runs. |
 | `grade run.jsonl --pack p.json --statsbomb e.json --lineups l.json` | The whole thing: StatsBomb aligned onto video time from the trace's own board readings, the results table, and the brief's twelve-item definition of done with the evidence for each. Refuses to grade an alignment it cannot trust. |
 | `python -m commentary.grading.baselines` | The ablation suite and results table. |
+| `python scripts/voice_sweep.py --voice-id ID --yes` | Renders a grid of voice settings over five real lines into `runs/voice/sweep/<timestamp>/` with an `index.html` to listen on. Spends ElevenLabs credits: the default grid is 60 clips, 2148 characters, about 1074 credits on Flash, and it refuses to run without `--yes`. |
 | `python -m commentary.mcp_server` | The match-state tools over MCP. |
 
 ## Why there is no agent framework in here

@@ -149,6 +149,7 @@ class Director:
                 spoken=utterance.spoken,
                 seconds=utterance.seconds,
                 first_audio_s=utterance.first_audio_s,
+                voice_settings=utterance.voice_settings,
             )
         else:
             self.stats.preempted += 1

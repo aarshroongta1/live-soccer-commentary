@@ -24,6 +24,7 @@ import shutil
 import time
 from dataclasses import dataclass, field
 
+from commentary.config import VoiceConfig
 from commentary.schemas import Beat, Voice
 from commentary.voice.elevenlabs import VoiceUnavailable
 from commentary.voice.speaker import WORDS_PER_SECOND, Utterance
@@ -35,6 +36,9 @@ ANALYST_VOICE = "Samantha"
 
 #: ``say``'s own unit is words per minute; 190 is the default it ships with
 #: and lands close to the 3.2 words/second the rest of the project assumes.
+#: It is now the middle of a range rather than the whole story — see
+#: :attr:`~commentary.config.VoiceConfig.say_rate_low` — and is what a line
+#: gets when ``SAY_RATE`` pins the rate or ``VOICE_CURVE=off``.
 RATE_WPM = 190
 
 
@@ -49,15 +53,20 @@ class SaySpeaker:
 
     caller_voice: str = ""
     analyst_voice: str = ""
+    #: Pins the rate and ignores the excitement entirely. Zero means the
+    #: curve decides, which is the default; ``SAY_RATE`` sets it too.
     rate: int = 0
     executable: str = ""
     words_per_second: float = WORDS_PER_SECOND
+    curve: VoiceConfig | None = None
     said: list[Utterance] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.caller_voice = self.caller_voice or os.getenv("SAY_CALLER_VOICE") or CALLER_VOICE
         self.analyst_voice = self.analyst_voice or os.getenv("SAY_ANALYST_VOICE") or ANALYST_VOICE
-        self.rate = self.rate or int(os.getenv("SAY_RATE") or RATE_WPM)
+        self.rate = self.rate or int(os.getenv("SAY_RATE") or 0)
+        if self.curve is None:
+            self.curve = VoiceConfig()
         found = shutil.which(self.executable or "say")
         if found is None:
             raise VoiceUnavailable(
@@ -68,14 +77,29 @@ class SaySpeaker:
     def voice_name(self, voice: Voice) -> str:
         return self.analyst_voice if voice is Voice.ANALYST else self.caller_voice
 
+    def rate_for(self, excitement: float) -> int:
+        """Words per minute for one beat.
+
+        ``say`` has one dial and it is speed, so the whole of the excitement
+        curve arrives here as a number between roughly 170 and 210. It is not
+        the delivery ElevenLabs gives — nothing here breaks pitch — but a
+        goal called faster than the build-up is audibly the right shape, and
+        it costs nothing to check the plumbing with.
+        """
+        curve = self.curve
+        if self.rate or curve is None or not curve.on:
+            return self.rate or RATE_WPM
+        return curve.say_rate(excitement)
+
     async def say(self, beat: Beat, cancel: asyncio.Event) -> Utterance:
         started = time.monotonic()
+        rate = self.rate_for(beat.excitement)
         proc = await asyncio.create_subprocess_exec(
             self.executable,
             "-v",
             self.voice_name(beat.voice),
             "-r",
-            str(self.rate),
+            str(rate),
             beat.text,
         )
         cancel_wait = asyncio.ensure_future(cancel.wait())
@@ -102,6 +126,10 @@ class SaySpeaker:
             # see the moment sound starts, and guessing at it would put a
             # made-up number next to two measured ones.
             first_audio_s=None,
+            # One dial, so one number — but recorded in the same place as
+            # ElevenLabs' six, so the trace answers "how was this said?" in
+            # the same way whichever voice said it.
+            voice_settings={"rate_wpm": rate},
         )
         self.said.append(utterance)
         return utterance

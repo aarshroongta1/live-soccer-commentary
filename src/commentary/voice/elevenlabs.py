@@ -15,6 +15,14 @@ raising, because a match that goes quiet is a disappointment and a match that
 stops is a bug. A speaker with no key, on the other hand, cannot ever say
 anything, so it refuses to be built rather than going silently mute.
 
+How hard a line is said is the other thing this file decides. Every beat
+carries an excitement from the phrasing stage, and until it was read here a
+goal went out at the same library defaults as a throw-in.
+:class:`~commentary.config.VoiceConfig` turns that number into the
+``voice_settings`` on the request, per seat, and the settings that were sent
+are recorded on the :class:`Utterance` so the trace can answer afterwards why
+a line came out the way it did.
+
 The ``elevenlabs`` package is an optional extra and is imported inside the
 function that needs it, so importing ``commentary.voice`` works on a machine
 that has never installed it. Note that this module is itself called
@@ -32,8 +40,10 @@ import time
 from collections.abc import AsyncIterator, Callable
 from typing import Any
 
+from commentary.config import VoiceConfig
 from commentary.schemas import Beat, Voice
 from commentary.voice.playback import AudioSink, NullSink, PcmSink, default_sink
+from commentary.voice.shaping import shape_for_voice
 from commentary.voice.speaker import WORDS_PER_SECOND, Utterance
 
 log = logging.getLogger(__name__)
@@ -69,6 +79,10 @@ ANALYST_VOICE = "Xb7hH8MSUJpSbSDYk0k2"  # Alice
 #: One line is at most a couple of dozen words; anything slower than this is a
 #: hung connection, not a long sentence.
 REQUEST_TIMEOUT_S = 30.0
+
+#: What the excitement curve produced for one line, or None when the curve is
+#: switched off and the voice is to play at its own library defaults.
+VoiceSettings = dict[str, float | bool] | None
 
 #: Given (text, voice id), an async stream of audio chunks. The seam tests
 #: inject through, and the reason nothing here monkeypatches a client.
@@ -107,6 +121,8 @@ class ElevenLabsSpeaker:
         sink: SinkFactory | None = None,
         words_per_second: float = WORDS_PER_SECOND,
         timeout_s: float = REQUEST_TIMEOUT_S,
+        curve: VoiceConfig | None = None,
+        shaping: bool | None = None,
     ) -> None:
         self.api_key = api_key if api_key is not None else os.getenv("ELEVENLABS_API_KEY", "")
         if not self.api_key and stream is None:
@@ -119,6 +135,11 @@ class ElevenLabsSpeaker:
         self.output_format = output_format
         self.words_per_second = words_per_second
         self.timeout_s = timeout_s
+        # Built here rather than taken from SETTINGS so that the environment
+        # is read when a speaker is made: a sweep sets VOICE_CALLER_STYLE_HIGH
+        # and builds one, and the process it is running in need not restart.
+        self.curve = VoiceConfig() if curve is None else curve
+        self.shaping = self.curve.shaping if shaping is None else shaping
         self.said: list[Utterance] = []
         self._stream = stream
         self._sink = sink if sink is not None else lambda: default_sink(self.output_format)
@@ -139,11 +160,13 @@ class ElevenLabsSpeaker:
         caller start on top of the analyst's last three words.
         """
         started = time.monotonic()
+        text = self.text_for(beat)
+        settings = self.curve.settings_for(beat.voice.value, beat.excitement)
         sink = self._sink()
         audio_started: float | None = None
         completed = False
         try:
-            stream = self._open_stream(beat)
+            stream = self._open_stream(text, self.voice_id(beat.voice), settings)
             await sink.start()
             audio_started, completed = await self._pump(stream, sink, cancel)
         except Exception as exc:
@@ -153,29 +176,42 @@ class ElevenLabsSpeaker:
             await sink.stop()
             return self._record(
                 beat,
-                spoken=self._estimate(beat.text, audio_started),
+                spoken=self._estimate(text, audio_started),
                 started=started,
                 audio_started=audio_started,
                 completed=False,
+                settings=settings,
             )
 
         if completed:
             await sink.finish()
             return self._record(
                 beat,
-                spoken=beat.text,
+                spoken=text,
                 started=started,
                 audio_started=audio_started,
                 completed=True,
+                settings=settings,
             )
         await sink.stop()
         return self._record(
             beat,
-            spoken=self._estimate(beat.text, audio_started),
+            spoken=self._estimate(text, audio_started),
             started=started,
             audio_started=audio_started,
             completed=False,
+            settings=settings,
         )
+
+    def text_for(self, beat: Beat) -> str:
+        """The words that go to the model: the beat's own, unless shaped.
+
+        The analyst is never shaped. Exclamation marks belong to the caller,
+        and the second seat exists in order not to sound like the first one.
+        """
+        if self.shaping and beat.voice is Voice.CALLER:
+            return shape_for_voice(beat.text, beat.excitement)
+        return beat.text
 
     async def _pump(
         self, stream: AsyncIterator[bytes], sink: AudioSink, cancel: asyncio.Event
@@ -227,12 +263,16 @@ class ElevenLabsSpeaker:
             # and downloaded to nowhere.
             await _aclose(stream)
 
-    def _open_stream(self, beat: Beat) -> AsyncIterator[bytes]:
+    def _open_stream(
+        self, text: str, voice_id: str, settings: VoiceSettings
+    ) -> AsyncIterator[bytes]:
         if self._stream is not None:
-            return self._stream(beat.text, self.voice_id(beat.voice))
-        return self._api_stream(beat.text, self.voice_id(beat.voice))
+            return self._stream(text, voice_id)
+        return self._api_stream(text, voice_id, settings)
 
-    def _api_stream(self, text: str, voice_id: str) -> AsyncIterator[bytes]:
+    def _api_stream(
+        self, text: str, voice_id: str, settings: VoiceSettings
+    ) -> AsyncIterator[bytes]:
         """The real thing. Imported here so the package stays optional."""
         import httpx
         from elevenlabs.client import AsyncElevenLabs
@@ -243,11 +283,16 @@ class ElevenLabsSpeaker:
             self._http = httpx.AsyncClient(timeout=self.timeout_s)
             self._client = AsyncElevenLabs(api_key=self.api_key, httpx_client=self._http)
         client: Any = self._client
+        # Omitted rather than sent as null when the curve is off: an absent
+        # field is the voice's own library settings, which is exactly what
+        # "off" has to mean, and a null is not guaranteed to be read that way.
+        extra: dict[str, Any] = {} if settings is None else {"voice_settings": settings}
         chunks: AsyncIterator[bytes] = client.text_to_speech.stream(
             voice_id=voice_id,
             text=text,
             model_id=self.model_id,
             output_format=self.output_format,
+            **extra,
         )
         return chunks
 
@@ -283,6 +328,7 @@ class ElevenLabsSpeaker:
         started: float,
         audio_started: float | None,
         completed: bool,
+        settings: VoiceSettings = None,
     ) -> Utterance:
         """One line's account of itself, including how long nothing happened.
 
@@ -293,6 +339,10 @@ class ElevenLabsSpeaker:
         format. ``first_audio_s`` separates them, and it is None when no audio
         ever arrived rather than zero, because a line nobody heard did not
         reach the speakers instantly.
+
+        ``voice_settings`` is the third of those numbers and the one being
+        tuned: a line that came out flat is not diagnosable from the beat's
+        excitement, only from what the curve turned it into.
         """
         utterance = Utterance(
             beat=beat,
@@ -300,6 +350,7 @@ class ElevenLabsSpeaker:
             seconds=time.monotonic() - started,
             completed=completed,
             first_audio_s=None if audio_started is None else audio_started - started,
+            voice_settings=settings,
         )
         self.said.append(utterance)
         return utterance
@@ -347,5 +398,6 @@ __all__ = [
     "PcmSink",
     "SinkFactory",
     "StreamFactory",
+    "VoiceSettings",
     "VoiceUnavailable",
 ]

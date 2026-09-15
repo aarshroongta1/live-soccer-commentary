@@ -226,6 +226,155 @@ class DirectorConfig:
     queue_depth: int = 3
 
 
+def _env_float(name: str, default: float) -> float:
+    raw = os.getenv(name)
+    return default if raw is None or not raw.strip() else float(raw)
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    return default if raw is None or not raw.strip() else int(raw)
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return default
+    return raw.strip().lower() in {"1", "on", "true", "yes"}
+
+
+def _lerp(low: float, high: float, t: float) -> float:
+    return low + (high - low) * t
+
+
+@dataclass(frozen=True)
+class SeatVoice:
+    """One seat's voice settings at the two ends of the excitement scale.
+
+    Two points and a straight line between them. Not because the ear is
+    linear — it is not — but because a curve with a shape has a shape that
+    has to be justified, and nothing has been listened to yet. Two numbers a
+    seat is the smallest thing that can be tuned by ear, and the tuning is
+    the point.
+    """
+
+    #: Falls as the excitement rises. Stability is ElevenLabs' word for how
+    #: closely a read hugs the reference: high is even and safe, low lets the
+    #: model break pitch and pace, which is what a goal sounds like.
+    stability_low: float
+    stability_high: float
+    #: Rises. Style is how much of the reference voice's own performance is
+    #: exaggerated. It is also the setting that costs latency, so the calm
+    #: end is kept near zero.
+    style_low: float
+    style_high: float
+    #: Rises, but barely. Past about 1.2 the words start to slur into each
+    #: other and it reads as a fast-forward rather than as urgency.
+    speed_low: float
+    speed_high: float
+
+    def at(self, excitement: float) -> dict[str, float]:
+        """The three moving settings at one excitement, clamped to 0..1."""
+        t = min(1.0, max(0.0, excitement))
+        return {
+            "stability": round(_lerp(self.stability_low, self.stability_high, t), 3),
+            "style": round(_lerp(self.style_low, self.style_high, t), 3),
+            "speed": round(_lerp(self.speed_low, self.speed_high, t), 3),
+        }
+
+
+def _seat(
+    prefix: str,
+    *,
+    stability: tuple[float, float],
+    style: tuple[float, float],
+    speed: tuple[float, float],
+) -> SeatVoice:
+    return SeatVoice(
+        stability_low=_env_float(f"VOICE_{prefix}_STABILITY_LOW", stability[0]),
+        stability_high=_env_float(f"VOICE_{prefix}_STABILITY_HIGH", stability[1]),
+        style_low=_env_float(f"VOICE_{prefix}_STYLE_LOW", style[0]),
+        style_high=_env_float(f"VOICE_{prefix}_STYLE_HIGH", style[1]),
+        speed_low=_env_float(f"VOICE_{prefix}_SPEED_LOW", speed[0]),
+        speed_high=_env_float(f"VOICE_{prefix}_SPEED_HIGH", speed[1]),
+    )
+
+
+@dataclass(frozen=True)
+class VoiceConfig:
+    """How hard a line is said, as a function of how excited it is.
+
+    Every beat has carried an ``excitement`` since the phrasing stage landed
+    and nothing read it, so a goal went out at the same library defaults as a
+    throw-in. worldcupvoice gets its tone from one fixed set of settings —
+    stability 0.35, style 0.35, speed 1.12 — which is a choice about the
+    *average* line and is therefore wrong at both ends. These are two sets a
+    seat and the line between them.
+
+    The defaults below are a starting guess and are meant to be replaced by
+    numbers somebody has listened to; ``scripts/voice_sweep.py`` renders the
+    grid to listen to. Every one of them is overridable from the environment,
+    and ``VOICE_CURVE=off`` sends no settings at all, which is the voice
+    exactly as it was before this existed.
+
+    Read at construction rather than at import, so a test or a sweep can set
+    the environment and build a new one.
+    """
+
+    #: Play-by-play. Wider than the analyst at both ends: it is the seat that
+    #: has to go from naming a throw-in to calling a goal.
+    caller: SeatVoice = field(
+        default_factory=lambda: _seat(
+            "CALLER", stability=(0.55, 0.20), style=(0.15, 0.60), speed=(1.0, 1.15)
+        )
+    )
+    #: Colour. Never shouts: the analyst speaking at a caller's pitch is the
+    #: two voices becoming one voice, which is what the second seat exists to
+    #: avoid. Excitement here is interest, not volume.
+    analyst: SeatVoice = field(
+        default_factory=lambda: _seat(
+            "ANALYST", stability=(0.60, 0.40), style=(0.10, 0.35), speed=(0.97, 1.05)
+        )
+    )
+    #: How close to the original voice the model stays. Not a function of
+    #: excitement: a caller who stops sounding like himself when he shouts is
+    #: a different caller, not an excited one.
+    similarity_boost: float = field(
+        default_factory=lambda: _env_float("VOICE_SIMILARITY_BOOST", 0.8)
+    )
+    use_speaker_boost: bool = field(default_factory=lambda: _env_flag("VOICE_SPEAKER_BOOST", True))
+    #: ``VOICE_CURVE=off`` sends no ``voice_settings`` and each voice plays at
+    #: its library defaults. Kept as an escape hatch because a bad curve is
+    #: worse than no curve and matchday is not the time to find out.
+    on: bool = field(
+        default_factory=lambda: (os.getenv("VOICE_CURVE") or "on").strip().lower() != "off"
+    )
+    #: macOS ``say`` has one dial, words per minute, so the curve collapses to
+    #: it. 170 to 210 either side of the 190 it ships with.
+    say_rate_low: int = field(default_factory=lambda: _env_int("VOICE_SAY_RATE_LOW", 170))
+    say_rate_high: int = field(default_factory=lambda: _env_int("VOICE_SAY_RATE_HIGH", 210))
+    #: Punctuation shaping, off by default. See
+    #: :mod:`commentary.voice.shaping` for why it is opt-in.
+    shaping: bool = field(default_factory=lambda: _env_flag("VOICE_SHAPING", False))
+
+    def seat(self, voice: str) -> SeatVoice:
+        return self.analyst if voice == "analyst" else self.caller
+
+    def settings_for(self, voice: str, excitement: float) -> dict[str, float | bool] | None:
+        """The ElevenLabs ``voice_settings`` for one beat, or None when off."""
+        if not self.on:
+            return None
+        settings: dict[str, float | bool] = dict(self.seat(voice).at(excitement))
+        settings["similarity_boost"] = self.similarity_boost
+        settings["use_speaker_boost"] = self.use_speaker_boost
+        return settings
+
+    def say_rate(self, excitement: float) -> int:
+        """Words per minute for macOS ``say``. Clamped the same way."""
+        t = min(1.0, max(0.0, excitement))
+        return round(_lerp(self.say_rate_low, self.say_rate_high, t))
+
+
 @dataclass(frozen=True)
 class CostConfig:
     """A match that costs more than this stops calling the model."""
@@ -243,6 +392,7 @@ class Settings:
     predictor: PredictorConfig = field(default_factory=PredictorConfig)
     gate: GateConfig = field(default_factory=GateConfig)
     director: DirectorConfig = field(default_factory=DirectorConfig)
+    voice: VoiceConfig = field(default_factory=VoiceConfig)
     cost: CostConfig = field(default_factory=CostConfig)
 
 

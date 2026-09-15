@@ -10,6 +10,7 @@ from commentary.voice.playback import (
     default_sink,
 )
 from commentary.voice.say import SaySpeaker
+from commentary.voice.shaping import shape_for_voice
 from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker, Speaker, Utterance
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "Utterance",
     "VoiceUnavailable",
     "default_sink",
+    "shape_for_voice",
 ]

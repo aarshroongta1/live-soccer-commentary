@@ -34,6 +34,14 @@ class Utterance:
     #: happens, and it is the number to watch when a voice or a format
     #: changes. None where a speaker cannot observe it.
     first_audio_s: float | None = None
+    #: What the voice was actually asked for: the settings the excitement
+    #: curve produced for this beat, alongside the two timings. A line that
+    #: sounded wrong is not debuggable from ``excitement`` alone, because the
+    #: curve between the two is a thing being tuned — the trace has to carry
+    #: the numbers that were sent, not the input they were derived from.
+    #: None where a speaker sends none: ``LogSpeaker``, and ElevenLabs with
+    #: ``VOICE_CURVE=off``.
+    voice_settings: dict[str, float | bool] | None = None
 
 
 class Speaker(Protocol):

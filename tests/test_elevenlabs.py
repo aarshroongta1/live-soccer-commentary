@@ -24,6 +24,7 @@ from collections.abc import AsyncIterator, Sequence
 
 import pytest
 
+from commentary.config import VoiceConfig
 from commentary.schemas import Beat, Voice
 from commentary.voice import ElevenLabsSpeaker, VoiceUnavailable
 from commentary.voice.playback import (
@@ -38,9 +39,11 @@ from commentary.voice.playback import (
 )
 
 
-def beat(text: str, *, voice: Voice = Voice.CALLER) -> Beat:
+def beat(text: str, *, voice: Voice = Voice.CALLER, excitement: float = 0.0) -> Beat:
     now = time.monotonic()
-    return Beat(id="t1", voice=voice, text=text, video_ts=0.0, created_ts=now)
+    return Beat(
+        id="t1", voice=voice, text=text, video_ts=0.0, created_ts=now, excitement=excitement
+    )
 
 
 class FakeStream:
@@ -573,3 +576,150 @@ async def test_a_line_nobody_heard_reports_no_first_audio_rather_than_none_at_al
     utterance = await spk.say(beat("a line nobody hears"), asyncio.Event())
 
     assert utterance.first_audio_s is None
+
+
+# -- the excitement curve -----------------------------------------------
+
+
+class FakeSdk:
+    """Stands in for the installed package, keeping every request body.
+
+    The kwargs are the request: a typo in one of them, or a setting quietly
+    not being sent, would otherwise only show up on matchday.
+    """
+
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+
+    def install(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls = self.calls
+
+        class FakeTTS:
+            def stream(self, **kwargs: object) -> AsyncIterator[bytes]:
+                calls.append(dict(kwargs))
+                return FakeStream([b"audio"])._gen()
+
+        class FakeClient:
+            def __init__(self, **_kwargs: object) -> None:
+                self.text_to_speech = FakeTTS()
+
+        module = types.ModuleType("elevenlabs.client")
+        module.AsyncElevenLabs = FakeClient  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "elevenlabs.client", module)
+
+
+@pytest.mark.asyncio
+async def test_the_request_body_says_how_hard_the_line_should_be_said(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A goal and a throw-in went out at the same library defaults until now."""
+    sdk = FakeSdk()
+    sdk.install(monkeypatch)
+    spk = ElevenLabsSpeaker(api_key="sk-test", sink=NullSink, curve=VoiceConfig())
+
+    await spk.say(beat("Mbappé! Buried!", excitement=1.0), asyncio.Event())
+    await spk.say(beat("France push forward down the left.", excitement=0.1), asyncio.Event())
+    await spk.aclose()
+
+    goal = sdk.calls[0]["voice_settings"]
+    buildup = sdk.calls[1]["voice_settings"]
+    assert isinstance(goal, dict) and isinstance(buildup, dict)
+    assert goal["stability"] < buildup["stability"]
+    assert goal["style"] > buildup["style"]
+    assert goal["speed"] > buildup["speed"]
+    assert goal["similarity_boost"] == buildup["similarity_boost"]
+
+
+@pytest.mark.asyncio
+async def test_the_curve_switched_off_sends_a_body_with_no_settings_in_it(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Absent, not null and not defaults written out: the voice plays exactly
+    # as it did before any of this existed.
+    monkeypatch.setenv("VOICE_CURVE", "off")
+    sdk = FakeSdk()
+    sdk.install(monkeypatch)
+    spk = ElevenLabsSpeaker(api_key="sk-test", sink=NullSink, curve=VoiceConfig())
+
+    utterance = await spk.say(beat("Mbappé! Buried!", excitement=1.0), asyncio.Event())
+    await spk.aclose()
+
+    assert "voice_settings" not in sdk.calls[0]
+    assert utterance.voice_settings is None
+
+
+@pytest.mark.asyncio
+async def test_the_settings_a_line_was_said_with_land_on_the_utterance() -> None:
+    """``excitement`` alone cannot explain a line that came out flat.
+
+    The curve between the two is the thing being tuned, so the trace has to
+    carry the numbers that were sent rather than the input they came from.
+    """
+    curve = VoiceConfig()
+    spk = speaker(FakeStream([b"a" * 32] * 2), NullSink(), curve=curve)
+
+    utterance = await spk.say(beat("Mbappé! Buried!", excitement=1.0), asyncio.Event())
+
+    assert utterance.voice_settings == curve.settings_for("caller", 1.0)
+    assert utterance.voice_settings is not None
+    assert utterance.voice_settings["stability"] == curve.caller.stability_high
+
+
+@pytest.mark.asyncio
+async def test_a_cut_line_still_records_what_it_was_being_said_with() -> None:
+    cancel = asyncio.Event()
+    sink = GatedSink(cancel, after=1)
+    spk = speaker(FakeStream([b"a" * 32] * 6), sink, curve=VoiceConfig())
+
+    utterance = await spk.say(beat("Mbappé! Buri", excitement=1.0), cancel)
+
+    assert not utterance.completed
+    assert utterance.voice_settings is not None
+
+
+@pytest.mark.asyncio
+async def test_the_analyst_is_not_sent_the_callers_settings() -> None:
+    curve = VoiceConfig()
+    spk = speaker(FakeStream([b"a"] * 2), NullSink(), curve=curve)
+
+    caller_line = await spk.say(beat("Mbappé! Buried!", excitement=1.0), asyncio.Event())
+    analyst_line = await spk.say(
+        beat("That is the run Scaloni wanted.", voice=Voice.ANALYST, excitement=1.0),
+        asyncio.Event(),
+    )
+
+    assert caller_line.voice_settings != analyst_line.voice_settings
+    assert analyst_line.voice_settings == curve.settings_for("analyst", 1.0)
+
+
+# -- shaping, at the seam where it is switched on -----------------------
+
+
+@pytest.mark.asyncio
+async def test_a_line_is_shaped_only_when_shaping_is_switched_on() -> None:
+    """It edits a line the gate has already approved, so it is opt-in."""
+    plain = FakeStream([b"a"])
+    shaped = FakeStream([b"a"])
+    line = beat("Mbappé, buried.", excitement=1.0)
+
+    await speaker(plain, NullSink()).say(line, asyncio.Event())
+    utterance = await speaker(shaped, NullSink(), shaping=True).say(line, asyncio.Event())
+
+    assert plain.calls[0][0] == "Mbappé, buried."
+    assert shaped.calls[0][0] == "Mbappé! Buried!"
+    # And what is reported as spoken is what was actually said, not the beat.
+    assert utterance.spoken == "Mbappé! Buried!"
+
+
+@pytest.mark.asyncio
+async def test_the_analysts_line_is_never_shaped() -> None:
+    # Exclamation marks belong to the caller. An analyst shouting is the two
+    # voices becoming one voice.
+    stream = FakeStream([b"a"])
+    spk = speaker(stream, NullSink(), shaping=True)
+
+    await spk.say(
+        beat("Scaloni, vindicated.", voice=Voice.ANALYST, excitement=1.0), asyncio.Event()
+    )
+
+    assert stream.calls[0][0] == "Scaloni, vindicated."
