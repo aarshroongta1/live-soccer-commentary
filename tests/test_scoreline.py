@@ -16,6 +16,7 @@ import numpy as np
 import pytest
 
 from commentary.agents.phraser import Phraser
+from commentary.bus import Topic
 from commentary.capture.buffer import Frame
 from commentary.config import (
     CallerConfig,
@@ -28,6 +29,7 @@ from commentary.config import (
 )
 from commentary.goalfollow import MAX_SYNTH, GoalFollowup
 from commentary.llm.fake import ScriptedBackend
+from commentary.rephrase import restatement_pass
 from commentary.runtime import Runtime
 from commentary.schemas import (
     Beat,
@@ -43,6 +45,7 @@ from commentary.schemas import (
     Sighting,
     TeamSheet,
     Trigger,
+    Voice,
 )
 from commentary.scoreline import (
     Restatements,
@@ -224,6 +227,78 @@ def test_a_timer_set_to_zero_never_comes_due() -> None:
     assert not timer.enabled
     assert not timer.pending
     assert timer.take(a_state(2, 1, clock_s=900.0)) == ""
+
+
+# -- staying clear of a goal being celebrated --------------------------------
+
+
+def test_blocks_restatement_covers_the_window_and_the_grace_period_after_it() -> None:
+    follow = GoalFollowup()
+    follow.armed_at = 100.0
+    assert follow.blocks_restatement(100.0), "the window has just opened"
+    assert follow.blocks_restatement(129.9), "still inside the thirty-second window"
+    assert follow.blocks_restatement(130.0), "the window closes here, the grace does not"
+    assert follow.blocks_restatement(160.0), "the edge of the grace period, inclusive"
+    assert not follow.blocks_restatement(160.1), "clear of the goal at last"
+    assert not follow.blocks_restatement(99.9), "before the goal was even called"
+    assert not GoalFollowup().blocks_restatement(100.0), "no goal armed, nothing to block"
+
+
+def _state_row(ts: float, clock_s: float, *, home: int = 2, away: int = 1) -> dict[str, Any]:
+    return {
+        "topic": Topic.STATE.value,
+        "ts": ts,
+        "home": "Argentina",
+        "away": "France",
+        "home_score": home,
+        "away_score": away,
+        "clock_s": clock_s,
+    }
+
+
+def _beat_row(ts: float, text: str) -> dict[str, Any]:
+    return {"topic": Topic.BEAT.value, "ts": ts, "voice": Voice.CALLER.value, "text": text}
+
+
+def test_a_restatement_due_inside_a_goal_window_waits_for_the_grace_period_too() -> None:
+    """Regression: "Eighty-one minutes gone, two-two." landed between the goal
+    line at 176.7 s and the celebration at 180.5 s on the Mbappé trace,
+    because the restatement pass knew nothing about the goal follow-up
+    window at all.
+    """
+    rows = [
+        _state_row(0.0, 0.0),
+        _state_row(105.0, 105.0),
+        _state_row(170.0, 170.0),
+    ]
+    settings = Settings(restatement=RestatementConfig(every_s=10.0))
+    _, restated = restatement_pass(rows, settings, goal_calls=[100.0], window_s=30.0)
+    assert restated, "the period was still owed once clear of the goal"
+    assert all(line.ts > 160.0 for line in restated), [line.ts for line in restated]
+
+
+def test_a_restatement_pushed_past_a_beat_lands_after_it_in_the_trace() -> None:
+    """Regression: the row used to be inserted after the state row that owed
+    it rather than at the timestamp the clear-moment search actually chose,
+    which put a restatement stamped 183.9 s ahead of a beat stamped 180.5 s
+    in the file.
+    """
+    rows = [
+        _state_row(0.0, 0.0),
+        _state_row(176.0, 176.0),
+        _beat_row(176.7, "Goal call"),
+        _beat_row(180.5, "Celebration"),
+    ]
+    settings = Settings(restatement=RestatementConfig(every_s=10.0))
+    merged, restated = restatement_pass(rows, settings)
+    assert restated, "a clear moment exists past both beats"
+    (line,) = restated
+    assert line.ts > 180.5
+    restate_index = next(
+        i for i, row in enumerate(merged) if row.get("id", "").startswith("restate-")
+    )
+    beat_index = next(i for i, row in enumerate(merged) if row.get("ts") == 180.5)
+    assert restate_index > beat_index
 
 
 # -- which beat is due -------------------------------------------------------

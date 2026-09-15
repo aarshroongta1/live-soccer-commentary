@@ -849,6 +849,8 @@ class Runtime:
         last = self._last_spoken_video_ts
         if last is not None and cursor - last < clear_of:
             return False
+        if self.follow.blocks_restatement(cursor):
+            return False
         if self._colour_turn is not None or self._goal_turn is not None:
             return False
         text = self.restatements.take(self.state)

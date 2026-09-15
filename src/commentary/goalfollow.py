@@ -75,6 +75,27 @@ MAX_SYNTH = 2
 #: The last beat the model is asked to write. Beat 1 is the call itself.
 LAST_BEAT = max(GOAL_BEATS)
 
+#: How long after the window closes a scoreline-and-clock restatement still
+#: stays out of the way. The corpus's celebration does not stop dead at the
+#: window's edge, and a restatement landing right on it reads as stepping on
+#: the goal — the runtime and the offline rephrase both drive this, and a
+#: restatement is the one other thing in the system that writes to the same
+#: thirty seconds.
+RESTATEMENT_GRACE_S = 30.0
+
+
+def blocks_restatement(ts: float, armed_at: float, window_s: float = FOLLOWUP_S) -> bool:
+    """Is ``ts`` inside a goal's window, or the grace period right after it?
+
+    A free function as well as :meth:`GoalFollowup.blocks_restatement`
+    because the offline rephrase has to check every goal a whole trace has
+    armed by the time it runs the restatement pass, not only the one the
+    live instance still remembers — a second goal replaces the first in
+    :attr:`GoalFollowup.armed_at`, and a match with two goals has moved on
+    from the first by the time this runs.
+    """
+    return 0.0 <= ts - armed_at <= window_s + RESTATEMENT_GRACE_S
+
 
 @dataclass
 class GoalFollowup:
@@ -115,6 +136,15 @@ class GoalFollowup:
         if self.armed_at is None:
             return False
         return 0.0 <= ts - self.armed_at <= self.window_s
+
+    def blocks_restatement(self, ts: float) -> bool:
+        """Is a scoreline-and-clock restatement too close to a goal at ``ts``?
+
+        True through the window and for :data:`RESTATEMENT_GRACE_S` after it
+        closes — wider than :meth:`active`, which the phraser's own beats use
+        and which stops the instant the window does.
+        """
+        return self.armed_at is not None and blocks_restatement(ts, self.armed_at, self.window_s)
 
     def beat(self, ts: float) -> int | None:
         """Which beat is due, or ``None`` if the window is closed or spent.

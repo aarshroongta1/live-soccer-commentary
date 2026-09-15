@@ -58,16 +58,17 @@ account of the speaking and ``replay --voice`` writes this time's.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from commentary.agents.colour import ColourPass, colour_pass
+from commentary.agents.colour import ColourPass, _merge, colour_pass
 from commentary.agents.phraser import Phraser
 from commentary.bus import Topic
 from commentary.config import SETTINGS, Settings
 from commentary.gate import FactGate, claims_goal, fold
-from commentary.goalfollow import GoalFollowup
+from commentary.goalfollow import FOLLOWUP_S, GoalFollowup, blocks_restatement
 from commentary.llm.base import LLMBackend
 from commentary.runtime import CARRY_NAME_S, GOAL_GRAPHIC_LAG_S
 from commentary.schemas import (
@@ -361,6 +362,10 @@ async def rephrase(
     threads = Threads.from_pack(pack)
     follow = GoalFollowup(threads=threads)
     out = Rephrased()
+    #: When each goal's follow-up window opened, for the restatement pass:
+    #: it must stay out of every one of these, not just the last one a match
+    #: with more than one goal has armed by the time the main loop is done.
+    goal_calls: list[float] = []
 
     def thread_rows(at: float, offered: list[Offered], action: str) -> None:
         """Trace what was picked back up, so that it can be counted."""
@@ -721,6 +726,7 @@ async def rephrase(
         # gap longer than any gap in the corpus, the gap is filled.
         if not fell_back and claims_goal(verdict.line, form.event) and follow.is_the_call(ts):
             follow.arm(ts, form, verdict.line, pack)
+            goal_calls.append(ts)
             # Whose goal it was is the one thing the board never knows, and
             # every running count about him is wrong from this second on.
             threads.credit_goal(follow.scorer, ts)
@@ -737,7 +743,9 @@ async def rephrase(
     # joining late, out of a closed vocabulary, and no model is needed to say
     # "ten minutes gone, two-nil to Barcelona". It runs over the rewritten
     # rows so that it can see where the lead actually speaks now.
-    out.rows, restated = restatement_pass(out.rows, settings)
+    out.rows, restated = restatement_pass(
+        out.rows, settings, goal_calls=goal_calls, window_s=follow.window_s
+    )
     out.lines.extend(restated)
     # -- end of the restatement ------------------------------------------
 
@@ -772,9 +780,12 @@ RESTATE_STEP_S = 0.5
 #: never goes out at twenty-two.
 RESTATE_PATIENCE_S = 30.0
 
-
 def restatement_pass(
-    rows: list[dict[str, Any]], settings: Settings = SETTINGS
+    rows: list[dict[str, Any]],
+    settings: Settings = SETTINGS,
+    *,
+    goal_calls: Sequence[float] = (),
+    window_s: float = FOLLOWUP_S,
 ) -> tuple[list[dict[str, Any]], list[Line]]:
     """Put the score-and-clock line into the trace on its timer. No model.
 
@@ -785,7 +796,18 @@ def restatement_pass(
     rule — code writes numbers, the model writes words — settles the rest.
 
     Run over the rewritten rows rather than the original ones, because what it
-    has to keep out of the way of is where the lead speaks *now*.
+    has to keep out of the way of is where the lead speaks *now*. ``goal_calls``
+    is every moment a goal's follow-up window opened in this trace — not just
+    the last one, because a match with more than one goal has moved on from
+    the earlier ones by the time this runs — and a candidate is out of bounds
+    for ``window_s`` after any of them plus the grace
+    :func:`~commentary.goalfollow.blocks_restatement` adds on top.
+
+    The new row is placed in trace order rather than after the state row that
+    owed it: :func:`commentary.agents.colour._merge` puts it after the last
+    original row stamped at or before it, which is what keeps a restatement
+    the clear-moment search pushed forward from landing ahead of a beat that
+    was already in the file at an earlier timestamp.
 
     Returns the rows with the restatements in them and a table row for each.
     """
@@ -799,11 +821,16 @@ def restatement_pass(
         if row.get("topic") == Topic.BEAT.value and row.get("voice") == Voice.CALLER.value
     )
 
+    def in_a_goal_window(at: float) -> bool:
+        return any(blocks_restatement(at, armed_at, window_s) for armed_at in goal_calls)
+
     def clear(at: float) -> bool:
+        if in_a_goal_window(at):
+            return False
         return all(abs(at - beat) > cfg.clear_of_a_beat_s for beat in lead)
 
-    said: list[tuple[int, float, str]] = []
-    for index, row in enumerate(rows):
+    said: list[tuple[float, str]] = []
+    for row in rows:
         if row.get("topic") != Topic.STATE.value:
             continue
         payload = {k: v for k, v in row.items() if k not in ("topic", "ts")}
@@ -822,33 +849,30 @@ def restatement_pass(
             continue
         text = timer.take(state)
         if text:
-            said.append((index, at, text))
+            said.append((at, text))
             lead.append(at)
 
-    out: list[dict[str, Any]] = []
+    additions: list[tuple[float, dict[str, Any]]] = []
     lines: list[Line] = []
-    pending = {index: (at, text) for index, at, text in said}
-    for index, row in enumerate(rows):
-        out.append(row)
-        found = pending.get(index)
-        if found is None:
-            continue
-        at, text = found
-        out.append(
-            {
-                "topic": Topic.BEAT.value,
-                "ts": at,
-                "id": f"restate-{at:.1f}",
-                "voice": Voice.CALLER.value,
-                "text": text,
-                "video_ts": at,
-                "created_ts": 0.0,
-                "live_ts": at,
-                "event": Event.NONE.value,
-                "excitement": cfg.excitement,
-                "preemptable": True,
-                "by_code": True,
-            }
+    for at, text in said:
+        additions.append(
+            (
+                at,
+                {
+                    "topic": Topic.BEAT.value,
+                    "ts": at,
+                    "id": f"restate-{at:.1f}",
+                    "voice": Voice.CALLER.value,
+                    "text": text,
+                    "video_ts": at,
+                    "created_ts": 0.0,
+                    "live_ts": at,
+                    "event": Event.NONE.value,
+                    "excitement": cfg.excitement,
+                    "preemptable": True,
+                    "by_code": True,
+                },
+            )
         )
         lines.append(
             Line(
@@ -861,7 +885,7 @@ def restatement_pass(
                 written_by_code=True,
             )
         )
-    return out, lines
+    return _merge(rows, additions), lines
 
 
 def _event_of(text: str, event: Event) -> Event:

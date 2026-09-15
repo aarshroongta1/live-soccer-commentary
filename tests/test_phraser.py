@@ -10,6 +10,7 @@ never a line.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -29,7 +30,13 @@ from commentary.config import (
 from commentary.llm.base import Block
 from commentary.llm.fake import ScriptedBackend
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
-from commentary.prompts.phraser import _examples, phraser_blocks, phraser_system
+from commentary.prompts.phraser import (
+    GOAL_BEATS,
+    PHRASER_RULES,
+    _examples,
+    phraser_blocks,
+    phraser_system,
+)
 from commentary.rephrase import rephrase
 from commentary.runtime import Runtime
 from commentary.schemas import (
@@ -94,6 +101,104 @@ def a_pack() -> KnowledgePack:
             starters=[Player(name="Kylian Mbappé", number=10)],
         ),
     )
+
+
+#: Every surname on the roster of ``clips/pack-argfra-2022.json``, restated
+#: here rather than read off disk because ``clips/`` is where the broadcast
+#: footage lives and is not in the repository (see ``argfra_notes`` below).
+#: This is the pack the phraser is measured against, so a worked example in
+#: the rules that pairs one of these names with a made-up outcome is a name
+#: the model can echo verbatim onto a real player in a real call — which is
+#: exactly what happened on the Mbappé trace (82.5 s copied the "kept" line
+#: for "Mbappé! The volley, buried." onto a penalty, and 94.8 s copied the
+#: beat-4 rewrite onto the wrong goal).
+ARGFRA_2022_SURNAMES = frozenset(
+    {
+        "Acuña",
+        "Almada",
+        "Areola",
+        "Armani",
+        "Camavinga",
+        "Coman",
+        "Correa",
+        "Dembélé",
+        "Disasi",
+        "Dybala",
+        "Fernandez",
+        "Fofana",
+        "Foyth",
+        "Giroud",
+        "Griezmann",
+        "Guendouzi",
+        "Gómez",
+        "Hernández",
+        "Konaté",
+        "Koundé",
+        "Lloris",
+        "MacAllister",
+        "Mandanda",
+        "Martínez",
+        "María",
+        "Mbappé",
+        "Messi",
+        "Molina",
+        "Montiel",
+        "Muani",
+        "Otamendi",
+        "Palacios",
+        "Paredes",
+        "Paul",
+        "Pavard",
+        "Pezzella",
+        "Rabiot",
+        "Rodríguez",
+        "Romero",
+        "Rulli",
+        "Saliba",
+        "Tagliafico",
+        "Tchouaméni",
+        "Thuram",
+        "Upamecano",
+        "Varane",
+        "Veretout",
+        "Álvarez",
+    }
+)
+
+#: Surnames from that roster that legitimately still appear in the rules or
+#: the goal follow-up block: bare, generic name mentions and genuine verbatim
+#: real-broadcast quotes sourced in ``docs/research/real-commentary-corpus.md``
+#: (the same "real captions from other matches" exemption the REAL EXAMPLES
+#: block in ``commentary_examples.py`` gets, just inline instead of in that
+#: file). None of them pairs the name with an invented, specific outcome the
+#: way the fixed examples used to. Pinned counts so a new example that sneaks
+#: a pack name back in has to touch this list to pass.
+ARGFRA_2022_EXEMPT_IN_RULES = {
+    "Tagliafico": 1,  # "the form gives you a name, use it" — bare mention
+    "Griezmann": 2,  # opener-shape table, sourced from real-commentary-corpus.md
+    "Varane": 1,  # "at speed it is still short" — bare fragment, no outcome
+    "Messi": 3,  # opener-shape table + "is offside" fragment — bare mentions
+    "Paul": 2,  # "a bare surname is a line" — bare mention, no outcome
+}
+ARGFRA_2022_EXEMPT_IN_GOAL_BEATS = {
+    "Griezmann": 3,  # verbatim bar-mal-2019 quotes, section 8.4
+}
+
+
+def _surname_counts(text: str, surnames: frozenset[str]) -> dict[str, int]:
+    return {
+        surname: len(re.findall(r"\b" + re.escape(surname) + r"\b", text))
+        for surname in surnames
+        if re.search(r"\b" + re.escape(surname) + r"\b", text)
+    }
+
+
+def test_no_worked_example_pairs_an_invented_detail_with_a_name_from_the_measured_pack() -> None:
+    rules_text = PHRASER_RULES.format(max_words=28)
+    beats_text = "\n".join(GOAL_BEATS.values())
+
+    assert _surname_counts(rules_text, ARGFRA_2022_SURNAMES) == ARGFRA_2022_EXEMPT_IN_RULES
+    assert _surname_counts(beats_text, ARGFRA_2022_SURNAMES) == ARGFRA_2022_EXEMPT_IN_GOAL_BEATS
 
 
 def saying(*lines: PhrasedLine) -> ScriptedBackend:
@@ -207,16 +312,16 @@ def test_the_example_set_holds_enough_goals_and_chances_to_teach_one() -> None:
 
 
 def test_the_rules_ask_for_one_concrete_detail_and_say_which_lines_were_thin() -> None:
-    """"Mbappé!" over a volley is true, short, and says nothing."""
+    """"Okafor!" over a volley is true, short, and says nothing."""
     rules = phraser_system()
     assert "COMPRESSING IS NOT DELETING" in rules
     assert "One, not two, and not the whole clause" in rules
-    assert "kept:  Mbappé! Off the ground!" in rules
+    assert "kept:  Okafor! Off the ground!" in rules
     assert "kept:  France, through the middle at speed." in rules
 
 
 def test_the_rules_forbid_a_subject_that_is_only_on_the_sightings_list() -> None:
-    """A France break called "Otamendi." because Otamendi's shirt was legible."""
+    """A France break called "Harlow." because Harlow's shirt was legible."""
     rules = phraser_system()
     assert "WHO THE LINE IS ABOUT" in rules
     assert "may not be your subject" in rules
@@ -227,12 +332,12 @@ def test_the_goal_example_is_the_name_then_the_how_and_stops() -> None:
     """The third beat is still the score. It is no longer the model's to write."""
     rules = phraser_system()
     assert "A GOAL IS THREE BEATS, AND YOU WRITE TWO OF THEM" in rules
-    assert "Mbappé! On the volley!" in rules
-    assert "Ronaldo! Over the wall!" in rules
+    assert "<Scorer>! On the volley!" in rules
+    assert "<Scorer>! Over the wall!" in rules
     # The examples stop where the words stop. A number in one of them is a
     # number the model has been shown and will copy.
-    assert "Mbappé! On the volley! Two-two." not in rules
-    assert "Ronaldo! Over the wall! Three-three." not in rules
+    assert "<Scorer>! On the volley! Two-two." not in rules
+    assert "<Scorer>! Over the wall! Three-three." not in rules
     assert "THE THIRD BEAT IS THE SCORE AND IT IS NOT YOURS" in rules
     assert "The broadcast adds it to" in rules
 
@@ -243,6 +348,20 @@ def test_the_rules_ask_the_excitement_and_the_words_to_move_together() -> None:
     assert "a break at speed, a run at a defender" in rules
     assert "DO NOT SOUND LIKE THE LINE BEFORE IT" in rules
     assert "same word as either of the two above it" in rules
+
+
+def test_the_decoration_ban_names_erupts_for_any_group_not_only_the_crowd() -> None:
+    """86.8 said "the whole crowd erupts", 180.5 said "the corner erupts" —
+    both atmosphere decoration the rule already forbade in spirit but never
+    named, and naming only "crowd" and "corner" left "the bench erupts"
+    untouched on the next round."""
+    rules = " ".join(phraser_system().split())
+    assert "Never decorate" in rules
+    assert "the crowd rises" in rules
+    assert "any group of people made to erupt" in rules
+    assert "The whole crowd erupts" in rules
+    assert "and the corner erupts" in rules
+    assert "the bench erupts" in rules
 
 
 def test_a_form_that_carries_a_detail_puts_it_in_front_of_the_phraser() -> None:

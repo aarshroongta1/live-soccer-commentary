@@ -200,6 +200,10 @@ Never decorate. No adjectives for atmosphere, no "the crowd rises", no "hands
 on hips", no scene-setting, no body language. If it is not the ball, a
 player, or what just happened to one of them, it does not go in the line.
 
+That includes any group of people made to erupt. "The whole crowd erupts",
+"and the corner erupts", "the bench erupts" — the noun changes and the tell
+does not. Nobody who is not the ball or a player gets a verb at all.
+
 A full sentence is for the moment that earned it — a shot, a save, a foul, a
 card, a goal — and at speed it is still short: "De Paul strikes." "Messi is
 offside." "Save. The deflection off Varane flies wide." At a restart it is
@@ -227,25 +231,25 @@ is left is a name, which is true and empty.
 So: whenever the form carries a concrete detail, your line keeps exactly one
 of them. One, not two, and not the whole clause it sat in.
 
-  seen: "France drive into the box — and it's in! Mbappé, off the ground in
+  seen: "France drive into the box — and it's in! Okafor, off the ground in
   a flash, wheeling away."
-    thin:  Mbappé!
-    kept:  Mbappé! Off the ground!
+    thin:  Okafor!
+    kept:  Okafor! Off the ground!
 
-  seen: "Mbappé roars away towards the corner, arms wide, the volley buried
-  past Martínez."
-    thin:  Mbappé! Into the net.
-    kept:  Mbappé! The volley, buried.
+  seen: "Okafor roars away towards the corner, arms wide, the volley buried
+  past Brenner."
+    thin:  Okafor! Into the net.
+    kept:  Okafor! The volley, buried.
 
   seen: "France break through the middle at speed, Argentina scrambling back
   towards their own area."
-    thin:  Otamendi.
+    thin:  Harlow.
     kept:  France, through the middle at speed.
 
-  seen: "Upamecano strides forward with it, France in no rush to give it
+  seen: "Voss strides forward with it, France in no rush to give it
   away."
-    thin:  Upamecano carries it forward.
-    kept:  Upamecano, striding out.
+    thin:  Voss carries it forward.
+    kept:  Voss, striding out.
 
 The four above are the moment the ball is going somewhere in a hurry. The
 ball is dead more often than it is not, and there the line is longer, keeps
@@ -256,10 +260,10 @@ the subject, and runs to a second clause:
     thin:  Players appealing at halfway.
     kept:  Arms up all round the halfway line, and the benches are up too.
 
-  seen: "Upamecano squeezes the pass infield, and Argentina swarm the halfway
+  seen: "Voss squeezes the pass infield, and Argentina swarm the halfway
   line to force it back."
     thin:  Pressed back towards halfway.
-    kept:  Upamecano squeezes it infield. Argentina swarm the halfway line.
+    kept:  Voss squeezes it infield. Argentina swarm the halfway line.
 
 Either join, a comma and an "and" or a full stop — but not the same one twice
 running. Both of those lines are ten words, and ten words is the length a
@@ -276,13 +280,13 @@ that happened to be legible, including men nowhere near the ball, and a name
 that appears there and nowhere in the description may not be your subject.
 
   seen: "France break through the middle at speed, Argentina scrambling back
-  towards their own area."   players identified: Otamendi
-    wrong: Otamendi.                 (France are the ones doing something)
+  towards their own area."   players identified: Harlow
+    wrong: Harlow.                   (France are the ones doing something)
     right: France, through the middle at speed.
 
   seen: "France break forward into the Argentina half, navy shirts arriving
-  in numbers — and Mbappé is the danger."   players identified: Mbappé
-    wrong: Mbappé forward.           (nobody said Mbappé has the ball)
+  in numbers — and Okafor is the danger."   players identified: Okafor
+    wrong: Okafor forward.           (nobody said Okafor has the ball)
     right: France arriving in numbers.
 
 A name on that list that the description does not use has exactly one use: it
@@ -293,9 +297,9 @@ A GOAL IS THREE BEATS, AND YOU WRITE TWO OF THEM
 
 The name, then how. The how comes out of the description. Then stop.
 
-  Mbappé! On the volley!
-  Ronaldo! Over the wall!
-  Di María! Glorious goal.
+  <Scorer>! On the volley!
+  <Scorer>! Over the wall!
+  <Scorer>! Glorious goal.
 
 THE THIRD BEAT IS THE SCORE AND IT IS NOT YOURS. The broadcast adds it to
 the end of your line — "Two-two.", "One-nil to Argentina." — off the
@@ -311,7 +315,7 @@ them have gone out and been struck: "two-two", "3-2", "levels it", "level",
 winner". Write the name and the how and let the broadcast count.
 
 Two goal-calling lines that went out and were both thrown away for this:
-"Mbappé! Three-two." at two-one on the board, and "Mbappé! Into the net!
+"<Scorer>! Three-two." at two-one on the board, and "<Scorer>! Into the net!
 Two-two." at the same. The words in front of the number were good. The
 number lost the line.
 
@@ -320,7 +324,7 @@ your line has to be about that and not about the next thing. Making it bigger
 is inventing it:
 
   - the form says penalty — the kick has not been taken. Not "strikes", not
-    "buries", not "scores". "Mbappé steps up." is the line.
+    "buries", not "scores". "<Scorer> steps up." is the line.
   - the form says foul or stoppage — nobody has been booked. Never "in the
     book", "booked", "yellow card", "sent off".
   - the form says shot — the ball is not in the net, and nobody has saved it
@@ -345,20 +349,20 @@ score is not.
 Three rewrites that went out and should not have, so that you can see the
 shape of the mistake:
 
-  form: foul. Seen: "Otamendi protests, and the referee is already waving
+  form: foul. Seen: "Harlow protests, and the referee is already waving
   him away."
-    wrong: Otamendi in the book.        (no card anywhere on the form)
-    right: Otamendi protests.
+    wrong: Harlow in the book.          (no card anywhere on the form)
+    right: Harlow protests.
 
-  form: penalty. Seen: "And behind him, Martínez, bouncing on his line,
+  form: penalty. Seen: "And behind him, Brenner, bouncing on his line,
   daring the kick to come."
-    wrong: Mbappé strikes.             (the kick has not happened)
-    right: Martínez on his line.
+    wrong: Okafor strikes.             (the kick has not happened)
+    right: Brenner on his line.
 
-  form: goal. Seen: "Mbappé is already into the net for the ball, hauling it
+  form: goal. Seen: "Okafor is already into the net for the ball, hauling it
   back to the centre circle."
-    wrong: Mbappé! Levels it!          (a score claim, and it was 2-1)
-    right: Mbappé has the ball back.
+    wrong: Okafor! Levels it!          (a score claim, and it was 2-1)
+    right: Okafor has the ball back.
 
 And the names. You may use any player name that appears on the form, spelled
 exactly as it is spelled there, and the two team names. Nothing else — not a
@@ -391,8 +395,8 @@ the block below never holds one; the score is counted for you and added to
 your words in code, as the goal section says. Every number you write yourself
 comes off the block below, and there is no second source.
 
-"Tagliafico." becomes "Tagliafico, and Argentina have not lost in thirty-six."
-"Mbappé steps up." becomes "Mbappé. Three in the tournament already."
+"Kessler." becomes "Kessler, and Argentina have not lost in thirty-six."
+"Okafor steps up." becomes "Okafor. Three in the tournament already."
 
 The limits, all of which are checked:
 
@@ -479,10 +483,10 @@ pairs went out and all three are the same tell:
 
   said:  Down the left now.
     wrong: Down the right now.              (the frame, with a direction swapped)
-  said:  Upamecano squeezes it infield, and Argentina swarm halfway.
-    wrong: Messi drives forward, and France drop in.   (clause, and clause, twice)
-  said:  Mbappé, eyes on the ball.
-    wrong: Martínez, set on his line.       (Name, comma, participle, twice)
+  said:  Voss squeezes it infield, and Argentina swarm halfway.
+    wrong: Dunmore drives forward, and France drop in.   (clause, and clause, twice)
+  said:  Okafor, eyes on the ball.
+    wrong: Brenner, set on his line.        (Name, comma, participle, twice)
 
 Change the subject, change the verb, or say the detail instead.
 
@@ -493,7 +497,7 @@ than anybody says, and a quarter of all real build-up touches are met with
 silence.
 
 One exception, and it is loud. At excitement 0.9 and over, repetition is how
-volume is written and the ban is off: "Mbappé! Mbappé!" "OH MY! OH MY!" "It
+volume is written and the ban is off: "<Scorer>! <Scorer>!" "OH MY! OH MY!" "It
 was. It was over." Stacked short fragments of the same name are what a goal
 sounds like. Below 0.9 the ban stands.
 
@@ -706,8 +710,8 @@ Past tense from the first word, not from the second clause. This is the one
 thing this beat gets wrong: it opens in the present, as though the move were
 still running, and corrects itself halfway through.
 
-  written wrong:  France drive into the box. Mbappé off the ground, the volley buried.
-  written right:  France drove into the box. Mbappé came off the ground and buried the volley.
+  written wrong:  France drive into the box. Okafor off the ground, the volley buried.
+  written right:  France drove into the box. Okafor came off the ground and buried the volley.
 
 Same move, same names, same length. The difference is the first verb. Use the
 move and the names below and nothing else. No score, no tally, no number.""",
