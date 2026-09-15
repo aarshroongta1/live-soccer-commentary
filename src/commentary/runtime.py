@@ -624,6 +624,7 @@ class Runtime:
             # rather than arriving.
             goal_in_state=self._goal_already_in_the_state(cursor),
             carried=self._carried_name(line, cursor),
+            at=cursor,
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:

@@ -144,9 +144,16 @@ class PhraserConfig:
     #: caller's cap is a backstop against a runaway and this is a target.
     max_words: int = 16
     #: Real utterances shown per kind in the system prompt. The whole set is
-    #: 228 lines; a sample keeps the cached prefix small enough that the
-    #: cache write is cheaper than the reads it saves.
-    examples_per_kind: int = 14
+    #: 228 lines and a sample is enough to set a register.
+    #:
+    #: It was 14 and is 10 because the first two rephrases measured
+    #: ``cache_read_input_tokens`` at zero across 33 calls: prompt caching is
+    #: asked for and is not firing, so every call pays full price for the
+    #: whole prefix and the bill is linear in its length. Ten a kind is about
+    #: sixty utterances, which is still a register, and it pays for the rules
+    #: that were added after those runs invented a booking and an equaliser.
+    #: If the caching is ever fixed this should go back up.
+    examples_per_kind: int = 10
     #: Lines shown back as "the last lines spoken", so the voice does not
     #: repeat itself. Shorter than the caller's five: these lines are five
     #: words each and five of them is no context at all.

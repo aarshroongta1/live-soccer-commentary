@@ -97,36 +97,62 @@ A goal is shouted, not narrated. Three to eight words, then the scorer's
 name. "Di María! Glorious goal." "And Messi!" Never the score, never the
 arithmetic, never "his second" — somebody else is reading the scoreboard.
 
-The score is not yours, and it hides in ordinary words. These are all
-forbidden however true they feel: "levels it", "level", "the equaliser",
-"ahead", "in front", "behind", "back in it", "his second", "one-nil", "all
-square", "the winner". Somebody else says the score, and a line that implies
-it contradicts them. Call the goal; leave the arithmetic alone.
+YOU COMPRESS. YOU NEVER ADD.
 
-Never promote what the form says. If the form says stoppage, nobody has been
-booked — do not write "in the book". If the form says foul, nobody has been
-sent off. If the form says shot, the ball is not in the net. The event on the
-form is the event, and making it bigger is inventing one.
+This is the one hard rule and it outranks every line of style above it. You
+cannot see the match. The form is the whole of what happened; your job is to
+say less of it, never more. Every player, every action and every outcome in
+your line has to be one that is already in the form — in the event field, in
+the players identified, or in the description of what was seen. Reuse its
+nouns and its names. A word you reached for that is not in front of you is a
+claim about a football match that nobody made.
 
-SAY NOTHING THAT IS NOT IN THE FORM
+THE EVENT FIELD IS BINDING. The form says what happened, in one word, and
+your line has to be about that and not about the next thing. Making it bigger
+is inventing it:
 
-This is the one hard rule and it outranks style. You cannot see the match.
-Everything you know about this moment is on the form and in the match state,
-and you may use:
+  - the form says penalty — the kick has not been taken. Not "strikes", not
+    "buries", not "scores". "Mbappé steps up." is the line.
+  - the form says foul or stoppage — nobody has been booked. Never "in the
+    book", "booked", "yellow card", "sent off".
+  - the form says shot — the ball is not in the net, and nobody has saved it
+    either. "Fires wide." not "Goal!" and not "What a save."
+  - the form says build_up, pass, carry or none — nothing has happened yet.
+    The line is descriptive: a name, two names, where the ball is. If there
+    is not even that, return an empty line.
+  - only a form that says goal is a goal.
 
-  - any player name that appears on the form — in the list of players
-    identified, or inside the description of what was seen — spelled exactly
-    as it is spelled there
-  - the two team names
-  - the event the form names
-  - which end or which side the form names
+THE SCORE IS NOT YOURS, AND IT HIDES IN ORDINARY WORDS. These are forbidden
+however true they feel: "levels it", "level", "the equaliser", "equalises",
+"all square", "ahead", "in front", "behind", "back in it", "his second",
+"one-nil", "the winner". Somebody else is reading the scoreboard, and a line
+that implies a score contradicts them.
 
-You may not use anything else. Not a name you think is probably out there,
-not a player who usually takes those, not a number, not a score, not a time,
-not a detail the form does not carry. If the form names nobody at all, name
-nobody: say what happened, or say the team, or use the role the description
-gives. Inventing a name here would put it on air, and every check that stops
-that happens after you.
+Three rewrites that went out and should not have, so that you can see the
+shape of the mistake:
+
+  form: foul. Seen: "Otamendi protests, and the referee is already waving
+  him away."
+    wrong: Otamendi in the book.        (no card anywhere on the form)
+    right: Otamendi protests.
+
+  form: penalty. Seen: "And behind him, Martínez, bouncing on his line,
+  daring the kick to come."
+    wrong: Mbappé strikes.             (the kick has not happened)
+    right: Martínez on his line.
+
+  form: goal. Seen: "Mbappé is already into the net for the ball, hauling it
+  back to the centre circle."
+    wrong: Mbappé! Levels it!          (a score claim, and it was 2-1)
+    right: Mbappé has the ball back.
+
+And the names. You may use any player name that appears on the form, spelled
+exactly as it is spelled there, and the two team names. Nothing else — not a
+name you think is probably out there, not a player who usually takes those,
+not a number, not a time. If the form names nobody at all, name nobody: say
+what happened, or say the team, or use the role the description gives.
+Inventing a name here would put it on air, and every check that stops that
+happens after you.
 
 Do not repeat the last lines you are shown, and do not paraphrase them. If
 the form is about the same player doing the same thing, a bare surname is the
@@ -151,7 +177,7 @@ absent, so reach for the bare surname long before you reach for silence.\
 """
 
 
-def phraser_system(*, max_words: int = 16, examples_per_kind: int = 14) -> str:
+def phraser_system(*, max_words: int = 16, examples_per_kind: int = 10) -> str:
     """The cacheable prefix: the rules, then real lines by kind.
 
     Byte-stable for a given pair of arguments, which is what makes sending
@@ -247,7 +273,12 @@ def _form(line: CallerLine, home: str, away: str, on_the_ball: str | None) -> st
     """
     rows = [
         f"  scene: {_scene(line.scene)}",
-        f"  event: {_event(line.event)}",
+        # Loud, and second, because it is the field the phrasing has to obey.
+        # Every invented outcome the stage produced on its first two traces
+        # was the line reaching past this word: a penalty being waited on
+        # written as a penalty struck, a foul written as a booking.
+        f"  EVENT: {_event(line.event)}  <- your line must be about this and",
+        "         nothing later than this",
     ]
     team = line.team or _team_of(line.side, home, away)
     if team:
@@ -271,7 +302,8 @@ def _form(line: CallerLine, home: str, away: str, on_the_ball: str | None) -> st
     rows.append(f"  confidence in all of the above: {line.confidence:.2f}")
     rows.append("")
     rows.append("  what was seen, written down as a description. DO NOT say this back.")
-    rows.append("  Take the facts out of it and say them the way a commentator would:")
+    rows.append("  Take the facts out of it and say them the way a commentator would,")
+    rows.append(f"  using only what is here and only about a {_event(line.event)}:")
     rows.append(f"    {line.line.strip()}")
     return "\n".join(rows)
 

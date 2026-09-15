@@ -105,6 +105,12 @@ class Line:
     passed: bool
     reason: str
     usd: float = 0.0
+    #: The event the phrased line amounts to — the form's, unless the words
+    #: promote it to a goal, which is the same reading the director uses.
+    #: Side by side with the form's own event it is where a rewrite that
+    #: invented an outcome shows up.
+    event: Event = Event.NONE
+    form_event: Event = Event.NONE
     #: The phraser had nothing and the caller's own line went through.
     fallback: bool = False
 
@@ -113,6 +119,13 @@ class Line:
         if self.fallback:
             return "fell back"
         return "passed" if self.passed else (self.reason or "rejected")
+
+    @property
+    def events(self) -> str:
+        """``penalty`` or ``penalty->goal`` when the words moved it."""
+        if self.event is self.form_event:
+            return self.form_event.value
+        return f"{self.form_event.value}->{self.event.value}"
 
 
 @dataclass
@@ -136,15 +149,14 @@ class Rephrased:
 
     def table(self) -> str:
         """Side by side, one line per rewritten beat."""
-        head = (
-            f"{'ts':>7}  {'exc':>4}  {'verdict':<22}  original / phrased"
-        )
+        head = f"{'ts':>7}  {'exc':>4}  {'event':<16}  {'verdict':<24}  original / phrased"
         out = [head, "-" * len(head)]
         for line in self.lines:
             out.append(
-                f"{line.ts:>7.1f}  {line.excitement:>4.2f}  {line.verdict:<22}  {line.original}"
+                f"{line.ts:>7.1f}  {line.excitement:>4.2f}  {line.events:<16}  "
+                f"{line.verdict:<24}  {line.original}"
             )
-            out.append(f"{'':>7}  {'':>4}  {'':<22}  -> {line.phrased}")
+            out.append(f"{'':>7}  {'':>4}  {'':<16}  {'':<24}  -> {line.phrased}")
         return "\n".join(out)
 
 
@@ -343,6 +355,7 @@ async def rephrase(
                 board_changed=cover.board_changed(form, _nearest(gates, ts)),
                 goal_in_state=cover.goal_in_state(ts),
                 carried=cover.carried(form, ts),
+                at=ts,
             )
             out.rows.append(
                 {
@@ -351,7 +364,16 @@ async def rephrase(
                     "original": form.line,
                     "line": phrased.line,
                     "excitement": phrased.excitement,
+                    "event": _event_of(phrased.line, form.event).value,
+                    "form_event": form.event.value,
                     "usd": round(usd, 6),
+                    # Per call, because the aggregate cannot say whether the
+                    # cached prefix was ever read: a run where every call
+                    # shows cache_read zero is paying full price for two
+                    # hundred utterances on every line.
+                    "tokens_in": phraser.last_usage.input_tokens,
+                    "cache_read": phraser.last_usage.cache_read_tokens,
+                    "cache_write": phraser.last_usage.cache_write_tokens,
                 }
             )
             if verdict.passed:
@@ -378,6 +400,8 @@ async def rephrase(
                 passed=verdict.passed,
                 reason="; ".join(verdict.reasons)[:60],
                 usd=usd,
+                event=_event_of(phrased.line, form.event),
+                form_event=form.event,
                 fallback=fell_back,
             )
         )
@@ -386,6 +410,18 @@ async def rephrase(
             cover.remember(form, verdict.line, ts)
 
     return out
+
+
+def _event_of(text: str, event: Event) -> Event:
+    """What the phrased line amounts to, by the director's own reading.
+
+    The same call ``Runtime._call`` makes: a line that says the ball went in
+    is a goal whatever the form filed it under, because that is what decides
+    whether the director may drop it on a camera cut. Printed beside the
+    form's event, it is how a rewrite that turned a penalty being waited on
+    into a penalty being scored becomes visible in the table.
+    """
+    return Event.GOAL if claims_goal(text, event) else event
 
 
 def _rewritten(row: dict[str, Any], text: str, excitement: float) -> dict[str, Any]:

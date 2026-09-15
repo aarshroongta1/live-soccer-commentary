@@ -771,3 +771,220 @@ def test_the_two_lines_that_went_out_on_the_di_maria_goal() -> None:
         )
         assert not verdict.passed, text
         assert verdict.reasons == [f"score_claim: Argentina's {counted} vs state 2-0"]
+
+
+# -- the score said without a number, and the card nobody was shown ----------
+#
+# Both rules came out of the phrasing stage's first two traces. The caller had
+# been right about the match on every one of the four lines below; the rewrite
+# of it was not, and the gate passed all four because neither a booking nor
+# the word "level" is a digit.
+
+
+def mbappe() -> KnowledgePack:
+    """The sheet runs/trigger/mbappe was called against, cut to two names."""
+    return KnowledgePack(
+        home=TeamSheet(
+            name="Argentina",
+            short="ARG",
+            demonym="Argentine",
+            starters=[Player(name="Nicolás Otamendi", number=19)],
+        ),
+        away=TeamSheet(
+            name="France",
+            short="FRA",
+            demonym="French",
+            starters=[Player(name="Kylian Mbappé", number=10)],
+        ),
+    )
+
+
+def scoreline(home: int, away: int, **kwargs: object) -> MatchState:
+    fields: dict[str, object] = {
+        "home": "Argentina",
+        "away": "France",
+        "home_score": home,
+        "away_score": away,
+    }
+    fields.update(kwargs)
+    return MatchState.model_validate(fields)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Mbappé! Levels it!",
+        "Mbappé, and that is the equaliser.",
+        "All square.",
+        "Level terms.",
+        "Mbappé levelled the scores.",
+        "It is level.",
+    ],
+)
+def test_a_line_that_says_the_scores_are_equal_is_a_scoreline_claim(text: str) -> None:
+    verdict = FactGate().judge(call(text, side=Side.AWAY), scoreline(2, 1), mbappe())
+    assert not verdict.passed, text
+    assert any(reason.startswith("level_claim") for reason in verdict.reasons), verdict.reasons
+
+
+def test_saying_the_scores_are_equal_when_they_are_is_just_true() -> None:
+    verdict = FactGate().judge(call("All square.", side=Side.AWAY), scoreline(2, 2), mbappe())
+    assert verdict.passed, verdict.reasons
+
+
+def test_the_goal_being_called_buys_the_equaliser_the_same_latitude_as_a_number() -> None:
+    """The line goes out as the ball crosses, a beat before the graphic moves.
+
+    That latitude is the whole reason the caller may speak ahead of the
+    board, and a rule that took it away would silence the one line anybody
+    tuned in for.
+    """
+    verdict = FactGate().judge(
+        call("Mbappé! The equaliser!", event=Event.GOAL, side=Side.AWAY),
+        scoreline(2, 1),
+        mbappe(),
+        board_changed=True,
+        goal_in_state=False,
+    )
+    assert verdict.passed, verdict.reasons
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Mbappé is level with the last man.",
+        "The back four are level.",
+        "It is level with the far post.",
+        "Otamendi squeezes the pass infield.",
+    ],
+)
+def test_the_word_level_about_anything_but_the_score_is_left_alone(text: str) -> None:
+    assert FactGate().judge(call(text), scoreline(2, 1), mbappe()).passed, text
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Otamendi in the book.",
+        "Otamendi booked.",
+        "Otamendi is shown a yellow.",
+        "Otamendi cautioned.",
+        "Otamendi sent off.",
+        "A second yellow for Otamendi.",
+    ],
+)
+def test_a_booking_nobody_gave_never_reaches_the_microphone(text: str) -> None:
+    verdict = FactGate().judge(call(text, event=Event.FOUL), scoreline(2, 0), mbappe())
+    assert not verdict.passed, text
+    assert any(reason.startswith("card_claim") for reason in verdict.reasons), verdict.reasons
+
+
+def test_the_form_saying_card_is_all_the_cover_a_booking_needs() -> None:
+    verdict = FactGate().judge(
+        call("Otamendi in the book.", event=Event.CARD), scoreline(2, 0), mbappe()
+    )
+    assert verdict.passed, verdict.reasons
+
+
+def test_the_line_after_the_booking_may_still_mention_it() -> None:
+    """A card in ``last_events`` is the only cover a pictures-only run makes.
+
+    It carries no side and no timestamp — it is the caller's own recent
+    events — and it is what keeps the protest, the walk away and the manager
+    on the touchline sayable once the card itself has been called.
+    """
+    state = scoreline(2, 0, last_events=[Event.FOUL, Event.CARD, Event.BUILD_UP])
+    verdict = FactGate().judge(call("Otamendi is still angry about the booking."), state, mbappe())
+    assert verdict.passed, verdict.reasons
+
+
+def test_a_card_a_statistician_reported_is_cover_while_it_is_still_news() -> None:
+    state = scoreline(
+        2,
+        0,
+        named=[{"event": "card", "side": "home", "player": "Otamendi", "video_ts": 100.0}],
+    )
+    gate = FactGate()
+    assert gate.judge(call("Otamendi booked."), state, mbappe(), at=140.0).passed
+    stale = gate.judge(call("Otamendi booked."), state, mbappe(), at=400.0)
+    assert not stale.passed
+    assert any(reason.startswith("card_claim") for reason in stale.reasons)
+
+
+def test_a_card_for_the_other_side_is_not_cover_for_this_one() -> None:
+    state = scoreline(
+        2, 0, named=[{"event": "card", "side": "away", "player": "Mbappé", "video_ts": 100.0}]
+    )
+    verdict = FactGate().judge(call("Otamendi booked.", side=Side.HOME), state, mbappe(), at=110.0)
+    assert not verdict.passed
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The near-post runner in red.",
+        "Red shirts crowd it out.",
+        "Otamendi goes past the yellow boots.",
+    ],
+)
+def test_a_kit_colour_is_not_a_card(text: str) -> None:
+    assert FactGate().judge(call(text), scoreline(2, 0), mbappe()).passed, text
+
+
+def test_the_four_rewrites_that_went_out_on_the_mbappe_trace() -> None:
+    """The four lines the phrasing stage invented, each at the state it had.
+
+    From ``runs/trigger/mbappe/file-20260913-185228.jsonl``: the timestamp,
+    the form the caller filled in, the latest state row at or before it, and
+    the cover flags the runtime would have handed the gate.
+
+    Two are fact claims and are now refused. The other two are not. "Mbappé
+    strikes." at a form that says ``penalty`` is the line reaching past the
+    event field to a kick that has not been taken, and "Mbappé in numbers."
+    is simply bad English. A gate rule for the first would have to refuse a
+    strike whenever the form says penalty or free kick, and the traces are
+    full of true lines shaped exactly like that — Ronaldo's free kick is
+    called as it is struck with the form still saying ``free_kick``. So both
+    belong to the prompt, which now carries all three of the first kind as
+    worked examples.
+    """
+    pack = mbappe()
+    gate = FactGate()
+
+    booking = gate.judge(
+        call("Otamendi in the book.", event=Event.FOUL, side=Side.HOME, team="Argentina"),
+        scoreline(2, 0),
+        pack,
+        at=17.3,
+    )
+    assert not booking.passed
+    assert booking.reasons == ["card_claim: in the book, and no card in the form or the state"]
+
+    levels = gate.judge(
+        call("Mbappé! Levels it!", event=Event.GOAL, side=Side.AWAY, team="France"),
+        scoreline(2, 1),
+        pack,
+        board_changed=True,
+        goal_in_state=True,
+        at=86.8,
+    )
+    assert not levels.passed
+    assert levels.reasons == ["level_claim: Levels it vs state 2-1"]
+
+    strikes = gate.judge(
+        call("Mbappé strikes.", event=Event.PENALTY, side=Side.HOME, team="Argentina"),
+        scoreline(2, 0, last_events=[Event.BUILD_UP, Event.CARRY, Event.FOUL]),
+        pack,
+        goal_in_state=True,
+        at=78.5,
+    )
+    assert strikes.passed, "an event promotion, not a fact claim: the prompt owns this one"
+
+    garbled = gate.judge(
+        call("Mbappé in numbers.", event=Event.BUILD_UP, side=Side.AWAY, team="France"),
+        scoreline(2, 1),
+        pack,
+        goal_in_state=True,
+        at=171.5,
+    )
+    assert garbled.passed, "bad English is not a fact claim"

@@ -604,6 +604,60 @@ _SAID_A_GOAL = tuple(
 )
 
 
+#: How long a card stays cover for a line that mentions it. A booking is
+#: talked about for the next few seconds — the protest, the walk away, the
+#: manager on the touchline — and stops being news well before a minute is up.
+CARD_RECENT_S = 60.0
+
+#: Saying the scores are equal without saying a number. "Levels it" is a
+#: scoreline claim with both numbers left out, in exactly the way
+#: "Argentina's third" is one with a number left out.
+#:
+#: Narrow on purpose, because "level" is a word football uses for other
+#: things. "Kane is level with the last man" is an offside and "the back four
+#: are level" is a defensive line, so the word on its own never fires: only
+#: the phrasings that need an object, and the object has to be the score.
+_LEVEL_CLAIMS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bequali[sz]\w*\b",
+        r"\blevell?(?:s|ed)?\s+(?:it|things|matters|the\s+(?:scores?|game|tie|match))\b",
+        r"\ball\s+square\b",
+        r"\blevel\s+(?:terms|pegging)\b",
+        r"\bthe\s+scores?\s+(?:are|is)\s+level\b",
+        r"\bit(?:'?s|\s+is)\s+(?:all\s+)?level\b(?!\s+with\b)",
+    )
+)
+
+#: Saying somebody has been booked or sent off. The colour words are only
+#: ever read next to a card noun or a showing verb, because a kit is yellow
+#: and red far more often than a referee's hand is: the caller is told to say
+#: "the near-post runner in red" when it cannot read a number.
+_CARD_CLAIMS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bbooked\b",
+        r"\bbooking\b",
+        r"\bin(?:to)?\s+the\s+book\b",
+        r"\b(?:yellow|red|second\s+yellow|straight\s+red)\s+cards?\b",
+        r"\bshown\s+(?:a|the)\s+(?:yellow|red)\b",
+        r"\bsecond\s+yellow\b",
+        r"\bsent\s+off\b",
+        r"\bmarching\s+orders\b",
+        r"\bcautioned\b",
+    )
+)
+
+
+def _first_match(text: str, patterns: tuple[re.Pattern[str], ...]) -> str | None:
+    """The first of these the line says, as the line spells it."""
+    for pattern in patterns:
+        found = pattern.search(text)
+        if found is not None:
+            return found.group().strip()
+    return None
+
+
 def claims_goal(text: str, event: Event | None = None) -> bool:
     """Does this line say a goal was scored, in the form or in the words?
 
@@ -727,6 +781,7 @@ class FactGate:
         wire_confirmed: bool = False,
         goal_in_state: bool = False,
         carried: str | None = None,
+        at: float | None = None,
     ) -> GateVerdict:
         """Pass, trim, or reject — and always say why.
 
@@ -747,6 +802,12 @@ class FactGate:
         A name the caller can no longer read is still the name of the man it
         is describing, and the runtime decides whether the carry applies; the
         gate's part is to accept it as verified when it does.
+
+        ``at`` is the cursor this line is about, and only the card rule uses
+        it: a card the state was told about is cover for a line mentioning
+        one, but only while it is still the thing that just happened. Left
+        out, a card anywhere in the state counts, which is the right default
+        for a caller that cannot say when.
         """
         verdict = self._judge(
             line,
@@ -756,6 +817,7 @@ class FactGate:
             wire_confirmed=wire_confirmed,
             goal_in_state=goal_in_state,
             carried=carried,
+            at=at,
         )
         self.stats.record(verdict)
         return verdict
@@ -770,6 +832,7 @@ class FactGate:
         wire_confirmed: bool = False,
         goal_in_state: bool = False,
         carried: str | None = None,
+        at: float | None = None,
     ) -> GateVerdict:
         text = line.line.strip()
         if line.scene is Scene.REPLAY:
@@ -796,6 +859,8 @@ class FactGate:
         fatal += self._check_sightings(line, roster, pack)
         fatal += self._check_scoreline(text, state, goal_incoming=goal_incoming)
         fatal += self._check_score_claims(text, line, state, pack, goal_incoming=goal_incoming)
+        fatal += self._check_level_claim(text, state, goal_incoming=goal_incoming)
+        fatal += self._check_card_claim(text, line, state, at=at)
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
@@ -905,6 +970,77 @@ class FactGate:
             if count not in allowed:
                 problems.append(f"score_claim: {said} vs state {board[0]}-{board[1]}")
         return problems
+
+    def _check_level_claim(
+        self, text: str, state: MatchState, *, goal_incoming: bool
+    ) -> list[str]:
+        """"Levels it" is a scoreline with both numbers left out.
+
+        The phrasing stage found the hole. The caller had written "Mbappé is
+        already into the net for the ball, hauling it back to the centre
+        circle" at two-one, and the rewrite said "Mbappé! Levels it!" — a
+        claim about the score, at a score that was not level, through a gate
+        whose arithmetic only reads digits and ordinals. It went out.
+
+        Same latitude as every other score rule and for the same reason: a
+        goal being called that the state has not taken in yet is allowed to
+        be one ahead of the graphic, so a side a goal behind may be said to
+        be levelling while it scores. Nothing else, and the whole line goes.
+        """
+        said = _first_match(text, _LEVEL_CLAIMS)
+        if said is None:
+            return []
+        home, away = state.home_score, state.away_score
+        if home == away:
+            return []
+        if goal_incoming and abs(home - away) == 1:
+            return []
+        return [f"level_claim: {said} vs state {home}-{away}"]
+
+    def _check_card_claim(
+        self, text: str, line: CallerLine, state: MatchState, *, at: float | None
+    ) -> list[str]:
+        """A booking is a thing that happened, not a thing to reach for.
+
+        The same rewrite turned "Otamendi protests, and the referee is
+        already waving him away" — a foul, given, nobody booked — into
+        "Otamendi in the book." Reaching for the bigger word is what a model
+        does when it is asked to be vivid, and a card nobody was shown is a
+        fact about the match that this system invented.
+
+        Three things are cover, in the order they are available. The form
+        says ``card``, which is the caller having seen one. The state was
+        told about a card by a statistician, recently. Or the state has a
+        card among the events it has just seen, which is the only one of the
+        three a pictures-only run ever produces — it carries no side and no
+        time, and it is what lets the line after the booking still mention
+        it.
+        """
+        said = _first_match(text, _CARD_CLAIMS)
+        if said is None:
+            return []
+        if line.event is Event.CARD:
+            return []
+        if Event.CARD in state.last_events:
+            return []
+        if self._card_in_state(line, state, at):
+            return []
+        return [f"card_claim: {said}, and no card in the form or the state"]
+
+    @staticmethod
+    def _card_in_state(line: CallerLine, state: MatchState, at: float | None) -> bool:
+        """Has a statistician reported a card for this side, recently?"""
+        reported: list[tuple[Event, Side, float]] = [
+            (event.event, event.side, event.video_ts) for event in state.named
+        ] + [(item.event, item.side, item.video_ts) for item in state.incidents]
+        for event, side, video_ts in reported:
+            if event is not Event.CARD:
+                continue
+            if line.side in (Side.HOME, Side.AWAY) and side not in (line.side, Side.UNKNOWN):
+                continue
+            if at is None or 0.0 <= at - video_ts <= CARD_RECENT_S:
+                return True
+        return False
 
     def _trim_unverified(self, text: str, roster: _Roster) -> GateVerdict:
         """Cut the names that cannot be verified and keep whatever still stands up."""

@@ -98,6 +98,7 @@ class OpenGate(FactGate):
         wire_confirmed: bool = False,
         goal_in_state: bool = False,
         carried: str | None = None,
+        at: float | None = None,
     ) -> GateVerdict:
         return GateVerdict(
             passed=True,

@@ -598,3 +598,49 @@ async def test_a_rephrased_trace_is_a_trace(tmp_path: Path) -> None:
     rows = read_trace(path)
     assert rows == result.rows
     assert any(cue.topic.value == "beat" for cue in cues(rows, delay_s=8.0))
+
+
+# -- the form's event is binding ---------------------------------------------
+
+
+def test_the_call_makes_the_forms_event_the_thing_the_line_must_be_about() -> None:
+    """Every invented outcome on the first two traces reached past this word.
+
+    A penalty being waited on was written as a penalty struck; a foul given
+    was written as a booking. The event is in the body twice now, once in
+    capitals beside the instruction and once in the line that hands over the
+    description.
+    """
+    body = text_of(
+        phraser_blocks(
+            a_form(event=Event.PENALTY), "", [], home="Argentina", away="France"
+        )
+    )
+    assert "EVENT: penalty" in body
+    assert "only about a penalty" in body
+
+
+def test_the_rules_forbid_promoting_the_event_and_implying_the_score() -> None:
+    rules = phraser_system()
+    for forbidden in ("in the book", "levels it", "the equaliser", "YOU COMPRESS"):
+        assert forbidden in rules, forbidden
+
+
+@pytest.mark.asyncio
+async def test_the_table_shows_the_event_and_says_when_the_words_moved_it() -> None:
+    backend = saying(
+        PhrasedLine(line="Molina, down the right.", excitement=0.3),
+        PhrasedLine(line="Messi scores.", excitement=1.0),
+    )
+    result = await rephrase(a_trace(), backend, pack=a_pack())
+
+    events = [line.events for line in result.lines]
+    assert events[0] == "carry"
+    # The form said shot; the words say the ball went in, which is the
+    # reading the director uses to decide whether it may be cut off.
+    assert events[1] == "shot->goal"
+    assert "shot->goal" in result.table()
+
+    rows = [row for row in result.rows if row.get("topic") == "phrased"]
+    assert [row["form_event"] for row in rows] == ["carry", "shot"]
+    assert [row["event"] for row in rows] == ["carry", "goal"]
