@@ -760,6 +760,8 @@ class Runtime:
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
             followup=self.follow.block(cursor, self.pack),
+            goal_beat=self.follow.beat(cursor),
+            scorer=self.follow.scorer,
         )
         if phrased is None or not phrased.line.strip():
             return False
@@ -780,6 +782,7 @@ class Runtime:
             line=settled.line,
             excitement=phrased.excitement,
             opener_retry=phrased.opener_retry,
+            name_retry=phrased.name_retry,
             score_stripped=list(settled.stripped),
             synthetic=True,
         )
@@ -1085,6 +1088,8 @@ class Runtime:
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
             followup=followup,
+            goal_beat=self.follow.beat(cursor),
+            scorer=self.follow.scorer,
         )
         if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:
             self._publish(
@@ -1098,6 +1103,7 @@ class Runtime:
                 # offered "open differently or say nothing" and took the
                 # second.
                 opener_retry=phrased.opener_retry,
+                name_retry=phrased.name_retry,
             )
             self._last_quiet_ts = cursor
             return None
@@ -1128,6 +1134,7 @@ class Runtime:
             line=settled.line,
             excitement=phrased.excitement,
             opener_retry=phrased.opener_retry,
+            name_retry=phrased.name_retry,
             score_appended=settled.appended,
             score_stripped=list(settled.stripped),
         )

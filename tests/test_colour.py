@@ -27,6 +27,7 @@ from commentary.agents.colour import (
     IN_BUILD_UP,
     ColourSeat,
     FormAt,
+    Material,
     Moment,
     colour_pass,
     is_filler,
@@ -596,6 +597,47 @@ def test_the_seat_gets_the_tallies_adjusted_note_not_the_researched_one() -> Non
     seat.saw_form(4.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
     material = seat.material(5.0)
     assert [note.text for note in material.notes] == ["six goals in this tournament"]
+
+
+def test_a_numbered_note_with_a_clause_shows_the_clause_not_the_figure() -> None:
+    """The researcher's own no-number rewrite, when it exists, replaces the figure.
+
+    "a goal in the 2018 World Cup final at nineteen" used to reach the model
+    with a warning not to say "nineteen" and nothing else to say instead;
+    a clause gives it something instead of a warning.
+    """
+    note = Note(
+        about="Kylian Mbappé",
+        text="a goal in the 2018 World Cup final at nineteen",
+        kind="storyline",
+        clause="a goal in a World Cup final, as a teenager",
+    )
+    lines = Material(notes=(note,)).lines()
+    assert lines == ["NOTE about Kylian Mbappé: a goal in a World Cup final, as a teenager"]
+    assert "nineteen" not in lines[0]
+    assert "2018" not in lines[0]
+
+
+def test_a_numbered_note_with_no_clause_falls_back_to_the_warning() -> None:
+    """A pack written before ``clause`` existed behaves exactly as it always did."""
+    note = Note(about="Kylian Mbappé", text="five goals in this tournament", kind="stat")
+    lines = Material(notes=(note,)).lines()
+    assert lines == [
+        "NOTE about Kylian Mbappé (has a figure in it: say the fact, never the figure): "
+        "five goals in this tournament"
+    ]
+
+
+def test_a_note_with_no_number_ignores_its_own_clause() -> None:
+    """A clause is only ever a substitute for a figure; a habit note has none to hide."""
+    note = Note(
+        about="Kylian Mbappé",
+        text="always goes to the keeper's left from the spot",
+        kind="habit",
+        clause="prefers the keeper's near side",
+    )
+    lines = Material(notes=(note,)).lines()
+    assert lines == ["NOTE about Kylian Mbappé: always goes to the keeper's left from the spot"]
 
 
 def test_a_completed_big_event_is_enough_to_make_a_turn_out_of() -> None:

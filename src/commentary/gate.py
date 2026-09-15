@@ -1101,8 +1101,9 @@ _ELSEWHERE_WORD = re.compile(
 #: "in Russia" — the place half of the same marker, kept apart from
 #: ``_ELSEWHERE_WORD`` because it has to stay case-sensitive: a capitalised
 #: word after "in" is what makes it a place and not a preposition, and
-#: folding the case away would lose exactly that.
-_ELSEWHERE_PLACE = re.compile(r"\bin\s+[A-Z][a-zA-Z]+\b")
+#: folding the case away would lose exactly that. Captured on its own so
+#: ``_elsewhere_place`` can hand just the word to the roster, below.
+_ELSEWHERE_PLACE = re.compile(r"\bin\s+([A-Z][a-zA-Z]+)\b")
 
 
 def _is_historical_goal_reference(
@@ -1124,6 +1125,21 @@ def _is_historical_goal_reference(
         return True
     names = _name_words(pack)
     return any(_note_covers(text, note, names) for note in _notes_in_play(text, pack, notes))
+
+
+def _elsewhere_place(text: str) -> str | None:
+    """The capitalised place word that excuses a past-tense goal, if any.
+
+    The same word the roster check would otherwise read as an unverified
+    name and trim: on the real Mbappé trace, "The man who scored in Russia."
+    passed ``unconfirmed_goal`` and then lost "Russia" to
+    ``trimmed_name``, coming out as "The man who scored in." — the fix this
+    line is here for, at the one call site that needs it.
+    """
+    if not _PAST_TENSE_GOAL_WORDS.search(text):
+        return None
+    found = _ELSEWHERE_PLACE.search(text)
+    return found.group(1) if found else None
 
 
 def _tidy(text: str) -> str:
@@ -1273,6 +1289,14 @@ class FactGate:
                 roster,
                 people=roster.people | {fold(carried), fold(_surname(carried))},
             )
+        # A place that excuses a past-tense goal ("in Russia") is not a name
+        # claim, but it is a run of capitalised words like any other and the
+        # roster check below cannot otherwise tell it apart from one — it is
+        # exactly what invented "The man who scored in." out of "The man who
+        # scored in Russia." on the real trace this rule exists for.
+        place = _elsewhere_place(text)
+        if place:
+            roster = replace(roster, people=roster.people | {fold(place)})
         # A goal is being called that the score does not yet include: the ball
         # has crossed the line, something outside the caller agrees, and the
         # board has not caught up. That and only that buys a line the right to

@@ -182,6 +182,13 @@ class PhrasedLine(BaseModel):
     #: open differently or say nothing. The retry's cost is not a separate
     #: field — it is folded into whatever usd figure the row already carries.
     opener_retry: bool = Field(default=False)
+    #: True when this line was goal follow-up beat 3 — one number about the
+    #: scorer — and the first answer carried a number with nobody's name on
+    #: it, so the phraser was re-asked once, same call, to name him. About
+    #: half of beat 3's first answers do this: "Six in the tournament now."
+    #: is a fact about nobody until the gate's ``note_claim`` rule has a name
+    #: to check it against, and it refuses the line rather than guess one.
+    name_retry: bool = Field(default=False)
 
 
 class Angle(StrEnum):
@@ -358,6 +365,17 @@ class Note(BaseModel):
     counts: TallyKind | None = Field(
         default=None,
         description="What this note counts, when the match can change it",
+    )
+    #: The same fact with the figure left out entirely, for the colour voice,
+    #: which may not say a number at all — see
+    #: :meth:`~commentary.agents.colour.Material.lines`. Empty when ``text``
+    #: carries no number to leave out: a habit like "always goes to the
+    #: keeper's left" needs no second form. It stays true however the match
+    #: moves the number in ``text``, because it never had one.
+    clause: str = Field(
+        default="",
+        max_length=120,
+        description="The same fact with no figure in it, for a voice that may not say numbers",
     )
 
     def __str__(self) -> str:

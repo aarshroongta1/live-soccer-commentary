@@ -719,18 +719,24 @@ class Material:
     def lines(self) -> list[str]:
         """The material as the model is shown it: labelled, one item a line.
 
-        A note carrying a figure is marked as carrying one. The seat may not
-        say a number and the gate throws the utterance away when it does, so
-        "a goal in the 2018 World Cup final at nineteen" came back as
-        "Scored in a final at nineteen" and was struck out — a whole
-        utterance lost to a rule the model had been told twice, a foot away
-        from the thing it was reading.
+        A note carrying a figure and a ``clause`` — the researcher's own
+        no-number rewrite of it — is shown the clause and nothing else: there
+        is no figure left to say by mistake. Older notes with no clause fall
+        back to the warning this always used to be, which is what let "a
+        goal in the 2018 World Cup final at nineteen" come back as "Scored in
+        a final at nineteen" and get struck out whole — a rule the model had
+        been told twice, a foot away from the thing it was reading, and
+        exactly the failure a pre-written clause is here to stop.
         """
         figure = " (has a figure in it: say the fact, never the figure)"
         out = [
-            f"NOTE about {note.about}"
-            + (figure if says_a_number(note.text) else "")
-            + f": {note.text}"
+            f"NOTE about {note.about}: {note.clause}"
+            if says_a_number(note.text) and note.clause
+            else (
+                f"NOTE about {note.about}"
+                + (figure if says_a_number(note.text) else "")
+                + f": {note.text}"
+            )
             for note in self.notes
         ]
         out.extend(f"REPEATED: {text}" for text in self.patterns)

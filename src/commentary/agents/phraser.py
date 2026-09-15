@@ -34,10 +34,17 @@ from collections import deque
 from collections.abc import Sequence
 
 from commentary.agents.caller import clean_line, trim_words
+from commentary.agents.colour import mentions, says_a_number
 from commentary.config import PHRASER_MODEL, PhraserConfig
 from commentary.llm.base import Block, LLMBackend, LLMError, Usage, text_block
 from commentary.prompts.phraser import phraser_blocks, phraser_system
 from commentary.schemas import CallerLine, Event, Note, PhrasedLine
+
+#: The beat that is one number about the scorer — see ``GOAL_BEATS[3]`` in
+#: ``prompts/phraser.py``. The only beat this module ever needs to
+#: distinguish, because it is the only one where a name is mandatory and a
+#: number is expected in the same line.
+SCORER_BEAT = 3
 
 #: The value of ``PHRASER_MODEL`` that means "do not run this stage".
 OFF = "off"
@@ -96,6 +103,15 @@ def _opener_retry_note(word: str) -> str:
     return (
         f'THAT OPENED ON "{word}" AGAIN, which one of the last five lines already used.\n'
         "Open differently this time, or return an empty line instead."
+    )
+
+
+def _name_retry_note(scorer: str) -> str:
+    """Two lines: say the number reached nobody, then say who it is about."""
+    return (
+        "THAT HAD A NUMBER IN IT AND NOBODY'S NAME ON IT — a fact about nobody, which the "
+        f"gate refuses. The line must name {scorer}.\n"
+        "Keep the number and the fact; add his name, in the same number of words."
     )
 
 
@@ -196,6 +212,8 @@ class Phraser:
         notes: Sequence[Note] = (),
         callbacks: Sequence[bool] = (),
         followup: str = "",
+        goal_beat: int | None = None,
+        scorer: str | None = None,
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
 
@@ -222,6 +240,15 @@ class Phraser:
         writes in the thirty seconds after a goal, naming which of the corpus's
         beats is due — the moment again, the scorer's tally, the move rebuilt
         in past tense. Empty everywhere else, which is most of a match.
+
+        ``goal_beat`` and ``scorer`` are what :class:`~commentary.goalfollow.
+        GoalFollowup` already knows and ``followup`` only says in prose: which
+        beat this call is under and who scored. Beat 3 is one number about the
+        scorer, and the prompt already says "Name him" — about half the time
+        the first answer does not, and comes back a fact about nobody, which
+        ``note_claim`` in the gate refuses outright. So this stage checks its
+        own beat-3 answers the same way it checks a repeated opener: once,
+        same call, and whatever comes back is what goes out.
         """
         self.last_reason = ""
         self.chose_silence = False
@@ -281,9 +308,48 @@ class Phraser:
                 # Asked once. Whatever came back — even the same opener
                 # again — is what goes out; a second re-ask is not made.
 
+        name_retry = False
+        if goal_beat == SCORER_BEAT and scorer and self._needs_a_name(proposed, scorer):
+            retry_blocks = _with_note(blocks, _name_retry_note(scorer))
+            try:
+                retry = await self.backend.parse(
+                    model=self.model,
+                    system=self.system,
+                    blocks=retry_blocks,
+                    output_format=PhrasedLine,
+                    max_tokens=self.config.max_tokens,
+                    effort="low",
+                    cache_system=True,
+                    tag="phraser",
+                )
+            except LLMError:
+                # The re-ask itself failed to come back — keep whatever the
+                # first attempt was rather than lose the line over it.
+                pass
+            else:
+                usage = usage + retry.usage
+                proposed = retry.value
+                name_retry = True
+                # Asked once. Whatever came back — even nameless again — is
+                # what goes out; the gate is the backstop from here.
+
         self.last_usage = usage
         settled = self._settle(proposed)
-        return settled.model_copy(update={"opener_retry": opener_retry})
+        return settled.model_copy(update={"opener_retry": opener_retry, "name_retry": name_retry})
+
+    @staticmethod
+    def _needs_a_name(proposed: PhrasedLine, scorer: str) -> bool:
+        """A number with nobody's name on it — beat 3's own failure mode.
+
+        Checked against the model's raw answer, not the trimmed one: cleaning
+        never adds or removes a name, so there is nothing the settle step
+        could change this by, and checking the raw answer means the retry
+        fires on exactly what the gate is about to see.
+        """
+        text = proposed.line.strip()
+        if not text or not says_a_number(text):
+            return False
+        return not mentions(text, scorer)
 
     def _repeated_opener(self, proposed: PhrasedLine) -> str | None:
         """The offending opener word if this line needs a re-ask, else ``None``.

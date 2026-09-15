@@ -93,7 +93,7 @@ Write two or three for each team, and one to three for each player likely to
 be on the ball: the starters, and any substitute a broadcast would build a
 sentence around. Nobody needs a note for a third-choice goalkeeper.
 
-Each note has four fields.
+Each note has five fields.
 
   about   Who it is about, spelled EXACTLY as you spelled it on the team
           sheet, or EXACTLY as you spelled one of the two team names. This is
@@ -107,6 +107,15 @@ Each note has four fields.
           Scaloni". "always goes to the keeper's left from the spot". Not
           "Kylian Mbappé has scored three goals in this tournament so far,
           which makes him the leading scorer".
+
+  clause  Only when `text` carries a number: the same fact with the figure
+          left out entirely, not softened or rounded. "a goal in the 2018
+          final at nineteen" becomes "a goal in a World Cup final, as a
+          teenager". A second voice on this broadcast is never allowed to
+          say a number, and a note with nothing to say instead goes unsaid —
+          this is what it says instead. Leave it empty when `text` already
+          has no number in it: a habit like "always goes to the keeper's
+          left" needs no second form.
 
   kind    stat for a count, storyline for a record or a stake, habit for the
           thing this player does every single time.
@@ -254,6 +263,12 @@ would build a sentence around. Nobody needs a note for a third-choice keeper.
           lead-in, and no name in it — the name is already in `about`.
           "five goals in this tournament". "has not lost a final under
           Scaloni". "always goes to the keeper's left from the spot".
+
+  clause  Only when `text` carries a number: the same fact with the figure
+          left out, not softened, left out. "a goal in the 2018 final at
+          nineteen" becomes "a goal in a World Cup final, as a teenager". A
+          second voice on this broadcast may never say a number, and this is
+          what it says instead. Empty when `text` has no number to leave out.
 
   kind    stat for a count, storyline for a record or a stake, habit for the
           thing this player does every single time.

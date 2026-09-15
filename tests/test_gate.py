@@ -202,11 +202,19 @@ def test_bare_past_tense_with_no_marker_is_still_a_goal_claim(pack, state):
 
 
 def test_a_past_tense_goal_placed_elsewhere_is_not_a_claim_about_this_match(pack, state):
-    """"The man who scored in Russia." is a career fact, not a goal just now."""
+    """"The man who scored in Russia." is a career fact, not a goal just now.
+
+    The real line, off the real Mbappé trace: it used to come out as "The
+    man who scored in." — ``unconfirmed_goal`` let it through and the
+    roster check then read "Russia" as an invented name and trimmed it, one
+    rule undoing the other. Both have to leave the line alone.
+    """
     gate = FactGate()
     line = call("The man who scored in Russia.", scene=Scene.STOPPAGE)
     verdict = gate.judge(line, state, pack)
     assert verdict.passed, verdict.reasons
+    assert verdict.reasons == []
+    assert verdict.line == "The man who scored in Russia."
 
 
 def test_a_past_tense_goal_backed_by_a_pack_note_is_not_a_claim(pack, state):

@@ -432,6 +432,8 @@ async def rephrase(
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
             followup=follow.block(at, pack),
+            goal_beat=follow.beat(at),
+            scorer=follow.scorer,
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
@@ -465,6 +467,7 @@ async def rephrase(
                 "usd": round(usd, 6),
                 "synthetic": True,
                 "opener_retry": phrased.opener_retry,
+                "name_retry": phrased.name_retry,
                 "score_stripped": list(settled.stripped),
                 "tokens_in": phraser.last_usage.input_tokens,
                 "cache_read": phraser.last_usage.cache_read_tokens,
@@ -564,6 +567,8 @@ async def rephrase(
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
             followup=followup,
+            goal_beat=follow.beat(ts),
+            scorer=follow.scorer,
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
@@ -586,6 +591,7 @@ async def rephrase(
                     # offered "open differently or say nothing" and took the
                     # second.
                     "opener_retry": phrased.opener_retry,
+                    "name_retry": phrased.name_retry,
                     "tokens_in": phraser.last_usage.input_tokens,
                     "cache_read": phraser.last_usage.cache_read_tokens,
                     "cache_write": phraser.last_usage.cache_write_tokens,
@@ -660,6 +666,7 @@ async def rephrase(
                     "form_event": form.event.value,
                     "usd": round(usd, 6),
                     "opener_retry": phrased.opener_retry,
+                    "name_retry": phrased.name_retry,
                     "score_appended": settled.appended,
                     "score_stripped": list(settled.stripped),
                     # Per call, because the aggregate cannot say whether the
