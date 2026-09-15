@@ -156,6 +156,15 @@ def _mapped(
             # A restart is the event, not a pass that happens to be one: it
             # is named from the picture and it is what the grader counts.
             return [(restart, side, player, recipient, "")]
+        # StatsBomb flags these on the pass row itself. Checked ahead of the
+        # generic Pass fallback below, and cross ahead of switch when a row
+        # (rarely) carries both: study section 3.1c calls a cross the one
+        # event nobody misses, which switch is not.
+        pass_info = row.get("pass") or {}
+        if pass_info.get("cross"):
+            return [(Event.CROSS, side, player, recipient, "")]
+        if pass_info.get("switch"):
+            return [(Event.SWITCH, side, player, recipient, "")]
         # An incomplete pass reaches nobody, so it names nobody to talk about.
         return [(Event.PASS, side, player, recipient, "")] if recipient else []
     if kind == "Carry":

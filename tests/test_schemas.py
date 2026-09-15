@@ -23,6 +23,12 @@ def test_line_is_capped_short():
         )
 
 
+def test_the_two_events_the_corpus_always_names_are_in_the_vocabulary():
+    """Gap 8 item 1: the corpus has no example or form for a cross or a switch."""
+    assert Event.CROSS == "cross"
+    assert Event.SWITCH == "switch"
+
+
 @pytest.mark.parametrize("model", [CallerLine, BoardRead, AnalystLine])
 def test_schema_drops_constraints_the_api_rejects(model):
     """Structured outputs 400 on minimum/maxLength and friends; Pydantic emits them."""

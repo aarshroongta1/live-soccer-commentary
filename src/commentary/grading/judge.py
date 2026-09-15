@@ -53,6 +53,28 @@ CONTEXT_WINDOW_S = 20.0
 PAIR_WINDOW_S = 5.0
 
 
+def default_judge_backend(timeout_s: float = 600.0) -> LLMBackend:
+    """The backend every real call in this module should be given.
+
+    Every function below takes ``backend`` as a parameter rather than
+    reaching for one itself, which is right — a :class:`ScriptedBackend`
+    hooks in the same way for tests. But whatever eventually wires a real
+    run of :func:`judge_factuality`, :func:`judge_pairwise` or
+    :func:`judge_run` into a command is one call away from doing what every
+    other ``cmd_*`` in ``__main__.py`` does and reaching for
+    ``commentary.llm.default_backend`` — the runtime's eight-second,
+    one-retry client, sized for a caller line that must land before the
+    moment passes. A judge call reads a whole passage at high effort and
+    takes minutes; through that client it times out on the first real one,
+    which is exactly what happened to ``register`` before it got its own
+    long-timeout client. This is the same fix, available from here so
+    nobody has to remember it lives in ``register``'s command wiring.
+    """
+    from commentary.llm import grading_backend
+
+    return grading_backend(timeout_s)
+
+
 class JudgeError(RuntimeError):
     """The judge could not be asked, or did not answer in the right shape."""
 

@@ -71,7 +71,9 @@ export type MatchEvent =
   | "carry"
   | "interception"
   | "clearance"
-  | "tackle";
+  | "tackle"
+  | "cross"
+  | "switch";
 
 /** Events the director will cut a line off for. */
 export const BIG_EVENTS: ReadonlySet<MatchEvent> = new Set<MatchEvent>([
@@ -321,6 +323,8 @@ const MATCH_EVENTS: readonly MatchEvent[] = [
   "interception",
   "clearance",
   "tackle",
+  "cross",
+  "switch",
 ];
 
 const SCENES: readonly Scene[] = ["live_play", "replay", "close_up", "crowd", "stoppage", "graphic"];

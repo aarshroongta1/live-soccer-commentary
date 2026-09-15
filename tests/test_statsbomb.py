@@ -189,3 +189,44 @@ def test_a_penalty_award_is_its_own_event_on_the_side_that_won_it():
     )
     foul = [e for e in only(Event.FOUL) if e.clock_s == penalty.clock_s][0]
     assert (foul.side, foul.detail) == (Side.AWAY, "penalty")
+
+
+def test_a_flagged_cross_or_switch_is_the_event_and_not_a_plain_pass():
+    """StatsBomb marks these on the pass row itself: ``pass.cross``/``pass.switch``.
+
+    Gap 8 item 1: the corpus study measured both straight off this flag, and
+    without reading it a cross or a switch of play is indistinguishable from
+    any other completed pass.
+    """
+    rows = [
+        {
+            "id": "x-cross",
+            "minute": 10,
+            "second": 0,
+            "period": 1,
+            "team": {"name": HOME},
+            "player": {"id": 1, "name": "Lionel Messi"},
+            "type": {"name": "Pass"},
+            "pass": {"recipient": {"id": 2, "name": "Ángel Di María"}, "cross": True},
+        },
+        {
+            "id": "x-switch",
+            "minute": 20,
+            "second": 0,
+            "period": 1,
+            "team": {"name": HOME},
+            "player": {"id": 3, "name": "Rodrigo De Paul"},
+            "type": {"name": "Pass"},
+            "pass": {"recipient": {"id": 1, "name": "Lionel Messi"}, "switch": True},
+        },
+    ]
+    wire = reader.events(rows, HOME, AWAY, {})
+    cross = [e for e in wire if e.event is Event.CROSS][0]
+    switch = [e for e in wire if e.event is Event.SWITCH][0]
+    assert (cross.player, cross.recipient) == ("Lionel Messi", "Ángel Di María")
+    assert (switch.player, switch.recipient) == ("Rodrigo De Paul", "Lionel Messi")
+    assert not only_of(wire, Event.PASS)
+
+
+def only_of(wire: list[WireEvent], event: Event) -> list[WireEvent]:
+    return [e for e in wire if e.event is event]

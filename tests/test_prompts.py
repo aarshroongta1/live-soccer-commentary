@@ -229,3 +229,13 @@ def test_the_naming_rule_is_stated_once():
     assert CALLER_RULES.count("Use the name you have") == 1
     assert CALLER_RULES.count("A name stays yours") == 1
     assert CALLER_RULES.count("never the taker of a set piece") == 1
+
+
+def test_the_caller_is_taught_crosses_and_switches():
+    """Gap 8 item 1: the corpus's two always-named events had no vocabulary."""
+    assert "Crosses." in CALLER_RULES
+    assert "set event to\ncross" in CALLER_RULES
+    assert "Switches of play." in CALLER_RULES
+    assert "event switch" in CALLER_RULES
+    assert "Good: Dangerous cross to the back post." in CALLER_RULES
+    assert "Good: Switched over to the far side." in CALLER_RULES

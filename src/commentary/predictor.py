@@ -50,8 +50,13 @@ from commentary.schemas import Event, SpeakDecision, Trigger
 #: The ball is moving at goal. Study section 2.3's "attacking move" is ±10 s
 #: around a shot or ±5 s around a cross or a corner delivery, and it is the
 #: one phase where the gap closes rather than opens.
+#:
+#: This used to carry ``Event.CLEARANCE`` in ``Event.CROSS``'s place, a
+#: defensive action standing in for the one the corpus actually means, because
+#: the caller's vocabulary had no cross yet. Gap 8 adds it; this is the other
+#: half of using it.
 ATTACKING = frozenset(
-    {Event.GOAL, Event.SHOT, Event.SAVE, Event.PENALTY, Event.CORNER, Event.CLEARANCE}
+    {Event.GOAL, Event.SHOT, Event.SAVE, Event.PENALTY, Event.CORNER, Event.CROSS}
 )
 
 #: The ball is dead, or the game is. The slowest of the three: 4.5 s at a

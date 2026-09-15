@@ -648,6 +648,22 @@ def test_a_flag_going_up_is_an_offside(pack, wire, tmp_path: Path) -> None:
     assert checklist._calls_it(line, E.OFFSIDE)
 
 
+def test_a_ball_driven_into_the_box_is_a_cross_and_a_ball_moved_over_is_a_switch(
+    pack, wire, tmp_path: Path
+) -> None:
+    """Gap 8 item 1: the study's two always-named events had no vocabulary to check against."""
+    from commentary.schemas import Event as E
+
+    cross = checklist.Line(
+        ts=1.0, voice="caller", text="dangerous cross to the back post", event="cross"
+    )
+    switch = checklist.Line(
+        ts=1.0, voice="caller", text="switched over to the far side", event="switch"
+    )
+    assert checklist._calls_it(cross, E.CROSS)
+    assert checklist._calls_it(switch, E.SWITCH)
+
+
 def test_a_player_down_is_a_stoppage_and_not_a_phantom_foul(pack, wire, tmp_path: Path) -> None:
     """The card clip lost two lines to this.
 

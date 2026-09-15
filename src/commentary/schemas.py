@@ -52,6 +52,16 @@ class Event(StrEnum):
     INTERCEPTION = "interception"
     CLEARANCE = "clearance"
     TACKLE = "tackle"
+    #: The ball driven or floated across the face of goal from a wide
+    #: position. ``docs/research/real-commentary-corpus.md`` section 3.1c:
+    #: 90% of crosses draw at least one utterance, 11% pass in silence, 50%
+    #: name the player it goes to — the most reliably called event in the
+    #: corpus, and the one Gap 8 singles out as missing from this enum.
+    CROSS = "cross"
+    #: The ball moved sharply from one side of the pitch to the other. Section
+    #: 3.2: the shortest median line of any kind in the corpus (12 words),
+    #: usually said as a direction rather than the word "switch" itself.
+    SWITCH = "switch"
 
 
 #: Events worth interrupting anything else for.

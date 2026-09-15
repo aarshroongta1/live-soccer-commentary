@@ -119,6 +119,13 @@ SAYS: dict[Event, tuple[str, ...]] = {
     Event.KICKOFF: ("kick off", "kickoff", "restart", "under way", "underway"),
     Event.STOPPAGE: ("down", "treatment", "injur", "physio", "var", "held up", "stopped"),
     Event.INTERCEPTION: ("intercept", "cuts it out", "reads it"),
+    # Study section 3.1c: cross is called by its own word only 21-37% of the
+    # time even though it is the most reliably called event of all — most of
+    # the label comes from naming who it is played to, not the word "cross".
+    Event.CROSS: ("cross", "ball in", "whipped in", "driven across", "into the box"),
+    # Section 3.2: "switch" itself is rare (15 times in 68,000 words); the
+    # commoner form is the direction the ball goes.
+    Event.SWITCH: ("switch", "far side", "other side", "over to the", "diagonal"),
 }
 
 

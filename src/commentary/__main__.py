@@ -660,29 +660,17 @@ async def cmd_feed(args: argparse.Namespace) -> int:
 
 
 def _judge_backend(timeout_s: float) -> LLMBackend:
-    """A backend for grading, which is the opposite of the one for a match.
+    """The ``register`` command's backend: see :func:`commentary.llm.grading_backend`.
 
-    :func:`commentary.llm.default_backend` gives every agent the runtime's
-    client: an eight-second timeout and one retry, because a caller line that
-    arrives after the moment has passed is worse than no line. Both settings
-    are wrong here and the first one is what made the first real
-    ``register`` call fail. This is one Opus call reading a whole passage at
-    high effort; it takes minutes, not seconds.
-
-    ``max_retries=0`` matters just as much and for a different reason. A
-    request that times out on the client has very likely been billed on the
-    server, and a retry doubles that spend for an answer nobody ever sees.
-    One invocation of this command is at most one billed call.
+    A thin wrapper rather than a second copy — :mod:`commentary.grading.judge`
+    needed the identical long-timeout, zero-retry treatment and the
+    construction is shared from the ``llm`` package now. Only the
+    credentials-missing hint stays local, because it is this command's own
+    flag.
     """
-    import os
+    from commentary.llm import grading_backend
 
-    from commentary.llm.base import LLMError
-
-    if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
-        raise LLMError("no Anthropic credentials: set ANTHROPIC_API_KEY in .env, or use --no-model")
-    from commentary.llm.anthropic_backend import AnthropicBackend
-
-    return AnthropicBackend(timeout_s=timeout_s, max_retries=0)
+    return grading_backend(timeout_s, no_key_hint="or use --no-model")
 
 
 async def cmd_register(args: argparse.Namespace) -> int:

@@ -15,6 +15,7 @@ from commentary.grading.judge import (
     JudgeReport,
     PairVerdict,
     Verdict,
+    default_judge_backend,
     judge_factuality,
     judge_pairwise,
     judge_run,
@@ -22,9 +23,24 @@ from commentary.grading.judge import (
 )
 from commentary.grading.metrics import Run, SpokenLine
 from commentary.grading.transcripts import Segment, Transcript
+from commentary.llm import default_backend
 from commentary.llm.base import Block
 from commentary.llm.fake import ScriptedBackend
 from commentary.schemas import Event, GroundTruthEvent, KnowledgePack, Player, Side, TeamSheet
+
+
+def test_the_judges_backend_gets_minutes_not_seconds(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The bug: judge.py's first real call, through the runtime's eight-second
+    client, would time out before an Opus call reading a whole passage returns.
+    ``register`` hit exactly this and got its own client; judge gets the same
+    one, from the same place, rather than a second copy of the fix.
+    """
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    backend = default_judge_backend()
+    live = default_backend()
+    assert backend._client.timeout == pytest.approx(600.0)
+    assert backend._client.max_retries == 0
+    assert backend._client.timeout > live._client.timeout
 
 
 @pytest.fixture

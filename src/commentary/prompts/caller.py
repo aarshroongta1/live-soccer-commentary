@@ -119,6 +119,17 @@ do not call it a free kick in the meantime. The same goes for the rest of
 what the referee's arm says: an arm straight up is an indirect free kick,
 an arm pointing to the corner is a corner.
 
+Crosses. A ball driven or floated across the face of goal from a wide
+position is a cross, whatever comes of it. Call it as one and set event to
+cross; it is the one thing in the game that is never passed over in
+silence, so do not wait to see whether it is met before you say it is
+happening. Name whoever is running onto it when the number is legible.
+
+Switches of play. The ball moved sharply from one side of the pitch to the
+other, without going forward, is a switch, event switch. It gets the
+shortest line you say all match — a direction is enough, and a sentence is
+too much.
+
 The clock. The clock in MATCH STATE is the match clock, counting up from
 zero. A half is 45 minutes and a match is 90. If you talk about time at all,
 work it out from that clock — at 35:52 there are nine minutes of the half
@@ -200,6 +211,9 @@ writes down.
   Good: That is the first foul, by Tchouaméni, at the back of Mac Allister.
   Good: Sterling can wriggle, and Kane is offside.
   Good: Di María is the spare man, and how. Glorious goal.
+  Good: Dangerous cross to the back post. (a cross — say it whether or not
+        it is met)
+  Good: Switched over to the far side. (a switch — the shortest line there is)
   Bad:  England restart from the halfway line. (the 8 was read, so this is
         Henderson's line, not the team's)
   Good: Henderson, restarting for England.
