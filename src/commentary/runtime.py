@@ -51,7 +51,7 @@ from commentary.agents.colour import (
     one_subject,
     space_out,
 )
-from commentary.agents.phraser import Phraser, nameless_build_up, roster_names
+from commentary.agents.phraser import Phraser, names_nobody, roster_names
 from commentary.bus import Bus, Topic
 from commentary.capture.audio import CutDetector
 from commentary.capture.buffer import DelayBuffer, Frame
@@ -82,7 +82,7 @@ from commentary.schemas import (
 )
 from commentary.scoreline import Restatements, settle_numbers
 from commentary.state import MatchStateTracker, parse_clock, period_for_clock
-from commentary.threads import Offered, Threads
+from commentary.threads import Offered, SaidCounts, Threads
 from commentary.tools import MatchTools
 from commentary.trace import RunTrace
 from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker, Speaker
@@ -386,6 +386,9 @@ class Runtime:
         #: with the goal follow-up here so that beat 3 and a clause dropped
         #: into a lull are one selection.
         self.follow = GoalFollowup(threads=self.threads)
+        #: Which counts off this match have gone out, and at what figure. A
+        #: ledger clause is not offered again until its number moves.
+        self._said_counts = SaidCounts()
         #: The score-and-clock line, on the match clock. Off with
         #: ``RESTATEMENT_EVERY_S=0``, which is what a feed with a permanent
         #: score bug wants.
@@ -1244,7 +1247,7 @@ class Runtime:
                 verdict.line,
                 line.event,
                 ts=cursor,
-                nameless=nameless_build_up(line, on_the_ball=self._carried_name(line, cursor)),
+                nameless=names_nobody(line, on_the_ball=self._carried_name(line, cursor)),
             )
         if not replay:
             # Who was on the ball in a replay is who was on the ball a minute
@@ -1255,7 +1258,9 @@ class Runtime:
         self._publish_threads(
             cursor, self.threads.said(verdict.line, ts=cursor, pack=self.pack), "used"
         )
-        self._publish_ledger(cursor, self._counts_said(verdict.line, cursor), "used")
+        used = self._counts_said(verdict.line, cursor)
+        self._said_counts.note(used)
+        self._publish_ledger(cursor, used, "used")
         # -- the thirty seconds after a goal -----------------------------
         # A goal line that got through opens the window; any line inside it
         # spends one of its beats. Then, if the caller leaves the kind of
@@ -1344,7 +1349,9 @@ class Runtime:
         # The same people, the same order, asked of the other source of
         # numbers. Two clauses, after the notes: the block is an offer and a
         # menu of six is not one.
-        counts = self.ledger.facts(cursor, wanted, limit=CONTEXT_FACTS)
+        # Only the counts that have moved since they were last said. A clause
+        # already on air is not news until its number changes.
+        counts = self._said_counts.fresh(self.ledger.facts(cursor, wanted))[:CONTEXT_FACTS]
         self._publish_ledger(cursor, counts, "offered")
         phrased = await self.phraser.phrase(
             line,

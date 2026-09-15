@@ -64,7 +64,7 @@ from pathlib import Path
 from typing import Any
 
 from commentary.agents.colour import ColourPass, _merge, colour_pass
-from commentary.agents.phraser import Phraser, nameless_build_up, roster_names
+from commentary.agents.phraser import Phraser, names_nobody, roster_names
 from commentary.bus import Topic
 from commentary.config import SETTINGS, Settings
 from commentary.gate import FactGate, claims_goal, facts_used, fold
@@ -85,7 +85,7 @@ from commentary.schemas import (
     Voice,
 )
 from commentary.scoreline import Numbers, Restatements, settle_numbers
-from commentary.threads import Offered, Threads
+from commentary.threads import Offered, SaidCounts, Threads
 from commentary.trace import read_trace
 
 #: Rows the replay regenerates for itself when a voice is attached. Dropped
@@ -446,8 +446,17 @@ async def rephrase(
                 }
             )
 
+    #: Which counts have gone out, and at what figure: a clause already said
+    #: is not news until its number moves. "Argentina's first corner of the
+    #: match" went out twice, four seconds apart, without it.
+    said_counts = SaidCounts()
+
     def counts_for(at: float, names: Sequence[str]) -> list[LedgerFact]:
         return ledger.facts(at, names)
+
+    def counts_offered(at: float, names: Sequence[str]) -> list[LedgerFact]:
+        """The counts worth putting in front of the model, freshest first."""
+        return said_counts.fresh(counts_for(at, names))[:CONTEXT_FACTS]
 
     def counts_said(text: str, at: float, names: Sequence[str]) -> list[LedgerFact]:
         facts = counts_for(at, names)
@@ -525,7 +534,7 @@ async def rephrase(
         )
         thread_rows(at, offered, "offered")
         scorer_names = [follow.scorer] if follow.scorer else []
-        counts = counts_for(at, scorer_names)[:CONTEXT_FACTS]
+        counts = counts_offered(at, scorer_names)
         ledger_rows(at, counts, "offered")
         phrased = await phraser.phrase(
             form,
@@ -629,7 +638,9 @@ async def rephrase(
             )
             phraser.accept(verdict.line, Event.GOAL, ts=at)
             thread_rows(at, threads.said(verdict.line, ts=at, pack=pack), "used")
-            ledger_rows(at, counts_said(verdict.line, at, scorer_names), "used")
+            spent = counts_said(verdict.line, at, scorer_names)
+            said_counts.note(spent)
+            ledger_rows(at, spent, "used")
             follow.said(at, verdict.line)
             follow.synthesised += 1
         out.lines.append(
@@ -911,7 +922,7 @@ async def rephrase(
             names = [follow.scorer] + names
         offered = threads.offer(names, ts=ts, payoff=bool(followup))
         thread_rows(ts, offered, "offered")
-        counts = counts_for(ts, names)[:CONTEXT_FACTS]
+        counts = counts_offered(ts, names)
         ledger_rows(ts, counts, "offered")
         phrased = await phraser.phrase(
             form,
@@ -1091,12 +1102,14 @@ async def rephrase(
             verdict.line,
             form.event,
             ts=ts,
-            nameless=nameless_build_up(form, on_the_ball=carried),
+            nameless=names_nobody(form, on_the_ball=carried),
         )
         cover.remember(form, verdict.line, ts)
         cover.note_event(form, ts)
         thread_rows(ts, threads.said(verdict.line, ts=ts, pack=pack), "used")
-        ledger_rows(ts, counts_said(verdict.line, ts, names), "used")
+        spent = counts_said(verdict.line, ts, names)
+        said_counts.note(spent)
+        ledger_rows(ts, spent, "used")
 
         # -- the thirty seconds after a goal -----------------------------
         # A goal line that got through opens the window; a line inside it

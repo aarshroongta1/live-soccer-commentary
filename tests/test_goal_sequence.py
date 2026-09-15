@@ -33,6 +33,7 @@ import pytest
 
 from commentary.agents.phraser import (
     Phraser,
+    is_a_bare_name,
     is_a_thin_call,
     opening_shout,
     roster_names,
@@ -846,3 +847,60 @@ async def test_a_replay_line_is_checked_against_what_the_live_call_said() -> Non
     assert phrased is not None
     assert phrased.repeat_retry
     assert phrased.line == "And the referee had a clear view of it."
+
+
+# -- a beat that is only a name ---------------------------------------------
+
+
+def test_a_line_that_is_one_name_is_recognised_as_one() -> None:
+    names = ["Kylian Mbappé"]
+    assert is_a_bare_name("Mbappé!", names)
+    assert is_a_bare_name("Mbappé.", names)
+    assert is_a_bare_name("Kylian Mbappé!", names)
+    assert not is_a_bare_name("Mbappé wheels away.", names)
+    assert not is_a_bare_name("Buried!", names)
+    assert not is_a_bare_name("", names)
+
+
+@pytest.mark.asyncio
+async def test_a_follow_up_beat_that_comes_down_to_the_name_is_dropped() -> None:
+    """Mbappé 94.8: "Mbappé!" on its own, twelve seconds after the goal.
+
+    The shout rewrite leaves a line that is only a shout alone, on the
+    grounds that a dropped beat is a hole. For the call that is right. For
+    beat 4 it is the man's name for the third time and nothing else, and the
+    hole is better.
+    """
+    backend = saying(PhrasedLine(line="Mbappé!", excitement=0.9))
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Argentina 2 France 2",
+        goal_beat=REBUILD_BEAT,
+        scorer="Kylian Mbappé",
+        roster=["Kylian Mbappé"],
+        followup=GOAL_BEATS[REBUILD_BEAT],
+    )
+
+    assert phrased is not None
+    assert phrased.line == ""
+    assert phraser.chose_silence
+    assert phraser.last_reason.startswith("bare_name:")
+
+
+@pytest.mark.asyncio
+async def test_the_goal_call_may_still_be_the_name_alone() -> None:
+    """Beat 1 is the shout, and a form with nothing in it earns nothing more."""
+    backend = saying(PhrasedLine(line="Mbappé!", excitement=1.0))
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form().model_copy(update={"line": "Mbappé scores."}),
+        "Argentina 2 France 1",
+        scorer="Kylian Mbappé",
+        roster=["Kylian Mbappé"],
+    )
+
+    assert phrased is not None
+    assert phrased.line == "Mbappé!"

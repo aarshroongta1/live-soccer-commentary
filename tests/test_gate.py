@@ -1538,3 +1538,42 @@ def test_a_stranded_tail_is_not_a_line() -> None:
     assert not is_a_hole("Into the corner.")
     assert not is_a_hole("And the place erupts.")
     assert not is_a_hole("Of the six chances they have had tonight, that was the best.")
+
+
+def test_a_relative_clause_about_a_goal_is_history(pack: KnowledgePack, state: MatchState) -> None:
+    """The colour line refused as ``unconfirmed_goal``.
+
+    "The man who scored against the Dutch is in it again." claims no goal in
+    this match and no board could confirm one: "who scored" hangs the goal on
+    a man rather than on the moment, which is what a relative clause is for.
+    """
+    gate = FactGate()
+
+    verdict = gate.judge(call("The man who scored against the Dutch is in it again."), state, pack)
+
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == "The man who scored against the Dutch is in it again."
+
+
+def test_the_opponent_survives_the_name_trim_the_way_the_place_does(
+    pack: KnowledgePack, state: MatchState
+) -> None:
+    """"Dutch" is capitalised, on nobody's team sheet, and not a name claim."""
+    gate = FactGate()
+
+    verdict = gate.judge(
+        call("Kimbanda, who scored against the Dutch, is on it again."), state, pack
+    )
+
+    assert verdict.passed, verdict.reasons
+    assert "Dutch" in verdict.line
+
+
+def test_a_goal_in_this_match_still_needs_the_board(pack: KnowledgePack, state: MatchState) -> None:
+    """The exemption is for the relative clause, not for the word "scored"."""
+    gate = FactGate()
+
+    verdict = gate.judge(call("Kimbanda scored, and Northvale are away."), state, pack)
+
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("unconfirmed_goal")

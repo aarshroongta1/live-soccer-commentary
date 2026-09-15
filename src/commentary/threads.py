@@ -36,7 +36,8 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 
-from commentary.gate import is_the_same_name, notes_used
+from commentary.gate import fold, is_the_same_name, notes_used
+from commentary.ledger import Fact
 from commentary.schemas import KnowledgePack, MatchState, Note
 from commentary.tallies import Tallies
 
@@ -72,6 +73,12 @@ class Thread:
     team: bool = False
     times_said: int = 0
     last_said_ts: float | None = None
+    #: The clause as it was the last time it went out, figure and all. What
+    #: :func:`_tier` compares the adjusted clause against: "five goals in
+    #: this tournament" said at 59 s and "seven goals in this tournament"
+    #: offered at 176 s are not the same fact, and resting the second one
+    #: because the first was said is how the second goal lost its third beat.
+    last_said_text: str = ""
 
     def quiet_for(self, ts: float) -> float:
         """How long since this was last said. Forever, if it never has been."""
@@ -79,9 +86,11 @@ class Thread:
             return float("inf")
         return max(0.0, ts - self.last_said_ts)
 
-    def said(self, ts: float) -> None:
+    def said(self, ts: float, text: str = "") -> None:
         self.times_said += 1
         self.last_said_ts = ts
+        if text.strip():
+            self.last_said_text = text.strip()
 
 
 @dataclass(frozen=True)
@@ -189,7 +198,7 @@ class Threads:
             for index, entry in enumerate(self.entries):
                 if index in taken or not is_the_same_name(cleaned, entry.subject):
                     continue
-                tier = _tier(entry, ts, payoff=payoff)
+                tier = _tier(entry, ts, payoff=payoff, moved=self._moved(entry))
                 if tier is None:
                     continue
                 taken.add(index)
@@ -206,6 +215,18 @@ class Threads:
             )
             for _, _, _, index, entry in ranked[:limit]
         ]
+
+    def _moved(self, entry: Thread) -> bool:
+        """Has the count in this clause changed since the clause last went out?
+
+        Only a counting note can move, and only one that has been said has
+        anything to move from. The comparison is on the adjusted text — the
+        clause the phraser was actually shown — because that is the sentence
+        a listener heard, figure and all.
+        """
+        if entry.note.counts is None or not entry.last_said_text:
+            return False
+        return self.tallies.adjust(entry.note).text.strip() != entry.last_said_text
 
     # -- what comes back --------------------------------------------------
 
@@ -234,7 +255,7 @@ class Threads:
                     index=index,
                 )
             )
-            entry.said(ts)
+            entry.said(ts, adjusted[index].text)
         return out
 
     # -- what a trace and a summary want ----------------------------------
@@ -248,9 +269,22 @@ class Threads:
         return [entry for entry in self.entries if entry.times_said > 1]
 
 
-def _tier(entry: Thread, ts: float, *, payoff: bool = False) -> int | None:
-    """Which band this note is in, or ``None`` if it is not on offer at all."""
+def _tier(
+    entry: Thread, ts: float, *, payoff: bool = False, moved: bool = False
+) -> int | None:
+    """Which band this note is in, or ``None`` if it is not on offer at all.
+
+    ``moved`` is a counting clause whose figure has changed since it last
+    went out, and it is the top of the ordering rather than an exemption
+    inside it. The payoff rule already let such a clause *through* the
+    resting check, and on the Mbappé trace that was not enough: at the second
+    goal the tally had been said twice, which put it in tier 4, and three
+    notes nobody had said yet took the three places in front of it. The
+    number moving is the news; an unsaid fact about the same man is not.
+    """
     quiet = entry.quiet_for(ts)
+    if moved:
+        return 3 if entry.team else 0
     if entry.times_said == 0:
         return 2 if entry.team else 1
     # The payoff exemption: a count that has moved is new information however
@@ -263,6 +297,42 @@ def _tier(entry: Thread, ts: float, *, payoff: bool = False) -> int | None:
     if quiet >= REPEAT_QUIET_S or (payoff and entry.note.counts is not None):
         return 4
     return None
+
+
+@dataclass
+class SaidCounts:
+    """Which counts off this match have already gone out, at which figure.
+
+    The ledger is a different kind of clause from a note and it had no memory
+    at all: on ``runs/rephrased/r5a/offside`` "Argentina\'s first corner of
+    the match" went out at 10.3 s and again at 14.3 s, four seconds apart,
+    because both lines were offered the same fact and neither knew the other
+    had said it.
+
+    So a count that has been said is not offered again until it moves —
+    which is exactly the rule :class:`Threads` applies to a note that counts,
+    and for the same reason: the second corner is news and the first one is
+    not, twice.
+
+    Kept here rather than in :mod:`commentary.ledger` because it is a memory
+    of what was *said*, which is this module\'s subject; the ledger counts
+    what happened.
+    """
+
+    said: dict[tuple[str, str], int] = field(default_factory=dict)
+
+    def note(self, facts: Iterable[Fact]) -> None:
+        """Record every count an aired line carried."""
+        for fact in facts:
+            self.said[self._key(fact)] = fact.count
+
+    def fresh(self, facts: Iterable[Fact]) -> list[Fact]:
+        """The counts worth offering: the ones that have moved, or never gone out."""
+        return [fact for fact in facts if self.said.get(self._key(fact)) != fact.count]
+
+    @staticmethod
+    def _key(fact: Fact) -> tuple[str, str]:
+        return (fold(fact.about), fact.kind)
 
 
 def context_notes(offered: Sequence[Offered]) -> tuple[list[Note], list[bool]]:

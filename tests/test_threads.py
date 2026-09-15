@@ -8,6 +8,7 @@ new form.
 
 import pytest
 
+from commentary.ledger import Fact
 from commentary.prompts.phraser import phraser_blocks
 from commentary.schemas import (
     CallerLine,
@@ -20,7 +21,12 @@ from commentary.schemas import (
     Sighting,
     TeamSheet,
 )
-from commentary.threads import CALLBACK_QUIET_S, REPEAT_QUIET_S, Threads
+from commentary.threads import (
+    CALLBACK_QUIET_S,
+    REPEAT_QUIET_S,
+    SaidCounts,
+    Threads,
+)
 
 
 @pytest.fixture
@@ -302,3 +308,65 @@ def test_a_line_about_one_man_does_not_mark_another_mans_thread(
 
     assert [item.subject for item in used] == ["Kylian Mbappé"]
     assert threads.entries[-1].times_said == 0
+
+
+# -- a number that has moved, and one that has not ------------------------
+
+
+def test_a_tally_whose_figure_has_moved_goes_to_the_front() -> None:
+    """The second goal's third beat, which did not appear.
+
+    "Five goals in this tournament" was said at 59 s and "six" at 90 s, so
+    the note had been said twice and sat in the bottom tier — behind three
+    notes about the same man that nobody had said yet. By the second goal it
+    read "seven", which is the only new thing anybody could say about him.
+    """
+    pack = KnowledgePack(
+        home=TeamSheet(
+            name="France", short="FRA", starters=[Player(name="Kylian Mbappé", number=10)]
+        ),
+        away=TeamSheet(name="Argentina", short="ARG", starters=[]),
+        notes=[
+            Note(about="Kylian Mbappé", text="five goals in this tournament", counts="goals"),
+            Note(about="Kylian Mbappé", text="a goal in a final at nineteen", kind="storyline"),
+            Note(about="Kylian Mbappé", text="chasing a second World Cup", kind="storyline"),
+        ],
+    )
+    threads = Threads.from_pack(pack)
+    threads.said("Mbappé. Five goals in this tournament.", ts=59.0, pack=pack)
+    threads.credit_goal("Mbappé", 82.0)
+    threads.said("Six goals in this tournament now for Mbappé.", ts=90.0, pack=pack)
+    threads.credit_goal("Mbappé", 176.0)
+
+    offered = threads.offer(["Mbappé"], ts=178.0, payoff=True)
+
+    assert offered[0].note.text == "seven goals in this tournament"
+    # And it is the number moving that does it, not the goal: the same clause
+    # is first in open play too.
+    assert threads.offer(["Mbappé"], ts=178.0)[0].note.text == "seven goals in this tournament"
+
+
+def test_a_tally_whose_figure_has_not_moved_rests_as_it_did() -> None:
+    pack = KnowledgePack(
+        home=TeamSheet(
+            name="France", short="FRA", starters=[Player(name="Kylian Mbappé", number=10)]
+        ),
+        away=TeamSheet(name="Argentina", short="ARG", starters=[]),
+        notes=[Note(about="Kylian Mbappé", text="five goals in this tournament", counts="goals")],
+    )
+    threads = Threads.from_pack(pack)
+    threads.said("Mbappé. Five goals in this tournament.", ts=59.0, pack=pack)
+
+    assert threads.offer(["Mbappé"], ts=80.0) == []
+
+
+def test_a_count_that_has_gone_out_is_not_offered_again_until_it_moves() -> None:
+    """Offside 10.3 and 14.3: "Argentina's first corner of the match", twice."""
+    first = Fact(about="Argentina", kind="corner", count=1, text="Argentina's first corner")
+    second = Fact(about="Argentina", kind="corner", count=2, text="Argentina's second corner")
+    said = SaidCounts()
+
+    assert said.fresh([first]) == [first]
+    said.note([first])
+    assert said.fresh([first]) == []
+    assert said.fresh([second]) == [second]

@@ -508,6 +508,50 @@ def unweld(text: str) -> str:
         out = f"{before}{join}{rest}"
 
 
+def names_nobody(line: CallerLine, *, on_the_ball: str | None = None) -> bool:
+    """Is there a person on this form at all?
+
+    The event is one of the words the caller has for the ball going forward
+    with nothing happening to it, no sighting bound to a roster name, and no
+    name carried on the ball from a few seconds ago. What it does *not* ask
+    about is the detail — see :func:`nameless_build_up`, which is this plus
+    an empty detail, and :meth:`Phraser.passes_over`, which wants both.
+    """
+    if line.scene is Scene.REPLAY:
+        return False
+    if line.event not in BUILD_UP_FORMS and line.event is not Event.NONE:
+        return False
+    if (on_the_ball or "").strip():
+        return False
+    return not any((sighting.name or "").strip() for sighting in line.sightings)
+
+
+def is_a_bare_name(text: str, names: Sequence[str]) -> bool:
+    """Is this line one name and nothing else, shouted or not?
+
+    A whole line for the lead in build-up — the corpus says a bare surname is
+    one line in twenty-five — and nothing at all for a goal follow-up beat.
+    On ``runs/rephrased/r5a/mbappe`` beat 4 went out as "Mbappé!" on its own
+    twelve seconds after the goal, because the repeat check had taken the
+    rest of the line off and the shout rewrite leaves a line that is only a
+    shout alone. The listener is told the man's name for the third time and
+    nothing else.
+    """
+    words = _WORD.findall(text)
+    if not words or len(words) > 2:
+        return False
+    return _known_name(" ".join(words), names) or _known_name(words[-1], names)
+
+
+def _known_name(word: str, names: Sequence[str]) -> bool:
+    folded = word.casefold()
+    for name in names:
+        clean = (name or "").strip()
+        if clean and folded in (clean.casefold(), clean.rsplit(" ", 1)[-1].casefold()):
+            return True
+    return False
+
+
 def nameless_build_up(line: CallerLine, *, on_the_ball: str | None = None) -> bool:
     """Is this form the ball moving between nobody in particular?
 
@@ -523,17 +567,7 @@ def nameless_build_up(line: CallerLine, *, on_the_ball: str | None = None) -> bo
     the shape of the ones that are not said, and
     :meth:`Phraser.passes_over` is where it is acted on.
     """
-    if line.scene is Scene.REPLAY:
-        # A replay is on screen to be talked over, and its form carries the
-        # event of the incident rather than of the picture.
-        return False
-    if line.event not in BUILD_UP_FORMS and line.event is not Event.NONE:
-        return False
-    if (line.detail or "").strip():
-        return False
-    if (on_the_ball or "").strip():
-        return False
-    return not any((sighting.name or "").strip() for sighting in line.sightings)
+    return names_nobody(line, on_the_ball=on_the_ball) and not (line.detail or "").strip()
 
 
 def _name_retry_note(scorer: str) -> str:
@@ -678,7 +712,7 @@ class Phraser:
         """Record a line as spoken. Only call this when it really is going out.
 
         ``ts`` and ``nameless`` are what :meth:`passes_over` reads back: when
-        the last thing said was a nameless build-up line, and how long ago.
+        the last thing said was a line with nobody in it, and how long ago.
         Both default to the answer every caller of this gave before the
         silence rule existed — no time, and named — so an older caller keeps
         asking the model about every form, which is what it used to do.
@@ -712,21 +746,49 @@ class Phraser:
         build-up line is ordinary commentary — and never when a name is bound,
         a name is carried, or the eyes picked out a detail.
         """
-        if not self.silence.enabled or not nameless_build_up(line, on_the_ball=on_the_ball):
+        if not self.silence.enabled or not names_nobody(line, on_the_ball=on_the_ball):
             return None
+        if self._after_a_nameless_line(line, ts):
+            return "silence: nameless build-up after nameless build-up"
+        last = self._recent[-1] if self._recent else None
+        gap = float("inf") if last is None or last.ts is None else ts - last.ts
+        if gap < self.silence.nameless_gap_s or not (line.detail or "").strip():
+            # A line with nobody on it has to earn its place twice over: the
+            # gap has to have opened, and the eyes have to have picked out
+            # something a listener could not guess. Real commentary passes
+            # over a quarter of all touches and names most of the rest.
+            return (
+                "silence: nobody on the form and "
+                + (
+                    f"only {gap:.0f}s since the last line"
+                    if gap < self.silence.nameless_gap_s
+                    else "nothing the eyes picked out"
+                )
+            )
+        return None
+
+    def _after_a_nameless_line(self, line: CallerLine, ts: float) -> bool:
+        """Is this the second nameless build-up form in a row, recently?
+
+        The narrower of the two rules and the older one: the pair the corpus
+        is most emphatic about, and the one whose reason says so in the
+        trace. Asked first because "after another one like it" tells whoever
+        reads the row more than "nobody on the form" does.
+        """
+        if not nameless_build_up(line):
+            return False
         recent = list(self._recent)[-max(1, self.silence.after_nameless) :]
         if len(recent) < self.silence.after_nameless:
-            return None
+            return False
         if not all(said.nameless for said in recent):
-            return None
-        if any(
-            said.ts is None or not 0.0 <= ts - said.ts <= self.silence.within_s for said in recent
-        ):
-            # Older than the window, or from a caller that does not stamp
-            # what it says. A quiet passage answered with more quiet is how a
-            # system goes mute, and the corpus's longest silences are bounded.
-            return None
-        return "silence: nameless build-up after nameless build-up"
+            return False
+        # Older than the window, or from a caller that does not stamp what it
+        # says. A quiet passage answered with more quiet is how a system goes
+        # mute, and the corpus's longest silences are bounded.
+        return all(
+            said.ts is not None and 0.0 <= ts - said.ts <= self.silence.within_s
+            for said in recent
+        )
 
     async def phrase(
         self,
@@ -1025,6 +1087,26 @@ class Phraser:
             without, marker = strip_replay_marker(proposed.line)
             if marker:
                 proposed = proposed.model_copy(update={"line": without})
+
+        # A beat that is one name is not a beat. Unlike the goal call, where
+        # the shout is the line, a follow-up that has come down to the man's
+        # name says nothing that was not said twelve seconds ago.
+        if goal_beat is not None and is_a_bare_name(proposed.line, names):
+            self.last_usage = usage
+            self.chose_silence = True
+            self.last_reason = f"bare_name: beat {goal_beat} came down to the name alone"
+            return PhrasedLine(
+                line="",
+                excitement=0.0,
+                opener_retry=opener_retry,
+                closer_retry=closer_retry,
+                name_retry=name_retry,
+                swap_retry=swap_retry,
+                figure_retry=figure_retry,
+                shout_retry=shout_retry,
+                shout_rewritten=shout_rewritten,
+                repeat_retry=repeat_retry,
+            )
 
         # The jingle, taken off in code. One line ending a clause on "now" is
         # a commentator; four in twenty-one is a tic, and the closer check

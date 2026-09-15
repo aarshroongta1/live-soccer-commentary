@@ -155,20 +155,38 @@ def test_a_replay_is_never_passed_over() -> None:
 # -- the decision, and the memory behind it ---------------------------------
 
 
-def test_the_first_nameless_line_is_ordinary_commentary() -> None:
+def test_a_nameless_line_airs_where_the_gap_is_open_and_the_eyes_saw_something() -> None:
+    """Both halves of the rate rule, met.
+
+    Five of twenty-one lines on the offside clip named nobody, and they
+    alternated with named ones, so the consecutive rule never saw them. A
+    line with nobody on it now has to earn its place twice: the gap has to
+    have opened and the form has to carry a detail.
+    """
     phraser = a_phraser()
     phraser.accept("Molina drives forward.", Event.CARRY, ts=10.0, nameless=False)
 
-    assert phraser.passes_over(a_form(), ts=12.0) is None
+    assert phraser.passes_over(a_form(detail="pouring forward down the left"), ts=30.0) is None
 
 
-def test_the_second_one_running_is_the_silence() -> None:
+def test_a_nameless_line_inside_the_gap_is_the_silence() -> None:
     phraser = a_phraser()
-    phraser.accept("Through midfield.", Event.BUILD_UP, ts=10.0, nameless=True)
+    phraser.accept("Molina drives forward.", Event.CARRY, ts=10.0, nameless=False)
 
-    assert phraser.passes_over(a_form(), ts=12.0) == (
-        "silence: nameless build-up after nameless build-up"
-    )
+    reason = phraser.passes_over(a_form(detail="pouring forward down the left"), ts=12.0)
+
+    assert reason is not None
+    assert reason.startswith("silence: nobody on the form")
+    assert "2s since the last line" in reason
+
+
+def test_a_nameless_line_with_nothing_the_eyes_picked_out_is_the_silence() -> None:
+    phraser = a_phraser()
+    phraser.accept("Molina drives forward.", Event.CARRY, ts=10.0, nameless=False)
+
+    reason = phraser.passes_over(a_form(), ts=40.0)
+
+    assert reason == "silence: nobody on the form and nothing the eyes picked out"
 
 
 def test_a_name_on_this_form_is_enough_to_be_worth_a_line() -> None:
@@ -183,7 +201,7 @@ def test_a_nameless_line_from_long_ago_does_not_hold_the_voice_quiet() -> None:
     phraser = a_phraser(silence=SilenceConfig(within_s=15.0))
     phraser.accept("Through midfield.", Event.BUILD_UP, ts=10.0, nameless=True)
 
-    assert phraser.passes_over(a_form(), ts=40.0) is None
+    assert phraser.passes_over(a_form(detail="pouring forward"), ts=40.0) is None
 
 
 def test_nothing_is_passed_over_with_the_rule_switched_off() -> None:
@@ -198,7 +216,7 @@ def test_an_older_caller_that_stamps_nothing_still_asks_the_model() -> None:
     phraser = a_phraser()
     phraser.accept("Through midfield.", Event.BUILD_UP)
 
-    assert phraser.passes_over(a_form(), ts=12.0) is None
+    assert phraser.passes_over(a_form(detail="pouring forward"), ts=12.0) is None
 
 
 @pytest.mark.asyncio
@@ -211,10 +229,20 @@ async def test_the_silence_costs_no_model_call() -> None:
     assert backend.calls == []
 
 
+def test_the_consecutive_rule_still_has_its_own_reason() -> None:
+    """The older and narrower of the two, and the one the trace names."""
+    phraser = a_phraser()
+    phraser.accept("Through midfield.", Event.BUILD_UP, ts=10.0, nameless=True)
+
+    assert phraser.passes_over(a_form(), ts=12.0) == (
+        "silence: nameless build-up after nameless build-up"
+    )
+
+
 # -- the same decision, offline ---------------------------------------------
 
 
-def a_build_up_row(ts: float, line: str) -> list[dict[str, Any]]:
+def a_build_up_row(ts: float, line: str, detail: str | None = None) -> list[dict[str, Any]]:
     """One nameless build-up call as a trace records it: a form and a beat."""
     return [
         {
@@ -228,6 +256,7 @@ def a_build_up_row(ts: float, line: str) -> list[dict[str, Any]]:
             "confidence": 0.7,
             "speak": True,
             "line": line,
+            "detail": detail,
         },
         {
             "topic": "gate",
@@ -266,7 +295,11 @@ async def test_the_rephrase_passes_over_the_second_nameless_form_too() -> None:
             "clock": "78:09",
             "period": 2,
         },
-        *a_build_up_row(10.0, "Argentina move it across the halfway line."),
+        *a_build_up_row(
+            10.0,
+            "Argentina move it across the halfway line.",
+            detail="stretched right across the pitch",
+        ),
         *a_build_up_row(14.0, "The ball goes wide with nobody closing it down."),
     ]
     backend = saying(PhrasedLine(line="Through midfield.", excitement=0.2))
@@ -534,10 +567,15 @@ async def test_the_runtime_passes_over_the_second_nameless_form_too() -> None:
     """The live half of the pair above, through the runtime's own call path.
 
     Both paths ask the same object the same question, so a silence offline is
-    a silence on air.
+    a silence on air. The caller hands back the same form twice here, and the
+    second time nothing has changed and no gap has opened, so it is the rate
+    rule rather than the consecutive one that catches it.
     """
     runtime = a_runtime()
-    form = a_form("Argentina move it across the halfway line with nobody closing.")
+    form = a_form(
+        "Argentina move it across the halfway line with nobody closing.",
+        detail="stretched right across the pitch",
+    )
 
     async def call(*_args: Any, **_kw: Any) -> CallerLine:
         return form
@@ -567,5 +605,5 @@ async def test_the_runtime_passes_over_the_second_nameless_form_too() -> None:
     assert len(backend.calls) == 1, "the second form never reached the model"
     phrased = [extra for topic, extra in published if topic == "phrased"]
     assert phrased[-1]["line"] == ""
-    assert phrased[-1]["reason"] == "silence: nameless build-up after nameless build-up"
+    assert phrased[-1]["reason"].startswith("silence: nobody on the form")
     assert not [topic for topic, _ in published if topic == "gate"][1:], "one gate row, one line"

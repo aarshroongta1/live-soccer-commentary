@@ -251,6 +251,17 @@ class SilenceConfig:
     #: corpus's own rate is a quarter of all touches and this fires on a
     #: strict subset of them — the second of a pair, never the first.
     after_nameless: int = 1
+    #: How long the voice has to have been quiet before a line with nobody
+    #: on it is worth saying at all. The first rule below catches two
+    #: nameless lines running; on ``runs/rephrased/r5a/offside`` five of
+    #: twenty-one lines were nameless and they *alternated* with named ones,
+    #: so nothing caught them: "Through midfield now, halfway line reached."
+    #: / "Argentina stream forward through the middle." / "White shirts
+    #: streaming forward." / "White shirts pouring forward down the left."
+    #: Real commentary is silent on a quarter of touches and names the rest
+    #: (study section 3.1a), so a nameless line has to earn its place: the
+    #: gap has to be open and the eyes have to have picked something out.
+    nameless_gap_s: float = 12.0
     #: And how recently. Without this the rule would hold through a long
     #: silence: the last thing said might be forty seconds old, and a system
     #: that answers a quiet passage with more quiet goes mute. Fifteen

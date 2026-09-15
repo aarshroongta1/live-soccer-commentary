@@ -1486,6 +1486,33 @@ _ELSEWHERE_WORD = re.compile(
 _ELSEWHERE_PLACE = re.compile(r"\bin\s+([A-Z][a-zA-Z]+)\b")
 
 
+#: A relative clause is always history. "The man who scored against the
+#: Dutch is in it again" was refused ``unconfirmed_goal`` on the colour seat:
+#: nothing in it claims a goal in this match, and nothing could — "who
+#: scored" attaches the goal to a man rather than to the moment, which is
+#: what a relative clause is for.
+_WHO_SCORED = re.compile(
+    r"\bwho\s+(?:had\s+)?(?:scored|netted)\b|\bwho\s+got\s+the\s+winner\b",
+    re.IGNORECASE,
+)
+
+#: And the two ways a goal is placed in another match without naming a year:
+#: the opponent it was scored against, and the thing it decided. "Scored
+#: against the Dutch", "scored the winner in the semi-final".
+_SCORED_ELSEWHERE = re.compile(
+    r"\bscored\s+(?:\w+\s+){0,2}?against\b"
+    r"|\b(?:scored|netted|got)\s+the\s+(?:winner|opener|equaliser|equalizer)\b",
+    re.IGNORECASE,
+)
+
+#: A capitalised word that a past-tense goal is placed by: after "in" it is a
+#: place, after "against" it is an opponent, and neither is a player. Both
+#: have to reach the roster or the name trim takes them out of the middle of
+#: the line — "The man who scored in." is the fault this exists for, and
+#: "scored against the ." would be the next one.
+_ELSEWHERE_AFTER = re.compile(r"\b(?:in|against)\s+(?:the\s+)?([A-Z][a-zA-Z]+)\b")
+
+
 def _is_historical_goal_reference(
     text: str, pack: KnowledgePack | None, notes: Sequence[Note] | None
 ) -> bool:
@@ -1501,25 +1528,26 @@ def _is_historical_goal_reference(
     """
     if not _PAST_TENSE_GOAL_WORDS.search(text):
         return False
+    if _WHO_SCORED.search(text) or _SCORED_ELSEWHERE.search(text):
+        return True
     if _ELSEWHERE_WORD.search(text) or _ELSEWHERE_PLACE.search(text):
         return True
     names = _name_words(pack)
     return any(_note_covers(text, note, names) for note in _notes_in_play(text, pack, notes))
 
 
-def _elsewhere_place(text: str) -> str | None:
-    """The capitalised place word that excuses a past-tense goal, if any.
+def _elsewhere_places(text: str) -> set[str]:
+    """Every capitalised word a past-tense goal is placed by, folded.
 
-    The same word the roster check would otherwise read as an unverified
-    name and trim: on the real Mbappé trace, "The man who scored in Russia."
-    passed ``unconfirmed_goal`` and then lost "Russia" to
-    ``trimmed_name``, coming out as "The man who scored in." — the fix this
-    line is here for, at the one call site that needs it.
+    The same words the roster check would otherwise read as unverified names
+    and trim: on the real Mbappé trace, "The man who scored in Russia."
+    passed ``unconfirmed_goal`` and then lost "Russia" to ``trimmed_name``,
+    coming out as "The man who scored in." — and "who scored against the
+    Dutch" is the same sentence with the opponent in place of the country.
     """
     if not _PAST_TENSE_GOAL_WORDS.search(text):
-        return None
-    found = _ELSEWHERE_PLACE.search(text)
-    return found.group(1) if found else None
+        return set()
+    return {fold(match.group(1)) for match in _ELSEWHERE_AFTER.finditer(text)}
 
 
 # -- decoration: the ban only the model enforces --------------------------
@@ -1908,9 +1936,9 @@ class FactGate:
         # roster check below cannot otherwise tell it apart from one — it is
         # exactly what invented "The man who scored in." out of "The man who
         # scored in Russia." on the real trace this rule exists for.
-        place = _elsewhere_place(text)
-        if place:
-            roster = replace(roster, people=roster.people | {fold(place)})
+        places = _elsewhere_places(text)
+        if places:
+            roster = replace(roster, people=roster.people | places)
         # The decoration ban the phraser's prompt states and only the model
         # enforces: cut the sentence that gives a crowd noun a verb, or
         # refuse the line if cutting it leaves nothing worth saying. Ahead of
