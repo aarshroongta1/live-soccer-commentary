@@ -275,7 +275,7 @@ whole ~3,500-token prefix on every line and `cache_read` was zero across 33
 calls; that is what `a8e7ae4` recorded, and why the sample shown per kind
 dropped from 14 to 10. On the v3 branch the prefix caches: 4,819 tokens written
 once and read back on 26 of the 27 calls, and the cost a line falls by two
-thirds. Confirm it again after v4 merges.
+thirds. Confirm it again after the next phraser change.
 
 **The inventions, and what was done about them.** The first phrasing pass
 invented facts in 4 of 33 lines — "in the book" with no card, "Mbappé strikes"
