@@ -58,6 +58,7 @@ from commentary.schemas import (
     Sighting,
     TeamSheet,
 )
+from commentary.tallies import Tallies
 
 # -- fixtures ----------------------------------------------------------------
 
@@ -563,6 +564,38 @@ def test_a_note_about_a_man_the_lead_has_just_named_is_material() -> None:
     material = seat.material(5.0)
     assert [note.text for note in material.notes] == ["five in this tournament"]
     assert seat.offer(5.0).allowed
+
+
+def test_the_seat_gets_the_tallies_adjusted_note_not_the_researched_one() -> None:
+    """A running-count note is stale the instant its man scores.
+
+    ``tallies.py`` advances a ``counts=goals`` note by the goals credited to
+    that player before it reaches the phraser or the gate; this seat used to
+    read the pack's raw notes and never saw the match move. Sharing the same
+    :class:`~commentary.tallies.Tallies` fixes it for both :meth:`notes` and
+    the goal-reaction material in :meth:`_about_the_scorer`.
+    """
+    pack = a_pack().model_copy(
+        update={
+            "notes": [
+                Note(
+                    about="Lionel Messi",
+                    text="five goals in this tournament",
+                    kind="stat",
+                    counts="goals",
+                )
+            ]
+        }
+    )
+    tallies = Tallies()
+    tallies.credit_goal("Lionel Messi", 10.0)
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=pack, tallies=tallies)
+    seat.saw_lead_line(1.0, "Messi, twenty yards out.")
+    seat.saw_lead_line(2.0, "Argentina keep it.")
+    seat.saw_form(3.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
+    seat.saw_form(4.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
+    material = seat.material(5.0)
+    assert [note.text for note in material.notes] == ["six goals in this tournament"]
 
 
 def test_a_completed_big_event_is_enough_to_make_a_turn_out_of() -> None:

@@ -47,13 +47,15 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from commentary.bus import Topic
 from commentary.config import JUDGE_MODEL
 from commentary.gate import fold
 from commentary.grading.judge import Asker, JudgeError, Question, SequentialAsker
 from commentary.grading.register_reference import BANDS, ORDER, REFERENCE, SOURCE, Band
 from commentary.llm.base import LLMBackend, Usage, text_block
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
-from commentary.schemas import KnowledgePack
+from commentary.schemas import KnowledgePack, MatchState, Note
+from commentary.tallies import Tallies
 from commentary.trace import read_trace, rows_of
 
 #: How many real utterances the judge is shown as the reference register.
@@ -629,7 +631,11 @@ voice at all, score low and say so.
 support: a score nobody gave it, a card that may not have been shown, an \
 outcome asserted before it happened, a statistic from nowhere. 10 is clean. \
 Lines shown as refused by the gate did not reach air; mention them but do \
-not score them as if they had.
+not score them as if they had. When a block labelled "FACTS THE BROADCAST \
+WAS GIVEN BEFORE KICKOFF" is present, a number that matches one of those \
+facts — or a plainly advanced version of a running count — was researched \
+and handed to the system, not invented; score it as invention only if it \
+contradicts what that block says.
 
 9. overall. Not an average. What a listener would say about the passage as a \
 whole.
@@ -698,6 +704,72 @@ def passage_block(shape: Shape, *, name: str = "") -> str:
     return "\n".join(head + body)
 
 
+def _final_state(rows: list[dict[str, Any]]) -> MatchState | None:
+    """The last state row on the trace, if any — the match as it ended."""
+    found: MatchState | None = None
+    for row in rows_of(rows, Topic.STATE.value):
+        payload = {k: v for k, v in row.items() if k not in ("topic", "ts")}
+        try:
+            found = MatchState.model_validate(payload)
+        except Exception:
+            continue
+    return found
+
+
+def trace_tallies(rows: list[dict[str, Any]]) -> Tallies:
+    """What the match's own state rows say every credited goal was worth.
+
+    Cheap: no model call, just the incidents already sitting in the last
+    state row on the trace. Built here rather than inside
+    :func:`judge_register` so a caller with no rows at hand — a test, or a
+    pass that only ever had the shape — can still ask for a judgement.
+    """
+    tallies = Tallies()
+    state = _final_state(rows)
+    if state is not None:
+        tallies.see_state(state)
+    return tallies
+
+
+def pack_facts_block(pack: KnowledgePack, tallies: Tallies | None = None) -> str:
+    """"FACTS THE BROADCAST WAS GIVEN BEFORE KICKOFF" — the judge's own pack.
+
+    The judge marks a gate-verified statistic as invention because it never
+    sees what the pack handed the system before kickoff: "five goals in this
+    tournament" reads like a number asserted from nowhere unless something
+    tells the judge it was researched. This is that something.
+
+    ``tallies``, when the caller has it cheaply (:func:`trace_tallies` off
+    the trace's own rows), advances a ``counts`` note the way the phraser and
+    the gate already see it. Without one the notes go in as researched — the
+    kickoff-true figure — with a line telling the judge a running count may
+    have moved by the time a later line in the passage says it.
+    """
+    notes: list[Note] = tallies.adjusted(pack.notes) if tallies is not None else list(pack.notes)
+    if not notes:
+        return ""
+    rows = "\n".join(f"  {note.about}: {note.text} ({note.kind})" for note in notes)
+    caveat = (
+        ""
+        if tallies is not None
+        else (
+            "\n\nThese are the figures at kickoff. A note with a running count — goals, "
+            "assists, games scoring — moves as the match does, so a later line may give a "
+            "higher number than the one above without inventing anything."
+        )
+    )
+    return (
+        "FACTS THE BROADCAST WAS GIVEN BEFORE KICKOFF\n\n"
+        "Researched by the production and handed to the system before the match; not "
+        "something it worked out or made up. A number in the passage that matches one of "
+        "these, or a plainly advanced version of a running count, is a researched fact being "
+        "read out, not an invented statistic — score it as invention only if it contradicts "
+        "what is here.\n\n"
+        f"{rows}"
+        f"{caveat}"
+    )
+
+
 async def judge_register(
     shape: Shape,
     backend: LLMBackend,
@@ -706,6 +778,8 @@ async def judge_register(
     model: str = JUDGE_MODEL,
     asker: Asker | None = None,
     reference_n: int = REFERENCE_N,
+    pack: KnowledgePack | None = None,
+    tallies: Tallies | None = None,
 ) -> tuple[RegisterVerdict, Usage]:
     """Layer (b): one call, the whole passage, nine scores back.
 
@@ -714,20 +788,30 @@ async def judge_register(
     build-up that never goes quiet — and a judge shown one line at a time
     cannot see any of them.
 
+    ``pack`` adds the "FACTS THE BROADCAST WAS GIVEN BEFORE KICKOFF" block
+    (:func:`pack_facts_block`) after the reference examples, so the cached
+    prefix those examples sit behind is unaffected by whether a pack was
+    given. ``tallies`` is the match's own, if the caller has it cheaply
+    (:func:`trace_tallies`); left out, the pack's own researched notes go in
+    with a caveat instead.
+
     The usage returned is the difference the call made to the backend's own
     running total, which is where every other spend in this project is
     counted from, so a report's cost and a session's cost cannot disagree.
     """
     if not shape.lead and not shape.colour:
         raise JudgeError("nothing to judge: the trace has no lines")
+    blocks = [text_block(reference_block(reference_n), cache=True)]
+    if pack is not None:
+        facts = pack_facts_block(pack, tallies)
+        if facts:
+            blocks.append(text_block(facts))
+    blocks.append(text_block(passage_block(shape, name=name)))
     question = Question(
         key="register-0000",
         tag="judge_register",
         system=RUBRIC,
-        blocks=[
-            text_block(reference_block(reference_n), cache=True),
-            text_block(passage_block(shape, name=name)),
-        ],
+        blocks=blocks,
         output_format=RegisterVerdict,
         # Room for adaptive thinking plus nine justifications and three
         # quoted lines. Generous on purpose: a truncated answer fails to
@@ -983,6 +1067,12 @@ async def score_trace(
         report.carried = carried_judgement(report_path(path), shape)
         return report
     report.verdict, report.usage = await judge_register(
-        shape, backend, name=path.name, model=model, asker=asker
+        shape,
+        backend,
+        name=path.name,
+        model=model,
+        asker=asker,
+        pack=pack,
+        tallies=trace_tallies(rows) if pack is not None else None,
     )
     return report

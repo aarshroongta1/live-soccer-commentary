@@ -74,6 +74,8 @@ from commentary.schemas import (
     Voice,
 )
 from commentary.state import notes_for
+from commentary.tallies import Tallies
+from commentary.threads import Threads
 from commentary.voice.speaker import WORDS_PER_SECOND
 
 #: The value of ``COLOUR_MODEL`` that means "no colour seat".
@@ -962,11 +964,20 @@ class ColourSeat:
         pack: KnowledgePack | None = None,
         *,
         model: str | None = None,
+        tallies: Tallies | None = None,
     ) -> None:
         self.backend = backend
         self.config = config or ColourConfig()
         self.pack = pack
         self.model = model if model is not None else self.config.model
+        #: What this match has done to a running-count note, as of right now.
+        #: Shared with whatever is crediting goals against the match — the
+        #: runtime's own :class:`~commentary.threads.Threads`, or the local
+        #: one :func:`colour_pass` builds — so a note that counts a player's
+        #: goals reads the number he actually has, not the one researched
+        #: before kickoff. A fresh, uncredited one if nothing is shared,
+        #: which behaves exactly as this seat did before tallies existed.
+        self.tallies = tallies if tallies is not None else Tallies()
         #: Built once, never rebuilt: identical bytes on every turn is what
         #: makes forty real utterances and two squads affordable to send.
         self.system = colour_system(pack, self.config)
@@ -1123,9 +1134,11 @@ class ColourSeat:
         Most recently named first, which is the ordering
         :func:`~commentary.state.notes_for` caps against, so a note about the
         man still on the screen wins a place over one about the man before
-        him.
+        him. Adjusted by :attr:`tallies` before it goes anywhere: a note that
+        counts goals is stale the instant the man it is about scores one, and
+        this seat sees the match exactly as long as the lead does.
         """
-        return notes_for(self.pack, self.lead_named())
+        return self.tallies.adjusted(notes_for(self.pack, self.lead_named()))
 
     def lead_named(self) -> list[str]:
         """Who the lead has named in his last three lines, newest first."""
@@ -1165,7 +1178,7 @@ class ColourSeat:
         scorer, called = self._the_goal(now)
         if not scorer:
             return Material()
-        notes = tuple(notes_for(self.pack, [scorer]))
+        notes = tuple(self.tallies.adjusted(notes_for(self.pack, [scorer])))
         if notes:
             return Material(notes=notes, about=scorer)
         if called:
@@ -1485,7 +1498,15 @@ async def colour_pass(
     the state rows and the same answer should reach both seats' gates.
     """
     cfg = settings.colour
-    seat = ColourSeat(backend, config=cfg, pack=pack, model=model)
+    #: This pass's own memory of what has been credited and what has been
+    #: said — the same :class:`~commentary.threads.Threads` the lead pass
+    #: uses, but a pass of its own, because the lead's has already reached
+    #: the final whistle by the time this runs. Fed one state row at a time
+    #: as ``now`` passes it, below, never the final state up front, which
+    #: would hand the seat a note advanced by goals that, at that point in
+    #: the walk, have not been called yet.
+    threads_local = Threads.from_pack(pack)
+    seat = ColourSeat(backend, config=cfg, pack=pack, model=model, tallies=threads_local.tallies)
     out = ColourPass(rows=list(rows), quiet_after_big_s=cfg.quiet_after_big_s)
     if not seat.enabled:
         return out
@@ -1517,6 +1538,10 @@ async def colour_pass(
                 seat.saw_lead_line(ts, value)
             cursor += 1
 
+        state = _state_at(states, now)
+        if state is not None:
+            threads_local.see_state(state)
+
         offer = seat.offer(now)
         room = _room_for(now, beat_ts, cfg) if offer.allowed else 0
         if offer.allowed and room >= cfg.min_utterances:
@@ -1536,7 +1561,6 @@ async def colour_pass(
             )
         if offer.allowed:
             moment = seat.moment(now)
-            state = _state_at(states, now)
             turn = await seat.turn(offer, state_summary(state) if state else "")
             usd = seat.last_usage.cost_usd
             out.cost_usd += usd
@@ -1579,6 +1603,7 @@ async def colour_pass(
                     lag=lag,
                     goal_in_state=goal_in_state,
                     additions=additions,
+                    threads=threads_local,
                 )
             additions.append((now, _colour_row(now, offer, turn, record, seat.last_usage)))
             out.turns.append(record)
@@ -1633,6 +1658,7 @@ def _schedule(
     lag: float,
     goal_in_state: Callable[[float], bool],
     additions: list[tuple[float, dict[str, Any]]],
+    threads: Threads,
 ) -> None:
     """Place the turn's utterances in time, judge each one, and write the rows.
 
@@ -1641,6 +1667,11 @@ def _schedule(
     check judges the names it says, ``note_claim`` judges any number, and
     ``score_claim`` strikes out a scoreline — which the prompt already
     forbids and the gate is what enforces.
+
+    A line that passes and used one of the notes in :attr:`ColourSeat.notes`
+    is recorded against ``threads`` exactly as a phrased caller line is, in
+    :mod:`commentary.rephrase`: the hook that turns a list of facts into a
+    thread does not care which seat said the fact.
     """
     when = space_out(
         record.ts,
@@ -1684,6 +1715,7 @@ def _schedule(
         record.utterances.append(utterance)
         if verdict.passed:
             said.append(verdict.line)
+            threads.said(verdict.line, ts=at, pack=pack)
             additions.append((at, _beat_row(at, verdict.line, record.situation, lag)))
         else:
             additions.append(

@@ -220,10 +220,20 @@ class Runtime:
             tools=MatchTools(state=self.state_tracker.state, pack=self.pack),
             pack=self.pack,
         )
+        #: The pack's notes with a memory and a running count behind them.
+        #: Seeded at kickoff, and built ahead of the colour seat below so
+        #: that seat can share its tallies: one match, one running count,
+        #: whichever voice is reading a note off it.
+        self.threads = Threads.from_pack(self.pack)
         #: The second seat, event-driven and text-only. When it is enabled
         #: the old silence-timer analyst is not asked at all; see
         #: :meth:`_maybe_colour` and ``docs/HANDOFF.md`` section 3e.
-        self.colour = ColourSeat(self.backend, config=self.settings.colour, pack=self.pack)
+        self.colour = ColourSeat(
+            self.backend,
+            config=self.settings.colour,
+            pack=self.pack,
+            tallies=self.threads.tallies,
+        )
         self.gate = FactGate(self.settings.gate)
         self.predictor = SpeakPredictor(self.settings.predictor, self.settings.caller)
         self.director = Director(speaker=self.speaker, cfg=self.settings.director, bus=self.bus)
@@ -265,10 +275,9 @@ class Runtime:
         #: due, and what the caller has said about the move. Driven from
         #: :meth:`_call` exactly as the offline rephrase drives it, so a beat
         #: that exists in one exists in the other.
-        #: The pack's notes with a memory and a running count behind them.
-        #: Seeded at kickoff, shared with the goal follow-up so that beat 3
-        #: and a clause dropped into a lull are one selection.
-        self.threads = Threads.from_pack(self.pack)
+        #: ``self.threads`` is built above, ahead of the colour seat; shared
+        #: with the goal follow-up here so that beat 3 and a clause dropped
+        #: into a lull are one selection.
         self.follow = GoalFollowup(threads=self.threads)
         #: The score-and-clock line, on the match clock. Off with
         #: ``RESTATEMENT_EVERY_S=0``, which is what a feed with a permanent
@@ -665,6 +674,14 @@ class Runtime:
                 )
                 if not verdict.passed:
                     continue
+                # Counted against the same threads the lead's lines are:
+                # a note the colour seat has just said is a note that has
+                # been said, whichever voice said it.
+                self._publish_threads(
+                    self.cursor_ts,
+                    self.threads.said(verdict.line, ts=self.cursor_ts, pack=self.pack),
+                    "used",
+                )
                 self.director.submit(
                     Beat(
                         id=next_beat_id("c"),

@@ -183,6 +183,39 @@ def test_a_goal_claimed_in_prose_is_caught_too(pack, state):
 def test_the_word_goal_in_an_innocent_sense_is_not_a_claim(pack, state):
     gate = FactGate()
     assert gate.judge(call("Dunthorpe swings it towards the goal"), state, pack).passed
+
+
+def test_present_tense_still_needs_the_board(pack, state):
+    """The past-tense exemption is for the past tense only; "scores" stays a claim."""
+    gate = FactGate()
+    verdict = gate.judge(call("Krastanov scores!"), state, pack)
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("unconfirmed_goal")
+
+
+def test_bare_past_tense_with_no_marker_is_still_a_goal_claim(pack, state):
+    """Tense alone is not enough — "he's scored before" could mean tonight."""
+    gate = FactGate()
+    verdict = gate.judge(call("Krastanov scored."), state, pack)
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("unconfirmed_goal")
+
+
+def test_a_past_tense_goal_placed_elsewhere_is_not_a_claim_about_this_match(pack, state):
+    """"The man who scored in Russia." is a career fact, not a goal just now."""
+    gate = FactGate()
+    line = call("The man who scored in Russia.", scene=Scene.STOPPAGE)
+    verdict = gate.judge(line, state, pack)
+    assert verdict.passed, verdict.reasons
+
+
+def test_a_past_tense_goal_backed_by_a_pack_note_is_not_a_claim(pack, state):
+    """A colour-seat line restating a note gets the note_claim path's own latitude."""
+    note = Note(about="Ivo Krastanov", text="Scored the winner for his country once.")
+    gate = FactGate()
+    line = call("Krastanov scored the winner for his country once.", scene=Scene.STOPPAGE)
+    verdict = gate.judge(line, state, pack, notes=[note])
+    assert verdict.passed, verdict.reasons
     assert gate.judge(call("It is a goal kick to Carrowmere"), state, pack).passed
 
 

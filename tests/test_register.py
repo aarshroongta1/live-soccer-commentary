@@ -32,6 +32,8 @@ from commentary.llm.base import Block
 from commentary.llm.fake import ScriptedBackend
 from commentary.llm.schema import strict_schema
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
+from commentary.schemas import KnowledgePack, Note, Player, TeamSheet
+from commentary.tallies import Tallies
 
 # -- a trace whose every number was worked out on paper -----------------
 
@@ -268,6 +270,69 @@ async def test_one_call_for_the_whole_passage(rows: list[dict[str, Any]]) -> Non
 async def test_a_trace_with_no_lines_is_refused_rather_than_judged() -> None:
     with pytest.raises(JudgeError):
         await register.judge_register(measure([STATE]), scripted())
+
+
+def a_pack() -> KnowledgePack:
+    return KnowledgePack(
+        home=TeamSheet(
+            name="Argentina", short="ARG", starters=[Player(name="Lionel Messi", number=10)]
+        ),
+        away=TeamSheet(
+            name="France", short="FRA", starters=[Player(name="Kylian Mbappé", number=10)]
+        ),
+        notes=[
+            Note(
+                about="Lionel Messi",
+                text="five goals in this tournament",
+                kind="stat",
+                counts="goals",
+            )
+        ],
+    )
+
+
+async def test_pack_facts_reach_the_judge_after_the_reference_examples(
+    rows: list[dict[str, Any]],
+) -> None:
+    """The judge sees what the broadcast was researched with, when it exists."""
+    backend = scripted()
+    await register.judge_register(measure(rows), backend, name="t.jsonl", pack=a_pack())
+    call = backend.calls_tagged("judge_register")[0]
+    assert "FACTS THE BROADCAST WAS GIVEN BEFORE KICKOFF" in call.text
+    assert "Lionel Messi: five goals in this tournament (stat)" in call.text
+    # After the reference examples, not before: the cached prefix those sit
+    # behind is unaffected by whether a pack was given.
+    assert call.text.index(EXAMPLES[KINDS[0]][0]) < call.text.index(
+        "FACTS THE BROADCAST WAS GIVEN BEFORE KICKOFF"
+    )
+    assert call.blocks[0].get("cache_control") == {"type": "ephemeral"}
+
+
+async def test_no_pack_no_facts_block(rows: list[dict[str, Any]]) -> None:
+    backend = scripted()
+    await register.judge_register(measure(rows), backend, name="t.jsonl")
+    call = backend.calls_tagged("judge_register")[0]
+    assert "FACTS THE BROADCAST WAS GIVEN BEFORE KICKOFF" not in call.text
+
+
+async def test_a_shared_tallies_advances_the_note_shown_to_the_judge(
+    rows: list[dict[str, Any]],
+) -> None:
+    """Cheap tallies, when the caller has them, read the way the match ended."""
+    backend = scripted()
+    tallies = Tallies()
+    tallies.credit_goal("Lionel Messi", 4.0)
+    await register.judge_register(
+        measure(rows), backend, name="t.jsonl", pack=a_pack(), tallies=tallies
+    )
+    call = backend.calls_tagged("judge_register")[0]
+    assert "Lionel Messi: six goals in this tournament (stat)" in call.text
+    # No tallies given: the raw, researched note plus the caveat.
+    backend2 = scripted()
+    await register.judge_register(measure(rows), backend2, name="t.jsonl", pack=a_pack())
+    call2 = backend2.calls_tagged("judge_register")[0]
+    assert "Lionel Messi: five goals in this tournament (stat)" in call2.text
+    assert "running count" in call2.text.lower()
 
 
 async def test_a_score_out_of_range_is_clamped_not_raised(rows: list[dict[str, Any]]) -> None:

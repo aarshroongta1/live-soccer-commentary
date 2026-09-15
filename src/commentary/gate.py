@@ -1074,6 +1074,58 @@ def _claims_goal(line: CallerLine) -> bool:
     return any(pattern.search(line.line) for pattern in _GOAL_CLAIMS)
 
 
+#: Goal words in the past tense that history, not the live board, might
+#: explain. Deliberately narrow: present tense ("scores") and the phrasings
+#: in ``_GOAL_CLAIMS`` that describe the ball going in right now ("it's in",
+#: "finds the net", "makes it 2") are never on this list, because those are
+#: never about anything but this match.
+_PAST_TENSE_GOAL_WORDS = re.compile(
+    r"\bscored\b|\bhad\s+scored\b|\bnetted\b|\bgot\s+the\s+winner\b", re.IGNORECASE
+)
+
+#: A word that says the past-tense goal above happened somewhere other than
+#: this match: a year, a competition or tournament word (the same list
+#: ``note_claim`` reads for "three in the tournament"), "last season", "for
+#: the club", "career", or "his/her Nth" (the ordinal note-claim pattern,
+#: reused rather than re-derived).
+_ELSEWHERE_WORD = re.compile(
+    rf"\b(?:19|20)\d{{2}}\b"
+    rf"|\b(?:{_NOTE_PERIOD})\b"
+    rf"|\blast\s+season\b"
+    rf"|\bfor\s+the\s+club\b"
+    rf"|\bcareer\b"
+    rf"|\b(?:his|her)\s+(?:{_ORD_ALT}){_ORD_TAIL}",
+    re.IGNORECASE,
+)
+
+#: "in Russia" — the place half of the same marker, kept apart from
+#: ``_ELSEWHERE_WORD`` because it has to stay case-sensitive: a capitalised
+#: word after "in" is what makes it a place and not a preposition, and
+#: folding the case away would lose exactly that.
+_ELSEWHERE_PLACE = re.compile(r"\bin\s+[A-Z][a-zA-Z]+\b")
+
+
+def _is_historical_goal_reference(
+    text: str, pack: KnowledgePack | None, notes: Sequence[Note] | None
+) -> bool:
+    """A past-tense goal word about some other match, not a claim about this one.
+
+    "The man who scored in Russia." matches ``_GOAL_CLAIMS`` on the same word
+    "Mbappé scored" does, and the two need opposite verdicts: the second is
+    happening now and needs the board's say-so, the first is a career fact a
+    board could never confirm in the first place. Tense alone is not enough
+    — "he's scored before tonight" says nothing about when — so this asks for
+    either a marker that places the goal elsewhere, or a pack note the line is
+    simply restating, checked the same way ``note_claim`` checks it.
+    """
+    if not _PAST_TENSE_GOAL_WORDS.search(text):
+        return False
+    if _ELSEWHERE_WORD.search(text) or _ELSEWHERE_PLACE.search(text):
+        return True
+    names = _name_words(pack)
+    return any(_note_covers(text, note, names) for note in _notes_in_play(text, pack, notes))
+
+
 def _tidy(text: str) -> str:
     """Repair a line that has had a name cut out of the middle of it."""
     out = re.sub(rf"\b(?:{_DANGLERS})\s+(?=(?:[,.;!?]|and\b|as\b|but\b|who\b|then\b|$))", "", text)
@@ -1237,6 +1289,10 @@ class FactGate:
             self.cfg.require_board_for_goal
             and _claims_goal(line)
             and not (board_changed or wire_confirmed)
+            and not (
+                line.event is not Event.GOAL
+                and _is_historical_goal_reference(text, pack, notes)
+            )
         ):
             fatal.append("unconfirmed_goal: no board change, no wire")
         if fatal:
