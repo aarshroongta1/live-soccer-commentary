@@ -58,6 +58,7 @@ from commentary.agents.colour import (
     says_only_a_name,
     says_the_scores_are_level,
     spelled_out,
+    unsourced_names,
     verdict_intensifier,
 )
 from commentary.config import CallerConfig, ColourConfig, PredictorConfig
@@ -598,7 +599,7 @@ async def test_the_offline_pass_refuses_the_second_line_of_a_turn_that_repeats_t
 
     backend = speaking(
         a_turn(
-            "Well, Molina has been here before.",
+            "Well, Messi has been here before.",
             "Yeah, Messi has been here before.",
         )
     )
@@ -618,7 +619,8 @@ async def test_the_offline_pass_refuses_the_second_line_of_a_turn_that_repeats_t
         for row in out.rows
         if row.get("topic") == "beat" and row.get("voice") == "analyst"
     ]
-    assert "Yeah, Messi has been here before." not in spoken
+    assert spoken.count("Yeah, Messi has been here before.") == 0
+    assert "Well, Messi has been here before." in spoken, "the first one is fine"
 
 
 @pytest.mark.asyncio
@@ -1182,7 +1184,7 @@ def test_a_count_is_not_a_licence_to_say_what_is_happening_now(text: str) -> Non
 @pytest.mark.parametrize(
     "text",
     [
-        "Another throw-in given away down that left side, Hernández again.",
+        "Another throw-in given away down that left side, Otamendi again.",
         "Yeah, France down that flank again.",
     ],
 )
@@ -1482,3 +1484,94 @@ def test_the_contraction_folding_is_for_matching_only() -> None:
     """Nothing expanded ever reaches air: a good contraction still passes."""
     assert says_nothing("He's the man here.") == ""
     assert spelled_out("That's it.") == "that is it.", "case is not kept; nothing here airs"
+
+
+# -- 12. round seven: a name reached for, a standing aired, a hole in a line -
+
+
+def test_a_name_nothing_put_in_front_of_the_seat_is_refused() -> None:
+    """ "Mbappé took Tagliafico to the cleaners down that left side" at 191.4 s.
+
+    The note says he "takes the full-back on down the left" and does not say
+    which full-back. Tagliafico is a real Argentina defender, the gate's
+    roster check passed him, and nothing the seat had been given named him.
+    A team sheet says who exists; it does not say who is in this passage.
+    """
+    pack = the_2022_pack()
+    pack.home.starters.append(Player(name="Nicolás Tagliafico", number=3))
+    sources = [
+        "NOTE about Kylian Mbappé: takes the full-back on down the left",
+        "Mbappé away down the left again.",
+    ]
+    verdict = judge_utterance(
+        "Mbappé took Tagliafico to the cleaners down that left side.",
+        MatchState(home="Argentina", away="France"),
+        pack,
+        FactGate(),
+        sources=sources,
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("name_not_in_material:")
+    assert "Tagliafico" in verdict.reasons[0]
+
+
+def test_a_name_the_material_did_give_is_fine() -> None:
+    pack = the_2022_pack()
+    sources = ["NOTE about Kylian Mbappé: takes the full-back on down the left"]
+    verdict = judge_utterance(
+        "Well, Mbappé went at him down that left side again.",
+        MatchState(home="Argentina", away="France"),
+        pack,
+        FactGate(),
+        sources=sources,
+    )
+    assert verdict.passed, verdict.reasons
+
+
+def test_with_no_sources_the_name_check_does_not_run() -> None:
+    """Evidence or nothing, the same way the attribution check works."""
+    assert unsourced_names("Mbappé took Tagliafico on.", (), the_2022_pack()) == ""
+
+
+def test_a_trimmed_utterance_is_refused_rather_than_aired_with_a_hole() -> None:
+    """ "Well, Tagliafico's come from to this summer." went out at 146.1 s
+    with a club name cut out of the middle of it.
+
+    The gate trims a caller's line because a long sentence with one clause
+    gone is still a sentence. A colour utterance is three to twelve words and
+    what is left of one is not.
+    """
+    verdict = judge_utterance(
+        "Well, Otamendi has come from Benfica to this summer.",
+        MatchState(home="Argentina", away="France"),
+        the_2022_pack(),
+        FactGate(),
+    )
+    assert not verdict.passed
+    assert any(reason.startswith("trimmed:") for reason in verdict.reasons)
+    assert verdict.line == "Well, Otamendi has come from Benfica to this summer."
+
+
+def test_a_side_and_a_bare_participle_is_the_same_tactical_claim() -> None:
+    """ "Argentina finding their numbers in midfield early on." passed at
+    108.6 s: the rule wanted an auxiliary and a commentator leaves it out."""
+    pack = the_2022_pack()
+    assert is_filler("Argentina finding their numbers in midfield early on.", pack)
+    assert is_filler("France pushing up on that side now.", pack)
+    assert not is_filler("France down that flank again.", pack), "no participle, and a count"
+
+
+@pytest.mark.parametrize("word", ["wing", "thing", "everything", "morning"])
+def test_the_long_nouns_that_end_in_ing_are_not_participles(word: str) -> None:
+    assert not is_filler(f"France down the {word} again.", the_2022_pack())
+
+
+def test_contact_and_a_challenge_are_events() -> None:
+    """ "Every time you see it, there is contact in the box." was refused for
+    naming no event. A verdict on an incident is often about the contact
+    rather than about the award, which is how the corpus talks over a
+    replay."""
+    pack = the_2022_pack()
+    assert not is_filler("Every time you see it, there is contact in the box.", pack)
+    assert not is_filler("That was a poor challenge and he knew it.", pack)
+    assert not is_filler("It was blocked and nobody appealed.", pack)

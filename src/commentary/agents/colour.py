@@ -896,6 +896,28 @@ def verdict_intensifier(text: str) -> str:
     return words.group(0).strip() if words else ""
 
 
+def unsourced_names(text: str, sources: Sequence[str], pack: KnowledgePack | None) -> str:
+    """The roster name in this line that nothing put in front of the seat.
+
+    A team sheet says who exists; it does not say who is in this passage. The
+    seat said "Mbappé took Tagliafico to the cleaners down that left side" off
+    a note reading "takes the full-back on down the left" — Tagliafico is a
+    real Argentina defender, the gate's roster check passed him, and nothing
+    the seat had been given named him. The full-back might have been Molina.
+
+    So every name has to be in the material, in the EVENT or REPLAY lines, or
+    in one of the lead's recent lines. ``sources`` is those, already
+    assembled; empty means no evidence and the check does not run, the same
+    way the attribution check does not.
+    """
+    if not sources:
+        return ""
+    for name in roster_names(pack):
+        if mentions(text, name) and not any(mentions(source, name) for source in sources):
+            return name
+    return ""
+
+
 def _same_man(one: str, other: str) -> bool:
     """One person under two spellings: the surname, folded.
 
@@ -999,6 +1021,7 @@ def judge_utterance(
     after: str = "",
     lead_said: Sequence[str] = (),
     only_repeated: bool = False,
+    sources: Sequence[str] = (),
 ) -> GateVerdict:
     """One colour utterance, judged exactly as a phrased caller line is.
 
@@ -1136,6 +1159,15 @@ def judge_utterance(
     )
     if wrong:
         return GateVerdict(passed=False, reasons=[wrong], line=text)
+    stranger = unsourced_names(text, sources, pack)
+    if stranger:
+        return GateVerdict(
+            passed=False,
+            reasons=[
+                f"name_not_in_material: nothing you were given named {stranger} in this passage"
+            ],
+            line=text,
+        )
     # The verdict's "every time" is taken out of what the gate is shown and
     # put back into what goes to air. See :func:`verdict_intensifier` for why
     # that loosens no real count check, and note the two guards here: the
@@ -1160,6 +1192,18 @@ def judge_utterance(
     )
     if intensifier and verdict.passed and verdict.line.strip() == probe.strip():
         verdict.line = text
+    # A trimmed colour utterance is refused, never aired with a hole in it.
+    # The gate trims a caller's line because a long sentence with one clause
+    # cut out of it is still a sentence; a colour utterance is three to
+    # twelve words and what comes back is not one. "Well, Tagliafico's come
+    # from to this summer" went to air on ``runs/rephrased/r6/mbappe`` with a
+    # club name taken out of the middle of it.
+    if verdict.passed and verdict.line.strip() != text.strip():
+        return GateVerdict(
+            passed=False,
+            reasons=[*verdict.reasons, f'trimmed: what was left was "{verdict.line.strip()}"'],
+            line=text,
+        )
     return verdict
 
 
@@ -1282,6 +1326,18 @@ _PRESENT_TACTICAL = re.compile(
     r"\b(?:keep|keeps|are|is|were|was|been)\s+(?:\w+\s+){0,2}?\w+ing\b", re.IGNORECASE
 )
 
+#: And the same sentence with the auxiliary left out, which is how a
+#: commentator writes it and how it got past the rule above: "Argentina
+#: finding their numbers in midfield early on." Seven letters at least,
+#: because "wing" and "thing" end in the same three and "France down the wing
+#: again" is an observation; the handful of long nouns that end in them are
+#: named.
+_A_PARTICIPLE = re.compile(
+    r"\b(?!everything|anything|nothing|something|morning|evening|meaning|feeling|warning)"
+    r"\w{4,}ing\b",
+    re.IGNORECASE,
+)
+
 #: The words that say a count out loud. An utterance built on nothing but a
 #: REPEATED line has to carry one: the count is the only reason the line is
 #: allowed, and "again" is the only part of it that reaches air, since
@@ -1348,6 +1404,19 @@ EVENT_WORDS = frozenset(
         "post",
         "bar",
         "net",
+        # Added after "Every time you see it, there is contact in the box."
+        # was refused for naming no event. A verdict on an incident is often
+        # about the contact rather than about the award, which is how the
+        # corpus's second voice talks over a replay: "every time you look at
+        # it, it looks less and less like there was enough contact".
+        "contact",
+        "challenge",
+        "challenges",
+        "tackle",
+        "tackles",
+        "handball",
+        "block",
+        "blocked",
     }
 )
 
@@ -1913,6 +1982,11 @@ def is_filler(text: str, pack: KnowledgePack | None, *, after: str = "") -> bool
     if _PRESENT_TACTICAL.search(text):
         return True
     named_side = any(mentions(text, word) for word in team_words(pack))
+    # A side and a bare participle is the same sentence with the auxiliary
+    # left out, and it is how the seat actually writes it: "Argentina finding
+    # their numbers in midfield early on."
+    if named_side and _A_PARTICIPLE.search(text):
+        return True
     if named_side and words & SAID_AGAIN:
         return False
     return not (after and one_subject(after, pack) and bool(_CARRIES_ON.search(text)))
@@ -2380,6 +2454,20 @@ class ColourSeat:
             return Material(last_event=f"the goal, {scorer} — he called it: {called}", about=scorer)
         return Material()
 
+    def goal_scorer(self, now: float) -> tuple[str, float]:
+        """Who scored the goal that has just been called, and when it was called.
+
+        The seat's own reading of the scorer, made public so that a pass
+        which has no goal-follow-up to tell it can credit the tallies off the
+        same answer the goal reaction is built from. Empty when there is no
+        fresh goal or nobody legible on it.
+        """
+        big = self._last_big
+        if big is None or big[0] is not Event.GOAL:
+            return "", 0.0
+        scorer, _ = self._the_goal(now)
+        return scorer, big[1]
+
     def _the_goal(self, now: float) -> tuple[str, str]:
         """Who scored the goal that has just been called, and how it was called.
 
@@ -2814,6 +2902,23 @@ async def colour_pass(
         if state is not None:
             threads_local.see_state(state)
             ledger_local.see_state(state)
+        # Credit the scorer here, because nothing else in this pass will.
+        # Live, :class:`~commentary.goalfollow.GoalFollowup` names him and
+        # credits the tallies the seat shares with the lead; offline there is
+        # no follow-up, and the board's own incident carries ``player=None``
+        # — a scoreboard cannot see who scored — so ``Tallies.see_state``
+        # credits nobody and every note stayed as researched. It aired "Yeah,
+        # Mbappé level at the top of the scoring charts now" fifteen seconds
+        # after he had gone one clear of them.
+        #
+        # Stamped with the goal's own instant rather than with ``now`` so
+        # that crediting it on every tick of the freshness window is one
+        # goal: ``Tallies`` deduplicates inside eight seconds of an existing
+        # credit, and ``now`` would walk out of that window and count it
+        # twice.
+        scorer, called_at = seat.goal_scorer(now)
+        if scorer:
+            threads_local.tallies.credit_goal(scorer, called_at)
 
         offer = seat.offer(now)
         room = _room_for(now, beat_ts, cfg) if offer.allowed else 0
@@ -2988,6 +3093,10 @@ def _schedule(
             )
         )
     attributed = seat.attributed(record.ts)
+    # Everything that put a name in front of the seat this turn: the material
+    # block, which already carries the EVENT and REPLAY lines, and the lead's
+    # recent lines. A name in none of them is a name the seat reached for.
+    sources = [*seat.last_material.lines(), *seat.lead_lines[-LEAD_ECHO_LINES:]]
     # The utterance of this turn that has actually gone out, and the one man
     # it named. Both are what a listener has in their head when the next one
     # arrives two and a half seconds later, so both are read off what passed
@@ -3017,6 +3126,7 @@ def _schedule(
             after=spoken,
             lead_said=seat.lead_lines,
             only_repeated=seat.last_material.only_a_count,
+            sources=sources,
         )
         utterance = ColourUtterance(
             ts=at,

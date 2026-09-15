@@ -1392,6 +1392,17 @@ def _penalty_trace() -> list[dict[str, Any]]:
         (8.0, Scene.REPLAY, Event.FOUL, "The replay: the leg in behind him.", ["Otamendi"], False),
         (20.0, Scene.STOPPAGE, Event.PENALTY, "Pointed to the spot.", ["Mbappé"], True),
         (40.0, Scene.LIVE_PLAY, Event.GOAL, "Buried.", ["Mbappé"], True),
+        # The lead names him, which is the only way a note about him becomes
+        # this seat's material — and a stoppage form, so that nothing puts
+        # him on the penalty's own run of looks.
+        (
+            14.0,
+            Scene.STOPPAGE,
+            Event.STOPPAGE,
+            "Upamecano is up the pitch for this.",
+            ["Upamecano"],
+            True,
+        ),
         (70.0, Scene.STOPPAGE, Event.STOPPAGE, "", [], False),
         (76.0, Scene.STOPPAGE, Event.STOPPAGE, "", [], False),
     ]
@@ -1459,14 +1470,16 @@ async def test_the_offline_pass_refuses_the_turn_that_blamed_the_wrong_man() -> 
     )
     out = await colour_pass(_penalty_trace(), backend, pack=a_wider_pack(), settings=_settings())
     assert out.spoke, "the incident is offered a turn at all, which is the other half"
-    assert out.spoke[0].situation == OVER_A_REPLAY
+    assert any(
+        "NOTE about Dayotchanculle Upamecano" in line for line in out.spoke[0].material
+    ), "the note is in front of the seat, which is what makes the second line a join"
     judged = list(out.spoke[0].utterances)
     assert len(judged) == 2, "the turn was offered, called and scheduled"
     assert judged[0].passed, "the note itself is a line and survives"
     assert not judged[1].passed
     assert judged[1].reasons[0].startswith("attribution:")
     assert "Upamecano" in judged[1].reasons[0]
-    assert not any("conceded the penalty" in line.text for line in out.spoken)
+    assert not any(line.passed for line in judged if "conceded the penalty" in line.text)
 
 
 def test_a_fresh_incident_does_not_wait_out_the_build_up_gap() -> None:
