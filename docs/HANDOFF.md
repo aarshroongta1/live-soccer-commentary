@@ -5,8 +5,9 @@ evidence.
 
 **HEAD:** branch `corpus-british` in
 `/Users/Aarsh/Desktop/commentary/.claude/worktrees/corpus`, pushed to origin,
-seventeen commits ahead of `main` and not merged. Everything from 15-16
-September (section 3f) is on it. `.env` at the root. `clips/` and `runs/` are
+thirty-seven commits ahead of `main` and not merged. Everything from 15-16
+September (section 3f) and the evening of 15 September (section 3g) is on
+it. `.env` at the root. `clips/` and `runs/` are
 in the repo and gitignored — the clips are 26 MB each and the traces are
 somebody's API spend; in the worktree they are symlinks to the main
 checkout's, and `.gitignore`'s `clips/` does not match a symlink, so never
@@ -487,26 +488,142 @@ was invalid**: it was handed 39 traces as one passage, a dozen of them the
 same tuned clip, and scored a stuck loop at 1.5. Ignore that number in
 `night1/POOLED.md`.
 
+## 3g. What changed on the evening of 15 September
+
+The instruction: the round-one diagnosis of the closing run found five
+structural faults, and the user took four of them — no names and no handover
+between the seats — and said keep iterating until the text is usable. Two
+Opus implementers ran in parallel with disjoint file ownership (one on the
+lead: caller, gate, phraser, goalfollow, runtime, rephrase; one on the colour
+seat: `agents/colour.py`, `prompts/colour.py` and their tests), and the
+orchestrator measured every commit with `commentary rephrase` over the same
+three traces — `runs/trigger/mbappe`, `runs/e07b-freekick`, `runs/offside` —
+from a scratch copy of HEAD (`git archive`, `clips/` and `runs/` symlinked),
+read every line, and sent the faults back. Twenty commits from `7d76542`,
+committed by file name with `config.py` hunks filtered per agent. The last
+two: `afd26c2` (colour: `name_not_in_material`, the offline pass credits the
+scorer, a trimmed line never airs) and the `invented_opener` commit (phraser:
+a capitalised first word in neither the caller's description, the pack nor
+the lower-case vocabulary of the real examples is re-asked then dropped —
+the Brenner line).
+**About $1.45 of Anthropic spend**: twelve rephrase passes at 5 to 11 cents
+each (`runs/rephrased/r1-replay` through `r7`, each with `listing.txt` and
+`register.txt` beside the trace) and two Opus judge calls at 8 to 9 cents. No
+video run, no voice.
+
+| commit | |
+|---|---|
+| `7d76542` | **Replay mode.** The caller no longer vetoes its own replay forms; the gate's blanket `scene_replay` refusal becomes `replay_of_nothing`, `replay_score`, `replay_as_live`, `replay_goal`; the runtime treats a replay line as the broadcast's own dead ball (preemptable, 5 s cadence, no goal-window arm, no state or ledger movement); the phraser gets a `replay` kind from ten real replay utterances; `rephrase` turns recorded replay forms into lead beats (`replay: true` on the beat row) so the change is measurable offline. The 32-second hole after the penalty incident on the Mbappé trace now carries three replay lines. |
+| `24030dd`, `392b50c`, `af008a5`, `f567fe3`, `d11aee4`, `9de1ed9`, `1a83431` | **The colour seat, seven passes.** A foul, tackle, offside or card is an EVENT; the caller's replay lines ride beside it as REPLAY evidence; a new `over the replay` situation; the seat's first job after an incident is a verdict ("Well, Otamendi's leg was there, and that is a foul for me. / The referee let it go, but contact was made inside the box."). Refusals added: `attribution` (a line credits a man the event's own looks did not name — the Upamecano penalty), `level` (a side simply being level), `meta` (citing "the note"), `pattern_unsaid` (a count said without again/another), `echoes_lead` (four words shared with the lead's last five lines), `name_not_in_material`, a present-tactical filler shape, a cue-plus-name-plus-preposition opener. A continuation may say "he" after a named opener. A note said by either voice rests for `CALLBACK_QUIET_S`; a standing note ("level at the top of the charts") is withdrawn once its subject scores. The cue rotates in code. "One" after a determiner is a pronoun. `mentions()` uses `gate.is_the_same_name`, so "Mac Allister" is MacAllister for both seats. |
+| `99c13cc`, `0d52b1f`, `ae27397` | **Gate: level claims.** "France level from the spot", "France level!" (the two sides' names from the state, per call), "they're level", "back on terms", "parity"; "level at" only with a score after it, "level with" and "are level" stay out. |
+| `c3e6d34`, `50951e8`, `18f25b8`, `450506e`, `41c497c`, `7165dd9`, `2e9d367` | **The lead, seven passes.** One shout per goal: beats two to four may not open on `<Name>!`, whatever their origin (a synthesised beat had `goal_beat=None` and took no rule at all, which is why "Mbappé! Over the keeper!" aired twelve seconds after the goal until `2e9d367`). Beat three is the scorer's tally clause in a whole sentence or is skipped; a counting note whose figure has moved is fresh, not rested. Beat four is the rebuild with its joins, and a replay line inside the window spends it. The goal window keeps every word said about the goal, and the call's detail is a protected phrase: a beat or replay line repeating any of it is re-asked then dropped. A nameless build-up form after a nameless build-up line is a chosen silence computed in code, no model call; a nameless line needs twelve seconds of gap and a detail. A restart with a note or ledger clause gets the long line (12 to 22 words, cap 34); a restart with nothing is silent. A ledger clause said is rested until its count moves. `possessive_swap` in the gate ("Kolo Muani's leg catches Otamendi's challenge" inverted the foul). A trim inside a cited clause takes the clause back to its comma; a hollowed sentence is dropped; every capitalised word the pack writes in a note, clause, storyline or matchup is known to the roster (a club named in a note was being trimmed to "Tagliafico left for in the summer"). No em-dash bolt-ons. The replay marker is stripped from the second and third lines of a sequence; `replay_as_live` fires only on a line that has not said what it is looking at. Trailing "now" stripped once a line on air ended that way. A plural-only phrase ("in numbers") never lands on one man. "Who scored against X" is history, not a goal claim. `runtime._say_colour` passes every colour-side check the offline pass does. |
+
+**What the numbers say.** The Mbappé trace, `register --no-model`, round
+seven (`runs/rephrased/r7/mbappe`) against the closing run of section 3f and
+club football:
+
+| | closing run | round 7 | real |
+|---|---:|---:|---:|
+| median words a line | 6 | 7 | 8 |
+| nine words or more | 26% | 40% | 47% |
+| sixteen words or more | 0% | 4% | 20% |
+| opener repeats the last five | 30% | 8% | 12% |
+| numbers off the scoreline | 15% | 20% | 16% |
+| gaps over four seconds | 68% | 83% | 53% |
+| colour share | 16% | 17% | 31% |
+| gate refusals on the lead | 1 | 0 | — |
+
+**The judge went down, and here is why.** Opus overall: closing run 5.5,
+round four 5.0, round seven **4.0**. One trace and one call is one reading
+(the register measures move ±8 points between identical runs), but the
+judge's three worst lines on round seven are real and they are the next
+work: "Brenner on his line." at 70.5 — the phraser invented a goalkeeper,
+and the gate's position-zero exemption (`40e8040`, nineteen firings zero
+catches) let a capitalised first word through unverified: **the first
+invented name on air in the project**, from the phraser, not the caller;
+"five lines spent on one penalty incident" — the call, the protest and three
+replay lines all describe the same contact, where a broadcast gives it two
+lines and a verdict; and "storyline welded onto an action line" — "Players
+gathering around the referee in the Argentina box, and Argentina are chasing
+a first World Cup since 1986" is the dash bolt-on with a comma instead of a
+dash; the corpus attaches a fact as a relative clause on a named man or gives
+it its own beat at a dead ball. The judge also marks that the penalty award
+itself is never called: the caller has no form for the award (the broadcast
+cut to the huddle), so that is perception, not phrasing.
+
+**What it reads like now**, round seven, both voices, every line
+(`runs/rephrased/r7/mbappe/listing.txt`):
+
+```
+   8.5  LEAD    France through the middle at speed.
+  12.9  LEAD    Otamendi gets across, and the referee waves it away.
+  17.3  LEAD    Protests, and the referee waves him away.
+  25.4  LEAD    [replay] Kolo Muani driven across, Otamendi's leg in behind him.
+  32.9  LEAD    [replay] The contact there, Otamendi leaning in.
+  37.8  LEAD    [replay] You see the contact from Otamendi, the France runner goes down inside the box.
+  44.2  COLOUR  Well, Otamendi's got a body on him there.
+  49.0  LEAD    Players gathering around the referee in the Argentina box, and Argentina are chasing a first World Cup since 1986.
+  59.2  LEAD    Mbappé steps up. Five in the tournament already.
+  63.7  LEAD    On the whistle now.
+  70.5  LEAD    Brenner on his line.                      <- invented; see above
+  78.5  LEAD    Martínez on his line.
+  82.5  LEAD    Mbappé! Buried past Martínez! Two-one to Argentina.
+  86.8  LEAD    And straight to the corner, the whole crowd erupts.
+  90.8  LEAD    Mbappé, six goals in this tournament now.
+  95.0  COLOUR  Yeah, Mbappé equals the top of the charts with that one.
+ 106.9  LEAD    [replay] As we see it again, Mbappé's penalty sent the keeper the wrong way.
+ 110.9  LEAD    Argentina to restart. Mbappé, chasing a second World Cup.
+ 115.3  LEAD    Through midfield.
+ 117.9  COLOUR  Well, Mbappé got the keeper moving and found the space.
+ 124.6  LEAD    Arms up all round the halfway line, and the benches are up too.
+ 128.9  LEAD    Scaloni roaring at his players, arms flung wide.
+ 133.2  LEAD    Upamecano out from the back.
+ 137.3  COLOUR  You know, Upamecano back from that illness tonight.
+ 165.7  LEAD    Messi dispossessed on the touchline.
+ 171.5  LEAD    France arriving in numbers, and Mbappé is the danger.
+ 176.7  LEAD    Mbappé! Off the ground! Two-two.
+ 180.5  LEAD    Straight to the corner, the volley buried.
+ 184.5  LEAD    That's seven goals in this tournament now for Mbappé.
+ 189.3  COLOUR  That is the leveller, and Mbappé has his final.
+```
+
+The free kick (`runs/rephrased/r7/freekick`), whole: "Ronaldo, free kick in
+a dangerous spot." / "Portugal to restart. First free kick of the night for
+them, edge of the box." / "Over the wall and into the top corner!
+Three-three." / "Cristiano Ronaldo, and he wheels away towards the corner
+flag." / "It was a long time over that wall, and De Gea had no answer."
+
 ## 4. Known gaps
 
-Six bullets that stood here on 15 September are closed by section 3f: the
-celebration score, numbers on air, the missing colour seat, the missing
-instrument, the phraser's inability to choose silence, and threads. What
-remains, and what tonight opened:
+The two colour bullets that stood here (a note joined to an event it did not
+cause; the seat empty rather than wrong) are closed by section 3g: the
+attribution and level refusals exist and fire, and the seat speaks over
+replays and stoppages with a verdict. What remains, and what the evening
+opened:
 
-- **The colour seat joins a note to an event it did not cause.** On the
-  closing run it said Upamecano "has just conceded the penalty" (Otamendi did)
-  and "France level from the spot" at 2-1. The material block hands it a note
-  and the last event side by side and it writes a causal sentence across them.
-  Two fixes, neither built: the prompt and a check must forbid attributing an
-  event to a player the event's own form did not name, and the gate's
-  `level_claim` must run on the colour voice (it fired on nothing here).
-  First thing to do on this branch.
-- **The colour seat is empty rather than wrong.** Material is the hard gate
-  and the 2022 pack, even at 64 notes, plus the ledger, gave it three turns in
-  210 s. Share 9-14% against the 31% target. The governor's stretched lead cap
-  is runtime-only and has never run live. The seat has no colleague's name, so
-  the corpus's handover question is impossible.
+- **An invented name at position zero.** "Brenner on his line." The
+  position-zero trade in `40e8040` had its first catch, and it came from the
+  phraser. The last commit of the evening carries the phraser-side check
+  (`invented_opener`), with the exact pair as a test; it has not yet been
+  measured on a fresh rephrase. Run `r7` again before trusting it.
+- **One incident, five lines.** The call, the protest and three replay lines
+  all describe the same contact. A broadcast gives it two and the verdict.
+  Cap the replay sequence at two lines for a foul, and make the replay kind's
+  shapes shorter and more like the corpus's ("Having seen the replay, Suárez
+  played the ball while he was down"); the replay memory (`450506e`) stops
+  repeats but not restatements in new words.
+- **The storyline is welded with a comma now instead of a dash.** "…in the
+  Argentina box, and Argentina are chasing a first World Cup since 1986." The
+  judge and the corpus want it as a relative clause on a named man or as its
+  own sentence at a dead ball. A team note at a stoppage should be its own
+  beat, or nothing.
+- **Colour share 17% against 31%**, limited by material: the seat is right
+  more often than it is present. On the offside clip, where the ledger and the
+  notes had more, it reached a third.
+- **The penalty award is never called.** The caller filed "players gathering"
+  and then "the referee has pointed to the spot"; the phraser compressed the
+  second to "Mbappé steps up". The award wants its own event on the form and
+  a beat that says "Penalty."
 - **The 51 new notes are unchecked.** They reach air only with
   `--trust-unchecked`. One was wrong (Otamendi "oldest outfielder"; Messi is
   older) and is marked down; the assist tallies want the official sheet.
@@ -581,10 +698,16 @@ on disk, cost cents, need no clip and make no sound. Do them before spending
 anything on voice or on a match.
 
 **Text. The standing instruction is no voice until the commentary reads well.**
-Steps 1-6 that stood here are done (section 3f). What is left in text:
+Steps 1-6 that stood here are done (section 3f), and section 3g's evening
+took the structural faults. What is left in text, first:
 
-1. **Merge `corpus-british` into `main`** once the user has read section 3f.
-   Seventeen commits, 1,029 tests, no conflicts expected: `main` has not moved.
+0. **The three lines the judge named on round seven** (section 3g): a fresh
+   rephrase to confirm the invented-opener check, two replay lines per
+   incident, the storyline as its own beat. Each is an hour on Haiku rephrases at a
+   dime a pass, measured with `runs/rephrased/r7` as the baseline.
+1. **Merge `corpus-british` into `main`** once the user has read sections 3f
+   and 3g. Thirty-six commits, about 1,290 tests, no conflicts expected:
+   `main` has not moved.
 2. **Hand-check the 51 unchecked notes** in
    `clips/pack-argfra-2022-researched.json` (`checked: true` on each), then
    drop `--trust-unchecked`. Ten minutes with the hand-check list.
@@ -703,6 +826,20 @@ step 2.
   and `runs` are not ignored. Files by name, always.
 - **One trace is not a measurement.** ±8 points on the length measures between
   identical runs. Pool before concluding.
+- **One judge call is one reading, and the listing is the evidence.** The
+  Opus judge read the closing run at 5.5, round four at 5.0 and round seven
+  at 4.0 while every count in the free layer moved toward the reference. Read
+  its three worst lines, not its number; and read the listing yourself before
+  sending a fault back.
+- **Two agents in one worktree works if the file sets are disjoint and the
+  orchestrator commits by name.** `config.py` was the one shared file; its
+  hunks were filtered per agent with `git apply --cached`. Measure each
+  commit from a scratch copy (`git archive HEAD`, symlink `clips/` and
+  `runs/`, copy `.env`) so an agent's in-flight edit never contaminates a
+  reading.
+- **The phraser can invent a name the gate does not check.** "Brenner on his
+  line." The position-zero trade stands; the check belongs in the phraser's
+  settle, against the caller's own description and the corpus vocabulary.
 
 ## 7. What was removed, and why it stays removed
 

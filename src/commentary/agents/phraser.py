@@ -33,15 +33,19 @@ import re
 from collections import deque
 from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 
 from commentary.agents.caller import clean_line, trim_words
 from commentary.agents.colour import mentions, says_a_number
 from commentary.config import PHRASER_MODEL, DeadBallConfig, PhraserConfig, SilenceConfig
-from commentary.gate import possessive_swap
+from commentary.gate import REPLAY_MARKERS, fold, possessive_swap
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import Block, LLMBackend, LLMError, Parsed, Usage, text_block
+from commentary.prompts.commentary_examples import EXAMPLES
 from commentary.prompts.phraser import (
     BUILD_UP_FORMS,
+    KIND_LABELS,
+    PHRASER_RULES,
     is_long_line,
     phraser_blocks,
     phraser_system,
@@ -694,6 +698,11 @@ def is_a_bare_name(text: str, names: Sequence[str]) -> bool:
     return _known_name(" ".join(words), names) or _known_name(words[-1], names)
 
 
+def _clause_words(notes: Sequence[Note], ledger: Sequence[LedgerFact]) -> list[str]:
+    """The clauses this call was handed, as one list of strings."""
+    return [note.text for note in notes] + [fact.text for fact in ledger]
+
+
 def _known_name(word: str, names: Sequence[str]) -> bool:
     folded = word.casefold()
     for name in names:
@@ -701,6 +710,89 @@ def _known_name(word: str, names: Sequence[str]) -> bool:
         if clean and folded in (clean.casefold(), clean.rsplit(" ", 1)[-1].casefold()):
             return True
     return False
+
+
+@lru_cache(maxsize=1)
+def corpus_vocabulary() -> frozenset[str]:
+    """Every word a real commentator says, out of the examples in the prompt.
+
+    Five hundred utterances off seven broadcasters' own captions, which is
+    the largest list of things-said-out-loud this system has. It is here for
+    one question: is the capitalised word at the front of a line a word, or a
+    name somebody invented? "Tears", "Hands", "Arms", "Restart", "Grimacing"
+    are all in it — the nineteen firings the gate's position-zero trim gave
+    up on — and a surname nobody has ever said is not.
+    """
+    written = [text for texts in EXAMPLES.values() for text in texts]
+    written.append(PHRASER_RULES)
+    written.extend(KIND_LABELS.values())
+    # Lower case only, which is the same test the example builder uses to
+    # tell a real word from a mangled surname: a word that appears in lower
+    # case somewhere is a word. "Griezmann" is quoted in the rules and never
+    # written small, so it stays a name and stays checkable.
+    return frozenset(
+        fold(word)
+        for text in written
+        for word in _WORD.findall(text)
+        if word.islower()
+    )
+
+
+def invented_opener(text: str, described: str, known: Sequence[str]) -> str:
+    """The name at the front of this line that nothing put there, or ``""``.
+
+    The gate does not check the first word of a line and will not: nineteen
+    firings across nine runs caught no invented name and cost about two true
+    lines a run (``40e8040``). That trade holds for the caller, whose line is
+    its own account of what it saw. It does not hold here, because the
+    phraser is rewriting somebody else's account and anything at the front of
+    its line that is not in that account came from nowhere.
+
+    "Brenner on his line." went out on ``runs/rephrased/r7/mbappe`` off a form
+    reading "Mbappé, jaw set, eyes only on the ball. Martínez alone on his
+    line behind him." There is no Brenner on either team sheet, in the pack,
+    or in five hundred utterances of real commentary. It is the first
+    invented name this project has put on air.
+
+    Four ways to be innocent, and a word needs only one: it is not
+    capitalised; the description has it; the roster, the two sides or the
+    clauses in front of the model have it; or it is a word real commentary
+    uses.
+    """
+    said = text.strip()
+    first = next(iter(_WORD.findall(said)), "")
+    if not first or not first[:1].isupper():
+        return ""
+    if first.casefold() in _FIGURES or first.isdigit():
+        # "Sixth corner for France." A number is code's or the clause's, and
+        # the rules that check one are elsewhere; it is not a name.
+        return ""
+    lowered = said.casefold()
+    if any(lowered.startswith(marker) for marker in REPLAY_MARKERS):
+        # "Watch this." is the line saying what it is looking at, and the
+        # phrase is one this file supplies.
+        return ""
+    folded = fold(first)
+    if not folded or folded in corpus_vocabulary():
+        return ""
+    if folded in {fold(word) for word in _WORD.findall(described)}:
+        return ""
+    for name in known:
+        parts = {fold(name)} | {fold(word) for word in _WORD.findall(name)}
+        if folded in parts:
+            return ""
+    return first
+
+
+def _invented_retry_note(word: str) -> str:
+    """Name the word, say where it is not, and ask for the line again."""
+    return (
+        f'"{word}" IS NOT ON THE FORM, NOT ON EITHER TEAM SHEET, AND NOT IN ANYTHING '
+        "you were given. A name at the front of a line goes on air as a fact about a "
+        "football match, and this one would be the first this system has invented.\n"
+        "Write the line again using only the names in front of you, or return an "
+        "empty line."
+    )
 
 
 def nameless_build_up(line: CallerLine, *, on_the_ball: str | None = None) -> bool:
@@ -1300,6 +1392,40 @@ class Phraser:
                     shout_rewritten=shout_rewritten,
                     repeat_retry=repeat_retry,
                     plural_retry=True,
+                )
+
+        # A name at the front that nothing put there. Asked once, then
+        # dropped: there is no trimming a name out of the first word and
+        # leaving a line behind.
+        invented = invented_opener(
+            proposed.line, line.line, [*names, self.home, self.away, *_clause_words(notes, ledger)]
+        )
+        if invented:
+            retry = await self._reask(blocks, _invented_retry_note(invented))
+            if retry is not None:
+                usage = usage + retry.usage
+                proposed = retry.value
+            still = invented_opener(
+                proposed.line,
+                line.line,
+                [*names, self.home, self.away, *_clause_words(notes, ledger)],
+            )
+            if still:
+                self.last_usage = usage
+                self.chose_silence = True
+                self.last_reason = f'invented_opener: "{still}" is on nothing in front of you'
+                return PhrasedLine(
+                    line="",
+                    excitement=0.0,
+                    opener_retry=opener_retry,
+                    closer_retry=closer_retry,
+                    name_retry=name_retry,
+                    swap_retry=swap_retry,
+                    figure_retry=figure_retry,
+                    shout_retry=shout_retry,
+                    shout_rewritten=shout_rewritten,
+                    repeat_retry=repeat_retry,
+                    plural_retry=plural_retry,
                 )
 
         # The jingle, taken off in code. One line ending a clause on "now" is

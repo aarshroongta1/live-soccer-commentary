@@ -33,6 +33,7 @@ import pytest
 
 from commentary.agents.phraser import (
     Phraser,
+    invented_opener,
     is_a_bare_name,
     is_a_thin_call,
     opening_shout,
@@ -784,7 +785,9 @@ async def test_the_dash_never_reaches_the_speaker() -> None:
     )
     phraser = a_phraser(backend)
 
-    phrased = await phraser.phrase(a_goal_form(), "", on_the_ball="Nahuel Molina")
+    phrased = await phraser.phrase(
+        a_goal_form(), "", on_the_ball="Nahuel Molina", roster=["Nahuel Molina"]
+    )
 
     assert phrased is not None
     assert "—" not in phrased.line
@@ -1085,3 +1088,57 @@ async def test_no_synthesised_beat_opens_on_the_shout() -> None:
     assert "Over the keeper!" in spoken[1:], "the beat went out with the shout taken off"
     for text in spoken[1:]:
         assert not text.startswith("Mbappé!"), text
+
+
+# -- the first invented name on air -----------------------------------------
+
+
+SAW = "Mbappé, jaw set, eyes only on the ball. Martínez alone on his line behind him."
+
+
+def test_a_name_at_the_front_that_nothing_put_there_is_found() -> None:
+    """"Brenner on his line." off a form naming Mbappé and Martínez.
+
+    There is no Brenner on either team sheet, in the pack, or in five hundred
+    utterances of real commentary. The gate does not check the first word of
+    a line and will not; the phraser is rewriting somebody else's account, so
+    here it can.
+    """
+    known = ["Kylian Mbappé", "Emiliano Martínez", "Argentina", "France"]
+
+    assert invented_opener("Brenner on his line.", SAW, known) == "Brenner"
+    assert invented_opener("Martínez alone on his line.", SAW, known) == ""
+    assert invented_opener("Through midfield.", SAW, known) == ""
+    assert invented_opener("Restart for Argentina.", SAW, known) == ""
+    assert invented_opener("Hands on hips.", SAW, known) == ""
+    # And a name quoted in the rules is still a name: "Griezmann" is written
+    # in the prompt and never written small, so it stays checkable.
+    assert invented_opener("Griezmann on his line.", SAW, known) == "Griezmann"
+
+
+@pytest.mark.asyncio
+async def test_an_invented_opener_is_asked_again_and_then_dropped() -> None:
+    backend = saying(PhrasedLine(line="Brenner on his line.", excitement=0.4))
+    phraser = a_phraser(backend)
+    form = a_goal_form().model_copy(update={"event": Event.PENALTY, "line": SAW})
+
+    phrased = await phraser.phrase(form, "", roster=["Kylian Mbappé", "Emiliano Martínez"])
+
+    assert phrased is not None
+    assert phrased.line == ""
+    assert phraser.chose_silence
+    assert phraser.last_reason.startswith('invented_opener: "Brenner"')
+    assert len(backend.calls) == 2, "asked once"
+
+
+@pytest.mark.asyncio
+async def test_a_name_the_eyes_wrote_down_opens_a_line_as_it_always_did() -> None:
+    backend = saying(PhrasedLine(line="Martínez alone on his line.", excitement=0.4))
+    phraser = a_phraser(backend)
+    form = a_goal_form().model_copy(update={"event": Event.PENALTY, "line": SAW})
+
+    phrased = await phraser.phrase(form, "", roster=["Kylian Mbappé", "Emiliano Martínez"])
+
+    assert phrased is not None
+    assert phrased.line == "Martínez alone on his line."
+    assert len(backend.calls) == 1

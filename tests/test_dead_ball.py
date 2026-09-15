@@ -515,7 +515,9 @@ async def test_a_goal_is_shouted_in_repeats_and_the_tail_rule_is_off() -> None:
     phraser = a_phraser(backend)
     phraser.accept("And it is buried!", Event.GOAL, ts=10.0)
 
-    phrased = await phraser.phrase(a_form(event=Event.GOAL), "")
+    phrased = await phraser.phrase(
+        a_form(event=Event.GOAL), "", roster=["Kylian Mbappé"]
+    )
 
     assert phrased is not None
     assert not phrased.closer_retry
