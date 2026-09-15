@@ -51,7 +51,7 @@ from __future__ import annotations
 
 import re
 from collections import deque
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -112,21 +112,48 @@ DEAD_BALL_EVENTS = frozenset(
     }
 )
 
-#: The events whose first twelve seconds belong to the lead. Exactly the four
-#: the brief names: a goal, a shot, a save, a penalty. A card is not here —
-#: the corpus's median delay after a yellow is 17.0 s but 29% of colour
-#: entries land inside six seconds of one, and a card is a stoppage, which is
-#: where this seat is meant to speak.
-HELD_FOR_THE_LEAD = frozenset({Event.GOAL, Event.SHOT, Event.SAVE, Event.PENALTY})
+#: The other things a second voice is entitled to an opinion about. A foul, a
+#: tackle, an offside: nobody has scored, so none of them is a *big* moment,
+#: and every one of them is what section 3.2's booking window is made of —
+#: "It's a really poor challenge from Casemiro", "Well, it could be a yellow
+#: card for the Frenchman", "every time you look at it, it looks less and
+#: less like there was enough contact". The measurement that put them here is
+#: on the Mbappé trace: the penalty was conceded at 12.9 s, the caller filed
+#: four replay forms of the contact between 21.5 s and 37.8 s, and the seat
+#: was never offered a turn over any of them because a foul was not an event
+#: this file had heard of. It first spoke at 135.8 s.
+INCIDENTS = frozenset({Event.FOUL, Event.OFFSIDE, Event.TACKLE})
 
-#: What counts as "the last big event" for the twenty-second clause: the four
-#: above plus the card, which is the study's "foul-with-card".
-BIG_MOMENTS = HELD_FOR_THE_LEAD | {Event.CARD}
+#: The events whose first twelve seconds belong to the lead. The four the
+#: brief names — a goal, a shot, a save, a penalty — and the incidents, whose
+#: numbers in section 4.3 are the strongest case in the table for holding:
+#: after a foul the median delay to the first colour entry is 16.7 s and
+#: **5%** land inside six seconds, the lowest share of any event kind. A card
+#: is the one thing not held: its median is 17.0 s but 29% do land inside six
+#: seconds, and a card is a stoppage, which is where this seat is meant to
+#: speak.
+HELD_FOR_THE_LEAD = frozenset({Event.GOAL, Event.SHOT, Event.SAVE, Event.PENALTY}) | INCIDENTS
 
-#: The four example groups in :mod:`commentary.prompts.colour`, which are
-#: also the four situations the gate can hand back.
+#: The big moments: the four the lead is given his window for, plus the card,
+#: which is the study's "foul-with-card". What the situation split and the
+#: goal reaction read, and unchanged by any of this.
+BIG_MOMENTS = frozenset({Event.GOAL, Event.SHOT, Event.SAVE, Event.PENALTY, Event.CARD})
+
+#: Everything the seat may judge, which is what :meth:`ColourSeat.material`
+#: reads for its EVENT line and what the rate cap counts as an event worth
+#: one turn.
+JUDGED = BIG_MOMENTS | INCIDENTS
+
+#: The example groups in :mod:`commentary.prompts.colour`, which are also the
+#: situations the gate can hand back.
 AFTER_A_GOAL = "after a goal"
 AFTER_A_CHANCE = "after a chance"
+#: An incident and the pictures of it again. Section 4.2 has the colour voice
+#: at 15.4 entries per 100 utterances over a replay, its highest rate of any
+#: phase and seven times its rate in an attacking move, and section 4.4 shows
+#: what it does with them: it gives a verdict on the thing that has just
+#: happened, off the evidence the replay is showing.
+OVER_A_REPLAY = "over the replay"
 AT_A_DEAD_BALL = "at a dead ball"
 IN_BUILD_UP = "in quiet build-up"
 
@@ -142,6 +169,7 @@ SITUATION_WINDOW_S = 60.0
 EXCITEMENT = {
     AFTER_A_GOAL: 0.45,
     AFTER_A_CHANCE: 0.3,
+    OVER_A_REPLAY: 0.25,
     AT_A_DEAD_BALL: 0.2,
     IN_BUILD_UP: 0.15,
 }
@@ -293,7 +321,12 @@ class Moment:
     #: The most recent caller forms, oldest last. Only the last
     #: ``phase_forms`` of them are read.
     forms: tuple[FormAt, ...] = ()
-    #: The last goal, shot, save, penalty or card, and when it was.
+    #: The last event worth an opinion — one of :data:`JUDGED` — and when it
+    #: was. Not only the big ones: a foul, a tackle and an offside are here
+    #: too, because the rate cap's "one turn per event" is what lets the seat
+    #: speak over the replays of an incident without waiting out the
+    #: build-up gap, and an incident nobody has scored off is exactly the
+    #: thing the corpus's second voice gives a verdict on.
     last_big: tuple[Event, float] | None = None
     #: How many lead lines have gone out at all, ever.
     lead_lines: int = 0
@@ -490,10 +523,27 @@ def _goal_reaction(moment: Moment, cfg: ColourConfig) -> Offer | None:
 
 
 def _situation(moment: Moment, recent: Sequence[FormAt]) -> str:
-    """Which of the four example groups this moment belongs to."""
+    """Which of the example groups this moment belongs to.
+
+    :data:`OVER_A_REPLAY` is read off the picture first, before the kind of
+    event is looked at, because the broadcast deciding to show a thing again
+    is the thing the corpus measures: 15.4 colour entries per 100 utterances
+    over a replay against 10.5 at a dead ball (section 4.2). A foul, a card,
+    an offside or a tackle gets the same group without the replay, because
+    what a second voice says about one of those is a verdict either way —
+    section 3.2's booking window is the colour voice arguing about the
+    challenge, whether or not the pictures are up.
+    """
     big = moment.last_big
-    if big is not None and moment.since_big <= SITUATION_WINDOW_S:
-        return AFTER_A_GOAL if big[0] is Event.GOAL else AFTER_A_CHANCE
+    fresh = big is not None and moment.since_big <= SITUATION_WINDOW_S
+    if fresh and any(form.scene is Scene.REPLAY for form in recent):
+        return OVER_A_REPLAY
+    if fresh and big is not None:
+        if big[0] is Event.GOAL:
+            return AFTER_A_GOAL
+        if big[0] in INCIDENTS or big[0] is Event.CARD:
+            return OVER_A_REPLAY
+        return AFTER_A_CHANCE
     if recent and all(form.quiet for form in recent):
         return AT_A_DEAD_BALL
     return IN_BUILD_UP
@@ -653,6 +703,187 @@ def repeats_itself(text: str, said_before: Sequence[str], n: int = REPEAT_GRAM) 
     return " ".join(sorted(shared)[0])
 
 
+#: Saying the scores are equal. The fact gate has its own six patterns for
+#: this (``gate._LEVEL_CLAIMS``) and the colour seat got past every one of
+#: them: on the Mbappé trace it said "Upamecano back in and France level from
+#: the spot" at 2-1, and a bare predicative — a side *being* level rather
+#: than levelling something — matches none of the gate's six, which all want
+#: either a verb with an object ("levels it", "levelled the scores") or a
+#: fixed phrase ("all square", "level terms", "it's level").
+#:
+#: So this seat checks the word itself, with the three things football calls
+#: level that are not the score carved out: level **with** a man is an
+#: offside, level **at** something is a table or a scoring chart — which is
+#: what one of this pack's own notes about Mbappé says — and a level **ball**
+#: is a pass. Everything else is the scoreboard, and the scoreboard is not
+#: this seat's to read out whether or not it has it right.
+_SCORES_LEVEL = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\blevel(?:s|led|ling)?\b(?!\s+(?:with|at|on|ball|pass|header|cross)\b)",
+        r"\bequali[sz]\w*\b",
+        r"\ball\s+square\b",
+        r"\b(?:back\s+)?on\s+terms\b",
+        r"\bparity\b",
+        r"\bpegged\s+(?:them\s+|it\s+)?back\b",
+    )
+)
+
+
+def says_the_scores_are_level(text: str) -> str:
+    """The words this utterance uses to say the scores are equal, or ``""``.
+
+    A scoreline with both numbers left out is still a scoreline. Section 5.1
+    is the standing reason the colour voice does not give one — numbers are
+    the lead's job and colour-opener lines carry them no more often than any
+    other line — and this is the form of it the arithmetic cannot see.
+    """
+    for pattern in _SCORES_LEVEL:
+        found = pattern.search(text)
+        if found:
+            return found.group(0)
+    return ""
+
+
+#: The event words that name one particular incident, and the caller form
+#: each belongs to. Deliberately not :data:`EVENT_WORDS`, which is a much
+#: looser list answering a different question ("is this line about
+#: anything?"): these are the words that, said of a man, say he did it.
+_EVENT_KINDS: dict[str, Event] = {
+    "goal": Event.GOAL,
+    "equaliser": Event.GOAL,
+    "penalty": Event.PENALTY,
+    "spot-kick": Event.PENALTY,
+    "foul": Event.FOUL,
+    "challenge": Event.FOUL,
+    "handball": Event.FOUL,
+    "trip": Event.FOUL,
+    "card": Event.CARD,
+    "booking": Event.CARD,
+    "yellow": Event.CARD,
+    "red": Event.CARD,
+    "save": Event.SAVE,
+    "stop": Event.SAVE,
+    "tackle": Event.TACKLE,
+    "block": Event.TACKLE,
+    "offside": Event.OFFSIDE,
+    "shot": Event.SHOT,
+    "strike": Event.SHOT,
+    "header": Event.SHOT,
+    "volley": Event.SHOT,
+    "finish": Event.SHOT,
+    "effort": Event.SHOT,
+    "corner": Event.CORNER,
+    "cross": Event.CROSS,
+}
+
+#: One particular incident, rather than the kind of thing in general. "That
+#: penalty", "the challenge", "his header", "Casemiro's foul" — a determiner
+#: or a possessive, up to two words of opinion, then the event. The
+#: determiner is what separates "he gave that penalty away" from "he has
+#: saved penalties before", which is a note about a career and is true.
+_ONE_EVENT = re.compile(
+    r"(?:\b(?:the|that|this|those|his|her|their|its|a|an)\b|[\w'’-]+['’]s)\s+"
+    r"(?:[\w-]+\s+){0,2}?"
+    r"\b(" + "|".join(sorted(_EVENT_KINDS, key=len, reverse=True)) + r")\b",
+    re.IGNORECASE,
+)
+
+#: A bare third-person subject. The measured fabrication was "Back in and
+#: he's just conceded the penalty" — no name in it at all, and the man it
+#: meant was the one the seat had named in the utterance before.
+_HE = re.compile(r"\b(?:he|him|his|he's|he’s)\b", re.IGNORECASE)
+
+
+def _same_man(one: str, other: str) -> bool:
+    """One person under two spellings: the surname, folded.
+
+    The caller reads a name off whatever the broadcast put on the screen, so
+    the same penalty came back as "Mbappé", "Kylian Mbappé" and "Kylian
+    Mbappe" across three looks. The surname is the part every spelling of a
+    name agrees on, which is why :func:`one_name_each` groups on it too.
+    """
+    return fold(one).rsplit(" ", 1)[-1] == fold(other).rsplit(" ", 1)[-1]
+
+
+@dataclass(frozen=True)
+class Attributed:
+    """Who the caller's forms put on each event, for :func:`misattributes`.
+
+    Evidence, not inference: ``by_kind`` is the names read off that event's
+    own looks and the looks around it, and ``fresh`` is the names read off
+    whatever the broadcast is on now, which is what an event this system has
+    no form for at all is checked against instead.
+
+    Empty means "no evidence", and the check does not run. A seat with no
+    forms has no material either, so there is nothing for it to misattribute.
+    """
+
+    by_kind: Mapping[Event, tuple[str, ...]] = field(default_factory=dict)
+    fresh: tuple[str, ...] = ()
+
+    def __bool__(self) -> bool:
+        return bool(self.by_kind or self.fresh)
+
+    def names_on(self, kind: Event) -> tuple[str, ...]:
+        """Who may be credited or blamed for this kind of event."""
+        return tuple(dict.fromkeys(self.by_kind.get(kind, ()) + self.fresh))
+
+
+def misattributes(
+    text: str,
+    attributed: Attributed,
+    pack: KnowledgePack | None,
+    *,
+    named_before: Sequence[str] = (),
+) -> str:
+    """Does this utterance hang an event on the wrong man? The reason, or ``""``.
+
+    The predicate, in one sentence: **an utterance that names one particular
+    incident — a determiner or a possessive in front of an event word — and
+    names a man, or says "he" having named one earlier in the same turn,
+    credits or blames that man for it, and he has to be somebody the caller's
+    own forms read off that incident.**
+
+    It is here because of two lines this seat really produced on the Mbappé
+    trace. At 145.4 s: "Back in and he's just conceded the penalty", about
+    Upamecano, whose whole material was one note saying he had missed the
+    semi-final ill — Otamendi conceded it, thirty seconds of forms and four
+    replays say so, and none of them says Upamecano. At 168.9 s: "Upamecano
+    back in and France level from the spot." Neither is a claim the fact gate
+    can check: the roster check passes a real player, the note check passes a
+    real note, and what is false is the join between them.
+
+    Two things keep it off the lines it should not touch. A note about a man
+    is not an attribution — "he's back in the side tonight" names no event —
+    and the plural or bare form is a career rather than an incident, so "he
+    has saved penalties before" is not read as a claim about this one.
+
+    Refusing costs a line and passing costs a lie, so where it is unsure it
+    refuses: an event this system holds no form for at all is checked against
+    the names on the pictures now, and a name that is on neither is refused.
+    """
+    if not attributed:
+        return ""
+    kinds = {_EVENT_KINDS[found.lower()] for found in _ONE_EVENT.findall(text)}
+    if not kinds:
+        return ""
+    named = [name for name in roster_names(pack) if mentions(text, name)]
+    if not named and _HE.search(text) and named_before:
+        named = [named_before[0]]
+    if not named:
+        return ""
+    for kind in sorted(kinds, key=lambda event: event.value):
+        allowed = attributed.names_on(kind)
+        for name in named:
+            if not any(_same_man(name, other) for other in allowed):
+                return (
+                    f"attribution: {name} was not the man on that "
+                    f"{kind.value.replace('_', ' ')}"
+                )
+    return ""
+
+
 def judge_utterance(
     text: str,
     state: MatchState,
@@ -662,6 +893,8 @@ def judge_utterance(
     goal_in_state: bool = True,
     at: float | None = None,
     said_before: Sequence[str] = (),
+    attributed: Attributed | None = None,
+    named_before: Sequence[str] = (),
 ) -> GateVerdict:
     """One colour utterance, judged exactly as a phrased caller line is.
 
@@ -684,15 +917,33 @@ def judge_utterance(
     in the prompt because the prompt has asked for it twice and been given
     "I think this is what it comes down to" both times.
 
-    Last :func:`repeats_itself`, against ``said_before`` — the seat's own
+    Then :func:`repeats_itself`, against ``said_before`` — the seat's own
     last :data:`REPEAT_HISTORY` utterances in this match. Same reason, one
     step further on: the prompt is shown what the seat has said and said
     "has been here before" seventeen times in eighty lines anyway.
+
+    And last of the code checks, :func:`misattributes`, against
+    ``attributed`` — who the caller's own forms put on each event — with
+    ``named_before`` carrying the men this turn has already named so that a
+    bare "he" is resolved to the one it means. Both of the fabrications the
+    Mbappé trace produced were joins of two true things, which is the shape
+    of claim neither the roster check nor the note check can see.
     """
     if restates_score(text, {"home_score": state.home_score, "away_score": state.away_score}):
         return GateVerdict(
             passed=False,
             reasons=["scoreline: the colour seat does not read the scoreboard back out"],
+            line=text,
+        )
+    level = says_the_scores_are_level(text)
+    if level:
+        return GateVerdict(
+            passed=False,
+            reasons=[
+                f'level_claim: "{level}" is the scoreline with the figures left out, and '
+                f"the seat does not give the score (state {state.home_score}-"
+                f"{state.away_score})"
+            ],
             line=text,
         )
     if says_a_number(text):
@@ -714,6 +965,14 @@ def judge_utterance(
             reasons=[f'colour_repeat: you have already said "{shared}" this match'],
             line=text,
         )
+    wrong = misattributes(
+        text,
+        attributed if attributed is not None else Attributed(),
+        pack,
+        named_before=named_before,
+    )
+    if wrong:
+        return GateVerdict(passed=False, reasons=[wrong], line=text)
     return gate.judge(
         CallerLine(
             scene=Scene.STOPPAGE,
@@ -840,9 +1099,18 @@ class Material:
         look, the same kind of event, one side down one flank. A team simply
         having the ball for a while is not a pattern.
     ``last_event``
-        The last goal, shot, save, penalty or card, less than
+        The last event in :data:`JUDGED` — a goal, a shot, a save, a
+        penalty, a card, a foul, a tackle, an offside — less than
         :data:`EVENT_FRESH_S` old, **with the player named**. An opinion
         about that is an opinion about something that has finished.
+    ``replays``
+        What the caller wrote while the pictures were being shown again: his
+        replay forms of that same incident, in his words. This is the
+        evidence a verdict is given off — "every time you look at it, it
+        looks less and less like there was enough contact" is a line about a
+        replay and could not be written without one — and while replay forms
+        keep arriving the incident stays fresh, because the broadcast is
+        still on it.
     ``ledger``
         A count this match has produced: one about a player the lead has
         named in his last three lines, or a side count of two or more that
@@ -864,10 +1132,13 @@ class Material:
     last_event: str = ""
     about: str = ""
     ledger: tuple[Fact, ...] = ()
+    replays: tuple[str, ...] = ()
 
     def __bool__(self) -> bool:
         """Is there anything specific enough here to make a turn out of?"""
-        return bool(self.notes or self.patterns or self.last_event or self.ledger)
+        return bool(
+            self.notes or self.patterns or self.last_event or self.ledger or self.replays
+        )
 
     def lines(self) -> list[str]:
         """The material as the model is shown it: labelled, one item a line.
@@ -880,9 +1151,21 @@ class Material:
         a final at nineteen" and get struck out whole — a rule the model had
         been told twice, a foot away from the thing it was reading, and
         exactly the failure a pre-written clause is here to stop.
+
+        The EVENT and its REPLAY lines come first. They are the thing the
+        turn is for whenever there is one — section 4.2 puts the seat's
+        highest rate of the match over a replay — and what is first in the
+        list is what the first utterance is about. They used to come last,
+        and on the Mbappé trace the seat built both of its turns out of one
+        NOTE about a substitute while the penalty it was really about sat at
+        the bottom of the block.
         """
         figure = " (has a figure in it: say the fact, never the figure)"
-        out = [
+        out: list[str] = []
+        if self.last_event:
+            out.append(f"EVENT, finished, speak about it in the past tense: {self.last_event}")
+        out.extend(f"REPLAY, what the pictures showed again: {text}" for text in self.replays)
+        out += [
             f"NOTE about {note.about}: {note.clause}"
             if says_a_number(note.text) and note.clause
             else (
@@ -900,8 +1183,6 @@ class Material:
         # says the figure. A count with no clause is not offered at all, so
         # there is no figure here to leave out.
         out.extend(f"REPEATED: {fact.clause}" for fact in self.ledger if fact.clause)
-        if self.last_event:
-            out.append(f"EVENT, finished, speak about it in the past tense: {self.last_event}")
         return out
 
 
@@ -1146,7 +1427,7 @@ class ColourSeat:
         self._since_turn.append(form)
         if self._owns_ledger:
             self.ledger.saw_form(ts, line)
-        if form.event in BIG_MOMENTS:
+        if form.event in JUDGED:
             # One goal, not five. The caller files the same goal over several
             # looks and then over the replays, and taking each of them as a
             # new big event reset both the rate cap and the once-per-goal
@@ -1155,10 +1436,19 @@ class ColourSeat:
             # a big event of the same kind inside the freshness window is the
             # same event, and it keeps the timestamp of the look the lead
             # actually called it on.
+            #
+            # An incident inside the window of anything is the same incident
+            # too, whatever the caller called it this look. The Mbappé trace
+            # files one piece of contact as foul, foul, foul, tackle, foul,
+            # foul over twenty-five seconds; taking the change of word as a
+            # new event would hand the seat a second turn on the same
+            # challenge and would let a tackle filed five seconds after a
+            # goal take the goal's place as the thing the turn is about.
+            standing = self._last_big
             again = (
-                self._last_big is not None
-                and self._last_big[0] is form.event
-                and ts - self._last_big[1] <= EVENT_FRESH_S
+                standing is not None
+                and ts - standing[1] <= EVENT_FRESH_S
+                and (standing[0] is form.event or form.event in INCIDENTS)
             )
             if not again:
                 self._last_big = (form.event, ts)
@@ -1289,7 +1579,67 @@ class ColourSeat:
             patterns=patterns,
             last_event=self._last_completed(now),
             ledger=tuple(self._counts(now, since, patterns)),
+            replays=tuple(self._replays(now)),
         )
+
+    def _replays(self, now: float) -> list[str]:
+        """What the caller wrote over the pictures being shown again.
+
+        The evidence, in his words, and the reason the seat has anything to
+        judge at all: on the Mbappé trace the referee gave the penalty at
+        12.9 s and the caller then filed four replay forms of the contact
+        between 21.5 s and 37.8 s — "Otamendi's leg in behind him, and down
+        he goes", "the contact from Otamendi as the France runner goes down
+        inside the box" — every one of them unspoken, and none of them
+        reaching this seat. Section 4.2 measures the seat at 15.4 entries
+        per 100 utterances over a replay, its busiest phase of the match,
+        and here it was empty.
+
+        Only forms with words on them, only while they are fresh, and the
+        last ``ColourConfig.replays_shown`` of them: a verdict wants the
+        pictures it is a verdict on, not the whole sequence.
+        """
+        seen = [
+            form.said.strip()
+            for form in self._forms
+            if form.scene is Scene.REPLAY
+            and form.said.strip()
+            and 0.0 <= now - form.ts <= EVENT_FRESH_S
+        ]
+        return seen[-max(1, self.config.replays_shown) :]
+
+    def attributed(self, now: float) -> Attributed:
+        """Who the caller's own forms put on each kind of event.
+
+        The evidence :func:`misattributes` is checked against. Nothing is
+        inferred here: it is the names the caller read off the picture on
+        that event's own looks and on the looks around it, which is the only
+        record this system has of who a thing happened to.
+        """
+        by_kind: dict[Event, tuple[str, ...]] = {}
+        for form in self._forms:
+            if form.event in JUDGED:
+                by_kind[form.event] = ()
+        for kind in by_kind:
+            latest = max(f.ts for f in self._forms if f.event is kind)
+            by_kind[kind] = tuple(one_name_each(self._names_around(latest)))
+        return Attributed(by_kind=by_kind, fresh=tuple(one_name_each(self._names_around(now))))
+
+    def _names_around(self, ts: float) -> list[str]:
+        """Every name the caller read on a judged look within the window of ``ts``.
+
+        Wider than the one event on purpose. A penalty is given for a foul
+        and the foul's looks are the ones that named the man who gave it
+        away, so an opinion that blames him for the penalty is true and the
+        penalty's own form never said his name. Pooling the looks around the
+        incident is what lets "<PLAYER> gave that penalty away" through and
+        still refuses it about a man who was nowhere near it.
+        """
+        found: list[str] = []
+        for form in self._forms:
+            if form.event in JUDGED and abs(form.ts - ts) <= EVENT_FRESH_S:
+                found.extend(name for name in form.names if name)
+        return found
 
     def _counts(self, now: float, since: float, patterns: Sequence[str] = ()) -> list[Fact]:
         """The ledger clauses this seat is allowed to build a turn out of.
@@ -1360,11 +1710,20 @@ class ColourSeat:
         Newest first for the names, because the scorer is whoever the caller
         could read closest to the goal being given; the words are the lead's
         first line about it, which is the one that described the move.
+
+        The run reaches both ways round ``at``, not only backwards. The
+        caller reads a name off whatever the broadcast put on the screen and
+        that is often the look *after* the one the event was called on: the
+        Mbappé penalty was filed at 82.5 s with four unreadable shirts on it
+        and at 86.8 s with "Mbappé" on it, so a run that stopped at ``at``
+        found no scorer and the goal reaction — 4 to 8 s after the call,
+        section 4.3's one sanctioned fragment inside the lead's window —
+        was refused for having nobody to be about.
         """
         names: list[str] = []
         called = ""
         for form in reversed(self._forms):
-            if form.event is not event or form.ts > at or at - form.ts > EVENT_FRESH_S:
+            if form.event is not event or abs(form.ts - at) > EVENT_FRESH_S:
                 continue
             names.extend(name for name in form.names if name and name not in names)
             if form.said:
@@ -1376,15 +1735,21 @@ class ColourSeat:
 
         Not the ball now — the seat cannot see the ball now, and the whole of
         the last pass's worst material was the present tense. A goal, a shot,
-        a save, a penalty, a card: something with a beginning and an end,
-        under :data:`EVENT_FRESH_S` old, with the man it happened to named,
-        and the words the lead used for it so that an opinion has something
-        to be an opinion about. Anything looser was where "I think this is
-        what it comes down to" came from.
+        a save, a penalty, a card, a foul, a tackle, an offside: something
+        with a beginning and an end, under :data:`EVENT_FRESH_S` old, with
+        the man it happened to named, and the words the lead used for it so
+        that an opinion has something to be an opinion about. Anything looser
+        was where "I think this is what it comes down to" came from.
+
+        Freshness is measured off the **last look at the event**, replays
+        included, not off the instant it happened. While the broadcast keeps
+        showing a thing again the thing is still the subject, which is why
+        the Mbappé foul is material at 37.8 s — twenty-five seconds after the
+        contact and half a second after the fourth replay of it.
         """
         latest: FormAt | None = None
         for form in reversed(self._forms):
-            if form.event in BIG_MOMENTS:
+            if form.event in JUDGED:
                 latest = form
                 break
         if latest is None or now - latest.ts > EVENT_FRESH_S:
@@ -1735,7 +2100,14 @@ async def colour_pass(
 
         offer = seat.offer(now)
         room = _room_for(now, beat_ts, cfg) if offer.allowed else 0
-        if offer.allowed and room >= cfg.min_utterances:
+        # The sanctioned reaction after a goal is one fragment, so one hole
+        # in the lead's cadence is all it needs. Asking it for two was why
+        # it never went out: with the run of looks now reaching past the
+        # call, the seat had a scorer at 4.7 s on the Mbappé trace and was
+        # turned away at every tick of the window for want of a second slot
+        # it was never going to use.
+        needed = 1 if offer.reaction else cfg.min_utterances
+        if offer.allowed and room >= needed:
             offer = replace(offer, room=room)
         elif offer.allowed:
             # The phase says yes and the lead has not drawn breath. Checked
@@ -1748,7 +2120,7 @@ async def colour_pass(
             offer = Offer(
                 False,
                 offer.situation,
-                "the lead has not stopped talking long enough for two utterances",
+                f"the lead has not stopped talking long enough for {needed} utterances",
             )
         if offer.allowed:
             moment = seat.moment(now)
@@ -1898,6 +2270,12 @@ def _schedule(
                 reasons=("pushed_out: the lead was still talking and the turn ended",),
             )
         )
+    attributed = seat.attributed(record.ts)
+    # Who this turn has named so far, newest first. A turn is a run and its
+    # second utterance takes its subject from its first: "Well, Upamecano was
+    # the man ruled out for the semi." then "Back in and he's just conceded
+    # the penalty." The second names nobody, and it is the one that lies.
+    named_before: list[str] = []
     for at, text in zip(when, turn.utterances, strict=False):
         verdict = judge_utterance(
             text,
@@ -1910,7 +2288,12 @@ def _schedule(
             # end of it, so a turn that says the same thing twice is caught
             # on its second utterance and not on its next turn.
             said_before=seat.history,
+            attributed=attributed,
+            named_before=named_before,
         )
+        named_before = [
+            name for name in roster_names(pack) if mentions(text, name)
+        ] + named_before
         utterance = ColourUtterance(
             ts=at,
             text=text,

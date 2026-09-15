@@ -325,6 +325,13 @@ class ColourConfig:
     #: lead, and hands back by stopping when the ball moves. Before this many
     #: lead lines exist there is nothing to observe off.
     min_lead_lines: int = 2
+    #: How many of the caller's replay forms the seat is shown as the
+    #: evidence for its verdict. Three, which is the run the broadcast
+    #: actually shows: the Mbappé penalty drew four replay forms in sixteen
+    #: seconds and the last three of them carried the contact. More than
+    #: that and the block is a second description of the passage, which is
+    #: the thing this seat is not for.
+    replays_shown: int = 3
     #: Small. The answer is three short sentences and two short lists.
     max_tokens: int = 700
 

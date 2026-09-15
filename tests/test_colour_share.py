@@ -48,6 +48,7 @@ from commentary.agents.colour import (
     judge_utterance,
     may_speak,
     repeats_itself,
+    says_the_scores_are_level,
 )
 from commentary.config import CallerConfig, ColourConfig, PredictorConfig
 from commentary.gate import FactGate
@@ -447,7 +448,16 @@ ARGFRA_2022_EXEMPT_IN_COLOUR_RULES = {"Messi": 1}
 #: every one of them is a thing a real commentator said about a match this
 #: system will never call. Pinned by count so a rules example cannot arrive
 #: dressed as one.
-COLOUR_EXAMPLE_COUNT = 52
+#:
+#: 52 until the seat was given a verdict to make. The fourteen added are
+#: section 3.2's booking and VAR windows — "It's a ridiculous challenge from
+#: the Real Madrid captain", "It looks worse every time you see it", "every
+#: time you look at it, it looks less and less like there was enough
+#: contact" — which are the only examples in the prompt of the thing the
+#: corpus's second voice does most after an incident, and the thing this
+#: seat did not do at all: it watched four replays of a penalty being
+#: conceded and said nothing about any of them.
+COLOUR_EXAMPLE_COUNT = 66
 
 
 def _surname_counts(text: str, surnames: frozenset[str]) -> dict[str, int]:
@@ -783,3 +793,229 @@ def test_the_register_measures_the_second_voices_share_against_the_corpus() -> N
 
     printed = reg.passage_block(shape, name="t")
     assert "25% of what was said, against 31% in real club football" in printed
+
+
+# -- 7. the two fabrications, and the checks that refuse them ----------------
+#
+# Both came out of one turn on
+# ``runs/rephrased/mbappe-final2/file-20260913-185228-phrased.jsonl`` and both
+# passed every check this seat had. The seat's whole material was one note
+# about Upamecano — "missed the semi-final ill, back in the side tonight" —
+# and what it wrote was a causal sentence joining that note to a penalty
+# Otamendi conceded, and then a scoreline.
+
+
+def the_penalty() -> ColourSeat:
+    """The seat as it stood at 135 s on that trace: a penalty, taken and scored.
+
+    Otamendi conceded it; Mbappé took it; Upamecano was on the pitch and on
+    nothing else. The names below are the ones the caller really read off the
+    forms, which is the whole of the evidence the attribution check has.
+    """
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=the_2022_pack())
+    seat.saw_lead_line(12.9, "Otamendi gets across inside the box and the man goes down.")
+    seat.saw_lead_line(59.2, "The referee has pointed to the spot.")
+    seat.saw_form(12.9, a_form_line(Event.FOUL, "Otamendi gets across.", ("Otamendi",)))
+    seat.saw_form(37.8, a_form_line(Event.FOUL, "The replay: the contact.", ("Otamendi",)))
+    seat.saw_form(59.2, a_form_line(Event.PENALTY, "Pointed to the spot.", ("Mbappé",)))
+    seat.saw_form(82.5, a_form_line(Event.GOAL, "Steps up and strikes it.", ("Mbappé",)))
+    return seat
+
+
+def the_2022_pack() -> KnowledgePack:
+    return KnowledgePack(
+        home=TeamSheet(
+            name="Argentina",
+            short="ARG",
+            demonym="Argentine",
+            starters=[
+                Player(name="Nicolás Otamendi", number=19),
+                Player(name="Emiliano Martínez", number=23),
+                Player(name="Lionel Messi", number=10),
+            ],
+        ),
+        away=TeamSheet(
+            name="France",
+            short="FRA",
+            demonym="French",
+            starters=[
+                Player(name="Kylian Mbappé", number=10),
+                Player(name="Dayotchanculle Upamecano", number=18),
+                Player(name="Randal Kolo Muani", number=12),
+            ],
+        ),
+    )
+
+
+def a_form_line(event: Event, line: str, names: tuple[str, ...]) -> Any:
+    from commentary.schemas import CallerLine, Side, Sighting
+
+    return CallerLine(
+        scene=Scene.STOPPAGE,
+        event=event,
+        side=Side.HOME,
+        team="Argentina",
+        sightings=[Sighting(name=name) for name in names],
+        confidence=0.9,
+        speak=True,
+        line=line,
+    )
+
+
+def test_the_man_who_did_not_concede_the_penalty_is_refused() -> None:
+    """The measured line, at 145.4 s: "Back in and he's just conceded the penalty."
+
+    It names nobody. "He" is Upamecano, whom the turn's first utterance had
+    just named, and the penalty was Otamendi's — thirty seconds of forms and
+    four replays say so and not one of them says Upamecano. The roster check
+    passes a real player and the note check passes a real note; what is false
+    is the join between them, which is why this is its own check.
+    """
+    seat = the_penalty()
+    verdict = judge_utterance(
+        "Back in and he's just conceded the penalty.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+        attributed=seat.attributed(135.0),
+        named_before=["Dayotchanculle Upamecano"],
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("attribution:")
+    assert "Upamecano" in verdict.reasons[0]
+    assert "penalty" in verdict.reasons[0]
+
+
+def test_the_man_the_forms_did_name_is_not_refused() -> None:
+    """The verdict the seat is there to give, about the man who gave it away."""
+    seat = the_penalty()
+    verdict = judge_utterance(
+        "Well, Otamendi gave that penalty away and he knew it.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+        attributed=seat.attributed(60.0),
+    )
+    assert verdict.passed, verdict.reasons
+
+
+def test_a_note_about_a_man_is_not_an_attribution() -> None:
+    """ "He's back in the side tonight" hangs nothing on anybody."""
+    seat = the_penalty()
+    verdict = judge_utterance(
+        "Well, Upamecano was the man ruled out for the semi.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+        attributed=seat.attributed(135.0),
+    )
+    assert verdict.passed, verdict.reasons
+
+
+def test_a_career_is_not_this_incident() -> None:
+    """The plural is a note about a man, not a claim about the one just given.
+
+    Without this the pack's own notes about Emiliano Martínez — he saved
+    penalty after penalty in two shootouts — would be unsayable.
+    """
+    seat = the_penalty()
+    verdict = judge_utterance(
+        "Yeah, Martínez has saved penalties in shootouts before.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+        attributed=seat.attributed(135.0),
+    )
+    assert verdict.passed, verdict.reasons
+
+
+def test_with_no_forms_behind_it_the_check_does_not_run() -> None:
+    """Evidence or nothing. A seat that has seen no forms has no material
+    either, so there is nothing for it to misattribute."""
+    verdict = judge_utterance(
+        "Well, Upamecano gave that penalty away.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+    )
+    assert verdict.passed, verdict.reasons
+
+
+def test_the_seat_reads_who_was_on_each_event_off_the_forms() -> None:
+    attributed = the_penalty().attributed(90.0)
+    assert "Otamendi" in attributed.names_on(Event.FOUL)
+    assert "Mbappé" in attributed.names_on(Event.GOAL)
+    # The looks around the incident count too: the penalty was given for the
+    # foul, and the foul's looks are the ones that named the man who gave it
+    # away. Upamecano is on none of them.
+    assert "Otamendi" in attributed.names_on(Event.PENALTY)
+    assert "Upamecano" not in attributed.names_on(Event.PENALTY)
+
+
+def test_france_level_from_the_spot_at_two_one_is_refused() -> None:
+    """The measured line, at 168.9 s, with the state it was said at.
+
+    It went out. ``gate._LEVEL_CLAIMS`` has six patterns for a scoreline with
+    the figures left out and every one of them wants a verb with an object
+    ("levels it") or a fixed phrase ("all square", "it's level"); a side
+    simply *being* level matches none of them, so ``_check_level_claim``
+    found nothing to compare against the 2-1 in the state.
+    """
+    verdict = judge_utterance(
+        "Upamecano back in and France level from the spot.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("level_claim:")
+    assert "2-1" in verdict.reasons[0]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Upamecano back in and France level from the spot.",
+        "Well, France are level.",
+        "France back on terms.",
+        "Yeah, France have pegged them back.",
+        "And that levels it.",
+    ],
+)
+def test_the_scoreline_with_the_figures_left_out_is_still_the_scoreline(text: str) -> None:
+    """The wordings that reached air. "All square" and "the equaliser" never
+    did: ``restates_score`` catches both, and they are the two the gate's own
+    patterns were written from."""
+    verdict = judge_utterance(
+        text,
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("level_claim:")
+
+
+def test_a_level_claim_that_is_true_is_refused_as_well() -> None:
+    """The board reader owns the score and section 5.1 says the numbers are
+    the lead's job, so being right about it is not a reason to say it."""
+    verdict = judge_utterance(
+        "Well, France are level.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=2),
+        the_2022_pack(),
+        FactGate(),
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("level_claim:")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Well, Mbappé is level at the top of the scoring charts.",
+        "Yeah, Messi was level with the last man there.",
+    ],
+)
+def test_the_three_things_football_calls_level_that_are_not_the_score(text: str) -> None:
+    """A chart, and an offside. One of them is a note on this very pack."""
+    assert says_the_scores_are_level(text) == ""

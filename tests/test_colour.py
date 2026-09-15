@@ -25,6 +25,7 @@ from commentary.agents.colour import (
     AFTER_A_GOAL,
     AT_A_DEAD_BALL,
     IN_BUILD_UP,
+    OVER_A_REPLAY,
     ColourSeat,
     FormAt,
     Material,
@@ -863,6 +864,198 @@ def test_a_side_described_rather_than_observed_is_filler() -> None:
     assert is_filler("Argentina happy to sit deep and let them have it.", a_pack())
 
 
+# -- the incident and the pictures of it again -------------------------------
+#
+# Every form below is copied off
+# ``runs/rephrased/mbappe-final2/file-20260913-185228-phrased.jsonl``, which
+# is the trace this section exists because of: Otamendi conceded a penalty at
+# 12.9 s, the caller filed five more looks and four replays of the contact
+# between 17.3 s and 37.8 s, and the colour seat was offered nothing over any
+# of them and first spoke at 135.8 s. Section 4.2 has the seat at its busiest
+# over a replay — 15.4 entries per 100 utterances — and it was silent.
+
+
+def the_foul() -> ColourSeat:
+    """The Mbappé trace to 37.8 s: a foul in the box and four replays of it."""
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_pack())
+    seat.saw_lead_line(8.5, "France break through the middle at speed.")
+    seat.saw_lead_line(12.9, "Otamendi gets across inside the box and the man goes down.")
+    seat.saw_form(
+        12.9,
+        a_caller(
+            Event.FOUL,
+            "Otamendi gets across inside the box and the France attacker goes down.",
+            scene=Scene.LIVE_PLAY,
+            names=("Otamendi",),
+        ),
+    )
+    seat.saw_form(
+        17.3,
+        a_caller(
+            Event.FOUL,
+            "Otamendi protests, and the referee is already waving him away.",
+            names=("Otamendi",),
+        ),
+    )
+    seat.saw_form(
+        25.4,
+        a_caller(
+            Event.FOUL,
+            "The replay: Kolo Muani driving across, Otamendi's leg in behind him.",
+            scene=Scene.REPLAY,
+            names=("Kolo Muani",),
+        ),
+    )
+    seat.saw_form(
+        29.1,
+        a_caller(
+            Event.TACKLE,
+            "The replay again: Kolo Muani riding the challenge, Otamendi chasing him.",
+            scene=Scene.REPLAY,
+            names=("Otamendi", "Kolo Muani"),
+        ),
+    )
+    seat.saw_form(
+        37.8,
+        a_caller(
+            Event.FOUL,
+            "The replay shows the contact from Otamendi as the runner goes down.",
+            scene=Scene.REPLAY,
+            names=("Otamendi",),
+        ),
+    )
+    return seat
+
+
+def test_a_foul_is_an_event_the_second_voice_has_a_verdict_on() -> None:
+    """Section 4.3: 37 fouls drew a colour entry inside 60 s, median 16.7 s.
+
+    The material gate is what said no on the real trace — the phase gate had
+    already said yes over every one of the replays — because a foul was not
+    a completed event as far as this file was concerned and there was
+    nothing else in the block.
+    """
+    seat = the_foul()
+    material = seat.material(30.0)
+    assert "foul" in material.last_event
+    assert "Otamendi" in material.last_event
+    assert material.lines(), "a foul and four replays of it is a turn"
+
+
+def test_the_first_twelve_seconds_after_a_foul_belong_to_the_lead_too() -> None:
+    """Section 4.3 again: after a foul only 5% of colour entries land inside
+    six seconds, the lowest share in the table. The seat comes in over the
+    replays, not over the referee's whistle."""
+    seat = the_foul()
+    assert not seat.offer(16.0).allowed
+    assert "belong to the lead" in seat.offer(16.0).reason
+    assert seat.offer(26.0).allowed
+
+
+def test_the_replays_the_caller_wrote_are_the_evidence() -> None:
+    """A verdict on contact needs the pictures the contact was shown on."""
+    lines = the_foul().material(30.0).lines()
+    replays = [line for line in lines if line.startswith("REPLAY")]
+    assert len(replays) == 2
+    assert "Otamendi's leg in behind him" in replays[0]
+
+
+def test_the_verdict_and_its_evidence_come_first_in_the_block() -> None:
+    """What is first in the block is what the first utterance is about."""
+    lines = the_foul().material(30.0).lines()
+    assert lines[0].startswith("EVENT")
+    assert lines[1].startswith("REPLAY")
+
+
+def test_an_incident_still_being_shown_again_is_still_fresh() -> None:
+    """While the broadcast is on it, it is still the subject.
+
+    Twenty-five seconds after the contact the foul would be stale on its own
+    timestamp. It is not stale, because the caller filed a replay of it at
+    37.8 s and freshness is measured off the last look.
+    """
+    seat = the_foul()
+    assert seat.material(50.0).last_event, "a replay at 37.8 s keeps the 12.9 s foul alive"
+    assert seat.material(70.0).last_event == "", "and nothing keeps it alive forever"
+
+
+def test_the_replays_are_capped_at_what_the_config_says() -> None:
+    seat = ColourSeat(
+        ScriptedBackend(), config=ColourConfig(replays_shown=2), pack=a_pack()
+    )
+    seat.saw_lead_line(1.0, "Otamendi in.")
+    for index, ts in enumerate((10.0, 12.0, 14.0, 16.0)):
+        seat.saw_form(
+            ts,
+            a_caller(
+                Event.FOUL, f"The replay, look {index}.", scene=Scene.REPLAY, names=("Otamendi",)
+            ),
+        )
+    assert len(seat.material(18.0).replays) == 2
+
+
+def test_a_replay_sequence_is_its_own_situation() -> None:
+    """Not "after a chance": a chance is a shot and this is an argument."""
+    seat = the_foul()
+    assert seat.offer(26.0).situation == OVER_A_REPLAY
+
+
+def test_a_card_at_a_stoppage_is_the_same_kind_of_moment() -> None:
+    """Section 3.2's booking window is the colour voice arguing about it,
+    with or without the pictures up."""
+    moment = a_moment(
+        30.0,
+        forms=(a_form(26.0, scene=Scene.STOPPAGE, event=Event.CARD),),
+        last_big=(Event.CARD, 25.0),
+    )
+    assert may_speak(moment).situation == OVER_A_REPLAY
+
+
+def test_one_piece_of_contact_is_one_incident_however_it_is_filed() -> None:
+    """The caller called it a foul, then a tackle, then a foul again.
+
+    Three events would be three turns on one challenge, and would reset the
+    rate cap each time.
+    """
+    seat = the_foul()
+    moment = seat.moment(40.0)
+    assert moment.last_big is not None
+    assert moment.last_big[0] is Event.FOUL
+    assert moment.last_big[1] == pytest.approx(12.9), "the look the lead called it on"
+
+
+def test_an_incident_never_takes_a_fresh_goal_s_place() -> None:
+    """A tackle five seconds after a goal is not what the turn is about."""
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_pack())
+    seat.saw_lead_line(1.0, "Mbappé.")
+    seat.saw_form(10.0, a_caller(Event.GOAL, "It's in!", names=("Kylian Mbappé",)))
+    seat.saw_form(15.0, a_caller(Event.TACKLE, "Back to the halfway line."))
+    moment = seat.moment(16.0)
+    assert moment.last_big == (Event.GOAL, 10.0)
+
+
+def test_the_run_of_looks_reaches_past_the_one_the_event_was_called_on() -> None:
+    """The scorer is often only legible on the *next* look.
+
+    On the Mbappé trace the goal form at 82.5 s carried four unreadable
+    shirts and the one at 86.8 s carried "Mbappé", so the goal reaction —
+    section 4.3's one sanctioned fragment inside the lead's window — was
+    refused for having nobody to be about.
+    """
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_pack())
+    seat.saw_lead_line(1.0, "France drive in.")
+    seat.saw_lead_line(2.0, "It's in.")
+    seat.saw_form(10.0, a_caller(Event.GOAL, "Steps up and strikes it.", scene=Scene.LIVE_PLAY))
+    seat.saw_lead_line(12.0, "Buried, and the keeper went the other way.")
+    seat.saw_form(
+        14.0,
+        a_caller(Event.GOAL, "Into the net for the ball.", names=("Kylian Mbappé",)),
+    )
+    offer = seat.offer(15.0)
+    assert offer.reaction and offer.allowed
+    assert seat.material(15.0, reaction=True).about == "Kylian Mbappé"
+
+
 # -- the offline pass --------------------------------------------------------
 
 
@@ -1168,3 +1361,126 @@ async def test_the_runtime_speaks_the_colour_seat_and_skips_the_old_analyst(
     assert beats, "the turn never reached the channel"
     assert all(r["preemptable"] for r in beats)
     assert not [r for r in rows if r.get("topic") == "analyst"], "the old analyst was asked"
+
+
+def _penalty_trace() -> list[dict[str, Any]]:
+    """Otamendi concedes, the pictures come back, Mbappé scores it.
+
+    Trimmed off the 13 September trace of the 2022 final: the forms and the
+    state row the seat read at the moment it wrote the two lines this
+    fixture exists to refuse.
+    """
+    rows: list[dict[str, Any]] = [
+        {
+            "topic": "state",
+            "ts": 0.0,
+            "home": "Argentina",
+            "away": "France",
+            "home_score": 2,
+            "away_score": 1,
+        }
+    ]
+    forms = [
+        (2.0, Scene.LIVE_PLAY, Event.FOUL, "Otamendi gets across in the box.", ["Otamendi"], True),
+        (8.0, Scene.REPLAY, Event.FOUL, "The replay: the leg in behind him.", ["Otamendi"], False),
+        (20.0, Scene.STOPPAGE, Event.PENALTY, "Pointed to the spot.", ["Mbappé"], True),
+        (40.0, Scene.LIVE_PLAY, Event.GOAL, "Buried.", ["Mbappé"], True),
+        (70.0, Scene.STOPPAGE, Event.STOPPAGE, "", [], False),
+        (76.0, Scene.STOPPAGE, Event.STOPPAGE, "", [], False),
+    ]
+    for ts, scene, event, line, names, spoke in forms:
+        rows.append(
+            {
+                "topic": "caller",
+                "ts": ts,
+                "scene": scene.value,
+                "event": event.value,
+                "side": "home",
+                "team": "Argentina",
+                "sightings": [{"name": name} for name in names],
+                "confidence": 0.8,
+                "speak": spoke,
+                "line": line,
+            }
+        )
+        if spoke:
+            rows.append(
+                {
+                    "topic": "beat",
+                    "ts": ts,
+                    "id": f"b{ts}",
+                    "voice": "caller",
+                    "text": line,
+                    "video_ts": ts,
+                    "created_ts": 0.0,
+                    "live_ts": ts + 8.0,
+                    "event": event.value,
+                    "preemptable": event is not Event.GOAL,
+                }
+            )
+    return rows
+
+
+def a_wider_pack() -> KnowledgePack:
+    pack = a_pack()
+    pack.away.starters.append(Player(name="Dayotchanculle Upamecano", number=18))
+    pack.notes.append(
+        Note(
+            about="Dayotchanculle Upamecano",
+            text="missed the semi-final ill, back in the side tonight",
+            kind="storyline",
+        )
+    )
+    return pack
+
+
+@pytest.mark.asyncio
+async def test_the_offline_pass_refuses_the_turn_that_blamed_the_wrong_man() -> None:
+    """The measured turn, put back through the pass it came out of.
+
+    Both utterances went to air on 13 September. The first is the note, said
+    plainly, and it is fine; the second hangs the penalty on the man in the
+    note, and the man in the note was not on the penalty. What this holds is
+    the wiring: the second utterance is judged knowing who the first one
+    named, because the second one says "he" and means him.
+    """
+    backend = speaking(
+        a_turn(
+            "Well, Upamecano was the man ruled out for the semi.",
+            "Back in and he's just conceded the penalty.",
+        )
+    )
+    out = await colour_pass(_penalty_trace(), backend, pack=a_wider_pack(), settings=_settings())
+    assert out.spoke, "the incident is offered a turn at all, which is the other half"
+    assert out.spoke[0].situation == OVER_A_REPLAY
+    judged = list(out.spoke[0].utterances)
+    assert len(judged) == 2, "the turn was offered, called and scheduled"
+    assert judged[0].passed, "the note itself is a line and survives"
+    assert not judged[1].passed
+    assert judged[1].reasons[0].startswith("attribution:")
+    assert "Upamecano" in judged[1].reasons[0]
+    assert not any("conceded the penalty" in line.text for line in out.spoken)
+
+
+def test_a_fresh_incident_does_not_wait_out_the_build_up_gap() -> None:
+    """One turn per incident, and the next incident starts its own.
+
+    The build-up rate is one turn a minute (section 4.2's 5.9 entries per
+    100 utterances). A foul twenty seconds after the last turn is not
+    build-up, and section 4.2 puts the seat at 11.8 entries per 100 at a
+    stoppage — five times its rate in a move — so the gap does not apply.
+    """
+    forms = (
+        a_form(118.0, scene=Scene.STOPPAGE, event=Event.FOUL),
+        a_form(124.0, scene=Scene.REPLAY, event=Event.FOUL),
+    )
+    fresh = a_moment(
+        130.0, forms=forms, last_big=(Event.FOUL, 118.0), last_turn_ts=110.0, turns_since_big=0
+    )
+    assert may_speak(fresh).allowed
+    assert may_speak(fresh).situation == OVER_A_REPLAY
+    # And exactly one: the second look at the same challenge is not a second
+    # turn, which is what stops the seat talking over the whole sequence.
+    spent = replace(fresh, turns_since_big=1)
+    assert not may_speak(spent).allowed
+    assert "one turn per big event" in may_speak(spent).reason
