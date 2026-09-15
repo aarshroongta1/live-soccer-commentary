@@ -41,6 +41,11 @@ class Topic(StrEnum):
     #: with both in it has to be able to say which one spoke.
     COLOUR = "colour"
     GATE = "gate"
+    #: A pack note offered back to the voice after it has already been said
+    #: once, and a note that actually reached air. Two rows, one topic, so
+    #: that a finished trace can be asked the only question that matters
+    #: about a thread: how many facts were picked back up, and how often.
+    THREAD = "thread"
     CORRECTION = "correction"
     TRIGGER = "trigger"
     COST = "cost"

@@ -47,6 +47,7 @@ from commentary.schemas import (
     GateVerdict,
     KnowledgePack,
     MatchState,
+    Note,
     SpeakDecision,
     Trigger,
     Voice,
@@ -100,6 +101,7 @@ class OpenGate(FactGate):
         goal_in_state: bool = False,
         carried: str | None = None,
         at: float | None = None,
+        notes: Sequence[Note] | None = None,
     ) -> GateVerdict:
         return GateVerdict(
             passed=True,

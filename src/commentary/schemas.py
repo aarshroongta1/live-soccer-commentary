@@ -309,6 +309,14 @@ class Player(BaseModel):
 #: a stake, a habit is what this player does every time.
 NoteKind = Literal["stat", "storyline", "habit"]
 
+#: What a note counts, when it counts something this match can change. A
+#: tournament goal tally is true at kickoff and wrong the moment the man
+#: scores; ``docs/research/real-commentary-corpus.md`` section 7 shows every
+#: thread in the corpus restating its number *after* the event, never before.
+#: ``None`` — the default, and what every pack written before this loads as —
+#: means the number in the note is fixed and nothing in the match moves it.
+TallyKind = Literal["goals", "assists", "games_scoring"]
+
 
 class Note(BaseModel):
     """One short, verifiable thing a commentator can drop into a quiet moment.
@@ -341,6 +349,16 @@ class Note(BaseModel):
     text: str = Field(max_length=120, description="One clause, under 14 words")
     kind: NoteKind = "stat"
     source: str = Field(default="", description="Where this came from; never spoken")
+    #: Set when the number in ``text`` is a running count that this match can
+    #: move: goals or assists in a tournament or a season, a run of games
+    #: scored in. :mod:`commentary.tallies` adds what has happened since
+    #: kickoff before the clause reaches the phraser or the gate, so the note
+    #: on disk stays the researched, kickoff-true one and the spoken number is
+    #: the one that is true now.
+    counts: TallyKind | None = Field(
+        default=None,
+        description="What this note counts, when the match can change it",
+    )
 
     def __str__(self) -> str:
         return f"{self.about}: {self.text}"

@@ -47,8 +47,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from commentary.prompts.phraser import GOAL_BEATS, goal_followup_block
-from commentary.schemas import CallerLine, Event, KnowledgePack, Scene, Side, Sighting
+from commentary.schemas import CallerLine, Event, KnowledgePack, Note, Scene, Side, Sighting
 from commentary.state import notes_for
+from commentary.threads import Threads
 
 #: How long the window lasts. Section 2.4 measures the 30 s after the goal,
 #: and the seven utterances are all inside it.
@@ -85,6 +86,12 @@ class GoalFollowup:
     """
 
     window_s: float = FOLLOWUP_S
+    #: The pack's notes with a memory and a running count behind them, when
+    #: the runtime or the rephrase has one. Beat 3 asks it for the scorer's
+    #: clauses rather than looking them up itself, so that a number the goal
+    #: has just changed is the number that goes out, and so that saying it
+    #: here counts against the thread the same way as saying it anywhere else.
+    threads: Threads | None = None
     #: When the goal-calling line went out, or ``None`` if no goal is live.
     armed_at: float | None = None
     #: The side that scored, as the caller filed it. Only used for reporting;
@@ -157,7 +164,9 @@ class GoalFollowup:
             if name and name not in self._names:
                 self._names.append(name)
 
-    def arm(self, ts: float, line: CallerLine, spoken: str) -> None:
+    def arm(
+        self, ts: float, line: CallerLine, spoken: str, pack: KnowledgePack | None = None
+    ) -> None:
         """A goal line has passed the gate. Start the window."""
         self.armed_at = ts
         self.side = line.side
@@ -168,7 +177,7 @@ class GoalFollowup:
         self._names = []
         self._sightings = list(line.sightings)
         self._scene = line.scene
-        self.scorer = _scorer(line, spoken)
+        self.scorer = _scorer(line, spoken, pack)
         self.saw_form(line)
 
     def said(self, ts: float) -> None:
@@ -189,7 +198,7 @@ class GoalFollowup:
         beat = self.beat(ts)
         if beat is None or self.armed_at is None:
             return ""
-        notes = notes_for(pack, [self.scorer]) if self.scorer else []
+        notes = self.scorer_notes(ts, pack)
         return goal_followup_block(
             beat,
             since_s=ts - self.armed_at,
@@ -198,6 +207,23 @@ class GoalFollowup:
             moves=self._moves,
             names=self._names,
         )
+
+    def scorer_notes(self, ts: float, pack: KnowledgePack | None = None) -> list[Note]:
+        """The researched clauses about the man who has just scored.
+
+        One selection function with the quiet moments, not two. Where a
+        :class:`~commentary.threads.Threads` exists it decides, with the goal
+        payoff on: his running count first, already moved by the goal that has
+        just gone in, and a clause said a minute ago allowed back because the
+        number in it is not the number any more. Without one — an older caller
+        of this, or a run with no pack — it falls back to the plain lookup by
+        name, which is what this did before threads existed.
+        """
+        if not self.scorer:
+            return []
+        if self.threads is not None:
+            return [item.note for item in self.threads.offer([self.scorer], ts=ts, payoff=True)]
+        return notes_for(pack, [self.scorer])
 
     def synth_times(self, after: float, until: float | None) -> list[float]:
         """Where to put extra phraser calls because the caller has gone quiet.
@@ -244,17 +270,43 @@ class GoalFollowup:
         )
 
 
-def _scorer(line: CallerLine, spoken: str) -> str | None:
+def _scorer(line: CallerLine, spoken: str, pack: KnowledgePack | None = None) -> str | None:
     """Whose goal it is, as far as the form and the words agree.
 
     The name the spoken line actually used wins, because that is the man the
     listener has just heard about. Failing that, the first name the caller
     could read, which on a goal is almost always the scorer: the broadcast
     cuts to him.
+
+    And failing *that* — which is not hypothetical, because on the Mbappé
+    penalty every sighting on the goal form came back with a shirt number and
+    no name at all, so the goal that was called "Mbappé steps up and strikes
+    it" was credited to nobody — the roster. The line names him even when the
+    picture could not: the first player of the *scoring side* whose name
+    appears in the words that went out. Restricting it to that side is what
+    makes it safe, because the other name in a goal call is the goalkeeper's,
+    and "buried past Martínez" would otherwise credit the man who was beaten.
     """
     said = spoken.lower()
     names = [(s.name or "").strip() for s in line.sightings]
     for name in names:
         if name and name.rsplit(" ", 1)[-1].lower() in said:
             return name
-    return next((name for name in names if name), None)
+    named = next((name for name in names if name), None)
+    if named:
+        return named
+    return _from_the_roster(line, said, pack)
+
+
+def _from_the_roster(line: CallerLine, said: str, pack: KnowledgePack | None) -> str | None:
+    """The first man of the scoring side the spoken line names, if any."""
+    team = pack.team(line.side) if pack is not None else None
+    if team is None:
+        return None
+    found: list[tuple[int, str]] = []
+    for player in team.squad:
+        surname = player.surname.lower()
+        where = said.find(surname)
+        if surname and where >= 0:
+            found.append((where, player.name))
+    return min(found)[1] if found else None

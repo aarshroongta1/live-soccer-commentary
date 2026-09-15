@@ -194,6 +194,7 @@ class Phraser:
         *,
         on_the_ball: str | None = None,
         notes: Sequence[Note] = (),
+        callbacks: Sequence[bool] = (),
         followup: str = "",
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
@@ -211,6 +212,12 @@ class Phraser:
         same notes, so a figure the model adjusts on its way out is a line
         that never reaches the speaker.
 
+        ``callbacks`` marks which of those clauses have already been said
+        once in this match, one flag a note, so the prompt can ask for a new
+        form of an old fact rather than the same words again. It is
+        :class:`commentary.threads.Threads` that knows, and empty is the
+        answer everywhere nothing has been said twice yet.
+
         ``followup`` is the block :class:`commentary.goalfollow.GoalFollowup`
         writes in the thirty seconds after a goal, naming which of the corpus's
         beats is due — the moment again, the scorer's tally, the move rebuilt
@@ -227,6 +234,7 @@ class Phraser:
             away=self.away,
             on_the_ball=on_the_ball,
             notes=notes,
+            callbacks=callbacks,
             last_event=self._recent[-1][1] if self._recent else None,
             followup=followup,
         )

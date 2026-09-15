@@ -39,6 +39,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from difflib import SequenceMatcher
 
@@ -889,23 +890,78 @@ def _note_claims(text: str) -> list[str]:
     return found
 
 
-def _notes_in_play(text: str, pack: KnowledgePack | None) -> list[Note]:
+def _notes_in_play(
+    text: str, pack: KnowledgePack | None, notes: Sequence[Note] | None = None
+) -> list[Note]:
     """The notes about somebody this line actually names.
 
     A statistic attached to nobody is not checkable and is not commentary; a
     line that says "three in the tournament" without saying whose three is
     rejected here, by having no notes to match against.
+
+    ``notes`` stands in for the pack's own list when a running count has been
+    brought up to date; the filtering by name is the same either way.
     """
-    if pack is None or not pack.notes:
+    if pack is None:
+        return []
+    available = list(notes) if notes is not None else pack.notes
+    if not available:
         return []
     joined = f" {' '.join(fold(text).split())} "
-    found: list[Note] = []
-    for note in pack.notes:
-        parts = fold(note.about).split()
-        tails = {" ".join(parts[i:]) for i in range(len(parts))}
-        if any(f" {tail} " in joined for tail in tails):
-            found.append(note)
-    return found
+    return [note for note in available if _names_the_subject(joined, note)]
+
+
+def _names_the_subject(joined: str, note: Note) -> bool:
+    """Does this line say whose note this is?
+
+    ``joined`` is the folded line with a space at each end. Any tail of the
+    subject counts, because a line says "Mbappé" where the pack says "Kylian
+    Mbappé", and "Di María" has to match from either word.
+    """
+    parts = fold(note.about).split()
+    tails = {" ".join(parts[index:]) for index in range(len(parts))}
+    return any(f" {tail} " in joined for tail in tails)
+
+
+def notes_used(text: str, notes: Sequence[Note], pack: KnowledgePack | None) -> list[int]:
+    """Which of these notes this line actually said. Indices, in order.
+
+    The same match ``note_claim`` makes, read the other way round. The gate
+    asks "is there a note behind this claim" and rejects the line if there is
+    not; a thread asks "which note was that" and remembers it was spoken
+    (``docs/research/real-commentary-corpus.md`` section 7: a fact that fires
+    once is not a thread).
+
+    Two ways a note counts as used, and the second is here because a note
+    without a number in it never trips a claim pattern at all. A habit — "takes
+    Argentina's penalties" — is a thread in the corpus exactly as much as a
+    tally is, and it would otherwise be offered again every time.
+    """
+    if not notes:
+        return []
+    names = _name_words(pack)
+    claims = _note_claims(text)
+    said = set(_note_tokens(text, names))
+    joined = f" {' '.join(fold(text).split())} "
+    used: list[int] = []
+    for index, note in enumerate(notes):
+        # Whose note it is has to be in the line. Two men can hold the same
+        # figure — Messi and Mbappé both went into that final on five — and
+        # without this a line about one of them marks the other's thread said
+        # and takes it off offer for five minutes.
+        if not _names_the_subject(joined, note):
+            continue
+        if any(_note_covers(claim, note, names) for claim in claims):
+            used.append(index)
+            continue
+        wanted = _note_tokens(note.text, names)
+        # Every content word of the note, in the line. A high bar on purpose:
+        # a thread counted as said when it was not is a thread that never
+        # comes back, and the cost of missing one is only that it stays on
+        # offer for a while longer.
+        if len(wanted) >= 2 and all(token in said for token in wanted):
+            used.append(index)
+    return used
 
 
 #: How long a card stays cover for a line that mentions it. A booking is
@@ -1086,6 +1142,7 @@ class FactGate:
         goal_in_state: bool = False,
         carried: str | None = None,
         at: float | None = None,
+        notes: Sequence[Note] | None = None,
     ) -> GateVerdict:
         """Pass, trim, or reject — and always say why.
 
@@ -1112,6 +1169,14 @@ class FactGate:
         one, but only while it is still the thing that just happened. Left
         out, a card anywhere in the state counts, which is the right default
         for a caller that cannot say when.
+
+        ``notes`` replaces the pack's own notes for the statistic rule, and
+        exists for one reason: a note that counts something is only true as of
+        kickoff. :class:`commentary.tallies.Tallies` adds what has happened
+        since, and the adjusted clauses are what the phraser was shown — so
+        they have to be what the line is checked against, or the gate rejects
+        the model for using the number it was handed. Left out, the pack's own
+        notes are used, which is every caller of this before tallies existed.
         """
         verdict = self._judge(
             line,
@@ -1122,6 +1187,7 @@ class FactGate:
             goal_in_state=goal_in_state,
             carried=carried,
             at=at,
+            notes=notes,
         )
         self.stats.record(verdict)
         return verdict
@@ -1137,6 +1203,7 @@ class FactGate:
         goal_in_state: bool = False,
         carried: str | None = None,
         at: float | None = None,
+        notes: Sequence[Note] | None = None,
     ) -> GateVerdict:
         text = line.line.strip()
         if line.scene is Scene.REPLAY:
@@ -1165,7 +1232,7 @@ class FactGate:
         fatal += self._check_score_claims(text, line, state, pack, goal_incoming=goal_incoming)
         fatal += self._check_level_claim(text, state, goal_incoming=goal_incoming)
         fatal += self._check_card_claim(text, line, state, at=at)
-        fatal += self._check_note_claim(text, pack)
+        fatal += self._check_note_claim(text, pack, notes)
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
@@ -1332,7 +1399,9 @@ class FactGate:
             return []
         return [f"card_claim: {said}, and no card in the form or the state"]
 
-    def _check_note_claim(self, text: str, pack: KnowledgePack | None) -> list[str]:
+    def _check_note_claim(
+        self, text: str, pack: KnowledgePack | None, notes: Sequence[Note] | None = None
+    ) -> list[str]:
         """A statistic is a claim, and the pack is the only thing that can back one.
 
         Everything else the gate checks can be checked against something the
@@ -1357,11 +1426,11 @@ class FactGate:
         claims = _note_claims(text)
         if not claims:
             return []
-        notes = _notes_in_play(text, pack)
+        in_play = _notes_in_play(text, pack, notes)
         names = _name_words(pack)
         problems: list[str] = []
         for claim in claims:
-            if any(_note_covers(claim, note, names) for note in notes):
+            if any(_note_covers(claim, note, names) for note in in_play):
                 continue
             problems.append(f"note_claim: {claim} not in the pack")
         return problems

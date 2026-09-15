@@ -71,6 +71,7 @@ from commentary.schemas import (
 )
 from commentary.scoreline import Restatements, settle_numbers
 from commentary.state import MatchStateTracker, parse_clock, period_for_clock
+from commentary.threads import Offered, Threads
 from commentary.tools import MatchTools
 from commentary.trace import RunTrace
 from commentary.voice.speaker import WORDS_PER_SECOND, LogSpeaker, Speaker
@@ -264,7 +265,11 @@ class Runtime:
         #: due, and what the caller has said about the move. Driven from
         #: :meth:`_call` exactly as the offline rephrase drives it, so a beat
         #: that exists in one exists in the other.
-        self.follow = GoalFollowup()
+        #: The pack's notes with a memory and a running count behind them.
+        #: Seeded at kickoff, shared with the goal follow-up so that beat 3
+        #: and a clause dropped into a lull are one selection.
+        self.threads = Threads.from_pack(self.pack)
+        self.follow = GoalFollowup(threads=self.threads)
         #: The score-and-clock line, on the match clock. Off with
         #: ``RESTATEMENT_EVERY_S=0``, which is what a feed with a permanent
         #: score bug wants.
@@ -725,12 +730,18 @@ class Runtime:
             return False
         form = self.follow.synthetic()
         self.stats.followups += 1
+        self.threads.see_state(self.state)
+        offered = (
+            self.threads.offer([self.follow.scorer], ts=cursor, payoff=True)
+            if self.follow.scorer
+            else []
+        )
+        self._publish_threads(cursor, offered, "offered")
         phrased = await self.phraser.phrase(
             form,
             self.state_tracker.summary(cursor),
-            notes=self.state_tracker.pack_notes_for(
-                [self.follow.scorer] if self.follow.scorer else []
-            ),
+            notes=[item.note for item in offered],
+            callbacks=[item.callback for item in offered],
             followup=self.follow.block(cursor, self.pack),
         )
         if phrased is None or not phrased.line.strip():
@@ -765,6 +776,7 @@ class Runtime:
             wire_confirmed=self._wire_confirms_goal(cursor),
             goal_in_state=self._score_counts_the_goal(cursor),
             at=cursor,
+            notes=self.threads.notes(),
         )
         self._publish(Topic.GATE, cursor, verdict, event=Event.GOAL.value, where="followup")
         if not verdict.passed:
@@ -784,6 +796,8 @@ class Runtime:
             )
         )
         self._lead_beats += 1
+        said = self.threads.said(verdict.line, ts=cursor, pack=self.pack)
+        self._publish_threads(cursor, said, "used")
         self.follow.said(cursor)
         self.follow.synthesised += 1
         self.colour.saw_lead_line(cursor, verdict.line)
@@ -952,6 +966,7 @@ class Runtime:
             goal_in_state=self._score_counts_the_goal(cursor),
             carried=self._carried_name(line, cursor),
             at=cursor,
+            notes=self.threads.notes(),
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:
@@ -985,13 +1000,19 @@ class Runtime:
             self.phraser.accept(verdict.line, line.event)
         self._remember_on_the_ball(line, verdict.line, cursor)
         self._mark_spoken(cursor, verdict.line, line.event)
+        self._publish_threads(
+            cursor, self.threads.said(verdict.line, ts=cursor, pack=self.pack), "used"
+        )
         # -- the thirty seconds after a goal -----------------------------
         # A goal line that got through opens the window; any line inside it
         # spends one of its beats. Then, if the caller leaves the kind of
         # silence it left after the Mbappé penalty — 24 seconds, because
         # every picture in between was a replay — the gap is filled.
         if event is Event.GOAL and self.follow.is_the_call(cursor):
-            self.follow.arm(cursor, line, verdict.line)
+            self.follow.arm(cursor, line, verdict.line, self.pack)
+            # Whose goal it was is the one thing the board never knows, and
+            # every running count about him is wrong from this second on.
+            self.threads.credit_goal(self.follow.scorer, cursor)
         elif self.follow.active(cursor):
             self.follow.said(cursor)
         if self.follow.active(cursor) and self._goal_turn is None:
@@ -1030,11 +1051,22 @@ class Runtime:
             # so the scorer's clauses go to the front and the cap falls off
             # the far end.
             names = [self.follow.scorer] + names
+        # The man on the ball, then the teams, the way the tracker ordered
+        # them — and then the threads decide which of the clauses about those
+        # people is worth saying now. ``docs/research/real-commentary-corpus.md``
+        # section 7: a callback beats a fresh fact.
+        ball = self.state.ball
+        wanted = ([ball.player] if ball is not None else []) + names
+        wanted += [self.state.home, self.state.away]
+        self.threads.see_state(self.state)
+        offered = self.threads.offer(wanted, ts=cursor, payoff=bool(followup))
+        self._publish_threads(cursor, offered, "offered")
         phrased = await self.phraser.phrase(
             line,
             self.state_tracker.summary(cursor),
             on_the_ball=carried,
-            notes=self.state_tracker.pack_notes_for(names),
+            notes=[item.note for item in offered],
+            callbacks=[item.callback for item in offered],
             followup=followup,
         )
         if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:
@@ -1083,6 +1115,28 @@ class Runtime:
             score_stripped=list(settled.stripped),
         )
         return line.model_copy(update={"line": settled.line}), phrased.excitement
+
+    def _publish_threads(self, cursor: float, offered: list[Offered], action: str) -> None:
+        """Put a callback on the bus, offered or spoken, so it can be counted.
+
+        Only callbacks are worth a row on the offer side — an unused note is
+        the ordinary case and there are three of them on every call — but every
+        note that reaches air gets one, because "how many facts were said more
+        than once" is the whole measurement section 7 asks for.
+        """
+        for item in offered:
+            if action == "offered" and not item.callback:
+                continue
+            self._publish(
+                Topic.THREAD,
+                cursor,
+                action=action,
+                thread=item.index,
+                subject=item.subject,
+                note=item.note.text,
+                times_said=item.times_said,
+                callback=item.callback,
+            )
 
     @staticmethod
     def _named_by(line: CallerLine, carried: str | None) -> list[str]:

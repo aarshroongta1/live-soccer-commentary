@@ -609,6 +609,7 @@ def phraser_blocks(
     away: str,
     on_the_ball: str | None = None,
     notes: Sequence[Note] = (),
+    callbacks: Sequence[bool] = (),
     last_event: Event | None = None,
     followup: str = "",
 ) -> list[Block]:
@@ -620,7 +621,10 @@ def phraser_blocks(
     the form, the state, and — in a lull — the notes about the people on it.
 
     ``notes`` are already filtered to the moment by the caller; whether they
-    are shown at all is decided here, by the event.
+    are shown at all is decided here, by the event. ``callbacks`` runs
+    alongside them, one flag a note, saying which have already been said once
+    in this match — see :mod:`commentary.threads`. Empty means none have, which
+    is what every caller of this said before threads existed.
     """
     return [
         text_block(
@@ -632,6 +636,7 @@ def phraser_blocks(
                 away,
                 on_the_ball,
                 notes,
+                callbacks,
                 last_event,
                 followup,
             )
@@ -645,11 +650,20 @@ def phraser_blocks(
 #: block for it. Beats 2 to 4 are the follow-up, and each is one short line of
 #: its own two to five seconds after the last, not a clause of a long one.
 GOAL_BEATS: dict[int, str] = {
-    2: """BEAT 2 — THE MOMENT AGAIN, NOW. Two to five words. The name again, the
-celebration, where he has run, what the bench or the crowd is doing. The
-corpus stacks fragments here with no gap between them: "OH MY! OH MY!",
-"LISTEN TO THE NOISE.", "HE'S DONE IT!", "Griezmann celebrates.", "And
-another standing ovation." This is the one place repetition is right.
+    2: """BEAT 2 — THE MOMENT AGAIN, NOW. Eight to fourteen words, and not one
+sentence: two or three fragments stacked with no gap between them, which is
+how the corpus shouts. The name again, the celebration, where he has run, what
+the bench or the crowd is doing.
+
+Verbatim, and each of these is one beat, not one line:
+
+  LISTEN TO THE NOISE. THAT'S THE SOUND OF PREMIER LEAGUE HISTORY BEING MADE.
+  OH! HE'S DONE IT! IT'S HEARTBREAK FOR REAL MADRID, BUT IT'S JUBILATION FOR BARCA.
+  Quick thinking by ter Stegen, and Griezmann celebrates.
+  And another standing ovation. It's exhibition stuff.
+
+Thirteen words, fourteen, eight, seven. One fragment on its own is this beat
+written short: the shout carries on. This is the one place repetition is right.
 
 No number of any kind on this beat. The score went out on the call.""",
     3: """BEAT 3 — ONE NUMBER ABOUT THE SCORER. This is the beat the corpus fills
@@ -658,9 +672,14 @@ this La Liga campaign.", "Griezmann gets his fifth goal of the season.", "11
 CONSECUTIVE GOALS IN PREMIER League games.", "His first ever goal for the
 club."
 
-A whole line, eight to sixteen words. Every one of those examples is a
-sentence with a subject and a verb, not a figure on its own, and this is a
-moment the gaps are open: the long line belongs here.
+A whole line, eight to fourteen words. Those four run nine words, eight, six
+and seven, and the corpus goes longer still — "A quick ball out by ter Stegen
+and Griezmann gets his fifth goal of the season" is sixteen. Every one of them
+is a sentence with a subject and a verb, not a figure on its own, and this is
+a moment the gaps are open: the long line belongs here.
+
+"Six in the tournament now" is this beat written short. Say who, and say what
+he has done, and the length comes with it.
 
 Take the number from the researched clauses below, reworded but never
 renumbered. That is the whole of what this beat may contain, and it is
@@ -680,8 +699,15 @@ the first two of those examples are seventeen and fourteen. It is the one
 place a second clause is not padding, because there are two things to say —
 what made it and what finished it.
 
-Past tense throughout: it has happened. Use the move and the names below and
-nothing else. No score, no tally, no number.""",
+Past tense from the first word, not from the second clause. This is the one
+thing this beat gets wrong: it opens in the present, as though the move were
+still running, and corrects itself halfway through.
+
+  written wrong:  France drive into the box. Mbappé off the ground, the volley buried.
+  written right:  France drove into the box. Mbappé came off the ground and buried the volley.
+
+Same move, same names, same length. The difference is the first verb. Use the
+move and the names below and nothing else. No score, no tally, no number.""",
 }
 
 
@@ -780,6 +806,7 @@ def _body(
     away: str,
     on_the_ball: str | None,
     notes: Sequence[Note] = (),
+    callbacks: Sequence[bool] = (),
     last_event: Event | None = None,
     followup: str = "",
 ) -> str:
@@ -795,7 +822,7 @@ def _body(
         f"{state}\n\n"
         "WHAT THE EYES SAW — the form, filled in by whoever is watching\n"
         f"{_form(line, home, away, on_the_ball)}\n\n"
-        f"{_context(line, notes)}\n\n"
+        f"{_context(line, notes, callbacks)}\n\n"
         f"{after}"
         f"{_silence_nudge(line, last_event)}"
         "THE LAST LINES SPOKEN, oldest first, with the kind of moment each was\n"
@@ -826,13 +853,23 @@ def _state_heading(line: CallerLine) -> str:
     )
 
 
-def _context(line: CallerLine, notes: Sequence[Note]) -> str:
+def _context(
+    line: CallerLine, notes: Sequence[Note], callbacks: Sequence[bool] = ()
+) -> str:
     """The `context:` block: researched clauses, or an explicit nothing.
 
     Always printed, even when empty, and that is deliberate. A block that
     appears and disappears teaches a model that its absence means "use your
     own knowledge"; a block that is always there and sometimes says none
     teaches it that none means none.
+
+    A clause marked *said before* is a callback, and the corpus is emphatic
+    about what a callback is: the same number in a new form. Vardy's record
+    goes out as "11 consecutive games", then "the record scorer", then "he
+    scored in 11 consecutive games now", then "the 11th consecutive Premier
+    League game" (study section 7.1). Four sayings, four shapes, one figure.
+    So the mark is on the row and the rule is under it, because a callback
+    repeated word for word is not a thread, it is a loop.
     """
     if not notes or not notes_allowed(line):
         reason = (
@@ -841,14 +878,26 @@ def _context(line: CallerLine, notes: Sequence[Note]) -> str:
             else "nothing researched about anybody on this form"
         )
         return f"context:\n  (none — {reason})"
-    rows = [f"  - {note.about}: {note.text.strip()}  [{note.kind}]" for note in notes]
-    return "\n".join(
-        [
-            "context: verified notes. Your line MAY carry ONE of these clauses,",
-            "reworded but not renumbered, about somebody the line names. Or none.",
-            *rows,
+    flags = list(callbacks) + [False] * (len(notes) - len(callbacks))
+    rows = [
+        f"  - {note.about}: {note.text.strip()}  [{note.kind}]"
+        + ("  [SAID BEFORE]" if said else "")
+        for note, said in zip(notes, flags, strict=False)
+    ]
+    block = [
+        "context: verified notes. Your line MAY carry ONE of these clauses,",
+        "reworded but not renumbered, about somebody the line names. Or none.",
+        *rows,
+    ]
+    if any(flags):
+        block += [
+            "",
+            "A clause marked [SAID BEFORE] has already gone out once in this match.",
+            "That is not a reason to avoid it — a fact said twice is what makes a",
+            "story run — but say it in a different shape from the one it has here:",
+            "same number, new words, and shorter than the first time.",
         ]
-    )
+    return "\n".join(block)
 
 
 def _form(line: CallerLine, home: str, away: str, on_the_ball: str | None) -> str:

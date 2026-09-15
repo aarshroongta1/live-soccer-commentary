@@ -81,7 +81,7 @@ from commentary.schemas import (
     Voice,
 )
 from commentary.scoreline import Numbers, Restatements, settle_numbers
-from commentary.state import notes_for
+from commentary.threads import Offered, Threads
 from commentary.trace import read_trace
 
 #: Rows the replay regenerates for itself when a voice is attached. Dropped
@@ -354,8 +354,31 @@ async def rephrase(
     )
     gate = FactGate(settings.gate)
     cover = Cover(states)
-    follow = GoalFollowup()
+    #: The pack's notes with a memory: what has been said, when, and what the
+    #: match has done to any number in them. The follow-up shares it, so beat
+    #: 3 of a goal and a clause dropped into a lull are one selection and one
+    #: tally. ``docs/research/real-commentary-corpus.md`` section 7.
+    threads = Threads.from_pack(pack)
+    follow = GoalFollowup(threads=threads)
     out = Rephrased()
+
+    def thread_rows(at: float, offered: list[Offered], action: str) -> None:
+        """Trace what was picked back up, so that it can be counted."""
+        for item in offered:
+            if not item.callback and action == "offered":
+                continue
+            out.rows.append(
+                {
+                    "topic": Topic.THREAD.value,
+                    "ts": at,
+                    "action": action,
+                    "thread": item.index,
+                    "subject": item.subject,
+                    "note": item.note.text,
+                    "times_said": item.times_said,
+                    "callback": item.callback,
+                }
+            )
 
     #: Every caller form in the trace, spoken or not, oldest first. The
     #: follow-up state is fed all of them: after the Mbappé penalty the caller
@@ -397,11 +420,17 @@ async def rephrase(
         back to.
         """
         feed(at)
+        threads.see_state(state)
         form = follow.synthetic()
+        offered = (
+            threads.offer([follow.scorer], ts=at, payoff=True) if follow.scorer else []
+        )
+        thread_rows(at, offered, "offered")
         phrased = await phraser.phrase(
             form,
             _summary(state),
-            notes=notes_for(pack, [follow.scorer] if follow.scorer else []),
+            notes=[item.note for item in offered],
+            callbacks=[item.callback for item in offered],
             followup=follow.block(at, pack),
         )
         usd = phraser.last_usage.cost_usd
@@ -422,6 +451,7 @@ async def rephrase(
             board_changed=True,
             goal_in_state=cover.goal_in_state(at),
             at=at,
+            notes=threads.notes(),
         )
         out.rows.append(
             {
@@ -470,6 +500,7 @@ async def rephrase(
                 }
             )
             phraser.accept(verdict.line, Event.GOAL)
+            thread_rows(at, threads.said(verdict.line, ts=at, pack=pack), "used")
             follow.said(at)
             follow.synthesised += 1
         out.lines.append(
@@ -512,6 +543,7 @@ async def rephrase(
             continue
 
         state = _state_at(states, ts) or teams
+        threads.see_state(state)
         fell_back = False
         carried = cover.carried(form, ts)
         names = [carried] if carried else []
@@ -523,11 +555,14 @@ async def rephrase(
             # The scorer's clauses go to the front, because beat 3 is a number
             # about him and the cap falls off the end.
             names = [follow.scorer] + names
+        offered = threads.offer(names, ts=ts, payoff=bool(followup))
+        thread_rows(ts, offered, "offered")
         phrased = await phraser.phrase(
             form,
             _summary(state),
             on_the_ball=carried,
-            notes=notes_for(pack, names),
+            notes=[item.note for item in offered],
+            callbacks=[item.callback for item in offered],
             followup=followup,
         )
         usd = phraser.last_usage.cost_usd
@@ -612,6 +647,7 @@ async def rephrase(
                 goal_in_state=cover.goal_in_state(ts),
                 carried=cover.carried(form, ts),
                 at=ts,
+                notes=threads.notes(),
             )
             out.rows.append(
                 {
@@ -670,13 +706,17 @@ async def rephrase(
             continue
         phraser.accept(verdict.line, form.event)
         cover.remember(form, verdict.line, ts)
+        thread_rows(ts, threads.said(verdict.line, ts=ts, pack=pack), "used")
 
         # -- the thirty seconds after a goal -----------------------------
         # A goal line that got through opens the window; a line inside it
         # spends one of its beats. Then, if the caller is about to leave a
         # gap longer than any gap in the corpus, the gap is filled.
         if not fell_back and claims_goal(verdict.line, form.event) and follow.is_the_call(ts):
-            follow.arm(ts, form, verdict.line)
+            follow.arm(ts, form, verdict.line, pack)
+            # Whose goal it was is the one thing the board never knows, and
+            # every running count about him is wrong from this second on.
+            threads.credit_goal(follow.scorer, ts)
         elif follow.active(ts):
             follow.said(ts)
         if follow.active(ts):
