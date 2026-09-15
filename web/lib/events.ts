@@ -26,9 +26,27 @@ export const EVENT_NAMES = [
   "cost",
   "status",
   "error",
+  "phrased",
 ] as const;
 
 export type EventName = (typeof EVENT_NAMES)[number];
+
+/**
+ * Topics the page subscribes to and deliberately drops.
+ *
+ * `phrased` carries the caller's own words beside the phrasing stage's
+ * rewrite of them, so a trace can be read afterwards to say whether the
+ * rewrite helped. Nothing on the page shows it — the line the viewer hears
+ * arrives as a `beat` like any other — and it is listed here rather than
+ * left out of `EVENT_NAMES` so that the contract stays the full set of
+ * topics the runtime publishes.
+ */
+export const IGNORED_EVENTS = ["phrased"] as const;
+
+export type IgnoredEvent = (typeof IGNORED_EVENTS)[number];
+
+/** The topics that become a `StreamEvent`. */
+export type RenderedEventName = Exclude<EventName, IgnoredEvent>;
 
 export type Voice = "caller" | "analyst";
 
@@ -408,6 +426,7 @@ let sequence = 0;
  */
 export function parseEvent(name: string, data: string): StreamEvent | null {
   if (!(EVENT_NAMES as readonly string[]).includes(name)) return null;
+  if ((IGNORED_EVENTS as readonly string[]).includes(name)) return null;
   let raw: Raw;
   try {
     const parsed: unknown = JSON.parse(data);
@@ -416,11 +435,11 @@ export function parseEvent(name: string, data: string): StreamEvent | null {
   } catch {
     return null;
   }
-  return buildEvent(name as EventName, raw);
+  return buildEvent(name as RenderedEventName, raw);
 }
 
 /** The parser proper, exposed so the fixture replays through the same path. */
-export function buildEvent(name: EventName, raw: Raw): StreamEvent {
+export function buildEvent(name: RenderedEventName, raw: Raw): StreamEvent {
   const envelope = { seq: sequence++, at: Date.now(), ts: num(raw.ts) };
 
   switch (name) {

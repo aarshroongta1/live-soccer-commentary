@@ -6,6 +6,7 @@
     uv run python -m commentary research Arsenal PSG # pre-match notes, once
     uv run python -m commentary run --serve          # call a match, in a browser
     uv run python -m commentary replay --trace ... --path clip.mp4 --serve
+    uv run python -m commentary rephrase --trace ... --pack clips/pack-x.json
     uv run python -m commentary grade runs/*.jsonl
 """
 
@@ -420,6 +421,61 @@ async def cmd_replay(args: argparse.Namespace) -> int:
     return 0
 
 
+# -- rephrase -----------------------------------------------------------
+
+
+async def cmd_rephrase(args: argparse.Namespace) -> int:
+    """Say a finished run's lines again, in the register, for about a cent.
+
+    The lines were paid for once, on Opus, and the phrasing stage is a
+    rewrite of words the caller already got right. So the cheap way to find
+    out whether it helps is to read the trace rather than run the match: the
+    caller's form, the state it was looking at and what had just been said
+    are all in the file, and the only model called is the phraser.
+
+    What comes out is a trace, so ``commentary replay`` plays it — with a
+    voice, which is the only way to actually hear the difference.
+    """
+    from commentary.agents.researcher import load_pack
+    from commentary.llm import default_backend
+    from commentary.rephrase import load, rephrase
+
+    rows = load(args.trace)
+    pack = load_pack(Path(args.pack)) if args.pack else None
+    if pack is None:
+        # Said out loud: the gate's roster comes from the pack, and without
+        # one every surname in every phrased line is trimmed as unverified.
+        print("no --pack: the gate has only the two team names to check against")
+
+    backend = default_backend()
+    result = await rephrase(rows, backend, pack=pack, settings=SETTINGS, model=args.model)
+
+    out = Path(args.out)
+    name = Path(args.trace).stem
+    path = result.write(out / f"{name}-phrased.jsonl")
+
+    print()
+    print(result.table())
+    print()
+    spent = backend.total.cost_usd or result.cost_usd
+    used = backend.total
+    print(
+        f"{len(result.lines)} lines, {result.rejected} rejected by the gate, "
+        f"${spent:.4f} on {args.model or SETTINGS.phraser.model}"
+    )
+    # Said out loud because the example set lives in the cached prefix and is
+    # most of the input: a cache_read that stays at zero means every call is
+    # paying full price for two hundred utterances, which is a four-fold
+    # difference over ninety minutes.
+    print(
+        f"tokens: in {used.input_tokens} out {used.output_tokens} "
+        f"cache read {used.cache_read_tokens} write {used.cache_write_tokens}"
+    )
+    print(f"trace: {path}")
+    print(f"hear it: uv run python -m commentary replay --trace {path} --path <clip> --voice say")
+    return 0
+
+
 # -- crop ---------------------------------------------------------------
 
 
@@ -745,6 +801,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="once the trace ends, seek back to --start and play it again, forever",
     )
     rp.set_defaults(func=cmd_replay)
+
+    rph = sub.add_parser(
+        "rephrase", help="rewrite a saved run's lines in the commentator's register"
+    )
+    rph.add_argument("--trace", required=True, help="runs/<name>/<run>.jsonl")
+    rph.add_argument("--out", default="runs/rephrased", help="directory for the new trace")
+    rph.add_argument(
+        "--pack",
+        help="knowledge pack the run used; without it the gate trims every surname",
+    )
+    rph.add_argument(
+        "--model",
+        default=None,
+        help=f"phrasing model; defaults to PHRASER_MODEL ({SETTINGS.phraser.model})",
+    )
+    rph.set_defaults(func=cmd_rephrase)
 
     cr = sub.add_parser("crop", help="draw the score-bug box on one frame of a file")
     cr.add_argument("--path", required=True, help="video file")

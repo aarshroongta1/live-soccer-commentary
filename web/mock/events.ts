@@ -12,11 +12,11 @@
  * frame. `ts` inside each payload is video time, which advances in step.
  */
 
-import type { EventName } from "@/lib/events";
+import type { RenderedEventName } from "@/lib/events";
 
 export interface FixtureFrame {
   readonly after: number;
-  readonly name: EventName;
+  readonly name: RenderedEventName;
   readonly data: Record<string, unknown>;
 }
 

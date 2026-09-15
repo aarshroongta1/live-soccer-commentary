@@ -126,6 +126,31 @@ class CallerLine(BaseModel):
     line: str = Field(default="", max_length=200)
 
 
+class PhrasedLine(BaseModel):
+    """The caller's form, said out loud by somebody who can talk.
+
+    Two fields and no third. Everything factual was settled before this
+    stage ran and is checked again after it: the phraser is given a form and
+    returns words, and anything it knows that the form did not give it is a
+    thing it made up.
+
+    ``line`` may come back empty. The model is told that silence is available
+    and that it should reach for a bare surname long before it reaches for
+    silence, because by the time the phraser runs the caller and the fact
+    gate have both already decided a line is going out. The runtime therefore
+    treats an empty line the way it treats an error — it falls back to the
+    caller's own words and says so on the bus — rather than losing the line.
+    """
+
+    line: str = Field(default="", max_length=200)
+    excitement: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="0 for a routine touch, 1 for a goal: the volume this is said at",
+    )
+
+
 class Angle(StrEnum):
     """What the analyst is about to talk about, so the director can vary it."""
 
@@ -192,6 +217,11 @@ class Beat(BaseModel):
     live_ts: float = 0.0
     event: Event = Event.NONE
     urgency: float = 0.0
+    #: How hard this should be said, 0 to 1, from the phrasing stage. Zero
+    #: when there is no phraser, which is what every speaker still assumes:
+    #: the field is carried so that a voice can use it without the runtime
+    #: having to change again, and nothing reads it yet.
+    excitement: float = 0.0
     triggers: list[Trigger] = Field(default_factory=list)
     preemptable: bool = True
 

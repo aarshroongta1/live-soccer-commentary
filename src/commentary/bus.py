@@ -29,6 +29,11 @@ class Topic(StrEnum):
     BOARD = "board"
     SIGHTING = "sighting"
     CALLER = "caller"
+    #: The caller's line and the phraser's rewrite of it, side by side. Not
+    #: rendered anywhere: it is on the bus so that the trace carries both,
+    #: which is the only way to tell afterwards whether the phrasing stage
+    #: helped or whether the caller had already said it well.
+    PHRASED = "phrased"
     ANALYST = "analyst"
     GATE = "gate"
     CORRECTION = "correction"

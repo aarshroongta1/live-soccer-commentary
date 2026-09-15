@@ -19,6 +19,12 @@ CALLER_MODEL = os.getenv("CALLER_MODEL", "claude-sonnet-5")
 BOARD_MODEL = os.getenv("BOARD_MODEL", "claude-haiku-4-5")
 ANALYST_MODEL = os.getenv("ANALYST_MODEL", "claude-opus-5")
 RESEARCHER_MODEL = os.getenv("RESEARCHER_MODEL", "claude-opus-5")
+#: The phrasing stage. Haiku by default: it is a rewrite of a form into six
+#: words, with the examples that teach the register sitting in a cached
+#: system prompt, so the per-line cost is a fraction of a cent. Set it to
+#: ``off`` and the stage does not exist — the caller's own line goes to the
+#: gate, exactly as before there was a phraser.
+PHRASER_MODEL = os.getenv("PHRASER_MODEL", "claude-haiku-4-5")
 JUDGE_MODEL = os.getenv("JUDGE_MODEL", "claude-opus-5")
 
 
@@ -120,6 +126,36 @@ class CallerConfig:
 
 
 @dataclass(frozen=True)
+class PhraserConfig:
+    """Turning the caller's form into something a commentator would say.
+
+    Every number here is a consequence of the measurement in
+    ``runs/prompt-name/REAL_COMMENTARY.md``: median five words, a quarter of
+    live-play utterances two words or fewer, the longest thing said in half
+    an hour twenty-eight words.
+    """
+
+    #: Which model says it, or ``off`` for no phrasing stage at all. Here
+    #: rather than read straight from the environment so that a test, a
+    #: sweep or a rephrase can turn the stage off without touching the
+    #: process it is running in.
+    model: str = PHRASER_MODEL
+    #: Hard cap on the phrased line. Well under the caller's 28, because the
+    #: caller's cap is a backstop against a runaway and this is a target.
+    max_words: int = 16
+    #: Real utterances shown per kind in the system prompt. The whole set is
+    #: 228 lines; a sample keeps the cached prefix small enough that the
+    #: cache write is cheaper than the reads it saves.
+    examples_per_kind: int = 14
+    #: Lines shown back as "the last lines spoken", so the voice does not
+    #: repeat itself. Shorter than the caller's five: these lines are five
+    #: words each and five of them is no context at all.
+    recent_lines: int = 4
+    #: Small. The answer is one short sentence and a number.
+    max_tokens: int = 256
+
+
+@dataclass(frozen=True)
 class AnalystConfig:
     """The colour voice."""
 
@@ -195,6 +231,7 @@ class Settings:
     capture: CaptureConfig = field(default_factory=CaptureConfig)
     board: BoardConfig = field(default_factory=BoardConfig)
     caller: CallerConfig = field(default_factory=CallerConfig)
+    phraser: PhraserConfig = field(default_factory=PhraserConfig)
     analyst: AnalystConfig = field(default_factory=AnalystConfig)
     predictor: PredictorConfig = field(default_factory=PredictorConfig)
     gate: GateConfig = field(default_factory=GateConfig)

@@ -42,6 +42,7 @@ from typing import Any
 
 from commentary.agents.analyst import Analyst
 from commentary.agents.caller import Caller
+from commentary.agents.phraser import Phraser
 from commentary.bus import Bus, Topic
 from commentary.capture.audio import CutDetector
 from commentary.capture.buffer import DelayBuffer, Frame
@@ -194,6 +195,17 @@ class Runtime:
             config=self.settings.caller,
             pack=self.pack,
         )
+        #: The speaking half of the play-by-play voice, or ``None`` when
+        #: ``PHRASER_MODEL=off``. None is not a degraded mode: it is exactly
+        #: the runtime that existed before the split, and a test asserts that
+        #: the spoken lines are identical with it off.
+        phraser = Phraser(
+            self.backend,
+            config=self.settings.phraser,
+            home=self.home,
+            away=self.away,
+        )
+        self.phraser: Phraser | None = phraser if phraser.enabled else None
         self.analyst = Analyst(
             self.backend,
             config=self.settings.analyst,
@@ -593,8 +605,15 @@ class Runtime:
         if not line.speak or not line.line.strip():
             return
 
+        # Seeing is done; speaking is a separate call. What the gate judges
+        # is whatever is actually going to the speaker, so the phrased line
+        # is checked against the roster and the scoreline exactly as the
+        # caller's would have been. Nothing the phraser writes gets past a
+        # check the caller's line had to pass.
+        judged, excitement = await self._phrase(line, cursor)
+
         verdict = self.gate.judge(
-            line,
+            judged,
             self.state,
             self.pack,
             board_changed=self._board_supports_goal(cursor),
@@ -627,16 +646,53 @@ class Runtime:
             created_ts=time.monotonic(),
             live_ts=self.live_ts,
             event=event,
+            excitement=excitement,
             triggers=triggers,
             preemptable=event not in (Event.GOAL, Event.PENALTY),
         )
         self.director.submit(beat)
+        if self.phraser is not None:
+            self.phraser.accept(verdict.line)
         self._remember_on_the_ball(line, verdict.line, cursor)
         self._mark_spoken(cursor, verdict.line)
         if line.event is not Event.NONE:
             self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
+
+    async def _phrase(self, line: CallerLine, cursor: float) -> tuple[CallerLine, float]:
+        """Say the caller's form the way a commentator would, or keep its words.
+
+        Returns the form the gate should judge and the excitement to hang on
+        the beat. With the stage off, or when it fails, that is the caller's
+        own line untouched: a line the caller wrote and the gate has yet to
+        see is worth more spoken badly than not spoken at all, so a phraser
+        that errors or comes back empty is an error row on the bus and never
+        a silent drop.
+        """
+        if self.phraser is None:
+            return line, 0.0
+        phrased = await self.phraser.phrase(
+            line,
+            self.state_tracker.summary(cursor),
+            on_the_ball=self._carried_name(line, cursor),
+        )
+        if phrased is None or not phrased.line.strip():
+            self._publish(
+                Topic.ERROR,
+                cursor,
+                where="phraser",
+                detail=self.phraser.last_reason or "the phraser returned nothing",
+            )
+            return line, 0.0
+        self._publish(
+            Topic.PHRASED,
+            cursor,
+            original=line.line,
+            line=phrased.line,
+            excitement=phrased.excitement,
+        )
+        return line.model_copy(update={"line": phrased.line}), phrased.excitement
 
     def _mark_spoken(self, cursor: float, text: str) -> None:
         """Remember when the voice was last given a line, and how long a one.
