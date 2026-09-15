@@ -12,6 +12,26 @@ grows.
         --pack clips/pack-argfra-2022.json \
         --out src/commentary/prompts/commentary_examples.py
 
+**Several matches at once.** ``--captions`` and ``--pack`` each take one or
+more paths and are paired in order — the first ``--captions`` file with the
+first ``--pack``, the second with the second, and so on — rather than a
+combined ``captions.json3:pack.json`` token, because that pairing is already
+how argparse's ``nargs="+"`` works and needed no new syntax:
+
+    uv run python scripts/build_commentary_examples.py \
+        --captions clips/argfra-dimaria.en.json3 clips/lei-mun-2015.en.json3 \
+        --pack clips/pack-argfra-2022.json clips/pack-3754186.json \
+        --after 300 78
+
+Each caption file is filtered against *its own* pack's team sheet — a name
+true on one match's roster is not automatically true on another's — but the
+"already said in lower case somewhere" vocabulary that separates a real word
+from a mangled surname (see :func:`names_are_clean`) is pooled across every
+caption file given, the same as when a single match's commentary was split
+across several files. ``--after`` is one kickoff offset per file, same order
+as ``--captions``; give fewer values than files and the last one repeats, so
+a single ``--after 300`` still applies to every file the way it always did.
+
 What it does, in order.
 
 1. **Utterances, not caption segments.** YouTube writes a rolling caption:
@@ -404,17 +424,34 @@ def surnames_of(pack: KnowledgePack) -> set[str]:
     }
 
 
-def gather(paths: Iterable[Path], pack: KnowledgePack, *, after_s: float) -> dict[str, list[str]]:
-    """Every kept utterance, by kind, in the order the broadcast said them."""
-    paths = list(paths)
-    allowed = set(ALLOWED_PROPER) | roster_words(pack)
-    common = lowercase_vocabulary(paths)
-    surnames = surnames_of(pack)
+@dataclass(frozen=True)
+class Source:
+    """One caption file, the pack that says which of its names are real, and
+    when its live play starts."""
+
+    path: Path
+    pack: KnowledgePack
+    after_s: float
+
+
+def gather(sources: Sequence[Source]) -> dict[str, list[str]]:
+    """Every kept utterance, by kind, in the order each broadcast said them.
+
+    Roster words — what makes a capitalised word a real name rather than a
+    mangled one — come from each source's own pack, so a name true on one
+    match's team sheet cannot wave a different match's utterance through.
+    The lower-case vocabulary that backs that same check (see
+    :func:`names_are_clean`) is pooled across every caption file, exactly as
+    it was when one match's commentary arrived split across several files.
+    """
+    common = lowercase_vocabulary(source.path for source in sources)
     seen: set[str] = set()
     found: dict[str, list[str]] = {kind: [] for kind in KIND_ORDER}
-    for path in paths:
-        for utterance in utterances(load_json3(path).segments):
-            if not keep(utterance, allowed, common, after_s=after_s):
+    for source in sources:
+        allowed = set(ALLOWED_PROPER) | roster_words(source.pack)
+        surnames = surnames_of(source.pack)
+        for utterance in utterances(load_json3(source.path).segments):
+            if not keep(utterance, allowed, common, after_s=source.after_s):
                 continue
             key = utterance.text.lower()
             if key in seen:
@@ -489,22 +526,48 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--pack",
-        default="clips/pack-argfra-2022.json",
-        help="knowledge pack whose squads say which capitalised words are real names",
+        nargs="+",
+        default=["clips/pack-argfra-2022.json"],
+        help="one knowledge pack per --captions file, same order: each file's own pack "
+        "says which of its capitalised words are real names",
     )
     parser.add_argument(
         "--after",
         type=float,
-        default=300.0,
-        help="drop everything before this second: the build-up is not live play",
+        nargs="+",
+        default=[300.0],
+        help="one kickoff offset per --captions file, same order — the build-up is not "
+        "live play; give fewer values than files and the last one repeats",
     )
     parser.add_argument("--out", default="src/commentary/prompts/commentary_examples.py")
     parser.add_argument("--dry-run", action="store_true", help="print the tally and stop")
     args = parser.parse_args(argv)
 
-    pack = KnowledgePack.model_validate(json.loads(Path(args.pack).read_text(encoding="utf-8")))
-    paths = [Path(p) for p in args.captions]
-    found = gather(paths, pack, after_s=args.after)
+    captions = [Path(p) for p in args.captions]
+    pack_paths = [Path(p) for p in args.pack]
+    if len(pack_paths) != len(captions):
+        parser.error(
+            f"--pack must give one pack per --captions file: "
+            f"{len(captions)} captions, {len(pack_paths)} packs"
+        )
+    afters = list(args.after)
+    if len(afters) > len(captions):
+        parser.error(
+            f"--after gives more values ({len(afters)}) than --captions files ({len(captions)})"
+        )
+    if len(afters) < len(captions):
+        afters += [afters[-1]] * (len(captions) - len(afters))
+
+    sources = [
+        Source(
+            path=cap,
+            pack=KnowledgePack.model_validate(json.loads(pack_path.read_text(encoding="utf-8"))),
+            after_s=after,
+        )
+        for cap, pack_path, after in zip(captions, pack_paths, afters, strict=True)
+    ]
+
+    found = gather(sources)
 
     total = 0
     for kind in KIND_ORDER:
@@ -516,7 +579,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     out = Path(args.out)
-    out.write_text(render(found, paths), encoding="utf-8")
+    out.write_text(render(found, captions), encoding="utf-8")
     print(f"wrote {out}")
     return 0
 
