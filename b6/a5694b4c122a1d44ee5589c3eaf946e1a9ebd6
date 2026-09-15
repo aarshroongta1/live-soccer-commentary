@@ -1,0 +1,63 @@
+tests/test_threads.py
+  s_1eec300a49e1ff::t_c2a76f4e3f7fa2 277-304
+  s_1eec300a49e1ff::t_0c3dbb5c774c23 246,260,273-274
+  s_1eec300a49e1ff::t_a6b975909b3fd9 1-245,247-259,261-272,275-276
+src/commentary/runtime.py
+  s_1eec300a49e1ff::t_3d41867c826c4f 268-272,733-739,743-744,779,969,1013-1015,1054-1063,1068-1069,1119-1133,1135-1139
+  s_1eec300a49e1ff::t_acc15ff71dffb4 799-800,1003-1005
+  s_1eec300a49e1ff::t_404c3a269155a3 1012
+  s_1eec300a49e1ff::t_f294db956cfbec 74
+  s_1eec300a49e1ff::t_6beee4f1e90a77 1134
+  s_1eec300a49e1ff::t_86146709b68ced 1140
+tests/test_tallies.py
+  s_1eec300a49e1ff::t_bb9ac3d8198c1b 297,301-303
+  s_1eec300a49e1ff::t_32f6d706222f57 128-134,215-222,227-233,236-242,252-257
+  s_1eec300a49e1ff::t_c2a76f4e3f7fa2 11,258-296,298-300,304-322
+  s_1eec300a49e1ff::t_4b1aab60daaca4 1-10,12-127,135-214,223-226,234-235,243-251
+src/commentary/tallies.py
+  s_1eec300a49e1ff::t_9c11a15a7141fd 1-333
+src/commentary/agents/phraser.py
+  s_1eec300a49e1ff::t_b4d270b23d590e 197,215-220,237
+src/commentary/rephrase.py
+  s_1eec300a49e1ff::t_404c3a269155a3 716
+  s_1eec300a49e1ff::t_6beee4f1e90a77 375
+  s_1eec300a49e1ff::t_3d41867c826c4f 84,357-362,365-374,376-382,423,425-428,432-433,454,503,546,558-559,564-565,650,709,717-719
+src/commentary/threads.py
+  s_1eec300a49e1ff::t_310feba53cfe79 40
+  s_1eec300a49e1ff::t_6beee4f1e90a77 100-105,154,160-168,192,196,205,207,234,251,256-258,260,263-265
+  s_1eec300a49e1ff::t_0c13d051282242 1-39,41-99,106-137,139,141-153,155-159,169-191,193-195,197-204,206,208-233,235-250,252-255,259,261-262,266-271
+  s_1eec300a49e1ff::t_b3b11378c7f649 138,140
+src/commentary/prompts/phraser.py
+  s_1eec300a49e1ff::t_cefb7b2d23fba9 653-666,675-682,702-710
+  s_1eec300a49e1ff::t_b4d270b23d590e 612,624-627,639,809,825,856-858,865-872,881-898,900
+src/commentary/grading/baselines.py
+  s_1eec300a49e1ff::t_ab1ba0cba990ae 50
+  s_1eec300a49e1ff::t_acc15ff71dffb4 104
+src/commentary/schemas.py
+  s_1eec300a49e1ff::t_acc15ff71dffb4 360
+  s_1eec300a49e1ff::t_4b5cd17f99cec8 312-319,352-359,361
+src/commentary/goalfollow.py
+  s_1eec300a49e1ff::t_404c3a269155a3 50,52,89-94,167-169,180,201,211-227,273,280-288,295-312
+src/commentary/gate.py
+  s_1eec300a49e1ff::t_404c3a269155a3 911,914-925,945,948-953
+  s_1eec300a49e1ff::t_a2e4546744db98 944,961-962
+  s_1eec300a49e1ff::t_73bef79e5d9565 42,893-895,901-903,905-908,912-913,926-943,946-947,954-960,963-964,1145,1172-1179,1190,1206,1235,1402-1404,1429,1433
+src/commentary/bus.py
+  s_1eec300a49e1ff::t_3d41867c826c4f 44-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b6a5694b4c122a1d44ee5589c3eaf946e1a9ebd6",
+  "prompts": {},
+  "sessions": {
+    "s_1eec300a49e1ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7feafbb1-43b3-4ee3-afb0-bb66484d3043",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
