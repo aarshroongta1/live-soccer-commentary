@@ -43,12 +43,16 @@ from commentary.agents.colour import (
     Moment,
     Offer,
     Share,
+    already_happened,
     colour_pass,
     gap_when_behind,
     judge_utterance,
     may_speak,
     repeats_itself,
+    says_nothing,
+    says_only_a_name,
     says_the_scores_are_level,
+    verdict_intensifier,
 )
 from commentary.config import CallerConfig, ColourConfig, PredictorConfig
 from commentary.gate import FactGate
@@ -56,7 +60,15 @@ from commentary.grading import register as reg
 from commentary.llm.fake import ScriptedBackend
 from commentary.predictor import SpeakPredictor
 from commentary.prompts.colour import COLOUR_EXAMPLES, COLOUR_RULES
-from commentary.schemas import Event, KnowledgePack, MatchState, Player, Scene, TeamSheet
+from commentary.schemas import (
+    Event,
+    KnowledgePack,
+    MatchState,
+    Note,
+    Player,
+    Scene,
+    TeamSheet,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
@@ -1019,3 +1031,100 @@ def test_a_level_claim_that_is_true_is_refused_as_well() -> None:
 def test_the_three_things_football_calls_level_that_are_not_the_score(text: str) -> None:
     """A chart, and an offside. One of them is a note on this very pack."""
     assert says_the_scores_are_level(text) == ""
+
+
+# -- 8. the third pass: the verdict, the vacuity and the bare name ----------
+#
+# Off ``runs/rephrased/r3-colour/mbappe``: four colour lines, two refused, and
+# the two that aired were the two worth refusing.
+
+
+def test_the_verdict_is_not_a_count_claim() -> None:
+    """The exact line, and the exact refusal it drew at 45.1 s.
+
+    "That is a foul every time." is the shape this seat was rebuilt to
+    produce — section 3.2's booking window is the colour voice arguing about
+    a challenge — and ``gate._NOTE_CLAIMS`` reads "every time" as a claim
+    needing a note behind it. It is right to, of careers: "always goes to the
+    keeper's left" is checkable and this is not a claim at all.
+    """
+    verdict = judge_utterance(
+        "That is a foul every time.",
+        MatchState(home="Argentina", away="France", home_score=2, away_score=1),
+        the_2022_pack(),
+        FactGate(),
+        after="Well, Otamendi's leg was there.",
+    )
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == "That is a foul every time.", "the words that go out are the model's"
+
+
+def test_a_real_career_claim_still_reaches_the_gate() -> None:
+    """The exemption is the intensifier beside a judgement noun and nothing
+    else. Every other shape in ``gate._NOTE_CLAIMS`` is untouched, and the
+    ones carrying a figure were refused two checks earlier by
+    ``says_a_number`` before they could get here at all."""
+    state = MatchState(home="Argentina", away="France", home_score=2, away_score=1)
+    for claim in (
+        "Yeah, Mbappé always goes to the keeper's left.",
+        "Well, Otamendi has not conceded a penalty all season.",
+    ):
+        verdict = judge_utterance(claim, state, the_2022_pack(), FactGate())
+        assert not verdict.passed, claim
+        assert verdict.reasons[0].startswith("note_claim:"), claim
+
+
+def test_the_intensifier_is_only_found_beside_a_judgement() -> None:
+    assert verdict_intensifier("That is a penalty all day long.") == "all day long"
+    assert verdict_intensifier("It looks worse every time you see that challenge.") == "every time"
+    assert verdict_intensifier("Argentina go down that flank every time.") == ""
+    assert verdict_intensifier("He always drops in there.") == ""
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "This is what it has all been building to for him.",
+        "This is what he lives for.",
+        "That is what they have been building up to.",
+    ],
+)
+def test_the_occasion_standing_in_for_an_observation(text: str) -> None:
+    """The first went out at 201.8 s, as a continuation after a line that had
+    named one man, which is the hole the continuation rule opened."""
+    assert says_nothing(text), text
+
+
+def test_a_cue_and_a_name_is_not_an_utterance() -> None:
+    """ "Well, Mbappé." went out as a whole colour turn at 196.8 s.
+
+    A name with no predicate on it is the lead's shape — the corpus is full
+    of "Here's Salah." and "Now Griezmann." — and in the second voice it is
+    the sound of a seat that has been told to name somebody and has done only
+    that.
+    """
+    pack = the_2022_pack()
+    assert says_only_a_name("Well, Mbappé.", pack) == "Kylian Mbappé"
+    assert says_only_a_name("Yeah, Otamendi.", pack) == "Nicolás Otamendi"
+    assert says_only_a_name("Well, Mbappé struck that before it dropped.", pack) == ""
+    assert says_only_a_name("Well, they have gone down that side again.", pack) == ""
+
+
+def test_the_bare_name_is_refused_as_an_opener_and_allowed_nowhere_else() -> None:
+    state = MatchState(home="Argentina", away="France", home_score=2, away_score=1)
+    verdict = judge_utterance("Well, Mbappé.", state, the_2022_pack(), FactGate())
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("colour_filler:")
+    assert "Mbappé" in verdict.reasons[0]
+
+
+def test_a_note_about_a_man_as_he_was_is_labelled_as_such() -> None:
+    """ "a goal in a World Cup final, as a teenager" came back as "That is
+    what a teenager dreams of", about a man of twenty-three whose age the
+    lead had given twelve seconds earlier."""
+    was = Note(about="Kylian Mbappé", text="a goal in a World Cup final, as a teenager")
+    now = Note(about="Kylian Mbappé", text="takes the full-back on down the left")
+    assert already_happened(was)
+    assert not already_happened(now)
+    assert Material(notes=(was,)).lines()[0].endswith("that was then, not now")
+    assert not Material(notes=(now,)).lines()[0].endswith("that was then, not now")

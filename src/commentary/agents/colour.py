@@ -801,6 +801,61 @@ _ONE_EVENT = re.compile(
 _HE = re.compile(r"\b(?:he|him|his|he's|he’s)\b", re.IGNORECASE)
 
 
+#: The nouns a verdict is given about. Narrower than :data:`EVENT_WORDS`,
+#: which answers "is this line about anything"; these are the things a second
+#: voice passes judgement on.
+_JUDGED_NOUNS = (
+    "foul|penalty|penalties|card|booking|yellow|red|offside|save|finish|"
+    "challenge|tackle|handball|decision|shout|call"
+)
+
+#: "A foul every time", "a penalty all day long". An intensifier that says
+#: *how clear* the thing was, in the shape English gives it: a count word
+#: doing no counting. The gate reads "every time" and "always" as claims
+#: needing a note behind them (``gate._NOTE_CLAIMS``) and it is right to —
+#: "always goes to the keeper's left" is a claim about a career. Next to a
+#: verdict noun it is not one, and this is where the two are told apart.
+_VERDICT_INTENSIFIER = re.compile(
+    rf"\b(?:{_JUDGED_NOUNS})\b[^.!?]{{0,24}}?\b(every\s+time|all\s+day(?:\s+long)?|always)\b"
+    rf"|\b(every\s+time|all\s+day(?:\s+long)?|always)\b[^.!?]{{0,24}}?\b(?:{_JUDGED_NOUNS})\b",
+    re.IGNORECASE,
+)
+
+#: Just the intensifier, for taking it back out.
+_INTENSIFIER = re.compile(r"\s*\b(?:every\s+time|all\s+day(?:\s+long)?|always)\b", re.IGNORECASE)
+
+
+def _tidy_spaces(text: str) -> str:
+    """Close the hole an elided word leaves, without moving anything else."""
+    return re.sub(r"\s+([.,;:!?])", r"\1", re.sub(r"\s{2,}", " ", text)).strip()
+
+
+def verdict_intensifier(text: str) -> str:
+    """The "every time" in "that is a foul every time", or ``""``.
+
+    Only where a judgement noun is beside it, and only in this seat, and it
+    is safe here for a reason that is checked upstream rather than argued:
+    :func:`says_a_number` has already refused every utterance carrying a
+    digit or a number word, so a colour line reaching the gate cannot hold a
+    count. What is left of ``gate._NOTE_CLAIMS`` that this could hide is the
+    wordless shapes — unbeaten, has not lost, never won, in a row,
+    consecutive — and none of them is touched: only the intensifier itself is
+    taken out of the probe, and the rest of the line still goes to the gate.
+
+    It is here because the shape the corpus gives a verdict is exactly this
+    one. "It's a ridiculous challenge from the Real Madrid captain. / It
+    looks worse every time you see it." is section 3.2's booking window, and
+    "That is a foul every time." — the verdict this seat was rebuilt to
+    produce — was refused on ``runs/rephrased/r3-colour/mbappe`` as a note
+    claim about a pack that has no note about fouls in it.
+    """
+    found = _VERDICT_INTENSIFIER.search(text)
+    if not found:
+        return ""
+    words = _INTENSIFIER.search(text)
+    return words.group(0).strip() if words else ""
+
+
 def _same_man(one: str, other: str) -> bool:
     """One person under two spellings: the surname, folded.
 
@@ -970,6 +1025,13 @@ def judge_utterance(
             reasons=[f'colour_filler: "{stock}" would fit any match ever played'],
             line=text,
         )
+    bare = "" if after else says_only_a_name(text, pack)
+    if bare:
+        return GateVerdict(
+            passed=False,
+            reasons=[f'colour_filler: "{bare}" with nothing said about him is the lead\'s shape'],
+            line=text,
+        )
     if is_filler(text, pack, after=after):
         return GateVerdict(
             passed=False,
@@ -998,13 +1060,21 @@ def judge_utterance(
     )
     if wrong:
         return GateVerdict(passed=False, reasons=[wrong], line=text)
-    return gate.judge(
+    # The verdict's "every time" is taken out of what the gate is shown and
+    # put back into what goes to air. See :func:`verdict_intensifier` for why
+    # that loosens no real count check, and note the two guards here: the
+    # probe still carries the whole rest of the line, and the original is
+    # restored only when the gate handed the probe back untouched. A trimmed
+    # line is the gate's, verbatim.
+    intensifier = verdict_intensifier(text)
+    probe = _tidy_spaces(_INTENSIFIER.sub("", text)) if intensifier else text
+    verdict = gate.judge(
         CallerLine(
             scene=Scene.STOPPAGE,
             event=Event.NONE,
             confidence=1.0,
             speak=True,
-            line=text,
+            line=probe,
         ),
         state,
         pack,
@@ -1012,6 +1082,9 @@ def judge_utterance(
         goal_in_state=goal_in_state,
         at=at,
     )
+    if intensifier and verdict.passed and verdict.line.strip() == probe.strip():
+        verdict.line = text
+    return verdict
 
 
 #: The counting vocabulary — which events are worth a count, what each is
@@ -1251,18 +1324,22 @@ class Material:
         the bottom of the block.
         """
         figure = " (has a figure in it: say the fact, never the figure)"
+        then = " — that was then, not now"
         out: list[str] = []
         if self.last_event:
             out.append(f"EVENT, finished, speak about it in the past tense: {self.last_event}")
         out.extend(f"REPLAY, what the pictures showed again: {text}" for text in self.replays)
         out += [
-            f"NOTE about {note.about}: {note.clause}"
-            if says_a_number(note.text) and note.clause
-            else (
-                f"NOTE about {note.about}"
-                + (figure if says_a_number(note.text) else "")
-                + f": {note.text}"
+            (
+                f"NOTE about {note.about}: {note.clause}"
+                if says_a_number(note.text) and note.clause
+                else (
+                    f"NOTE about {note.about}"
+                    + (figure if says_a_number(note.text) else "")
+                    + f": {note.text}"
+                )
             )
+            + (then if already_happened(note) else "")
             for note in self.notes
         ]
         out.extend(f"REPEATED: {text}" for text in self.patterns)
@@ -1274,6 +1351,26 @@ class Material:
         # there is no figure here to leave out.
         out.extend(f"REPEATED: {fact.clause}" for fact in self.ledger if fact.clause)
         return out
+
+
+#: A note anchored to a time that is not now. A note with one of these in it
+#: is about a man as he was, and the seat read one of them as if it were
+#: about him tonight: "a goal in a World Cup final, as a teenager" came back
+#: as "That is what a teenager dreams of", about a man of twenty-three whose
+#: age the lead had given twelve seconds earlier.
+_ALREADY_HAPPENED = re.compile(
+    r"\bas a (?:teenager|boy|youngster|kid|child)\b"
+    r"|\bin (?:19|20)\d{2}\b"
+    r"|\bback in\b"
+    r"|\blast (?:season|year|time|month|summer)\b"
+    r"|\b(?:aged|at) (?:nineteen|eighteen|seventeen|sixteen|twenty)\b",
+    re.IGNORECASE,
+)
+
+
+def already_happened(note: Note) -> bool:
+    """Is this note about a man as he was, rather than as he is tonight?"""
+    return bool(_ALREADY_HAPPENED.search(f"{note.text} {note.clause}"))
 
 
 def _already_said(fact: Fact, patterns: Sequence[str]) -> bool:
@@ -1365,6 +1462,18 @@ ABOUT_NOTHING = (
     "the price of it",
     "the question is what",
     "at this moment",
+    "been building to",
+    "been building towards",
+    "building up to",
+    "what it is all about",
+)
+
+#: And the shape: a sentence whose whole subject is a pronoun standing in for
+#: the occasion. "This is what it has all been building to for him" went out
+#: on ``runs/rephrased/r3-colour/mbappe`` and says nothing about the goal, the
+#: man or the match; it would have fitted the other three goals equally.
+_ALL_ABOUT_NOTHING = re.compile(
+    r"\b(?:this|that|it)\s+is\s+what\s+(?:he|she|it|they|we|you)\b", re.IGNORECASE
 )
 
 #: And the shape rather than the phrase: a line that ends by pointing at
@@ -1389,7 +1498,33 @@ def says_nothing(text: str) -> str:
             return phrase
     if _POINTING_AT_ITSELF.search(text):
         return "right there"
-    return ""
+    shape = _ALL_ABOUT_NOTHING.search(text)
+    return shape.group(0) if shape else ""
+
+
+def says_only_a_name(text: str, pack: KnowledgePack | None) -> str:
+    """The name this utterance is, if it is nothing but a name, else ``""``.
+
+    "Well, Mbappé." went out as a whole colour turn. A name with no predicate
+    on it is the *lead's* shape — the corpus is full of "Here's Salah." and
+    "Now Griezmann." — and in the second voice it is the sound of a seat that
+    has been told to name somebody and has done only that.
+
+    Measured on the opener alone, because "He's the man here." after "Morris
+    is the man." is the corpus's own continuation and carries the predicate
+    the pair needs between them.
+    """
+    rest = text.strip()
+    cue = cue_of(rest)
+    if cue:
+        rest = rest[len(cue) :].lstrip(" ,")
+    found = [name for name in roster_names(pack) if mentions(rest, name)]
+    if not found:
+        return ""
+    for name in found:
+        surname = fold(name).rsplit(" ", 1)[-1]
+        rest = re.sub(rf"\b{re.escape(fold(name))}\b|\b{re.escape(surname)}\b", " ", fold(rest))
+    return found[0] if len(_NOT_A_WORD.sub(" ", rest).split()) < 2 else ""
 
 
 #: The cues a turn may be swapped onto. All four take a comma, which is what

@@ -618,7 +618,10 @@ def test_a_numbered_note_with_a_clause_shows_the_clause_not_the_figure() -> None
         clause="a goal in a World Cup final, as a teenager",
     )
     lines = Material(notes=(note,)).lines()
-    assert lines == ["NOTE about Kylian Mbappé: a goal in a World Cup final, as a teenager"]
+    assert lines == [
+        "NOTE about Kylian Mbappé: a goal in a World Cup final, as a teenager"
+        " — that was then, not now"
+    ]
     assert "nineteen" not in lines[0]
     assert "2018" not in lines[0]
 
