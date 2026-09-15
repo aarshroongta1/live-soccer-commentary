@@ -28,7 +28,10 @@ from commentary.agents.colour import (
     FormAt,
     Moment,
     colour_pass,
+    is_filler,
     may_speak,
+    patterns_in,
+    says_a_number,
     space_out,
     speaking_for,
 )
@@ -67,6 +70,8 @@ def a_pack() -> KnowledgePack:
             starters=[
                 Player(name="Nahuel Molina", number=26),
                 Player(name="Lionel Messi", number=10),
+                Player(name="Nicolás Otamendi", number=19),
+                Player(name="Emiliano Martínez", number=23),
             ],
         ),
         away=TeamSheet(
@@ -128,6 +133,42 @@ def speaking(*turns: ColourTurn) -> ScriptedBackend:
 
 def text_of(blocks: list[Block]) -> str:
     return "\n".join(b["text"] for b in blocks if b.get("type") == "text")
+
+
+def a_seat(backend: Any, config: ColourConfig | None = None) -> ColourSeat:
+    """A seat with material in front of it: a named man and a repeated corner.
+
+    Since the material gate, a seat that has heard nothing is a seat that
+    cannot be asked — which is the point of it and is a nuisance in a fixture.
+    This gives it the two cheapest kinds: a note about somebody the lead has
+    just named, and two separate corners.
+    """
+    seat = ColourSeat(backend, config=config or ColourConfig(), pack=a_pack())
+    seat.saw_lead_line(1.0, "Messi has it.")
+    seat.saw_lead_line(2.0, "Molina overlaps.")
+    seat.saw_form(1.0, a_caller(Event.CORNER, "Corner to Argentina."))
+    seat.saw_form(2.0, a_caller(Event.BUILD_UP, "Worked short."))
+    seat.saw_form(3.0, a_caller(Event.CORNER, "And another corner."))
+    return seat
+
+
+def a_caller(
+    event: Event,
+    line: str,
+    *,
+    scene: Scene = Scene.STOPPAGE,
+    names: tuple[str, ...] = (),
+) -> CallerLine:
+    return CallerLine(
+        scene=scene,
+        event=event,
+        side=Side.HOME,
+        team="Argentina",
+        sightings=[Sighting(name=name) for name in names],
+        confidence=0.9,
+        speak=True,
+        line=line,
+    )
 
 
 # -- the phase gate ----------------------------------------------------------
@@ -331,27 +372,29 @@ def test_the_system_prompt_is_the_same_bytes_every_time() -> None:
     assert colour_system(a_pack()) == colour_system(a_pack())
 
 
-def test_the_call_shows_the_lead_s_lines_the_forms_and_the_notes() -> None:
+def test_the_call_shows_the_lead_s_lines_and_the_material_and_nothing_else() -> None:
+    """The caller's forms are a description of the passage, and this seat may
+    not write another one — so nothing but the material reaches the body."""
     body = text_of(
         colour_blocks(
             AT_A_DEAD_BALL,
             "the ball is dead",
             "Argentina 2-0 France",
             ["Messi.", "Won by Molina."],
-            ["close up, corner; Argentina have it"],
-            [Note(about="Lionel Messi", text="five in this tournament")],
             [],
+            ["NOTE about Lionel Messi: five in this tournament"],
         )
     )
     assert "Messi." in body
-    assert "close up, corner" in body
+    assert "close up, corner" not in body
     assert "five in this tournament" in body
     assert "the ball is dead" in body
+    assert "WHAT THIS TURN IS ABOUT" in body
 
 
 def test_the_call_has_no_pictures_in_it() -> None:
     """The seat is text-only: it cannot narrate what it has not been shown."""
-    blocks = colour_blocks(IN_BUILD_UP, "quiet", "0-0", [], [], [], [])
+    blocks = colour_blocks(IN_BUILD_UP, "quiet", "0-0", [], [], [])
     assert not [b for b in blocks if b.get("type") == "image"]
 
 
@@ -376,8 +419,8 @@ async def test_a_turn_is_two_to_four_short_utterances() -> None:
             "You could see it coming.",
         )
     )
-    seat = ColourSeat(backend, config=ColourConfig(), pack=a_pack())
-    turn = await seat.turn(may_speak(a_moment(40.0)), "Argentina 2-0 France")
+    seat = a_seat(backend)
+    turn = await seat.turn(may_speak(a_moment(40.0)), "Argentina 2-0 France", now=40.0)
     assert turn is not None
     assert turn.speak
     assert len(turn.utterances) == 3
@@ -389,8 +432,8 @@ async def test_a_long_utterance_is_trimmed_and_a_long_turn_is_cut() -> None:
     backend = speaking(
         a_turn(*[f"Well, this is utterance number {n} of far too many." for n in range(6)])
     )
-    seat = ColourSeat(backend, config=ColourConfig(max_utterances=4), pack=a_pack())
-    turn = await seat.turn(may_speak(a_moment(40.0)), "")
+    seat = a_seat(backend, ColourConfig(max_utterances=4))
+    turn = await seat.turn(may_speak(a_moment(40.0)), "", now=40.0)
     assert turn is not None
     assert len(turn.utterances) == 4
 
@@ -403,27 +446,29 @@ async def test_the_goal_reaction_is_one_utterance_and_not_a_turn() -> None:
     they they didn't see that one coming." / "LISTEN TO THE NOISE." The
     analysis comes later, when the ball is dead.
     """
-    backend = speaking(a_turn("Well, well, well.", "That is the move of the night.", "Lovely."))
-    seat = ColourSeat(backend, config=ColourConfig(), pack=a_pack())
+    backend = speaking(
+        a_turn("Well, Messi has been waiting for that.", "That is the move of the night.")
+    )
+    seat = a_seat(backend)
+    seat.saw_form(
+        100.0,
+        a_caller(Event.GOAL, "It's in!", scene=Scene.LIVE_PLAY, names=("Lionel Messi",)),
+    )
+    seat.saw_lead_line(101.0, "Messi!")
     offer = may_speak(a_moment(106.0, last_big=(Event.GOAL, 100.0), lead_lines_since_big=1))
     assert offer.reaction
-    turn = await seat.turn(offer, "")
+    turn = await seat.turn(offer, "", now=106.0)
     assert turn is not None
-    assert turn.utterances == ["Well, well, well."]
+    assert turn.utterances == ["Well, Messi has been waiting for that."]
 
 
 @pytest.mark.asyncio
 async def test_silence_is_an_answer_and_still_spends_the_rate_cap() -> None:
     """Otherwise a seat that declines once is asked again half a second later."""
-    seat = ColourSeat(speaking(a_turn()), config=ColourConfig(), pack=a_pack())
-    for ts in (1.0, 2.0, 3.0, 4.0):
-        seat.saw_lead_line(ts, f"Line {ts}.")
-        seat.saw_form(
-            ts,
-            CallerLine(
-                scene=Scene.STOPPAGE, event=Event.CORNER, confidence=1.0, speak=True, line="x"
-            ),
-        )
+    seat = a_seat(speaking(a_turn()))
+    for ts in (4.0, 5.0, 6.0, 7.0):
+        seat.saw_lead_line(ts, "Messi again.")
+        seat.saw_form(ts, a_caller(Event.CORNER, "x"))
     assert seat.offer(40.0).allowed
     turn = await seat.turn(seat.offer(40.0), "")
     assert turn is not None and not turn.speak
@@ -432,16 +477,227 @@ async def test_silence_is_an_answer_and_still_spends_the_rate_cap() -> None:
 
 
 def test_the_seat_reads_the_phase_off_forms_the_caller_never_spoke() -> None:
+    """A form the caller filled in and chose not to say is still evidence.
+
+    Asked of the phase gate directly, because ``offer`` also asks whether
+    there is anything to talk about and two blank replay forms give it
+    nothing — which is the next test.
+    """
     seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_pack())
     seat.saw_lead_line(1.0, "Messi.")
     seat.saw_lead_line(2.0, "Now De Paul.")
     silent = CallerLine(scene=Scene.REPLAY, event=Event.NONE, confidence=0.9, speak=False, line="")
     seat.saw_form(3.0, silent)
     seat.saw_form(4.0, silent)
+    assert may_speak(seat.moment(5.0), seat.config).allowed
+
+
+# -- what it is allowed to talk about ----------------------------------------
+
+
+def test_a_turn_is_not_offered_when_there_is_nothing_to_make_one_out_of() -> None:
+    """The judge's complaint, stopped before the call rather than after it.
+
+    A dead ball with no note, no repeated pattern and no completed event
+    produced "Everything turns on what the ref decides next" — a line that
+    would fit any match ever played. There is no prompt that reliably turns
+    nothing into something, so the seat is not asked.
+    """
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=None)
+    seat.saw_lead_line(1.0, "Messi.")
+    seat.saw_lead_line(2.0, "Now De Paul.")
+    blank = CallerLine(scene=Scene.CROWD, event=Event.NONE, confidence=0.9, speak=False, line="")
+    seat.saw_form(3.0, blank)
+    seat.saw_form(4.0, blank)
+    assert may_speak(seat.moment(5.0), seat.config).allowed
+    offer = seat.offer(5.0)
+    assert not offer.allowed
+    assert "nothing specific" in offer.reason
+    assert not seat.material(5.0)
+
+
+def test_a_team_level_note_is_not_material() -> None:
+    """The diagnosis of the 5.0: the gate passed on notes about a country.
+
+    A note filed under "Argentina" is true at every instant of the match, so
+    it let the seat through at every instant, and what came out was about a
+    pitch it cannot see: "France keeping it simple across the back". A note
+    is material when it is about a man the lead has just named.
+    """
+    pack = a_pack().model_copy(
+        update={"notes": [Note(about="Argentina", text="unbeaten since the opening game")]}
+    )
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=pack)
+    seat.saw_lead_line(1.0, "Argentina work it across the back.")
+    seat.saw_lead_line(2.0, "Nothing on down the left.")
+    seat.saw_form(3.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
+    seat.saw_form(4.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
+    assert may_speak(seat.moment(5.0), seat.config).allowed
+    assert not seat.offer(5.0).allowed
+
+
+def test_a_note_about_a_man_the_lead_has_just_named_is_material() -> None:
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_pack())
+    seat.saw_lead_line(1.0, "Messi, twenty yards out.")
+    seat.saw_lead_line(2.0, "Argentina keep it.")
+    seat.saw_form(3.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
+    seat.saw_form(4.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
+    material = seat.material(5.0)
+    assert [note.text for note in material.notes] == ["five in this tournament"]
     assert seat.offer(5.0).allowed
 
 
-def test_the_seat_reaches_for_the_notes_about_the_people_on_the_forms() -> None:
+def test_a_completed_big_event_is_enough_to_make_a_turn_out_of() -> None:
+    """An opinion about the save that has been made cannot be overtaken."""
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=None)
+    seat.saw_lead_line(1.0, "Messi.")
+    seat.saw_lead_line(2.0, "Now De Paul.")
+    seat.saw_form(3.0, a_caller(Event.SAVE, "Martínez holds it.", names=("Emiliano Martínez",)))
+    seat.saw_form(4.0, a_caller(Event.SAVE, ""))
+    material = seat.material(18.0)
+    assert "save" in material.last_event
+    assert "Martínez holds it." in material.last_event
+    # Eighteen seconds, not five: the first twelve after a save belong to the
+    # lead, and the material is still fresh at twenty-five.
+    assert seat.offer(18.0).allowed
+
+
+def test_an_event_nobody_could_be_named_on_is_not_material() -> None:
+    """ "A save" is an opinion about nothing; "that save from Martínez" is one."""
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=None)
+    seat.saw_lead_line(1.0, "Messi.")
+    seat.saw_lead_line(2.0, "Now De Paul.")
+    seat.saw_form(3.0, a_caller(Event.SAVE, "Held."))
+    assert seat.material(5.0).last_event == ""
+
+
+def test_a_stale_event_is_not_material() -> None:
+    """Past twenty-five seconds the moment has gone and so has the opinion."""
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=None)
+    seat.saw_lead_line(1.0, "Messi.")
+    seat.saw_lead_line(2.0, "Now De Paul.")
+    seat.saw_form(3.0, a_caller(Event.SAVE, "Martínez holds it.", names=("Emiliano Martínez",)))
+    assert seat.material(20.0).last_event
+    assert seat.material(40.0).last_event == ""
+
+
+def test_a_pattern_is_counted_in_code_and_never_by_the_model() -> None:
+    """Section 4.5's first kind of colour: "a pattern that has now repeated".
+
+    The count is computed here so that "again" is true when the seat says
+    it. The figure itself never reaches air — ``says_a_number`` refuses any
+    utterance carrying one.
+    """
+    forms = [
+        a_form(1.0, event=Event.CORNER, names=("Nahuel Molina",)),
+        a_form(5.0, event=Event.BUILD_UP),
+        a_form(9.0, event=Event.CORNER, names=("Nahuel Molina",)),
+        a_form(13.0, event=Event.CORNER),
+    ]
+    found = patterns_in(forms)
+    assert any("2 corners on Nahuel Molina" in text for text in found)
+    assert any("Nahuel Molina in the picture on 2" in text for text in found)
+    assert says_a_number(found[0]), "the count is in the string for the model, not for air"
+
+
+def test_the_same_thing_shown_twice_is_not_two_things() -> None:
+    """The caller files one penalty over five looks; the seat is not told five.
+
+    Counting forms rather than occurrences handed the last pass "5 penalties"
+    off a single spot kick, which is false and is the kind of false a
+    listener notices.
+    """
+    forms = [a_form(float(n), event=Event.PENALTY, names=("Kylian Mbappé",)) for n in range(5)]
+    assert not [text for text in patterns_in(forms) if "penalt" in text]
+
+
+def test_a_team_having_the_ball_is_not_a_pattern() -> None:
+    """The whole of the last pass's build-up material, and it said nothing."""
+    forms = [a_form(float(n), event=Event.BUILD_UP) for n in range(8)]
+    assert patterns_in(forms) == []
+
+
+def test_a_side_going_down_the_same_flank_is_a_pattern() -> None:
+    """Section 4.5's shape, read off the lead's words because a form has no zone."""
+    forms = [
+        a_form(1.0, line="France break down the left."),
+        a_form(5.0, line="Back through the middle."),
+        a_form(9.0, line="And down the left again."),
+    ]
+    assert any("Argentina down the left" in text for text in patterns_in(forms))
+
+
+def test_one_of_a_thing_is_not_a_pattern() -> None:
+    assert patterns_in([a_form(1.0, event=Event.CORNER)]) == []
+    assert patterns_in([]) == []
+
+
+def test_the_prompt_shows_the_material_and_says_there_is_nothing_else() -> None:
+    body = text_of(
+        colour_blocks(
+            AT_A_DEAD_BALL,
+            "the ball is dead",
+            "Argentina 2-0 France",
+            ["Otamendi gets across."],
+            [],
+            [
+                "REPEATED: 3 fouls on Nicolás Otamendi",
+                "EVENT, finished, speak about it in the past tense: card, Nicolás Otamendi",
+            ],
+        )
+    )
+    assert "WHAT THIS TURN IS ABOUT" in body
+    assert "3 fouls on Nicolás Otamendi" in body
+    assert "card, Nicolás Otamendi" in body
+    assert "Two to four short utterances" in body
+
+
+def test_one_item_of_material_asks_for_one_or_two_utterances() -> None:
+    """Section 4.4's four-utterance run needs four utterances' worth to say."""
+    body = text_of(
+        colour_blocks(
+            AT_A_DEAD_BALL,
+            "the ball is dead",
+            "",
+            [],
+            [],
+            ["NOTE about Lionel Messi: five in this tournament"],
+        )
+    )
+    assert "ONE OR TWO UTTERANCES" in body
+    assert "why it matters" in body
+
+
+def test_the_goal_reaction_is_told_whose_goal_it_was() -> None:
+    body = text_of(
+        colour_blocks(
+            AFTER_A_GOAL,
+            "4.2 s after the goal call",
+            "",
+            ["Messi! Into the net!"],
+            [],
+            ["NOTE about Lionel Messi: five in this tournament"],
+            about="Lionel Messi",
+        )
+    )
+    assert "This turn is about Lionel Messi. His name goes in the line." in body
+
+
+def test_the_rules_forbid_saying_what_is_happening_now() -> None:
+    """The judge's worst line: colour about the ball while Messi had it."""
+    system = colour_system(a_pack())
+    assert "never say what is happening on the pitch" in system
+    assert "THE MATERIAL IS ALL OF IT" in system
+
+
+def test_the_rules_name_the_filler_this_seat_actually_produced() -> None:
+    """Every line below came out of this seat on a measured pass."""
+    system = colour_system(a_pack())
+    for line in ("this is what it comes down to", "keeping it simple at the back"):
+        assert line in system
+
+
+def test_the_seat_reaches_for_the_notes_about_the_people_the_lead_named() -> None:
     seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_pack())
     seat.saw_form(
         1.0,
@@ -456,7 +712,46 @@ def test_the_seat_reaches_for_the_notes_about_the_people_on_the_forms() -> None:
             line="Messi turns.",
         ),
     )
+    assert seat.notes() == [], "the caller read him; the lead has not said his name"
+    seat.saw_lead_line(1.5, "Messi turns.")
     assert [note.text for note in seat.notes()] == ["five in this tournament"]
+
+
+def test_a_note_goes_stale_once_the_lead_has_moved_on() -> None:
+    """Three lines, because a note is worth saying while the man is in mind."""
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_pack())
+    seat.saw_lead_line(1.0, "Messi turns.")
+    for ts in (2.0, 3.0, 4.0):
+        seat.saw_lead_line(ts, "Argentina work it wide.")
+    assert seat.notes() == []
+
+
+# -- the filler check --------------------------------------------------------
+
+
+def test_a_line_about_nothing_is_refused_in_code() -> None:
+    """The judge's worst line, and the two the seat said either side of it."""
+    for line in (
+        "I think this is what it comes down to.",
+        "That changes everything now.",
+        "You know, he keeps finding space in transition.",
+    ):
+        assert is_filler(line, a_pack()), line
+
+
+def test_a_line_about_a_man_a_repetition_or_an_event_is_not_filler() -> None:
+    for line in (
+        "Yeah, Otamendi has got himself into a mess there.",
+        "Well, that is a penalty all day.",
+        "And France down that side again.",
+    ):
+        assert not is_filler(line, a_pack()), line
+
+
+def test_a_side_described_rather_than_observed_is_filler() -> None:
+    """The line the judge quoted; a team name is not a subject on its own."""
+    assert is_filler("Well, France keeping it simple across the back.", a_pack())
+    assert is_filler("Argentina happy to sit deep and let them have it.", a_pack())
 
 
 # -- the offline pass --------------------------------------------------------
@@ -482,6 +777,11 @@ def _trace() -> list[dict[str, Any]]:
         (30.0, Scene.STOPPAGE, Event.CORNER, "Corner to Argentina."),
         (34.0, Scene.STOPPAGE, Event.CORNER, "Molina to take it."),
     ]
+    # Two forms the caller filled in and did not speak: the hole in the lead's
+    # cadence that the second voice actually fits into. Without one, a trace
+    # whose lead talks every four seconds leaves the colour seat no room at
+    # all, which is a true thing about this system and a poor fixture.
+    quiet = [(40.0, Scene.STOPPAGE, Event.CORNER), (46.0, Scene.STOPPAGE, Event.CORNER)]
     for ts, scene, event, line in forms:
         rows.append(
             {
@@ -509,6 +809,21 @@ def _trace() -> list[dict[str, Any]]:
                 "live_ts": ts + 8.0,
                 "event": event.value,
                 "preemptable": event is not Event.GOAL,
+            }
+        )
+    for ts, scene, event in quiet:
+        rows.append(
+            {
+                "topic": "caller",
+                "ts": ts,
+                "scene": scene.value,
+                "event": event.value,
+                "side": "home",
+                "team": "Argentina",
+                "sightings": [],
+                "confidence": 0.8,
+                "speak": False,
+                "line": "",
             }
         )
     return rows
@@ -617,7 +932,6 @@ async def test_the_second_voice_does_not_say_numbers() -> None:
     assert any("number_claim" in reason for u in out.refused for reason in u.reasons)
     said = [r["text"] for r in out.rows if r.get("topic") == "beat" and r.get("voice") == "analyst"]
     assert "Well, that has only happened once." not in said
-    assert "Molina is the man." in said
 
 
 @pytest.mark.asyncio
@@ -712,7 +1026,9 @@ async def test_the_runtime_speaks_the_colour_seat_and_skips_the_old_analyst(
     # rather than by it. That is a real hole in the simulator and is written
     # down as one: ``--backend oracle`` cannot exercise a text-only seat.
     oracle = SimOracle(sim=sim)
-    scripted = speaking(a_turn("Well, Argentina have settled into this.", "Nothing rushed."))
+    scripted = speaking(
+        a_turn("Well, that corner was there to be won.", "The keeper never moved for it.")
+    )
 
     class _Either:
         """The oracle for everything that looks at a picture, a script for this seat."""

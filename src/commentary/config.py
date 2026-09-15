@@ -196,9 +196,16 @@ class PhraserConfig:
     #: If the caching is ever fixed this should go back up.
     examples_per_kind: int = 10
     #: Lines shown back as "the last lines spoken", so the voice does not
-    #: repeat itself. Shorter than the caller's five: these lines are five
-    #: words each and five of them is no context at all.
-    recent_lines: int = 4
+    #: repeat itself.
+    #:
+    #: It was 4, on the reasoning that five-word lines make poor context.
+    #: The lines are eight words now and the fault the window exists to stop
+    #: is still the loudest one in the measurement: 35% of phrased lines open
+    #: on a word one of the last five opened on, against 12.5% in the corpus
+    #: (``docs/research/real-commentary-corpus.md``, and the register judge
+    #: counts it over a window of five). Six is one more than the window the
+    #: grader uses, so a repeat the model is shown is a repeat it chose.
+    recent_lines: int = 6
     #: Small. The answer is one short sentence and a number.
     max_tokens: int = 256
 
@@ -509,6 +516,31 @@ class VoiceConfig:
 
 
 @dataclass(frozen=True)
+class RestatementConfig:
+    """The score-and-clock line a club feed says for viewers joining late.
+
+    ``docs/research/real-commentary-corpus.md`` section 5.3 splits the corpus
+    in two. The club-channel feeds restate the score constantly —
+    ``bar-mal-2019`` does it on an almost literal five-minute timer, 40 times
+    in a match — and the domestic feeds barely do, because the score bug is on
+    screen and the viewer can read it. Five minutes is the club number and is
+    the default; a broadcast with a permanent bug should turn it off.
+
+    The line is written in code, not by a model, for the reason Gap 8 item 4
+    gives: the vocabulary is a small closed set and the handoff's rule is
+    already "code writes numbers, the model writes words".
+    """
+
+    #: Seconds of *match clock* between restatements. Zero is off.
+    every_s: float = float(os.getenv("RESTATEMENT_EVERY_S", "300"))
+    #: How close a caller beat may be before the restatement gives way. It is
+    #: filler, and filler never speaks over the game.
+    clear_of_a_beat_s: float = 3.0
+    #: How hard it is said. The flattest thing anybody says in a match.
+    excitement: float = 0.1
+
+
+@dataclass(frozen=True)
 class CostConfig:
     """A match that costs more than this stops calling the model."""
 
@@ -526,6 +558,7 @@ class Settings:
     predictor: PredictorConfig = field(default_factory=PredictorConfig)
     gate: GateConfig = field(default_factory=GateConfig)
     director: DirectorConfig = field(default_factory=DirectorConfig)
+    restatement: RestatementConfig = field(default_factory=RestatementConfig)
     voice: VoiceConfig = field(default_factory=VoiceConfig)
     cost: CostConfig = field(default_factory=CostConfig)
 

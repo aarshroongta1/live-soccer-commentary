@@ -50,7 +50,7 @@ one.
 from __future__ import annotations
 
 import re
-from collections import deque
+from collections import Counter, deque
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -59,7 +59,7 @@ from commentary.agents.analyst import restates_score
 from commentary.agents.caller import clean_line, trim_words
 from commentary.bus import Topic
 from commentary.config import SETTINGS, ColourConfig, Settings
-from commentary.gate import FactGate
+from commentary.gate import FactGate, fold
 from commentary.llm.base import LLMBackend, LLMError, Usage
 from commentary.prompts.colour import colour_blocks, colour_system, form_line, opens_with_a_cue
 from commentary.schemas import (
@@ -498,6 +498,12 @@ def judge_utterance(
     and section 5.1 is the reason: colour-opener lines are not where the
     numbers live, and the share of number-carrying lines that open like the
     colour voice is within noise of the base rate on every file.
+
+    Then :func:`is_filler`, which is the judge's 5.0 turned into a predicate:
+    an utterance that names nobody, names no side doing something again and
+    names no event is refused as ``colour_filler``. It sits here rather than
+    in the prompt because the prompt has asked for it twice and been given
+    "I think this is what it comes down to" both times.
     """
     if restates_score(text, {"home_score": state.home_score, "away_score": state.away_score}):
         return GateVerdict(
@@ -509,6 +515,12 @@ def judge_utterance(
         return GateVerdict(
             passed=False,
             reasons=["number_claim: numbers are the lead's job, not this seat's"],
+            line=text,
+        )
+    if is_filler(text, pack):
+        return GateVerdict(
+            passed=False,
+            reasons=["colour_filler: names no player, no side doing it again, and no event"],
             line=text,
         )
     return gate.judge(
@@ -525,6 +537,404 @@ def judge_utterance(
         goal_in_state=goal_in_state,
         at=at,
     )
+
+
+#: Events that are something happening rather than the ball moving. A
+#: pattern worth remarking on is built out of these; "three passes in a row"
+#: is not an observation.
+NAMED_EVENTS = frozenset(
+    {
+        Event.GOAL,
+        Event.SHOT,
+        Event.SAVE,
+        Event.CORNER,
+        Event.FREE_KICK,
+        Event.PENALTY,
+        Event.FOUL,
+        Event.OFFSIDE,
+        Event.THROW_IN,
+        Event.CARD,
+        Event.SUBSTITUTION,
+    }
+)
+
+#: How a count reads in English. The seat is shown this text and a model
+#: shown "3 penaltys" writes worse English than one shown "3 penalties".
+PLURALS = {
+    Event.PENALTY: "penalties",
+    Event.OFFSIDE: "offside calls",
+    Event.THROW_IN: "throw-ins",
+    Event.FREE_KICK: "free kicks",
+    Event.SUBSTITUTION: "substitutions",
+}
+
+#: How many forms back a pattern may be counted over. A ceiling rather than
+#: the window: the forms handed to :func:`patterns_in` are the ones filed
+#: since the seat's last turn, which on a forty-five second gap is about a
+#: dozen anyway.
+PATTERN_FORMS = 12
+
+#: How many times something has to happen before it is a pattern. Two is the
+#: floor the study's own examples sit on — "unlike the corners there ...
+#: they've gone zonally" is about the second corner, not the fifth — and one
+#: is not a pattern, it is the thing that just happened.
+PATTERN_FLOOR = 2
+
+#: How old the last big event may be and still be worth an opinion. Past
+#: this the moment has gone and an opinion about it is a history lesson;
+#: section 4.3's colour entries after a big event have a median delay of
+#: 21.4 s, so the window is drawn just past that.
+EVENT_FRESH_S = 25.0
+
+#: How many of the lead's lines are read for the names a note may be about.
+#: Three, because a note is only worth saying while the man it is about is
+#: still the man the listener is thinking about.
+LEAD_LINES_FOR_NOTES = 3
+
+#: The two sides of the pitch, which is the only geography the seat can get
+#: out of the lead's own words. "France down the left again" is the study's
+#: shape; there is no zone on a caller form, so the flank is read off what
+#: the lead said while the form was filed.
+FLANKS = ("left", "right")
+
+#: Words that make a claim of repetition. Half of the material check: a line
+#: about a team is only specific when it says the team did something *again*.
+REPEATS = frozenset(
+    {
+        "again",
+        "another",
+        "same",
+        "every",
+        "each",
+        "keeps",
+        "keep",
+        "still",
+        "repeatedly",
+        "more",
+    }
+)
+
+#: Words that name something that happened rather than something that is
+#: happening. The other half of the material check. Deliberately short and
+#: concrete: a line with one of these in it is about an event, and a line
+#: with none of these, no player and no team-plus-repetition is about
+#: nothing.
+EVENT_WORDS = frozenset(
+    {
+        "goal",
+        "goals",
+        "scored",
+        "scores",
+        "finish",
+        "finished",
+        "strike",
+        "struck",
+        "shot",
+        "shots",
+        "header",
+        "volley",
+        "penalty",
+        "penalties",
+        "spot",
+        "save",
+        "saved",
+        "stop",
+        "card",
+        "booked",
+        "booking",
+        "yellow",
+        "red",
+        "foul",
+        "fouled",
+        "corner",
+        "corners",
+        "kick",
+        "kicks",
+        "offside",
+        "throw",
+        "substitution",
+        "sub",
+        "whistle",
+        "referee",
+        "ref",
+        "keeper",
+        "post",
+        "bar",
+        "net",
+    }
+)
+
+
+@dataclass(frozen=True)
+class Material:
+    """What the seat is allowed to build a turn out of, and nothing else.
+
+    The first material gate passed on team-level notes alone, and a team-level
+    note is a licence to say anything about a team: what came back was
+    "France keeping it simple across the back" and "I think this is what it
+    comes down to", about a pitch the seat cannot see. The Opus judge scored
+    the second voice 5.0 — "a second voice exists but says little" — and that
+    is the same finding from the other end.
+
+    So the material is specific or there is none. Three kinds, and each one
+    is anchored to somebody or something a listener can check:
+
+    ``notes``
+        A note about a **player the lead has named in his last three lines**.
+        Not about a team: the pack's team notes are the lead's to drop into
+        a quiet moment, and in this seat's hands they became weather.
+    ``patterns``
+        Something that happened twice or more in the forms filed since the
+        last turn, **with a name on it** — the same player in look after
+        look, the same kind of event, one side down one flank. A team simply
+        having the ball for a while is not a pattern.
+    ``last_event``
+        The last goal, shot, save, penalty or card, less than
+        :data:`EVENT_FRESH_S` old, **with the player named**. An opinion
+        about that is an opinion about something that has finished.
+
+    ``about`` is the one person the turn has to be about, set only for the
+    sanctioned reaction after a goal, where the corpus's second voice talks
+    about the scorer and nothing else.
+    """
+
+    notes: tuple[Note, ...] = ()
+    patterns: tuple[str, ...] = ()
+    last_event: str = ""
+    about: str = ""
+
+    def __bool__(self) -> bool:
+        """Is there anything specific enough here to make a turn out of?"""
+        return bool(self.notes or self.patterns or self.last_event)
+
+    def lines(self) -> list[str]:
+        """The material as the model is shown it: labelled, one item a line.
+
+        A note carrying a figure is marked as carrying one. The seat may not
+        say a number and the gate throws the utterance away when it does, so
+        "a goal in the 2018 World Cup final at nineteen" came back as
+        "Scored in a final at nineteen" and was struck out — a whole
+        utterance lost to a rule the model had been told twice, a foot away
+        from the thing it was reading.
+        """
+        figure = " (has a figure in it: say the fact, never the figure)"
+        out = [
+            f"NOTE about {note.about}"
+            + (figure if says_a_number(note.text) else "")
+            + f": {note.text}"
+            for note in self.notes
+        ]
+        out.extend(f"REPEATED: {text}" for text in self.patterns)
+        if self.last_event:
+            out.append(f"EVENT, finished, speak about it in the past tense: {self.last_event}")
+        return out
+
+
+def roster_names(pack: KnowledgePack | None) -> list[str]:
+    """Everybody who exists, both squads, starters before bench."""
+    if pack is None:
+        return []
+    return [
+        player.name
+        for team in (pack.home, pack.away)
+        for player in [*team.starters, *team.bench]
+        if player.name
+    ]
+
+
+def team_words(pack: KnowledgePack | None) -> list[str]:
+    """What either side gets called: the name, the short form, the demonym."""
+    if pack is None:
+        return []
+    return [
+        word
+        for team in (pack.home, pack.away)
+        for word in (team.name, team.short, team.demonym)
+        if word
+    ]
+
+
+def mentions(text: str, name: str) -> bool:
+    """Is this name in this sentence, allowing for the surname alone?
+
+    A selection heuristic, not a fact check — the gate's own roster matching
+    does that afterwards. Folded on both sides because the caller reads a
+    name off a graphic and the pack has it off a team sheet.
+    """
+    haystack = f" {fold(text)} "
+    folded = fold(name)
+    if not folded:
+        return False
+    surname = folded.rsplit(" ", 1)[-1]
+    return f" {folded} " in haystack or f" {surname} " in haystack
+
+
+def one_name_each(names: Sequence[str]) -> list[str]:
+    """One spelling per person, the fullest one, in the order first read.
+
+    The caller reads a name off whatever the broadcast put on the screen, so
+    one penalty came back as "Mbappé", "Kylian Mbappé" and "Kylian Mbappe"
+    across three looks and the material line named him three times. Grouped
+    by folded surname, because that is the part every spelling agrees on.
+    """
+    best: dict[str, str] = {}
+    order: list[str] = []
+    for name in names:
+        folded = fold(name)
+        if not folded:
+            continue
+        key = folded.rsplit(" ", 1)[-1]
+        if key not in best:
+            order.append(key)
+            best[key] = name
+        elif len(name) > len(best[key]):
+            best[key] = name
+    return [best[key] for key in order]
+
+
+def is_filler(text: str, pack: KnowledgePack | None) -> bool:
+    """Is this utterance about nothing?
+
+    Three ways to be about something, and a line needs one of them:
+
+    - it names somebody on a team sheet;
+    - it names a side **and** claims a repetition — "France down that side
+      again" is an observation, "France keeping it simple" is a guess at a
+      picture the seat cannot see;
+    - it names an event: a goal, a penalty, a save, a card, a foul, a corner.
+
+    Everything else is the failure the judge quoted: "I think this is what it
+    comes down to", "that changes everything", "they know what they are
+    protecting". Checked in code because asking the prompt nicely did not
+    stop it.
+    """
+    words = set(fold(text).split())
+    if not words:
+        return True
+    if words & EVENT_WORDS:
+        return False
+    if any(mentions(text, name) for name in roster_names(pack)):
+        return False
+    named_side = any(mentions(text, word) for word in team_words(pack))
+    return not (named_side and bool(words & REPEATS))
+
+
+def patterns_in(forms: Sequence[FormAt]) -> list[str]:
+    """What has happened twice or more, with a name on it and the count.
+
+    The count is in the string because the prompt has to be able to say "that
+    is the third one" to itself in order to write "again"; the rules and
+    :func:`says_a_number` between them stop the figure reaching air.
+
+    Occurrences, not forms. The caller files the same penalty on five looks
+    in a row and counting forms would have handed the seat "5 penalties",
+    which is false and is the kind of false a listener notices. So a run of
+    consecutive forms carrying the same thing counts once.
+
+    Three kinds, which are the brief's: the same kind of event happening
+    again, the same player coming back into the picture, one side going down
+    one flank again. A side simply having the ball is not among them — it was
+    the whole of the last pass's material and it produced nothing worth
+    hearing.
+    """
+    # A replay is the same thing again, not another one. Counting them gave
+    # "2 goals on Mbappé" off one penalty and its replay, which is false and
+    # would have reached air as "again".
+    kept = [form for form in forms if form.scene is not Scene.REPLAY][-PATTERN_FORMS:]
+    if not kept:
+        return []
+    found: list[tuple[int, str]] = []
+
+    events = _runs(kept, lambda form: form.event if form.event in NAMED_EVENTS else None)
+    for event, count in events:
+        if count < PATTERN_FLOOR:
+            continue
+        kind = PLURALS.get(event, f"{event.value.replace('_', ' ')}s")
+        who = _who_runs_through(kept, event)
+        found.append(
+            (count, f"{count} {kind} on {who}" if who else f"{count} {kind} in this spell")
+        )
+
+    people: Counter[str] = Counter()
+    for name in {name for form in kept for name in form.names if name}:
+        people[name] = sum(count for _key, count in _runs(kept, _in_the_picture(name)))
+    for name, count in people.most_common():
+        if count >= PATTERN_FLOOR:
+            found.append((count, f"{name} in the picture on {count} separate looks"))
+
+    for (team, flank), count in _flank_runs(kept).items():
+        if count >= PATTERN_FLOOR:
+            found.append((count, f"{team} down the {flank} {count} times in this spell"))
+
+    return [text for _count, text in sorted(found, key=lambda item: -item[0])]
+
+
+def _runs(forms: Sequence[FormAt], key: Callable[[FormAt], Any]) -> list[tuple[Any, int]]:
+    """How many separate times each key turns up, counting a run as one.
+
+    A falsy key breaks the run and is never counted: those are the forms this
+    key is not about.
+    """
+    counts: Counter[Any] = Counter()
+    last: Any = None
+    for form in forms:
+        value = key(form)
+        if not value:
+            last = None
+            continue
+        if value != last:
+            counts[value] += 1
+        last = value
+    return counts.most_common()
+
+
+def _who_runs_through(forms: Sequence[FormAt], event: Event) -> str:
+    """The one name on every form of this event, or nothing.
+
+    "the third foul on Otamendi" needs Otamendi to have been on all three of
+    them. One name across two fouls is an observation; a different name each
+    time is a coincidence.
+    """
+    seen = [set(form.names) for form in forms if form.event is event and form.names]
+    if not seen:
+        return ""
+    shared = set.intersection(*seen)
+    return sorted(shared)[0] if shared else ""
+
+
+def _flank_runs(forms: Sequence[FormAt]) -> dict[tuple[str, str], int]:
+    """How many separate spells each side spent down each flank.
+
+    Read off the lead's own words, because a caller form has a team and a
+    scene and no geography at all.
+    """
+    found: dict[tuple[str, str], int] = {}
+    for team in {form.team for form in forms if form.team}:
+        for flank in FLANKS:
+            count = sum(number for _key, number in _runs(forms, _down_the(team, flank)))
+            if count:
+                found[(team, flank)] = count
+    return found
+
+
+def _in_the_picture(name: str) -> Callable[[FormAt], Any]:
+    """A key that is this player's name on the looks he was legible on."""
+
+    def key(form: FormAt) -> Any:
+        return name if name in form.names else None
+
+    return key
+
+
+def _down_the(team: str, flank: str) -> Callable[[FormAt], Any]:
+    """A key that is this flank on the looks this side spent going down it."""
+
+    def key(form: FormAt) -> Any:
+        if form.team != team:
+            return None
+        return flank if flank in fold(form.said).split() else None
+
+    return key
 
 
 class ColourSeat:
@@ -564,8 +974,18 @@ class ColourSeat:
         #: not to make the same kind again.
         self._last_angle = ""
         self._turns_since_big = 0
-        #: Forms filed since the last turn, which is what the prompt shows.
+        #: Forms filed since the last turn, which is what the patterns are
+        #: counted over.
         self._since_turn: list[FormAt] = []
+        #: The instant of the last offer, so that :meth:`turn` rebuilds the
+        #: same material the offer was allowed on without being handed the
+        #: clock twice.
+        self._offered_at = 0.0
+        #: What the last turn was given to make itself out of. Kept so that
+        #: the offline pass can print each utterance beside the material it
+        #: was supposed to be about, which is the only way to read a turn and
+        #: say whether it did what it was asked.
+        self.last_material = Material()
         #: Why the last turn produced nothing, in words, for the error row.
         self.last_reason = ""
         #: What the last turn cost, so a pass can price itself per turn.
@@ -596,9 +1016,23 @@ class ColourSeat:
         self._forms.append(form)
         self._since_turn.append(form)
         if form.event in BIG_MOMENTS:
-            self._last_big = (form.event, ts)
-            self._lead_since_big = 0
-            self._turns_since_big = 0
+            # One goal, not five. The caller files the same goal over several
+            # looks and then over the replays, and taking each of them as a
+            # new big event reset both the rate cap and the once-per-goal
+            # reaction: the last pass took two reaction fragments at the same
+            # instant and a third off a replay twenty-four seconds later. So
+            # a big event of the same kind inside the freshness window is the
+            # same event, and it keeps the timestamp of the look the lead
+            # actually called it on.
+            again = (
+                self._last_big is not None
+                and self._last_big[0] is form.event
+                and ts - self._last_big[1] <= EVENT_FRESH_S
+            )
+            if not again:
+                self._last_big = (form.event, ts)
+                self._lead_since_big = 0
+                self._turns_since_big = 0
 
     def saw_lead_line(self, ts: float, text: str) -> None:
         """Record a line the lead actually got past the gate."""
@@ -622,8 +1056,32 @@ class ColourSeat:
         )
 
     def offer(self, now: float) -> Offer:
-        """May the seat be asked at this instant? Cheap; no model call."""
-        return may_speak(self.moment(now), self.config)
+        """May the seat be asked at this instant? Cheap; no model call.
+
+        Two gates, and both are free. :func:`may_speak` asks whether the
+        phase allows a turn; :meth:`material` asks whether there is anything
+        specific enough to make one out of. A seat with a dead ball and
+        nothing to say produced "Everything turns on what the ref decides
+        next", and a seat with a team-level note produced "France keeping it
+        simple across the back" — stopping both here rather than in the
+        answer saves the call as well as the line.
+        """
+        self._offered_at = now
+        offer = may_speak(self.moment(now), self.config)
+        if not offer.allowed:
+            return offer
+        if not self.material(now, reaction=offer.reaction):
+            return Offer(
+                False,
+                offer.situation,
+                (
+                    "nothing specific to say: no note about a man the lead has named, no "
+                    "pattern with a name on it, no finished event"
+                    if not offer.reaction
+                    else "the goal reaction has no scorer to be about"
+                ),
+            )
+        return offer
 
     def answered(self, now: float) -> None:
         """Record that an offer was put to the model, whatever came back.
@@ -646,34 +1104,146 @@ class ColourSeat:
     # -- the call ---------------------------------------------------------
 
     def notes(self) -> list[Note]:
-        """The pack's notes about the people this passage has been about.
+        """The pack's notes about the players the lead has just named.
 
-        Same ordering rule as the phraser's: the names the caller could read,
-        most recent first, then both teams at the end where they lose to
-        anything more specific.
+        Players, and only players. The old version of this walked the forms
+        and then appended both team names, which meant a pack with a note
+        about either country handed the seat material at every instant of the
+        match — and "Argentina have not lost since that Saudi Arabia game" in
+        this seat's mouth came out as "I think this is what it comes down
+        to". A team note is the lead's to drop into a quiet moment.
+
+        Most recently named first, which is the ordering
+        :func:`~commentary.state.notes_for` caps against, so a note about the
+        man still on the screen wins a place over one about the man before
+        him.
+        """
+        return notes_for(self.pack, self.lead_named())
+
+    def lead_named(self) -> list[str]:
+        """Who the lead has named in his last three lines, newest first."""
+        found: list[str] = []
+        for line in reversed(list(self._lead)[-LEAD_LINES_FOR_NOTES:]):
+            for name in roster_names(self.pack):
+                if name not in found and mentions(line, name):
+                    found.append(name)
+        return found
+
+    def material(self, now: float, *, reaction: bool = False) -> Material:
+        """The three things the seat may build a turn out of.
+
+        See :class:`Material`. ``reaction`` is the sanctioned fragment after
+        a goal, which is not a turn and is about one man.
+        """
+        if reaction:
+            return self._about_the_scorer(now)
+        return Material(
+            notes=tuple(self.notes()),
+            patterns=tuple(patterns_in(self._since_turn)),
+            last_event=self._last_completed(now),
+        )
+
+    def _about_the_scorer(self, now: float) -> Material:
+        """The material for the one line allowed just after a goal.
+
+        The corpus's reaction fragments are about the man or about the move —
+        "Morris is the man", "Another example, a pure quality finish and it
+        starts outside the post and curls in" — and never about the match in
+        general. What this seat produced instead was "I think that changes
+        everything now", which would fit any goal ever scored.
+
+        So: a note about the scorer if the pack has one, else the move in the
+        lead's own words, else nothing, which means no turn at all.
+        """
+        scorer, called = self._the_goal(now)
+        if not scorer:
+            return Material()
+        notes = tuple(notes_for(self.pack, [scorer]))
+        if notes:
+            return Material(notes=notes, about=scorer)
+        if called:
+            return Material(last_event=f"the goal, {scorer} — he called it: {called}", about=scorer)
+        return Material()
+
+    def _the_goal(self, now: float) -> tuple[str, str]:
+        """Who scored the goal that has just been called, and how it was called.
+
+        The caller files a goal over several looks and names the scorer on
+        only some of them — on the Mbappé trace the form carrying "steps up
+        and strikes it" read no name at all and the next one read Mbappé — so
+        the run is read as one thing.
+        """
+        big = self._last_big
+        if big is None or big[0] is not Event.GOAL or now - big[1] > EVENT_FRESH_S:
+            return "", ""
+        names, called = self._run_of(Event.GOAL, big[1])
+        return (names[0] if names else ""), called
+
+    def _run_of(self, event: Event, at: float) -> tuple[list[str], str]:
+        """Every name read off this event's looks, and the words for it.
+
+        Newest first for the names, because the scorer is whoever the caller
+        could read closest to the goal being given; the words are the lead's
+        first line about it, which is the one that described the move.
         """
         names: list[str] = []
-        for form in reversed(self._since_turn or self._forms[-6:]):
-            names.extend(name for name in form.names if name)
-            if form.team:
-                names.append(form.team)
-        if self.pack is not None:
-            names.extend([self.pack.home.name, self.pack.away.name])
-        return notes_for(self.pack, names)
+        called = ""
+        for form in reversed(self._forms):
+            if form.event is not event or form.ts > at or at - form.ts > EVENT_FRESH_S:
+                continue
+            names.extend(name for name in form.names if name and name not in names)
+            if form.said:
+                called = form.said
+        return one_name_each(names), called
 
-    async def turn(self, offer: Offer, state_summary: str) -> ColourTurn | None:
-        """Ask for one turn. ``None`` means the call failed, not silence."""
+    def _last_completed(self, now: float) -> str:
+        """The last big thing the lead called, if it is fresh and has a name on it.
+
+        Not the ball now — the seat cannot see the ball now, and the whole of
+        the last pass's worst material was the present tense. A goal, a shot,
+        a save, a penalty, a card: something with a beginning and an end,
+        under :data:`EVENT_FRESH_S` old, with the man it happened to named,
+        and the words the lead used for it so that an opinion has something
+        to be an opinion about. Anything looser was where "I think this is
+        what it comes down to" came from.
+        """
+        latest: FormAt | None = None
+        for form in reversed(self._forms):
+            if form.event in BIG_MOMENTS:
+                latest = form
+                break
+        if latest is None or now - latest.ts > EVENT_FRESH_S:
+            return ""
+        names, called = self._run_of(latest.event, latest.ts)
+        if not names:
+            return ""
+        said = f" — he called it: {called}" if called else ""
+        return f"{latest.event.value.replace('_', ' ')}, {', '.join(names)}{said}"
+
+    async def turn(
+        self, offer: Offer, state_summary: str, now: float | None = None
+    ) -> ColourTurn | None:
+        """Ask for one turn. ``None`` means the call failed, not silence.
+
+        ``now`` defaults to the instant of the last :meth:`offer`, which is
+        what both the runtime and the offline pass ask at; it is a parameter
+        so that the material can be rebuilt rather than cached between the
+        two calls.
+        """
         self.last_reason = ""
         self.last_usage = Usage()
+        at = self._offered_at if now is None else now
+        material = self.material(at, reaction=offer.reaction)
+        self.last_material = material
         blocks = colour_blocks(
             offer.situation,
             offer.reason,
             state_summary,
             self.lead_lines,
-            [form.rendered() for form in self._since_turn[-6:]],
-            self.notes(),
             self.said,
-            self._last_angle,
+            material.lines(),
+            about=material.about,
+            last_angle=self._last_angle,
         )
         try:
             parsed = await self.backend.parse(
@@ -690,7 +1260,24 @@ class ColourSeat:
             self.last_reason = f"model call failed: {exc}"
             return None
         self.last_usage = parsed.usage
-        return self._settle(parsed.value, 1 if offer.reaction else self.config.max_utterances)
+        return self._settle(parsed.value, self._how_many(offer, material))
+
+    def _how_many(self, offer: Offer, material: Material) -> int:
+        """How many utterances this turn is allowed to be.
+
+        Section 4.4 has the colour voice holding the microphone for a median
+        of four utterances, but that is a voice with a whole match in its
+        head. This seat has whatever the material gate let through, and on
+        one item a four-utterance turn is one thought and three restatements
+        — which is what the judge heard. So: the sanctioned goal reaction is
+        one fragment, a single item of material is worth two utterances (the
+        thing, then why it matters), and only real material gets the run.
+        """
+        if offer.reaction:
+            return 1
+        if len(material.lines()) <= 1:
+            return min(2, self.config.max_utterances)
+        return self.config.max_utterances
 
     def _settle(self, proposed: ColourTurn, limit: int) -> ColourTurn:
         """Trim, cap and count, before anyone sees the turn.
@@ -756,6 +1343,10 @@ class ColourTurnRecord:
     spoke: bool
     #: Was this the sanctioned one-line goal reaction rather than a turn?
     reaction: bool = False
+    #: What the seat was given to make this turn out of, labelled. Printed
+    #: beside the utterances, because "is this line about anything?" is not a
+    #: question you can answer without knowing what it was handed.
+    material: tuple[str, ...] = ()
     angle: str = ""
     cites: tuple[str, ...] = ()
     utterances: list[ColourUtterance] = field(default_factory=list)
@@ -801,6 +1392,8 @@ class ColourPass:
                 out.append(f"{head}  (silent) {turn.reason}")
                 continue
             out.append(f"{head}  {turn.angle} <- {turn.reason}")
+            for item in turn.material:
+                out.append(f"{'':>7}  {'material':<17}  * {item}")
             for utterance in turn.utterances:
                 mark = " " if utterance.passed else "x"
                 if utterance.after:
@@ -913,6 +1506,19 @@ async def colour_pass(
             cursor += 1
 
         offer = seat.offer(now)
+        if offer.allowed and not _has_room(now, beat_ts, cfg):
+            # The phase says yes and the lead has not drawn breath. Checked
+            # before the call rather than after it, because a turn that ends
+            # up entirely inside the lead's lines is a turn that was paid for
+            # and thrown away: the first pass with the interval clearance on
+            # spent three calls out of five that way. Offline the lead's next
+            # beats are known, so this is free; live it is the director's job
+            # and is done after the fact, by preemption.
+            offer = Offer(
+                False,
+                offer.situation,
+                "the lead has not stopped talking long enough for two utterances",
+            )
         if offer.allowed:
             moment = seat.moment(now)
             state = _state_at(states, now)
@@ -926,6 +1532,7 @@ async def colour_pass(
                 reason=offer.reason,
                 spoke=bool(turn is not None and turn.speak and turn.utterances),
                 reaction=offer.reaction,
+                material=tuple(seat.last_material.lines()),
                 angle=turn.angle.value if turn is not None else "",
                 cites=tuple(turn.cites) if turn is not None else (),
                 usd=usd,
@@ -973,6 +1580,31 @@ async def colour_pass(
     base = _without_the_old_analyst(rows) if out.spoken else list(rows)
     out.rows = _merge(base, additions)
     return out
+
+
+def _has_room(
+    now: float, beats: Sequence[tuple[float, float]], cfg: ColourConfig
+) -> bool:
+    """Is there a hole in the lead's cadence big enough for a short turn?
+
+    ``min_utterances`` of them, inside ``turn_span_s``. Real commentary's
+    colour voice comes in when the ball is dead and the lead has stopped,
+    and on a trace where the lead speaks every four seconds and takes two of
+    them to say it there is simply nowhere to stand.
+    """
+    return (
+        len(
+            space_out(
+                now,
+                cfg.min_utterances,
+                gap=cfg.utterance_gap_s,
+                avoid=beats,
+                clear=cfg.clear_of_caller_s,
+                span=cfg.turn_span_s,
+            )
+        )
+        >= cfg.min_utterances
+    )
 
 
 def _schedule(
@@ -1097,6 +1729,7 @@ def _colour_row(
         "situation": offer.situation,
         "reason": offer.reason,
         "speak": record.spoke,
+        "material": list(record.material),
         "angle": record.angle,
         "cites": list(record.cites),
         "utterances": [u.text for u in record.utterances],
@@ -1117,11 +1750,21 @@ def _colour_row(
 
 
 def _without_the_old_analyst(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Every row except the beats the silence-timer analyst spoke."""
+    """Every row except the last colour pass's, and the old analyst's beats.
+
+    Both, because a trace is usually run through this pass more than once.
+    The beats went from the start — two colour voices on one channel is one
+    too many — but the ``colour`` rows did not, so a twice-passed trace
+    carried both passes' turns and the second reader of it spent ten minutes
+    working out why the seat had apparently spoken twice at the same instant.
+    The ``analyst`` rows stay: they are the record of what the thing this
+    replaces actually said.
+    """
     return [
         row
         for row in rows
-        if not (row.get("topic") == Topic.BEAT.value and row.get("voice") == Voice.ANALYST.value)
+        if row.get("topic") != Topic.COLOUR.value
+        and not (row.get("topic") == Topic.BEAT.value and row.get("voice") == Voice.ANALYST.value)
     ]
 
 

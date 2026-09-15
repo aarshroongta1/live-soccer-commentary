@@ -412,27 +412,94 @@ def _matches_roster(name: str, roster: _Roster, threshold: float) -> bool:
     return any(_similar(folded, entry) >= threshold for entry in known)
 
 
-def _stated_scores(line: str) -> list[tuple[int, int]]:
-    """Every scoreline the line says out loud, in digits or in words."""
-    found: list[tuple[int, int]] = []
+@dataclass(frozen=True)
+class ScoreSpan:
+    """A scoreline a line says out loud, and where in the line it sits."""
+
+    start: int
+    end: int
+    home: int
+    away: int
+
+    @property
+    def pair(self) -> tuple[int, int]:
+        return self.home, self.away
+
+
+def score_spans(line: str) -> list[ScoreSpan]:
+    """Every scoreline the line says out loud, in digits or in words, located.
+
+    Split out of :func:`_stated_scores` so that a scoreline can be *removed*
+    as well as judged. ``commentary.scoreline`` strips whatever number the
+    phraser wrote before code appends the one the state supports, and a strip
+    with its own regexes would drift from these: a shape the strip missed and
+    the gate caught is a line dropped whole, which is the fault this whole
+    change exists to remove.
+    """
+    found: list[ScoreSpan] = []
     for match in _DIGIT_PAIR.finditer(line):
-        found.append((int(match.group(1)), int(match.group(2))))
+        found.append(
+            ScoreSpan(match.start(), match.end(), int(match.group(1)), int(match.group(2)))
+        )
     for match in _WORD_PAIR.finditer(line):
         first, second = match.group(1).lower(), match.group(2).lower()
         if (first, second) == ("one", "two"):
             continue  # "a lovely one-two" is a give-and-go, not a scoreline.
-        found.append((_NUMBER_WORDS[first], _NUMBER_WORDS[second]))
+        found.append(
+            ScoreSpan(match.start(), match.end(), _NUMBER_WORDS[first], _NUMBER_WORDS[second])
+        )
     for match in _ALL_PAIR.finditer(line):
         value = _NUMBER_WORDS[match.group(1).lower()]
-        found.append((value, value))
+        found.append(ScoreSpan(match.start(), match.end(), value, value))
     for match in _MIXED_PAIR.finditer(line):
-        found.append((int(match.group(1)), _NUMBER_WORDS[match.group(2).lower()]))
+        found.append(
+            ScoreSpan(
+                match.start(),
+                match.end(),
+                int(match.group(1)),
+                _NUMBER_WORDS[match.group(2).lower()],
+            )
+        )
     for match in _TO_PAIR.finditer(line):
         first, second = match.group(1).lower(), match.group(2).lower()
         if first == second == "one":
             continue  # "one to one with the keeper" is a duel, not a draw.
-        found.append((_as_number(first), _as_number(second)))
+        found.append(
+            ScoreSpan(match.start(), match.end(), _as_number(first), _as_number(second))
+        )
+    found.sort(key=lambda span: (span.start, span.end))
     return found
+
+
+def ordinal_score_spans(text: str) -> list[tuple[int, int]]:
+    """Where the line counts a *side's* goals: "Argentina's third", "their fourth".
+
+    The scorer's own tally — "his third" — is deliberately not here, for the
+    reason :data:`_ORD_POSSESSIVE` gives: it counts one man's goals, which the
+    scoreboard does not know and a pack note might. That claim belongs to the
+    note rule, and it is the third beat of a goal in the corpus, so a strip
+    that removed it would remove the beat this change is adding.
+    """
+    found: list[tuple[int, int]] = []
+    for pattern in (_ORD_POSSESSIVE, _ORD_THEIR, _ORD_FOR_TEAM):
+        for match in pattern.finditer(text):
+            if _is_aspiration(text, match.start()):
+                continue
+            found.append((match.start(), match.end()))
+    return sorted(found)
+
+
+def level_claim_spans(text: str) -> list[tuple[int, int]]:
+    """Where the line says the scores are equal without saying a number."""
+    found: list[tuple[int, int]] = []
+    for pattern in _LEVEL_CLAIMS:
+        found += [(match.start(), match.end()) for match in pattern.finditer(text)]
+    return sorted(found)
+
+
+def _stated_scores(line: str) -> list[tuple[int, int]]:
+    """Every scoreline the line says out loud, in digits or in words."""
+    return [span.pair for span in score_spans(line)]
 
 
 def _as_number(token: str) -> int:

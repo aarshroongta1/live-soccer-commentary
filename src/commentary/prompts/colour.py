@@ -29,7 +29,7 @@ from collections.abc import Sequence
 
 from commentary.config import ColourConfig
 from commentary.llm.base import Block, text_block
-from commentary.schemas import KnowledgePack, Note, Player, TeamSheet
+from commentary.schemas import KnowledgePack, Player, TeamSheet
 
 #: Fifty real colour utterances, copied exactly from
 #: ``docs/research/real-commentary-corpus.md`` sections 4.4 and 4.5, grouped
@@ -146,11 +146,51 @@ So never narrate. Not "he plays it square", not "the cross comes in", not \
 "they are on the attack". If a line would need a picture to justify it, it \
 is not yours to say.
 
-And what you are shown is already seconds old. Never say who has the ball, \
-where the ball is, or what either side is doing at this instant: by the time \
-you are heard it will have moved, and a second voice describing the wrong \
-half is worse than a second voice saying nothing. Speak about what has been \
-true for a while, or about somebody by name.
+And what you are shown is already seconds old. **You may never say what is \
+happening on the pitch — not in the present, not in the past, not in the \
+future.** Not who has the ball, not where it is, not what a side is trying \
+to do, not what is about to happen. Asked to do it anyway, a seat with no \
+pictures guesses, and it guesses wrong: this one said "France keeping it \
+tight, not rushing things" while Messi had the ball.
+
+YOU ARE GIVEN THE MATERIAL, AND THE MATERIAL IS ALL OF IT
+
+Under WHAT THIS TURN IS ABOUT you are handed two or three lines. They are \
+everything you are allowed to say. Somebody else has already worked out that \
+they are specific enough to be worth the air, and there is nothing behind \
+them: no wider picture, no sense of the game, no feel for the occasion. \
+Three kinds, and they are labelled:
+
+**NOTE** — what somebody wrote before kickoff about a player your colleague \
+has just named. Say what it says. Shortened, never extended, and never with \
+its figure in it.
+
+**REPEATED** — something that has now happened more than once, counted for \
+you so that "again" is true when you say it. Say "again", "every time", "the \
+same man", "that side once more". Never the number itself.
+
+**EVENT** — the last goal, shot, save, penalty or card, with the man it \
+happened to, in the words your colleague used. It has finished, so an \
+opinion about it cannot be overtaken by the ball. Speak about it in the past \
+tense.
+
+Every utterance has to be about one of those lines, and you have to be able \
+to say which. Ask it of each line before you write it down: which note, \
+which count, which event? If the answer is none of them, the line goes — in \
+code, before it reaches air, however well it reads.
+
+EVERY UTTERANCE NAMES SOMEBODY OR SOMETHING
+
+Not the turn: every utterance in it, on its own. Each one has to carry a \
+player's name off the team sheets, or a side plus the word that says they \
+have done it again, or the name of an event — the goal, the penalty, the \
+save, the card, the foul, the corner. "He", "they", "it" and "that" are not \
+names. "Yeah, he's been here before" is thrown away; "Yeah, Mbappé has been \
+here before" is not.
+
+This is because your utterances go out two or three seconds apart and your \
+colleague can cut you off after any of them. A listener who hears only your \
+second line has to know who it is about.
 
 YOU ARE ONLY ASKED WHEN THE BALL IS DEAD OR THE MOMENT HAS PASSED
 
@@ -165,6 +205,12 @@ Two to four of them, {min_words} to {max_words} words each, in the order you \
 say them. They go out two or three seconds apart and your colleague can cut \
 you off at any of them, so the first has to stand on its own and each one \
 after it has to be worth hearing after a pause.
+
+The length comes off the material, and the body will tell you which you \
+have. On one line of material it is one or two utterances: the thing, and \
+then why it matters. A second utterance that says the first one again in \
+other words is worse than no second utterance — it is the sound of a seat \
+filling time, and a listener hears it as exactly that.
 
 OPEN ON A CUE. The first utterance of the turn begins with one of "Well," \
 "Yeah," "Yes," "I think", "I mean", "You know", "You look at" — because that \
@@ -184,8 +230,13 @@ WHAT YOU TALK ABOUT
 a pattern; one is not.
 - A shape or a personnel observation, off the team sheets and the notes.
 - What a moment cost, or what it is worth at this scoreline.
-- After a goal: the scorer, or the move, out of the notes and the words your \
-colleague used. Not the scoreline.
+- After a goal: **the scorer, by name**. One fragment, about the man who \
+scored it — the note about him, or the move in the words your colleague used \
+to call it: "that is the finish of a man who has been here before", "off the \
+post and in, and nobody claimed it". His name is in the material and it goes \
+in the line. Never the scoreline, and never a line that would fit any goal \
+ever scored: "that changes everything" and "that is a different game now" \
+say nothing about this goal and are worth no air.
 - A note. That is what the notes are for, and they are the only numbers you \
 have.
 
@@ -222,15 +273,22 @@ Anything about how somebody feels. You cannot see inside a manager or a \
 player. "He will be furious", "they will be desperate", "the crowd are \
 nervous" are things you made up.
 
-A line about nothing. Every utterance names something you were actually \
-given: a player off a form or a team sheet, a team, a part of the pitch, \
-something a note says. "This is the moment right here", "that changes \
-everything", "everything they have worked for comes down to this", "they \
-know what they are protecting" are not observations — they would fit any \
-match ever played, and a listener learns nothing from them. If you take the \
-figure out of a note, keep the subject: "Argentina have not lost since that \
-Saudi Arabia game" is a line; "this is what they have been waiting for" is \
-not.
+A line about nothing. These came out of this seat's own mouth on the last \
+three passes and not one of them is about anything:
+
+  this is what it comes down to
+  that changes everything
+  they have to find a way through
+  keeping it simple at the back
+  sitting deep and letting them have it
+  this is the moment right here
+  everything they have worked for comes down to this
+  they know what they are protecting
+
+Every one would fit any match ever played, and a listener learns nothing \
+from any of them. If you take the figure out of a note, keep the subject: \
+"Argentina have not lost since that Saudi Arabia game" is a line; "this is \
+what they have been waiting for" is not.
 
 A rhetorical flourish standing in for an observation. No superlatives about \
 the occasion, no building to a phrase, no rhetorical question except the \
@@ -295,20 +353,30 @@ def colour_blocks(
     reason: str,
     state_summary: str,
     lead_lines: Sequence[str],
-    forms: Sequence[str],
-    notes: Sequence[Note],
     said: Sequence[str],
+    material: Sequence[str],
+    *,
+    about: str = "",
     last_angle: str = "",
 ) -> list[Block]:
     """One turn's content. All text, one block, nothing to look at.
 
     Order is fastest-moving last, the rule the caller and the phraser follow:
-    the state and the notes move slowly, the lead's lines move every few
-    seconds, and why this turn is being offered moves every time.
+    the state moves slowly, the lead's lines move every few seconds, and the
+    material and the reason for the turn move every time.
     """
     return [
         text_block(
-            _body(situation, reason, state_summary, lead_lines, forms, notes, said, last_angle)
+            _body(
+                situation,
+                reason,
+                state_summary,
+                lead_lines,
+                said,
+                material,
+                about=about,
+                last_angle=last_angle,
+            )
         )
     ]
 
@@ -318,34 +386,91 @@ def _body(
     reason: str,
     state_summary: str,
     lead_lines: Sequence[str],
-    forms: Sequence[str],
-    notes: Sequence[Note],
     said: Sequence[str],
+    material: Sequence[str],
+    *,
+    about: str = "",
     last_angle: str = "",
 ) -> str:
+    """The volatile half of one turn's prompt: the material, and nothing else.
+
+    The caller's forms used to be in here and are not. A seat shown a
+    description of the passage writes another one: with the forms in the body
+    the measured turns were "Well, France keeping the ball moving here" and
+    "Argentina content to sit deep and absorb", which are the lead's job and,
+    since this seat has no pictures, a guess at it. Then the forms came out
+    and the notes stayed, and a team-level note turned out to be the same
+    licence: "France keeping it simple across the back", "I think this is
+    what it comes down to".
+
+    So what reaches the model now is the material and only the material —
+    notes about a man the lead has just named, counts of what has actually
+    repeated, the last finished event with its scorer — computed in
+    :class:`~commentary.agents.colour.Material` where it cannot be
+    misremembered, and labelled so that every utterance can be checked back
+    against one of the lines.
+    """
     return "\n\n".join(
         [
             "MATCH STATE — for weighing what a moment is worth. Never to be read back out.\n"
             f"{state_summary.strip() or 'Not established yet.'}",
-            "WHAT YOUR COLLEAGUE HAS JUST SAID, oldest first. His words, not yours: do "
-            "not repeat them and do not paraphrase them.\n"
+            "WHAT YOUR COLLEAGUE HAS JUST SAID, oldest first. These are here so that you "
+            "do not repeat him and so that you know which names are live. They are his "
+            "job, not your subject: do not restate them, do not paraphrase them, and do "
+            "not carry on describing the passage they describe.\n"
             f"{_bullets(lead_lines, '(he has not spoken yet)')}",
-            "THE FORMS HE FILLED IN SINCE YOUR LAST TURN — what the picture was, what "
-            "happened, who he could read. This is the only record of the match you have.\n"
-            f"{_bullets(forms, '(nothing since your last turn)')}",
-            "THE NOTES ABOUT THE PEOPLE INVOLVED — written before kickoff, and the only "
-            "numbers you are allowed to say. A figure that is not here is a figure you do "
-            "not have.\n"
-            f"{_bullets([str(note) for note in notes], '(no notes about anybody here)')}",
+            _material_note(material, about),
             "WHAT YOU YOURSELF HAVE SAID EARLIER — do not make the same point twice.\n"
             f"{_bullets(said, '(you have not spoken yet)')}",
             f"THE SITUATION\n  {situation}\n  {reason.strip()}"
-            + (f"\n  your last turn was about {last_angle}; make a different kind of point"
-               if last_angle else ""),
+            + (
+                f"\n  your last turn was about {last_angle}; make a different kind of point"
+                if last_angle
+                else ""
+            ),
             _cue_note(said),
-            "Two to four short utterances, or speak false. Fill in the form.",
+            _how_long(material),
         ]
     )
+
+
+def _material_note(material: Sequence[str], about: str) -> str:
+    """The material, labelled, with the rule that there is nothing else.
+
+    Every utterance has to be about one of these lines: what the note says,
+    the fact that the count has repeated, or an opinion on the event. A line
+    that is about none of them is refused in code before it reaches air, and
+    the refusal is called ``colour_filler``.
+    """
+    head = [
+        "WHAT THIS TURN IS ABOUT — all of it, and there is nothing else. Every utterance",
+        "has to be about one of these lines: say what the NOTE says (without its figure),",
+        "say that the REPEATED thing has happened again (never the count itself), or give",
+        "an opinion on the EVENT. A line that is about none of them is thrown away before",
+        "it reaches air, however well it reads.",
+        "And every utterance names him, or names the side and says they have done it",
+        'again, or names the event. "He" and "they" are not names, and a line that',
+        "carries neither is thrown away too.",
+    ]
+    if about:
+        head.append(f"This turn is about {about}. His name goes in the line.")
+    return "\n".join(head) + "\n" + _bullets(material, "(nothing — set speak to false)")
+
+
+def _how_long(material: Sequence[str]) -> str:
+    """How many utterances this turn is worth, off how much material there is.
+
+    Section 4.4's median run is four utterances, but that is a voice with a
+    whole match in its head. One item of material stretched to four gives one
+    thought and three restatements, which is what the judge heard.
+    """
+    if len(material) <= 1:
+        return (
+            "ONE OR TWO UTTERANCES. You have one thing. Say it, and if you add a second "
+            "utterance it has to say why it matters — not say the same thing again in "
+            "other words. Or speak false. Fill in the form."
+        )
+    return "Two to four short utterances, or speak false. Fill in the form."
 
 
 def _cue_note(said: Sequence[str]) -> str:

@@ -29,17 +29,74 @@ reaches the speaker. The prompt tells it this; the gate is what enforces it.
 
 from __future__ import annotations
 
+import re
 from collections import deque
 from collections.abc import Sequence
 
 from commentary.agents.caller import clean_line, trim_words
 from commentary.config import PHRASER_MODEL, PhraserConfig
-from commentary.llm.base import LLMBackend, LLMError, Usage
+from commentary.llm.base import Block, LLMBackend, LLMError, Usage, text_block
 from commentary.prompts.phraser import phraser_blocks, phraser_system
 from commentary.schemas import CallerLine, Event, Note, PhrasedLine
 
 #: The value of ``PHRASER_MODEL`` that means "do not run this stage".
 OFF = "off"
+
+#: How many of the most recently spoken lines an opener is checked against.
+#: Matches the prompt's own "last two" rule with slack: the prompt asks the
+#: model not to open on either of the last two, and real commentary repeats
+#: an opener about one line in eight looking back further than that, so
+#: checking five catches the failure (35-48% repeats) without punishing the
+#: normal, occasional one-in-eight echo from further back.
+_OPENER_LOOKBACK = 5
+
+_LEADING_TRAILING_PUNCT = re.compile(r"^[^\w]+|[^\w]+$")
+_POSSESSIVE = re.compile(r"['’]s$", re.IGNORECASE)
+
+
+def _opening_word(text: str) -> str:
+    """The line's first word, as it would be judged for a repeat: punctuation
+    and a trailing possessive stripped, case-folded.
+    """
+    tokens = text.strip().split()
+    if not tokens:
+        return ""
+    core = _LEADING_TRAILING_PUNCT.sub("", tokens[0])
+    core = _POSSESSIVE.sub("", core)
+    return core.casefold()
+
+
+def _display_word(text: str) -> str:
+    """The same word, kept in its written case, for naming in the retry note."""
+    tokens = text.strip().split()
+    if not tokens:
+        return ""
+    core = _LEADING_TRAILING_PUNCT.sub("", tokens[0])
+    return _POSSESSIVE.sub("", core)
+
+
+def _is_bare_name(text: str) -> bool:
+    """One word and nothing else — a legitimate repeat, not a repeated frame."""
+    return len(text.strip().split()) == 1
+
+
+def _with_note(blocks: Sequence[Block], note: str) -> list[Block]:
+    """The same call's body, with a note appended to its last text block."""
+    new_blocks = [dict(block) for block in blocks]
+    for block in reversed(new_blocks):
+        if block.get("type") == "text":
+            block["text"] = f"{block['text']}\n\n{note}"
+            return new_blocks
+    new_blocks.append(text_block(note))
+    return new_blocks
+
+
+def _opener_retry_note(word: str) -> str:
+    """Two lines: name the repeated opener, then say what to do about it."""
+    return (
+        f'THAT OPENED ON "{word}" AGAIN, which one of the last five lines already used.\n'
+        "Open differently this time, or return an empty line instead."
+    )
 
 
 def phraser_enabled(model: str = PHRASER_MODEL) -> bool:
@@ -116,8 +173,12 @@ class Phraser:
         genuinely new moment, and the corpus says the second one is silence
         a quarter of the time.
         """
+        # The kind goes after the words, not in front of them. In front, the
+        # model read the tag as the opener and stopped obeying the rule about
+        # not opening two lines the same way: two adjacent lines both
+        # starting "Argentina" went out in the round that tried it.
         return [
-            f"[{event.value if event else 'no kind'}] {text}" for text, event in self._recent
+            f"{text}   ({event.value if event else 'no kind'})" for text, event in self._recent
         ]
 
     def accept(self, line: str, event: Event | None = None) -> None:
@@ -133,6 +194,7 @@ class Phraser:
         *,
         on_the_ball: str | None = None,
         notes: Sequence[Note] = (),
+        followup: str = "",
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
 
@@ -148,6 +210,11 @@ class Phraser:
         statistic — and the fact gate checks whatever comes back against the
         same notes, so a figure the model adjusts on its way out is a line
         that never reaches the speaker.
+
+        ``followup`` is the block :class:`commentary.goalfollow.GoalFollowup`
+        writes in the thirty seconds after a goal, naming which of the corpus's
+        beats is due — the moment again, the scorer's tally, the move rebuilt
+        in past tense. Empty everywhere else, which is most of a match.
         """
         self.last_reason = ""
         self.chose_silence = False
@@ -160,6 +227,8 @@ class Phraser:
             away=self.away,
             on_the_ball=on_the_ball,
             notes=notes,
+            last_event=self._recent[-1][1] if self._recent else None,
+            followup=followup,
         )
         try:
             parsed = await self.backend.parse(
@@ -176,8 +245,57 @@ class Phraser:
             self.last_reason = f"model call failed: {exc}"
             return None
 
-        self.last_usage = parsed.usage
-        return self._settle(parsed.value)
+        usage = parsed.usage
+        proposed = parsed.value
+        opener_retry = False
+        offending = self._repeated_opener(proposed)
+        if offending is not None:
+            retry_blocks = _with_note(blocks, _opener_retry_note(offending))
+            try:
+                retry = await self.backend.parse(
+                    model=self.model,
+                    system=self.system,
+                    blocks=retry_blocks,
+                    output_format=PhrasedLine,
+                    max_tokens=self.config.max_tokens,
+                    effort="low",
+                    cache_system=True,
+                    tag="phraser",
+                )
+            except LLMError:
+                # The re-ask itself failed to come back — keep the first
+                # attempt rather than lose the line over it.
+                pass
+            else:
+                usage = usage + retry.usage
+                proposed = retry.value
+                opener_retry = True
+                # Asked once. Whatever came back — even the same opener
+                # again — is what goes out; a second re-ask is not made.
+
+        self.last_usage = usage
+        settled = self._settle(proposed)
+        return settled.model_copy(update={"opener_retry": opener_retry})
+
+    def _repeated_opener(self, proposed: PhrasedLine) -> str | None:
+        """The offending opener word if this line needs a re-ask, else ``None``.
+
+        Stacked repetition is how a goal sounds (excitement >= 0.9), and a
+        bare surname is a legitimate repeat rather than a repeated frame, so
+        both are waved through without a retry.
+        """
+        if proposed.excitement >= 0.9:
+            return None
+        text = proposed.line.strip()
+        if not text or _is_bare_name(text):
+            return None
+        word = _opening_word(text)
+        if not word:
+            return None
+        recent = list(self._recent)[-_OPENER_LOOKBACK:]
+        if any(_opening_word(spoken) == word for spoken, _event in recent):
+            return _display_word(text)
+        return None
 
     def _settle(self, proposed: PhrasedLine) -> PhrasedLine:
         """The same two post-conditions the caller applies, for the same reasons.

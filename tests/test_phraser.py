@@ -223,11 +223,18 @@ def test_the_rules_forbid_a_subject_that_is_only_on_the_sightings_list() -> None
     assert "Never the\nsubject of the line." in rules
 
 
-def test_the_goal_example_is_the_name_then_how_then_the_score() -> None:
+def test_the_goal_example_is_the_name_then_the_how_and_stops() -> None:
+    """The third beat is still the score. It is no longer the model's to write."""
     rules = phraser_system()
-    assert "A GOAL IS THREE BEATS" in rules
-    assert "Mbappé! On the volley! Two-two." in rules
-    assert "Ronaldo! Over the wall! Three-three." in rules
+    assert "A GOAL IS THREE BEATS, AND YOU WRITE TWO OF THEM" in rules
+    assert "Mbappé! On the volley!" in rules
+    assert "Ronaldo! Over the wall!" in rules
+    # The examples stop where the words stop. A number in one of them is a
+    # number the model has been shown and will copy.
+    assert "Mbappé! On the volley! Two-two." not in rules
+    assert "Ronaldo! Over the wall! Three-three." not in rules
+    assert "THE THIRD BEAT IS THE SCORE AND IT IS NOT YOURS" in rules
+    assert "The broadcast adds it to" in rules
 
 
 def test_the_rules_ask_the_excitement_and_the_words_to_move_together() -> None:
@@ -263,7 +270,7 @@ def test_a_form_without_one_says_nothing_about_a_detail() -> None:
     assert "keeping one concrete detail" in body
 
 
-def test_only_a_goal_is_told_the_score_is_the_third_beat() -> None:
+def test_a_goal_is_told_the_score_is_appended_for_it() -> None:
     """Everywhere else MATCH STATE is context and repeating it is a score claim."""
     ordinary = text_of(phraser_blocks(a_form(), "Argentina 2-1 France", [], home="A", away="F"))
     assert "for context only. Never say the score" in ordinary
@@ -277,8 +284,11 @@ def test_only_a_goal_is_told_the_score_is_the_third_beat() -> None:
             away="F",
         )
     )
-    assert "third beat of this goal" in goal
-    assert "for context only" not in goal
+    # A goal used to be the one moment the model was allowed a number. It is
+    # not any more: the heading tells it the score is already going out.
+    assert "the broadcast\nappends it after your words" in goal
+    assert "Write no number at all." in goal
+    assert "Never say the score" not in goal
 
 
 # -- the agent ---------------------------------------------------------------
@@ -688,12 +698,15 @@ async def test_rephrasing_drops_the_speaking_rows_and_keeps_everything_else() ->
 
 
 @pytest.mark.asyncio
-async def test_a_phrased_line_that_claims_the_wrong_score_never_reaches_a_beat() -> None:
-    """The gate is downstream of the phraser, and it is the same gate.
+async def test_a_phrased_line_that_claims_a_score_loses_the_number_not_the_line() -> None:
+    """An ordinal is a scoreline with the number left out, and it comes out.
 
-    This is the rule that came out of the first phantom goals on air: an
-    ordinal is a scoreline with a number left out, and a side that has
-    scored one may be said to have scored one.
+    This test used to assert the opposite: the gate refused the line and the
+    beat never happened. That is still the right answer *at the gate* — there
+    is no trimming a number out of a sentence once it has got that far — but
+    a line is no longer allowed to reach the gate with a number in it. Code
+    takes the claim out first, and what is left is the words the model was
+    asked for. The words here were "Molina!" and they are worth keeping.
     """
     backend = saying(
         PhrasedLine(line="Molina! Argentina's third.", excitement=1.0),
@@ -701,14 +714,19 @@ async def test_a_phrased_line_that_claims_the_wrong_score_never_reaches_a_beat()
     )
     result = await rephrase(a_trace(), backend, pack=a_pack())
 
-    beats = {row["id"] for row in rows_of(result.rows, "beat")}
-    assert "b1" not in beats
+    beats = {row["id"]: row["text"] for row in rows_of(result.rows, "beat")}
+    assert beats["b1"] == "Molina!"
     assert "b2" in beats
 
-    refused = [row for row in rows_of(result.rows, "gate") if row.get("where") == "rephrase"]
-    assert len(refused) == 1
-    assert any("score_claim" in reason for reason in refused[0]["reasons"])
-    assert result.rejected == 1
+    phrased = rows_of(result.rows, "phrased")[0]
+    assert phrased["score_stripped"] == ["Argentina's third"]
+    # A carry is not a goal, so nothing is appended in its place: the one
+    # scoreline a match gets per goal belongs to the goal.
+    assert phrased["score_appended"] == ""
+
+    assert [row for row in rows_of(result.rows, "gate") if row.get("where") == "rephrase"] == []
+    assert result.rejected == 0
+    assert result.lines[0].stripped == ("Argentina's third",)
 
 
 def test_the_score_is_settled_only_once_the_state_has_taken_the_goal_in() -> None:
@@ -795,7 +813,23 @@ async def test_a_goal_may_be_one_ahead_of_a_board_that_has_not_moved() -> None:
     result = await rephrase(rows, backend, pack=a_pack())
 
     assert result.lines[0].passed, result.lines[0].reason
-    assert {row["id"] for row in rows_of(result.rows, "beat")} == {"b1", "b2", "b3"}
+    beats = {row["id"]: row["text"] for row in rows_of(result.rows, "beat")}
+    assert set(beats) == {"b1", "synth-14.0", "synth-18.0", "b2", "b3"}
+
+    # The number on the goal line is the state's, put there by code, once.
+    # The model wrote one too — the same one — and it was taken out first.
+    phrased = rows_of(result.rows, "phrased")[0]
+    assert phrased["score_appended"] == "Two-nil."
+    assert phrased["score_stripped"] == ["Two-nil"]
+    assert beats["b1"].endswith("Two-nil.")
+    assert beats["b1"].count("Two-nil") == 1
+
+    # The caller says nothing between 10 s and 20 s, which is longer than any
+    # gap the corpus leaves inside the half-minute after a goal, so the
+    # follow-up beats are called for and filled.
+    extra = [line for line in result.lines if line.synthetic]
+    assert [line.ts for line in extra] == [14.0, 18.0]
+    assert all(not line.appended for line in extra), "the score goes out once"
 
 
 @pytest.mark.asyncio
@@ -1047,3 +1081,54 @@ async def test_the_phraser_passes_the_notes_it_is_given_into_the_call() -> None:
     )
     body = backend.calls_tagged("phraser")[0].text
     assert "five goals in this tournament" in context_of(body)
+
+
+def test_the_last_lines_are_shown_with_the_kind_of_moment_each_was() -> None:
+    """Silence and opener variety both need the kind, not just the words.
+
+    A model shown "Upamecano works it forward." cannot tell whether that was
+    a carry it should now pass over in silence — the corpus says a quarter of
+    repeated build-up touches get nothing said — or a tackle that has ended.
+    """
+    phraser = a_phraser(saying(PhrasedLine(line="Messi.", excitement=0.2)))
+    phraser.accept("Upamecano works it forward.", Event.CARRY)
+    phraser.accept("Squeezed back towards halfway.")
+
+    assert phraser.recent == [
+        "Upamecano works it forward.   (carry)",
+        "Squeezed back towards halfway.   (no kind)",
+    ]
+
+
+def test_a_second_build_up_line_in_a_row_is_told_to_consider_silence() -> None:
+    """The rule is in the system prompt; four rounds showed that is not enough.
+
+    One chosen silence in 35 calls with the paragraph alone, and the moment it
+    names — a second consecutive build-up line about the same man, which real
+    commentary passes over a quarter of the time — went by every time. The
+    condition is cheap to compute, so it is computed and said again in the
+    body, where the model is looking.
+    """
+    quiet = text_of(
+        phraser_blocks(
+            a_form(event=Event.CARRY),
+            "",
+            [],
+            home="Argentina",
+            away="France",
+            last_event=Event.PASS,
+        )
+    )
+    assert "THE LAST LINE WAS THIS SAME KIND OF MOMENT" in quiet
+
+    loud = text_of(
+        phraser_blocks(
+            a_form(event=Event.SHOT),
+            "",
+            [],
+            home="Argentina",
+            away="France",
+            last_event=Event.PASS,
+        )
+    )
+    assert "THE LAST LINE WAS THIS SAME KIND OF MOMENT" not in loud

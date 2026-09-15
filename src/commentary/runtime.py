@@ -50,6 +50,7 @@ from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.config import SETTINGS, Settings
 from commentary.director import Director, next_beat_id
 from commentary.gate import FactGate, claims_goal, fold, is_the_same_name
+from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.predictor import SpeakPredictor
@@ -68,6 +69,7 @@ from commentary.schemas import (
     Trigger,
     Voice,
 )
+from commentary.scoreline import Restatements, settle_numbers
 from commentary.state import MatchStateTracker, parse_clock, period_for_clock
 from commentary.tools import MatchTools
 from commentary.trace import RunTrace
@@ -148,6 +150,10 @@ class RuntimeStats:
     sightings: int = 0
     sightings_dropped: int = 0
     spoken: int = 0
+    #: Extra phraser calls made in the quiet after a goal, and lines written
+    #: by code off the state with no model in them at all.
+    followups: int = 0
+    restatements: int = 0
     cost_stopped: bool = False
 
     def as_dict(self) -> dict[str, Any]:
@@ -254,9 +260,20 @@ class Runtime:
         #: cannot cross to the other team on the next line.
         self._carry_side = Side.UNKNOWN
         self._last_analyst_ts: float = 0.0
+        #: The thirty seconds after a goal: which of the corpus's beats is
+        #: due, and what the caller has said about the move. Driven from
+        #: :meth:`_call` exactly as the offline rephrase drives it, so a beat
+        #: that exists in one exists in the other.
+        self.follow = GoalFollowup()
+        #: The score-and-clock line, on the match clock. Off with
+        #: ``RESTATEMENT_EVERY_S=0``, which is what a feed with a permanent
+        #: score bug wants.
+        self.restatements = Restatements(every_s=self.settings.restatement.every_s)
         #: The colour seat's turn in flight, so a second one is never started
         #: on top of it and the final whistle can cancel it.
         self._colour_turn: asyncio.Task[None] | None = None
+        #: The follow-up filler in flight, for the same two reasons.
+        self._goal_turn: asyncio.Task[None] | None = None
         #: Lead beats submitted, counted so a colour turn already in the air
         #: stops the moment the caller has something.
         self._lead_beats = 0
@@ -333,6 +350,8 @@ class Runtime:
                 # say its third thing. It goes with everything else.
                 if self._colour_turn is not None:
                     tasks.append(self._colour_turn)
+                if self._goal_turn is not None:
+                    tasks.append(self._goal_turn)
                 for task in tasks:
                     task.cancel()
                 for task in tasks:
@@ -547,6 +566,12 @@ class Runtime:
                     continue
             elif self._is_a_lull(decision) and await self._maybe_analyst():
                 continue
+            # And a period of the clock may be owed to whoever has just
+            # joined. It is the flattest thing anybody says in a match and it
+            # costs nothing, so it is offered a moment that is already clear
+            # rather than one the caller wants.
+            if self._maybe_restate():
+                continue
             if decision.should_call:
                 await self._call(decision.triggers)
 
@@ -653,6 +678,167 @@ class Runtime:
             self.colour.accept(said)
             self._colour_turn = None
 
+    async def _fill_the_goal_window(self) -> None:
+        """Talk into the silence after a goal, up to twice, and stop early.
+
+        The half-minute after a goal is real commentary's fastest sustained
+        talking: a median seven utterances and sixty words, with no internal
+        gap longer than 7.1 s (``docs/research/real-commentary-corpus.md``
+        section 2.4). This system said two lines of seven words and went
+        quiet, because the caller is only asked for a line when the picture
+        gives it one and after a goal the picture is replays, faces and a
+        bench.
+
+        So the beats are asked for rather than waited for. Four seconds after
+        the last line, if the caller has not come back with one of its own,
+        one extra phraser call goes out; then, at most, one more. The moment
+        the lead speaks the rest is dropped — the same rule the colour seat
+        follows, and for the same reason: two voices on one moment is worse
+        than one.
+        """
+        started = self._lead_beats
+        try:
+            for _ in range(MAX_SYNTH):
+                await asyncio.sleep(SYNTH_GAP_S)
+                if self._lead_beats != started:
+                    return
+                cursor = self.cursor_ts
+                if not self.follow.due(cursor) or self._over_budget():
+                    return
+                if not await self._say_followup(cursor):
+                    return
+                started = self._lead_beats
+        finally:
+            self._goal_turn = None
+
+    async def _say_followup(self, cursor: float) -> bool:
+        """One phraser call the caller never asked for. Returns whether it spoke.
+
+        Nothing in it is new perception. The form carries the goal line's own
+        sightings — already judged once — and the caller's own words about the
+        move, and the block tells the model which beat is due. It goes through
+        the same gate and the same strip as any other line, and a call that
+        comes back empty or refused simply does not happen: there is no
+        caller line here to fall back to.
+        """
+        if self.phraser is None:
+            return False
+        form = self.follow.synthetic()
+        self.stats.followups += 1
+        phrased = await self.phraser.phrase(
+            form,
+            self.state_tracker.summary(cursor),
+            notes=self.state_tracker.pack_notes_for(
+                [self.follow.scorer] if self.follow.scorer else []
+            ),
+            followup=self.follow.block(cursor, self.pack),
+        )
+        if phrased is None or not phrased.line.strip():
+            return False
+        settled = settle_numbers(
+            phrased.line,
+            state=self.state,
+            side=form.side,
+            goal_in_state=self._score_counts_the_goal(cursor),
+            # The score went out on the call. This is a line after it.
+            append=False,
+        )
+        if not settled.line.strip():
+            return False
+        self._publish(
+            Topic.PHRASED,
+            cursor,
+            original=form.line,
+            line=settled.line,
+            excitement=phrased.excitement,
+            opener_retry=phrased.opener_retry,
+            score_stripped=list(settled.stripped),
+            synthetic=True,
+        )
+        verdict = self.gate.judge(
+            form.model_copy(update={"line": settled.line}),
+            self.state,
+            self.pack,
+            # The goal this line is about has already passed the gate once,
+            # which is the whole of what a board change is evidence for.
+            board_changed=True,
+            wire_confirmed=self._wire_confirms_goal(cursor),
+            goal_in_state=self._score_counts_the_goal(cursor),
+            at=cursor,
+        )
+        self._publish(Topic.GATE, cursor, verdict, event=Event.GOAL.value, where="followup")
+        if not verdict.passed:
+            self.stats.gated_out += 1
+            return False
+        self.director.submit(
+            Beat(
+                id=next_beat_id("g"),
+                voice=Voice.CALLER,
+                text=verdict.line,
+                video_ts=cursor,
+                created_ts=time.monotonic(),
+                live_ts=self.live_ts,
+                event=Event.GOAL,
+                excitement=phrased.excitement,
+                preemptable=False,
+            )
+        )
+        self._lead_beats += 1
+        self.follow.said(cursor)
+        self.follow.synthesised += 1
+        self.colour.saw_lead_line(cursor, verdict.line)
+        self.phraser.accept(verdict.line, Event.GOAL)
+        self._mark_spoken(cursor, verdict.line, Event.GOAL)
+        self.stats.spoken += 1
+        return True
+
+    def _maybe_restate(self) -> bool:
+        """Say the score and the clock, in code, on a timer. Returns whether it did.
+
+        Gap 8 item 4 and section 5.3 of the corpus study: a club-channel feed
+        restates both every few minutes for whoever has just joined, always
+        clock then score, out of a vocabulary of about ten phrasings. No
+        model is needed to say "ten minutes gone, two-nil to Barcelona", and
+        by the standing rule — code writes numbers, the model writes words —
+        no model should be asked to.
+
+        It is filler and it never speaks over the game: a period that comes
+        due while the lead is talking waits, and goes out at the first moment
+        that is clear. Nothing here is a claim the gate could check, because
+        every word of it is the state's own.
+        """
+        self.restatements.note(self.state)
+        if not self.restatements.pending:
+            return False
+        cursor = self.cursor_ts
+        clear_of = self.settings.restatement.clear_of_a_beat_s
+        last = self._last_spoken_video_ts
+        if last is not None and cursor - last < clear_of:
+            return False
+        if self._colour_turn is not None or self._goal_turn is not None:
+            return False
+        text = self.restatements.take(self.state)
+        if not text:
+            return False
+        self.director.submit(
+            Beat(
+                id=next_beat_id("r"),
+                voice=Voice.CALLER,
+                text=text,
+                video_ts=cursor,
+                created_ts=time.monotonic(),
+                live_ts=self.live_ts,
+                event=Event.NONE,
+                excitement=self.settings.restatement.excitement,
+                preemptable=True,
+            )
+        )
+        self._lead_beats += 1
+        self._mark_spoken(cursor, text)
+        self.stats.restatements += 1
+        self.stats.spoken += 1
+        return True
+
     async def _maybe_analyst(self) -> bool:
         """Offer the analyst a turn. Returns whether it took one."""
         if not self.with_analyst:
@@ -730,6 +916,11 @@ class Runtime:
         # form the caller filled in and chose not to say is still the best
         # evidence there is about what the picture was.
         self.colour.saw_form(cursor, line)
+        # And so does the follow-up, for the same reason and one more: after
+        # a goal the caller fills in form after form over the replays and
+        # says none of them, and those forms are the only account anywhere of
+        # how the goal was scored. Beat 4 rebuilds the move out of them.
+        self.follow.saw_form(line)
         self.state_tracker.apply_caller(line, cursor)
         self._note_restart(line, cursor)
         self._bind_sightings(line, cursor)
@@ -794,6 +985,18 @@ class Runtime:
             self.phraser.accept(verdict.line, line.event)
         self._remember_on_the_ball(line, verdict.line, cursor)
         self._mark_spoken(cursor, verdict.line, line.event)
+        # -- the thirty seconds after a goal -----------------------------
+        # A goal line that got through opens the window; any line inside it
+        # spends one of its beats. Then, if the caller leaves the kind of
+        # silence it left after the Mbappé penalty — 24 seconds, because
+        # every picture in between was a replay — the gap is filled.
+        if event is Event.GOAL and self.follow.is_the_call(cursor):
+            self.follow.arm(cursor, line, verdict.line)
+        elif self.follow.active(cursor):
+            self.follow.said(cursor)
+        if self.follow.active(cursor) and self._goal_turn is None:
+            self._goal_turn = asyncio.create_task(self._fill_the_goal_window())
+        # -- end of the goal window --------------------------------------
         if line.event is not Event.NONE:
             self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
@@ -820,11 +1023,19 @@ class Runtime:
         if self.phraser is None:
             return line, 0.0
         carried = self._carried_name(line, cursor)
+        followup = self.follow.block(cursor, self.pack)
+        names = self._named_by(line, carried)
+        if followup and self.follow.scorer:
+            # Beat 3 is a number about the scorer, and the notes are capped,
+            # so the scorer's clauses go to the front and the cap falls off
+            # the far end.
+            names = [self.follow.scorer] + names
         phrased = await self.phraser.phrase(
             line,
             self.state_tracker.summary(cursor),
             on_the_ball=carried,
-            notes=self.state_tracker.pack_notes_for(self._named_by(line, carried)),
+            notes=self.state_tracker.pack_notes_for(names),
+            followup=followup,
         )
         if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:
             self._publish(
@@ -834,6 +1045,10 @@ class Runtime:
                 line="",
                 excitement=0.0,
                 reason=self.phraser.last_reason or "the phraser chose silence",
+                # A silence the retry chose is the retry working: it is
+                # offered "open differently or say nothing" and took the
+                # second.
+                opener_retry=phrased.opener_retry,
             )
             self._last_quiet_ts = cursor
             return None
@@ -845,14 +1060,29 @@ class Runtime:
                 detail=self.phraser.last_reason or "the phraser returned nothing",
             )
             return line, 0.0
+        # Numbers by code. Whatever score the model wrote comes out, and the
+        # one the state supports goes on — once, on the line that calls the
+        # goal, and never on the celebration after it. The same call the
+        # offline rephrase makes, so the two cannot drift.
+        # ``docs/HANDOFF.md`` section 3d.
+        settled = settle_numbers(
+            phrased.line,
+            state=self.state,
+            side=line.side,
+            goal_in_state=self._score_counts_the_goal(cursor),
+            append=self.follow.is_the_call(cursor) and claims_goal(phrased.line, line.event),
+        )
         self._publish(
             Topic.PHRASED,
             cursor,
             original=line.line,
-            line=phrased.line,
+            line=settled.line,
             excitement=phrased.excitement,
+            opener_retry=phrased.opener_retry,
+            score_appended=settled.appended,
+            score_stripped=list(settled.stripped),
         )
-        return line.model_copy(update={"line": phrased.line}), phrased.excitement
+        return line.model_copy(update={"line": settled.line}), phrased.excitement
 
     @staticmethod
     def _named_by(line: CallerLine, carried: str | None) -> list[str]:

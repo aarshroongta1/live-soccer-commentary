@@ -67,6 +67,7 @@ from commentary.agents.phraser import Phraser
 from commentary.bus import Topic
 from commentary.config import SETTINGS, Settings
 from commentary.gate import FactGate, claims_goal, fold
+from commentary.goalfollow import GoalFollowup
 from commentary.llm.base import LLMBackend
 from commentary.runtime import CARRY_NAME_S, GOAL_GRAPHIC_LAG_S
 from commentary.schemas import (
@@ -79,6 +80,7 @@ from commentary.schemas import (
     PhrasedLine,
     Voice,
 )
+from commentary.scoreline import Numbers, Restatements, settle_numbers
 from commentary.state import notes_for
 from commentary.trace import read_trace
 
@@ -112,6 +114,19 @@ class Line:
     form_event: Event = Event.NONE
     #: The phraser had nothing and the caller's own line went through.
     fallback: bool = False
+    #: The scoreline code appended to this line, or "" if it appended none.
+    #: Exactly one line per goal should carry one.
+    appended: str = ""
+    #: What :func:`commentary.scoreline.strip_score` took out of the model's
+    #: words before the gate saw them. Every one of these used to be a line
+    #: refused whole.
+    stripped: tuple[str, ...] = ()
+    #: The phraser was never called for this line: code wrote it, off the
+    #: state. The score-and-clock restatement, and nothing else so far.
+    written_by_code: bool = False
+    #: An extra call made in a gap the caller left in the thirty seconds
+    #: after a goal.
+    synthetic: bool = False
     #: The phraser chose to say nothing, which is a line in itself. Real
     #: commentary passes over 43% of goal kicks and a quarter of build-up
     #: touches (the corpus study, section 3), and counting the ones this
@@ -124,7 +139,18 @@ class Line:
             return "chose silence"
         if self.fallback:
             return "fell back"
-        return "passed" if self.passed else (self.reason or "rejected")
+        if not self.passed:
+            return self.reason or "rejected"
+        marks = []
+        if self.appended:
+            marks.append("+score")
+        if self.stripped:
+            marks.append("-score")
+        if self.written_by_code:
+            marks.append("by code")
+        if self.synthetic:
+            marks.append("extra")
+        return "passed " + " ".join(marks) if marks else "passed"
 
     @property
     def events(self) -> str:
@@ -328,7 +354,140 @@ async def rephrase(
     )
     gate = FactGate(settings.gate)
     cover = Cover(states)
+    follow = GoalFollowup()
     out = Rephrased()
+
+    #: Every caller form in the trace, spoken or not, oldest first. The
+    #: follow-up state is fed all of them: after the Mbappé penalty the caller
+    #: wrote four forms in a row and said none of them, and those four are the
+    #: only account anywhere of how the goal was scored.
+    forms = sorted(
+        (
+            (ts, form)
+            for ts, row in callers.items()
+            if (form := _caller_line({k: v for k, v in row.items() if k not in ("topic", "ts")}))
+        ),
+        key=lambda pair: pair[0],
+    )
+    fed = 0
+
+    def feed(upto: float) -> None:
+        """Hand the follow-up every form the caller filled in up to now."""
+        nonlocal fed
+        while fed < len(forms) and forms[fed][0] <= upto + SAME_TS:
+            follow.saw_form(forms[fed][1])
+            fed += 1
+
+    #: When the lead speaks, for the gap arithmetic that decides whether a
+    #: follow-up beat has to be synthesised.
+    beat_times = sorted(
+        float(row.get("ts", 0.0))
+        for row in rows
+        if row.get("topic") == Topic.BEAT.value and row.get("voice") == Voice.CALLER.value
+    )
+
+    async def extra(at: float, state: MatchState) -> bool:
+        """One phraser call the caller never asked for, inside a goal window.
+
+        Same phraser, same gate, same strip. What is different is the form:
+        it carries the goal line's own sightings and the caller's own words
+        about the move, so nothing about the picture is being claimed twice.
+        A call that comes back empty, or is refused, simply does not happen —
+        there is no fallback here, because there was no caller line to fall
+        back to.
+        """
+        feed(at)
+        form = follow.synthetic()
+        phrased = await phraser.phrase(
+            form,
+            _summary(state),
+            notes=notes_for(pack, [follow.scorer] if follow.scorer else []),
+            followup=follow.block(at, pack),
+        )
+        usd = phraser.last_usage.cost_usd
+        out.cost_usd += usd
+        if phrased is None or not phrased.line.strip():
+            return False
+        settled = settle_numbers(
+            phrased.line, state=state, side=form.side, goal_in_state=True, append=False
+        )
+        if not settled.line.strip():
+            return False
+        verdict = gate.judge(
+            form.model_copy(update={"line": settled.line}),
+            state,
+            pack,
+            # The goal this line is about has already passed the gate once,
+            # which is the whole of what a board change is evidence for.
+            board_changed=True,
+            goal_in_state=cover.goal_in_state(at),
+            at=at,
+        )
+        out.rows.append(
+            {
+                "topic": Topic.PHRASED.value,
+                "ts": at,
+                "original": form.line,
+                "line": settled.line,
+                "excitement": phrased.excitement,
+                "event": Event.GOAL.value,
+                "form_event": Event.GOAL.value,
+                "usd": round(usd, 6),
+                "synthetic": True,
+                "opener_retry": phrased.opener_retry,
+                "score_stripped": list(settled.stripped),
+                "tokens_in": phraser.last_usage.input_tokens,
+                "cache_read": phraser.last_usage.cache_read_tokens,
+                "cache_write": phraser.last_usage.cache_write_tokens,
+            }
+        )
+        if not verdict.passed:
+            out.rows.append(
+                {
+                    "topic": Topic.GATE.value,
+                    "ts": at,
+                    "passed": False,
+                    "reasons": verdict.reasons,
+                    "line": settled.line,
+                    "event": Event.GOAL.value,
+                    "where": "rephrase",
+                }
+            )
+        else:
+            out.rows.append(
+                {
+                    "topic": Topic.BEAT.value,
+                    "ts": at,
+                    "id": f"synth-{at:.1f}",
+                    "voice": Voice.CALLER.value,
+                    "text": verdict.line,
+                    "video_ts": at,
+                    "created_ts": 0.0,
+                    "live_ts": at,
+                    "event": Event.GOAL.value,
+                    "excitement": phrased.excitement,
+                    "preemptable": False,
+                }
+            )
+            phraser.accept(verdict.line, Event.GOAL)
+            follow.said(at)
+            follow.synthesised += 1
+        out.lines.append(
+            Line(
+                ts=at,
+                original=form.line,
+                phrased=verdict.line if verdict.passed else settled.line,
+                excitement=phrased.excitement,
+                passed=verdict.passed,
+                reason="; ".join(verdict.reasons)[:60],
+                usd=usd,
+                event=Event.GOAL,
+                form_event=Event.GOAL,
+                stripped=settled.stripped,
+                synthetic=True,
+            )
+        )
+        return verdict.passed
 
     for row in rows:
         topic = row.get("topic", "")
@@ -358,11 +517,18 @@ async def rephrase(
         names = [carried] if carried else []
         names += [s.name for s in form.sightings if s.name]
         names += [state.home, state.away]
+        feed(ts)
+        followup = follow.block(ts, pack)
+        if followup and follow.scorer:
+            # The scorer's clauses go to the front, because beat 3 is a number
+            # about him and the cap falls off the end.
+            names = [follow.scorer] + names
         phrased = await phraser.phrase(
             form,
             _summary(state),
             on_the_ball=carried,
             notes=notes_for(pack, names),
+            followup=followup,
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
@@ -381,6 +547,10 @@ async def rephrase(
                     "form_event": form.event.value,
                     "reason": phraser.last_reason or "the phraser chose silence",
                     "usd": round(usd, 6),
+                    # A silence the retry chose is the retry working: it is
+                    # offered "open differently or say nothing" and took the
+                    # second.
+                    "opener_retry": phrased.opener_retry,
                     "tokens_in": phraser.last_usage.input_tokens,
                     "cache_read": phraser.last_usage.cache_read_tokens,
                     "cache_write": phraser.last_usage.cache_write_tokens,
@@ -416,7 +586,24 @@ async def rephrase(
             phrased = PhrasedLine(line=form.line, excitement=0.0)
             verdict = GateVerdict(passed=True, line=form.line)
             fell_back = True
+            settled = Numbers(line=form.line)
         else:
+            # Numbers by code. The model's words keep the name and the how;
+            # any score in them comes out, and the one the state supports goes
+            # on — once, on the line that calls the goal, and never on the
+            # celebration after it. ``docs/HANDOFF.md`` section 3d.
+            is_call = follow.is_the_call(ts) and claims_goal(phrased.line, form.event)
+            settled = settle_numbers(
+                phrased.line,
+                state=state,
+                side=form.side,
+                goal_in_state=cover.goal_in_state(ts),
+                append=is_call,
+            )
+            # A line that was nothing but a number now has nothing in it, and
+            # the gate refuses it as empty. That is the right answer: the model
+            # was asked for words and wrote arithmetic.
+            phrased = phrased.model_copy(update={"line": settled.line})
             verdict = gate.judge(
                 form.model_copy(update={"line": phrased.line}),
                 state,
@@ -436,6 +623,9 @@ async def rephrase(
                     "event": _event_of(phrased.line, form.event).value,
                     "form_event": form.event.value,
                     "usd": round(usd, 6),
+                    "opener_retry": phrased.opener_retry,
+                    "score_appended": settled.appended,
+                    "score_stripped": list(settled.stripped),
                     # Per call, because the aggregate cannot say whether the
                     # cached prefix was ever read: a run where every call
                     # shows cache_read zero is paying full price for two
@@ -472,11 +662,37 @@ async def rephrase(
                 event=_event_of(phrased.line, form.event),
                 form_event=form.event,
                 fallback=fell_back,
+                appended=settled.appended,
+                stripped=settled.stripped,
             )
         )
-        if verdict.passed:
-            phraser.accept(verdict.line, form.event)
-            cover.remember(form, verdict.line, ts)
+        if not verdict.passed:
+            continue
+        phraser.accept(verdict.line, form.event)
+        cover.remember(form, verdict.line, ts)
+
+        # -- the thirty seconds after a goal -----------------------------
+        # A goal line that got through opens the window; a line inside it
+        # spends one of its beats. Then, if the caller is about to leave a
+        # gap longer than any gap in the corpus, the gap is filled.
+        if not fell_back and claims_goal(verdict.line, form.event) and follow.is_the_call(ts):
+            follow.arm(ts, form, verdict.line)
+        elif follow.active(ts):
+            follow.said(ts)
+        if follow.active(ts):
+            after = next((at for at in beat_times if at > ts + SAME_TS), None)
+            for at in follow.synth_times(ts, after):
+                await extra(at, _state_at(states, at) or state)
+        # -- end of the goal window --------------------------------------
+
+    # -- the score and the clock, said by code ---------------------------
+    # Gap 8 item 4. A club feed restates both every few minutes for viewers
+    # joining late, out of a closed vocabulary, and no model is needed to say
+    # "ten minutes gone, two-nil to Barcelona". It runs over the rewritten
+    # rows so that it can see where the lead actually speaks now.
+    out.rows, restated = restatement_pass(out.rows, settings)
+    out.lines.extend(restated)
+    # -- end of the restatement ------------------------------------------
 
     # -- the colour seat -------------------------------------------------
     # The second seat runs over the rewritten trace, not the original one:
@@ -499,6 +715,106 @@ async def rephrase(
     # -- end of the colour seat ------------------------------------------
 
     return out
+
+
+#: How finely the restatement hunts for a clear moment once one is owed.
+RESTATE_STEP_S = 0.5
+
+#: How long it will keep hunting before giving the period up. Longer than any
+#: run of lead lines in the corpus, short enough that "twenty minutes gone"
+#: never goes out at twenty-two.
+RESTATE_PATIENCE_S = 30.0
+
+
+def restatement_pass(
+    rows: list[dict[str, Any]], settings: Settings = SETTINGS
+) -> tuple[list[dict[str, Any]], list[Line]]:
+    """Put the score-and-clock line into the trace on its timer. No model.
+
+    Section 5.3 of the corpus study: a club-channel feed restates the score
+    every 150 to 260 seconds and the clock every 300 to 500, always as two
+    short utterances, clock then score, out of a vocabulary of about ten
+    phrasings. Gap 8 item 4 asks for it as code, and the handoff's standing
+    rule — code writes numbers, the model writes words — settles the rest.
+
+    Run over the rewritten rows rather than the original ones, because what it
+    has to keep out of the way of is where the lead speaks *now*.
+
+    Returns the rows with the restatements in them and a table row for each.
+    """
+    cfg = settings.restatement
+    timer = Restatements(every_s=cfg.every_s)
+    if not timer.enabled:
+        return rows, []
+    lead = sorted(
+        float(row.get("ts", 0.0))
+        for row in rows
+        if row.get("topic") == Topic.BEAT.value and row.get("voice") == Voice.CALLER.value
+    )
+
+    def clear(at: float) -> bool:
+        return all(abs(at - beat) > cfg.clear_of_a_beat_s for beat in lead)
+
+    said: list[tuple[int, float, str]] = []
+    for index, row in enumerate(rows):
+        if row.get("topic") != Topic.STATE.value:
+            continue
+        payload = {k: v for k, v in row.items() if k not in ("topic", "ts")}
+        try:
+            state = MatchState.model_validate(payload)
+        except Exception:
+            continue
+        timer.note(state)
+        if not timer.pending:
+            continue
+        at = float(row.get("ts", 0.0))
+        stop = at + RESTATE_PATIENCE_S
+        while at <= stop and not clear(at):
+            at += RESTATE_STEP_S
+        if at > stop:
+            continue
+        text = timer.take(state)
+        if text:
+            said.append((index, at, text))
+            lead.append(at)
+
+    out: list[dict[str, Any]] = []
+    lines: list[Line] = []
+    pending = {index: (at, text) for index, at, text in said}
+    for index, row in enumerate(rows):
+        out.append(row)
+        found = pending.get(index)
+        if found is None:
+            continue
+        at, text = found
+        out.append(
+            {
+                "topic": Topic.BEAT.value,
+                "ts": at,
+                "id": f"restate-{at:.1f}",
+                "voice": Voice.CALLER.value,
+                "text": text,
+                "video_ts": at,
+                "created_ts": 0.0,
+                "live_ts": at,
+                "event": Event.NONE.value,
+                "excitement": cfg.excitement,
+                "preemptable": True,
+                "by_code": True,
+            }
+        )
+        lines.append(
+            Line(
+                ts=at,
+                original="(the state)",
+                phrased=text,
+                excitement=cfg.excitement,
+                passed=True,
+                reason="",
+                written_by_code=True,
+            )
+        )
+    return out, lines
 
 
 def _event_of(text: str, event: Event) -> Event:

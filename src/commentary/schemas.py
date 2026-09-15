@@ -177,6 +177,11 @@ class PhrasedLine(BaseModel):
         le=1.0,
         description="0 for a routine touch, 1 for a goal: the volume this is said at",
     )
+    #: True when the first answer opened on the same word as one of the last
+    #: five spoken lines and the phraser was re-asked once, same call, to
+    #: open differently or say nothing. The retry's cost is not a separate
+    #: field — it is folded into whatever usd figure the row already carries.
+    opener_retry: bool = Field(default=False)
 
 
 class Angle(StrEnum):

@@ -147,9 +147,19 @@ that happened to the ball, and you will be at eight, which is the median.
 
 THE RULES
 
-Name first. If the form gives you a player, the line starts with that player.
-"Tagliafico knocks it infield", never "Argentina knock it infield" when the
-name is there and never "the left-back" when the name is there.
+The line is about the player. It does not have to begin with him.
+
+This rule used to read "name first", and it is the single reason four lines
+about one man taking a penalty all began with his name. In club football a
+surname is the twenty-sixth commonest opening word; at a World Cup final it
+is the seventh. The words real commentary opens on are "and", "it's", "he",
+"well", "now" and "here's", and the shapes below put the name second on
+purpose. So: "Here's Salah." "Now, Griezmann." "It's Kroos, wide." "Back to
+Wes Morgan." All four are about the man; none of them start with him.
+
+What has not changed is who the line is about. When the form gives you a
+name, use it — "Tagliafico knocks it infield", never "Argentina knock it
+infield" and never "the left-back", when the name is there.
 
 THE SHAPES THAT CARRY BUILD-UP. These are counted, and in this order:
 
@@ -249,7 +259,11 @@ the subject, and runs to a second clause:
   seen: "Upamecano squeezes the pass infield, and Argentina swarm the halfway
   line to force it back."
     thin:  Pressed back towards halfway.
-    kept:  Upamecano squeezes it infield, and Argentina swarm the halfway line.
+    kept:  Upamecano squeezes it infield. Argentina swarm the halfway line.
+
+Either join, a comma and an "and" or a full stop — but not the same one twice
+running. Both of those lines are ten words, and ten words is the length a
+restart earns.
 
 If the form carries a line headed `detail:`, that is the detail the person
 watching picked out for you, and it is the one to keep.
@@ -275,29 +289,31 @@ A name on that list that the description does not use has exactly one use: it
 may be the subject of a `context:` clause in a quiet moment. Never the
 subject of the line.
 
-A GOAL IS THREE BEATS
+A GOAL IS THREE BEATS, AND YOU WRITE TWO OF THEM
 
-The name, then how, then the score. The how comes out of the description; the
-score comes out of MATCH STATE and nowhere else.
+The name, then how. The how comes out of the description. Then stop.
 
-  Mbappé! On the volley! Two-two.
-  Ronaldo! Over the wall! Three-three.
+  Mbappé! On the volley!
+  Ronaldo! Over the wall!
   Di María! Glorious goal.
 
-The third beat is the only number you are ever allowed to say, and it is not
-yours to choose: it is the score in MATCH STATE, with one added to the
-scoring side if the state has not taken this goal in yet. Say it bare and in
-words — "Two-two." — and never "levels it", "the equaliser", "ahead", "his
-second", or anything else that does the arithmetic out loud. If MATCH STATE
-does not give you a score you are sure of, leave the beat off; the name and
-the how are a whole line. Two beats are still a goal, and none of this buys
-you a longer one.
+THE THIRD BEAT IS THE SCORE AND IT IS NOT YOURS. The broadcast adds it to
+the end of your line — "Two-two.", "One-nil to Argentina." — off the
+scoreboard, in code, after you have written the words. It is already
+handled. A number you write is a number said twice, and the second one is
+usually wrong, because by the time you are asked the board has moved.
 
-Once, and only on the goal itself. The celebration, the ball carried back,
-the scorer's face are all lines about a goal already called, and a second
-scoreline over them is the same claim made twice — and made against a board
-that has moved since, so it is usually wrong as well. "Mbappé! Into the net!
-Two-two." over a state reading 2-1 was struck out for exactly that.
+So on a goal: no digits, no number words, and none of the ordinary words
+that say a score without a number. All of these are forbidden and all of
+them have gone out and been struck: "two-two", "3-2", "levels it", "level",
+"the equaliser", "equalises", "all square", "ahead", "in front", "behind",
+"back in it", "his second", "their third", "one-nil", "makes it two", "the
+winner". Write the name and the how and let the broadcast count.
+
+Two goal-calling lines that went out and were both thrown away for this:
+"Mbappé! Three-two." at two-one on the board, and "Mbappé! Into the net!
+Two-two." at the same. The words in front of the number were good. The
+number lost the line.
 
 THE EVENT FIELD IS BINDING. The form says what happened, in one word, and
 your line has to be about that and not about the next thing. Making it bigger
@@ -314,12 +330,17 @@ is inventing it:
     is not even that, return an empty line.
   - only a form that says goal is a goal.
 
-THE SCORE IS NOT YOURS, except as the bare third beat of a goal, above, read
-off MATCH STATE — and it hides in ordinary words. These are forbidden however
-true they feel, on a goal as much as anywhere else: "levels it", "level",
-"the equaliser", "equalises", "all square", "ahead", "in front", "behind",
-"back in it", "his second", "one-nil", "the winner". Somebody else is reading
-the scoreboard, and a line that implies a score contradicts them.
+THE SCORE IS NEVER YOURS, not on a goal and not anywhere else — and it hides
+in ordinary words. These are forbidden however true they feel: "levels it",
+"level", "the equaliser", "equalises", "all square", "ahead", "in front",
+"behind", "back in it", "his second", "their third", "one-nil", "the winner".
+Somebody else is reading the scoreboard and writing the number down, and a
+line that implies a score contradicts them.
+
+The one number that is yours is a researched one about a person, out of the
+`context:` block below, reworded but never renumbered: "five in the
+tournament", "his first for the club". That is a fact somebody checked. The
+score is not.
 
 Three rewrites that went out and should not have, so that you can see the
 shape of the mistake:
@@ -365,6 +386,11 @@ calling it rather than saved up for the analyst. A quiet moment with a clause
 about a player your line names is exactly where it goes: if the block gives
 you one and your line names the man it is about, say it.
 
+None of that is about the score. A researched clause is never a scoreline and
+the block below never holds one; the score is counted for you and added to
+your words in code, as the goal section says. Every number you write yourself
+comes off the block below, and there is no second source.
+
 "Tagliafico." becomes "Tagliafico, and Argentina have not lost in thirty-six."
 "Mbappé steps up." becomes "Mbappé. Three in the tournament already."
 
@@ -398,9 +424,11 @@ silence:
 So you may return an empty line, and nothing else happens: no line goes out,
 the next moment gets its own call. Return the empty line when
 
-  - the form is build_up, pass or carry, and the last line you were shown was
-    the same kind of moment about the same player. Two lines about one man
-    walking the ball forward is one more than anybody says.
+  - the form is build_up, pass or carry — count those three as one kind for
+    this — and the last line you were shown was also one of them and named
+    the same player. Two lines about one man walking the ball forward is one
+    more than anybody says, whether the form calls the second one a carry or
+    a pass.
   - the form is a goal kick, a throw-in being taken, a free-kick delivery or
     a kickoff, and there is nothing on the form but the restart itself. If
     the form carries a detail, or the context block carries a clause about
@@ -444,6 +472,17 @@ thing that gives a machine away fastest.
   said:  Argentina press.
     wrong: Argentina press again.
     right: Squeezed back towards halfway.
+
+AND IT IS NOT ONLY THE FIRST WORD. A line is the same as the one above it
+when it uses the same frame, however the words differ. All three of these
+pairs went out and all three are the same tell:
+
+  said:  Down the left now.
+    wrong: Down the right now.              (the frame, with a direction swapped)
+  said:  Upamecano squeezes it infield, and Argentina swarm halfway.
+    wrong: Messi drives forward, and France drop in.   (clause, and clause, twice)
+  said:  Mbappé, eyes on the ball.
+    wrong: Martínez, set on his line.       (Name, comma, participle, twice)
 
 Change the subject, change the verb, or say the detail instead.
 
@@ -570,6 +609,8 @@ def phraser_blocks(
     away: str,
     on_the_ball: str | None = None,
     notes: Sequence[Note] = (),
+    last_event: Event | None = None,
+    followup: str = "",
 ) -> list[Block]:
     """One call's content. Text only, and deliberately small.
 
@@ -581,7 +622,154 @@ def phraser_blocks(
     ``notes`` are already filtered to the moment by the caller; whether they
     are shown at all is decided here, by the event.
     """
-    return [text_block(_body(line, state_summary, recent_lines, home, away, on_the_ball, notes))]
+    return [
+        text_block(
+            _body(
+                line,
+                state_summary,
+                recent_lines,
+                home,
+                away,
+                on_the_ball,
+                notes,
+                last_event,
+                followup,
+            )
+        )
+    ]
+
+
+#: The four beats of a goal call, in the order the corpus says them
+#: (``docs/research/real-commentary-corpus.md`` section 8.4, and section 2.4
+#: for the timing). Beat 1 is the call itself and the phraser is given no
+#: block for it. Beats 2 to 4 are the follow-up, and each is one short line of
+#: its own two to five seconds after the last, not a clause of a long one.
+GOAL_BEATS: dict[int, str] = {
+    2: """BEAT 2 — THE MOMENT AGAIN, NOW. Two to five words. The name again, the
+celebration, where he has run, what the bench or the crowd is doing. The
+corpus stacks fragments here with no gap between them: "OH MY! OH MY!",
+"LISTEN TO THE NOISE.", "HE'S DONE IT!", "Griezmann celebrates.", "And
+another standing ovation." This is the one place repetition is right.
+
+No number of any kind on this beat. The score went out on the call.""",
+    3: """BEAT 3 — ONE NUMBER ABOUT THE SCORER. This is the beat the corpus fills
+about ten seconds in, and it fills it every time: "It's his third goal of
+this La Liga campaign.", "Griezmann gets his fifth goal of the season.", "11
+CONSECUTIVE GOALS IN PREMIER League games.", "His first ever goal for the
+club."
+
+A whole line, eight to sixteen words. Every one of those examples is a
+sentence with a subject and a verb, not a figure on its own, and this is a
+moment the gaps are open: the long line belongs here.
+
+Take the number from the researched clauses below, reworded but never
+renumbered. That is the whole of what this beat may contain, and it is
+expected, not permitted: if there is a clause about the scorer, say it.
+
+If there is no clause about him, do not invent one and do not reach for the
+score. Say what he has done instead — where he has put it, who he beat — in
+a line of the same length.""",
+    4: """BEAT 4 — REBUILD THE MOVE, IN THE PAST TENSE. Ten to twenty seconds after
+a goal the corpus goes back over how it happened, naming two or three of the
+players: "The shot rebounded off the post and fell very kindly for Casemiro
+who slotted the ball home.", "Schweinsteiger made the run. He beat Azpilicueta
+and headed it past a stranded Schmeichel.", "A quick ball out by ter Stegen."
+
+This is the longest line anybody says about a goal: ten to twenty words, and
+the first two of those examples are seventeen and fourteen. It is the one
+place a second clause is not padding, because there are two things to say —
+what made it and what finished it.
+
+Past tense throughout: it has happened. Use the move and the names below and
+nothing else. No score, no tally, no number.""",
+}
+
+
+def goal_followup_block(
+    beat: int,
+    *,
+    since_s: float,
+    scorer: str | None = None,
+    notes: Sequence[Note] = (),
+    moves: Sequence[str] = (),
+    names: Sequence[str] = (),
+) -> str:
+    """What is due next in the thirty seconds after a goal.
+
+    Real commentary's fastest sustained talking is the half-minute after a
+    goal: 7 utterances and 60 words, median, with a longest internal gap of
+    7.1 s (study section 2.4). This system said two lines of seven words and
+    then went quiet, and one of the two was thrown away by the gate. The
+    beats are in the corpus and they are in a fixed order, so the order is
+    computed in code and the model is told which one it is writing rather
+    than being asked to remember four.
+
+    The scorer's notes are printed here rather than left to the ordinary
+    `context:` block, which a goal suppresses on the grounds that a goal is no
+    moment for a statistic. Ten seconds after one is exactly that moment, and
+    the corpus fills it with a statistic every time.
+    """
+    instruction = GOAL_BEATS.get(beat)
+    if instruction is None:
+        return ""
+    lines = [
+        f"THE GOAL HAS BEEN CALLED. {since_s:.0f} seconds ago"
+        + (f", by {scorer}" if scorer else "")
+        + ". The score has already",
+        "gone out on that call, written by the broadcast off the scoreboard. It is",
+        "said. Do not say it again, in figures or in words.",
+        "",
+        "So are the words of the call. The description below is the move as it was",
+        "already called; you are not calling it again. This line is the next thing",
+        "said about a goal everybody has now seen, and if it could have gone out",
+        "as the call itself it is the wrong line.",
+        "",
+        instruction,
+    ]
+    if beat == 3:
+        rows = [f"  - {note.about}: {note.text.strip()}  [{note.kind}]" for note in notes]
+        lines += ["", "researched clauses about the scorer:"]
+        lines += rows or ["  (none — say the moment instead, and stay off numbers)"]
+    if beat == 4:
+        lines += ["", "the move, as the eyes saw it:"]
+        lines += [f"  - {text.strip()}" for text in moves if text.strip()] or [
+            "  (nothing recorded — keep it to the scorer and the finish)"
+        ]
+        lines += ["", "players seen in it: " + (", ".join(names) if names else "(none read)")]
+    return "\n".join(lines)
+
+
+#: The three forms that are one moment for the purposes of silence. The
+#: corpus counts carries and passes in build-up together and finds 24% of
+#: them pass with nothing said at all (study section 3.1a), and the caller
+#: files the same passage of play under all three of these words depending
+#: on what the ball happened to be doing in six frames.
+BUILD_UP_FORMS = frozenset({Event.BUILD_UP, Event.PASS, Event.CARRY})
+
+
+def _silence_nudge(line: CallerLine, last_event: Event | None) -> str:
+    """One line in the body when this is a moment the corpus usually passes over.
+
+    The rule is in the system prompt as well, where it is one paragraph among
+    forty. Four rounds of rephrasing produced one chosen silence in 35 calls
+    with the rule in the prompt alone, and the moment it names — the second
+    consecutive build-up line about the same player — went past unremarked
+    every time. So the condition is computed here, in code, and said again
+    where the model is actually looking.
+    """
+    if line.event in BUILD_UP_FORMS and last_event in BUILD_UP_FORMS:
+        return (
+            "\nTHE LAST LINE WAS THIS SAME KIND OF MOMENT. If it was about this same\n"
+            "player, say nothing: return an empty line. A quarter of build-up touches\n"
+            "in real commentary are met with silence, and this is one of them.\n"
+        )
+    if line.event in (Event.KICKOFF, Event.THROW_IN, Event.FREE_KICK):
+        return (
+            "\nTHIS IS A RESTART, AND A THIRD OF THEM ARE NOT CALLED AT ALL. Unless the\n"
+            "form carries a detail or the context block has a clause about somebody\n"
+            "you would name, return an empty line.\n"
+        )
+    return ""
 
 
 def _body(
@@ -592,12 +780,15 @@ def _body(
     away: str,
     on_the_ball: str | None,
     notes: Sequence[Note] = (),
+    last_event: Event | None = None,
+    followup: str = "",
 ) -> str:
     said = (
         "\n".join(f"  - {text.strip()}" for text in recent_lines if text.strip())
         or "  (nothing said yet)"
     )
     state = state_summary.strip() or "Not established yet."
+    after = f"{followup.strip()}\n\n" if followup.strip() else ""
     return (
         f"THE TEAMS\n  {home} (home) v {away} (away)\n\n"
         f"{_state_heading(line)}\n"
@@ -605,9 +796,13 @@ def _body(
         "WHAT THE EYES SAW — the form, filled in by whoever is watching\n"
         f"{_form(line, home, away, on_the_ball)}\n\n"
         f"{_context(line, notes)}\n\n"
-        "THE LAST LINES SPOKEN, oldest first, each with the kind of moment it\n"
-        "was about. Do not repeat or paraphrase these, and read the kind: the\n"
-        "same kind about the same player is the moment to say nothing.\n"
+        f"{after}"
+        f"{_silence_nudge(line, last_event)}"
+        "THE LAST LINES SPOKEN, oldest first, with the kind of moment each was\n"
+        "about in brackets after it. Do not repeat or paraphrase these, do not\n"
+        "open on a word the last two opened on, and read the kinds: build-up,\n"
+        "a pass or a carry twice running about the same player is the moment\n"
+        "to say nothing.\n"
         f"{said}\n\n"
         "Say it."
     )
@@ -624,9 +819,10 @@ def _state_heading(line: CallerLine) -> str:
     if line.event is not Event.GOAL:
         return "MATCH STATE — for context only. Never say the score or the clock."
     return (
-        "MATCH STATE — the clock is never yours. The score is, once, as the\n"
-        "third beat of this goal: these numbers, with one added to the side\n"
-        "that has just scored if the board has not counted it yet."
+        "MATCH STATE — for context only, on a goal as much as anywhere else.\n"
+        "The score below is going out on this line already: the broadcast\n"
+        "appends it after your words, off these numbers. Yours is the name and\n"
+        "the how. Write no number at all."
     )
 
 
