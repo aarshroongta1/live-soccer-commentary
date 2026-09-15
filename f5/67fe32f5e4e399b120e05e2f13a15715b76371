@@ -1,0 +1,38 @@
+tests/test_colour_share.py
+  s_b9d647e85fe0bb::t_1db6ba52d06f87 1134-1191,1193-1238
+  s_b9d647e85fe0bb::t_c7a1fe6fd66222 38,50,62
+  s_b9d647e85fe0bb::t_aded028859ab9e 1192
+src/commentary/agents/colour.py
+  s_b9d647e85fe0bb::t_c87861eb8e22fa 1719
+  s_b9d647e85fe0bb::t_a2ca3c41420395 1241-1243
+  s_b9d647e85fe0bb::t_149737f27e8d97 960-961
+  s_b9d647e85fe0bb::t_0ac69c77e23152 1061-1069,1077-1083,1384
+  s_b9d647e85fe0bb::t_08675dd8276e21 988-1002
+  s_b9d647e85fe0bb::t_14ec7741f90e5b 1373-1383
+  s_b9d647e85fe0bb::t_79fdf191c60695 1686-1691
+  s_b9d647e85fe0bb::t_0dbfa1297d0302 1219-1240,1244,1246-1256
+  s_b9d647e85fe0bb::t_24471b15cc6b5c 2780-2781
+  s_b9d647e85fe0bb::t_4e3ebca693bfbc 1245
+  s_b9d647e85fe0bb::t_2b912d78a6dc71 1385
+src/commentary/prompts/colour.py
+  s_b9d647e85fe0bb::t_a2ca3c41420395 205-206
+  s_b9d647e85fe0bb::t_4e3ebca693bfbc 213-214
+  s_b9d647e85fe0bb::t_caed2a43908725 445-450
+  s_b9d647e85fe0bb::t_e0ba7b1d6db9ed 202-204,207-212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f567fe32f5e4e399b120e05e2f13a15715b76371",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
