@@ -207,6 +207,12 @@ class PhrasedLine(BaseModel):
     #: the shout off the front rather than drop the beat. The corpus's
     #: follow-up beats never open that way; beat 1 is the only shout.
     shout_rewritten: bool = Field(default=False)
+    #: True when this was a goal follow-up beat that repeated three words of
+    #: something already said about the same goal, and the phraser was
+    #: re-asked once. If the second answer repeats as well the line comes back
+    #: empty with a ``repeat:`` reason and no beat goes out: a third saying of
+    #: one phrase is worse than a hole.
+    repeat_retry: bool = Field(default=False)
     #: The replay marker phrase code removed from this line, or ``""``. The
     #: replay is named once per sequence ("as we see it again") and the model
     #: named it in two lines of three, so later lines have it taken off.

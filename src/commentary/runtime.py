@@ -883,8 +883,21 @@ class Runtime:
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
             roster=roster_names(self.pack),
+            said_of_the_goal=self.follow.spoken,
         )
         if phrased is None or not phrased.line.strip():
+            # A beat asked for and not written. The reason is worth a row —
+            # a dropped repeat and a failed call are different things, and
+            # this is the only record either leaves.
+            self._publish(
+                Topic.PHRASED,
+                cursor,
+                original=form.line,
+                line="",
+                excitement=0.0,
+                reason=self.phraser.last_reason or "the phraser wrote no follow-up",
+                synthetic=True,
+            )
             return False
         settled = settle_numbers(
             phrased.line,
@@ -942,7 +955,7 @@ class Runtime:
         self._lead_beats += 1
         said = self.threads.said(verdict.line, ts=cursor, pack=self.pack)
         self._publish_threads(cursor, said, "used")
-        self.follow.said(cursor)
+        self.follow.said(cursor, verdict.line)
         self.follow.synthesised += 1
         self.colour.saw_lead_line(cursor, verdict.line)
         self.phraser.accept(verdict.line, Event.GOAL, ts=cursor)
@@ -1215,9 +1228,9 @@ class Runtime:
             # the replay has the pictures behind it. Every other line inside
             # the window spends the next beat in order.
             if replay:
-                self.follow.rebuilt(cursor)
+                self.follow.rebuilt(cursor, verdict.line)
             else:
-                self.follow.said(cursor)
+                self.follow.said(cursor, verdict.line)
         if self.follow.active(cursor) and self._goal_turn is None:
             self._goal_turn = asyncio.create_task(self._fill_the_goal_window())
         # -- end of the goal window --------------------------------------
@@ -1299,6 +1312,7 @@ class Runtime:
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
             roster=roster_names(self.pack),
+            said_of_the_goal=self.follow.spoken,
             replay_first=self.replays.first,
         )
         if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:

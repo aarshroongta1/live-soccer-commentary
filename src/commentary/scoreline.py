@@ -48,6 +48,7 @@ Three things live here.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from commentary.gate import level_claim_spans, ordinal_score_spans, score_spans
@@ -334,11 +335,17 @@ def strip_how_not_in_form(text: str, *, description: str, penalty: bool) -> Stri
     return Stripped(_tidy(cut), tuple(removed))
 
 
-def _spans(text: str) -> list[tuple[int, int]]:
-    """Every run of characters in the line that asserts a score."""
+def _spans(text: str, teams: Sequence[str] = ()) -> list[tuple[int, int]]:
+    """Every run of characters in the line that asserts a score.
+
+    ``teams`` are the two sides' names, and they are what makes the gate's
+    ``<Side> level`` shape strippable rather than fatal: "France level!" needs
+    no verb and matches nothing built out of one, so without the names it
+    reaches the gate, and the gate refuses the whole line.
+    """
     found = [(span.start, span.end) for span in score_spans(text)]
     found += ordinal_score_spans(text)
-    found += level_claim_spans(text)
+    found += level_claim_spans(text, teams)
     if not found:
         return []
     merged: list[tuple[int, int]] = []
@@ -356,7 +363,7 @@ def _tidy(text: str) -> str:
     return _EDGE_PUNCT.sub("", text).strip()
 
 
-def strip_score(text: str) -> Stripped:
+def strip_score(text: str, teams: Sequence[str] = ()) -> Stripped:
     """Take every score claim out of the line, and say what was taken.
 
     Sentence by sentence, because that is how a commentator says a score: its
@@ -369,8 +376,15 @@ def strip_score(text: str) -> Stripped:
     no trimming a number out of a sentence and leaving commentary behind, as
     the gate's own docstring says — but by the time a line reaches the gate it
     is too late to do anything but lose it. Here is early enough.
+
+    ``teams`` are the two sides' names, for the score claim that is a side and
+    an adjective: "Mbappé! The ball back to centre. France level!" went out on
+    a follow-up beat at 2-1 and the gate refused all three fragments of it,
+    because ``<Side> level`` is the one level claim the strip could not see.
+    Every caller inside this system passes them; the default is empty so that
+    a caller with no state in front of it behaves as it always did.
     """
-    spans = _spans(text)
+    spans = _spans(text, teams)
     if not spans:
         return Stripped(text)
     removed = tuple(text[start:end].strip() for start, end in spans)
@@ -449,7 +463,7 @@ def settle_numbers(
     caller of this before the how-backstop existed.
     """
     how = strip_how_not_in_form(text, description=description, penalty=penalty)
-    stripped = strip_score(how.text)
+    stripped = strip_score(how.text, (state.home, state.away))
     line = stripped.text
     score = (
         say_score(state, side, goal_in_state=goal_in_state, index=index) if append else ""

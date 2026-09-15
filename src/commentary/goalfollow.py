@@ -138,6 +138,12 @@ class GoalFollowup:
     #: it is described.
     rebuilt_by_replay: bool = False
     _last_said: float = 0.0
+    #: Every line that has gone out about this goal, the call first. What the
+    #: follow-up beats are told not to say again: on the free-kick trace the
+    #: phrase "over the wall, into the top corner" went out on the call at
+    #: 21.2 s, on beat 2 at 25.2 and on the rebuild at 32.5, which is one
+    #: piece of information said three times in eleven seconds.
+    _spoken: list[str] = field(default_factory=list)
     _moves: list[str] = field(default_factory=list)
     _names: list[str] = field(default_factory=list)
     _sightings: list[Sighting] = field(default_factory=list)
@@ -220,6 +226,7 @@ class GoalFollowup:
         self.beats_said = 1
         self.synthesised = 0
         self.rebuilt_by_replay = False
+        self._spoken = [spoken.strip()] if spoken.strip() else []
         self._last_said = ts
         self._moves = []
         self._names = []
@@ -228,14 +235,36 @@ class GoalFollowup:
         self.scorer = _scorer(line, spoken, pack)
         self.saw_form(line)
 
-    def said(self, ts: float) -> None:
-        """A follow-up line went out. Move to the next beat."""
+    def said(self, ts: float, text: str = "") -> None:
+        """A follow-up line went out. Move to the next beat, and keep the words.
+
+        ``text`` is what actually reached air, and it is kept for the same
+        reason the call's own words are: the next beat is shown all of it and
+        told not to say any of it again.
+        """
         if not self.active(ts):
             return
         self.beats_said += 1
         self._last_said = ts
+        self.remember(text)
 
-    def rebuilt(self, ts: float) -> None:
+    def remember(self, text: str) -> None:
+        """Keep a line that has gone out about this goal, without spending a beat."""
+        said = text.strip()
+        if said and said not in self._spoken:
+            self._spoken.append(said)
+
+    @property
+    def spoken(self) -> list[str]:
+        """The call, then every line said about this goal since, in order."""
+        return list(self._spoken)
+
+    @property
+    def call(self) -> str:
+        """The words the goal was called with, or ``""`` before one is armed."""
+        return self._spoken[0] if self._spoken else ""
+
+    def rebuilt(self, ts: float, text: str = "") -> None:
         """A replay line has gone out over this goal. Beat 4 is spent.
 
         Not :meth:`said`, which would spend whichever beat happened to be
@@ -248,6 +277,7 @@ class GoalFollowup:
             return
         self.rebuilt_by_replay = True
         self._last_said = ts
+        self.remember(text)
 
     def close(self) -> None:
         """Forget the goal. Called when a line that is not about it goes out."""
@@ -268,6 +298,7 @@ class GoalFollowup:
             notes=notes,
             moves=self._moves,
             names=self._names,
+            said=self._spoken,
         )
 
     def scorer_notes(self, ts: float, pack: KnowledgePack | None = None) -> list[Note]:

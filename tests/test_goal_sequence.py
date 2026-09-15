@@ -26,19 +26,33 @@ the only thing wrong with the line.
 
 from __future__ import annotations
 
+from typing import Any
+
+import numpy as np
 import pytest
 
 from commentary.agents.phraser import (
     Phraser,
     opening_shout,
     roster_names,
+    shared_run,
     unshout,
 )
-from commentary.config import PhraserConfig
+from commentary.capture.buffer import Frame
+from commentary.config import (
+    CallerConfig,
+    CaptureConfig,
+    DirectorConfig,
+    PhraserConfig,
+    PredictorConfig,
+    Settings,
+)
 from commentary.goalfollow import REBUILD_BEAT, GoalFollowup
 from commentary.llm.fake import ScriptedBackend
-from commentary.prompts.phraser import GOAL_BEATS
+from commentary.prompts.phraser import GOAL_BEATS, REPEAT_RUN, goal_followup_block
+from commentary.runtime import Runtime
 from commentary.schemas import (
+    Beat,
     CallerLine,
     Event,
     KnowledgePack,
@@ -48,7 +62,10 @@ from commentary.schemas import (
     Side,
     Sighting,
     TeamSheet,
+    Trigger,
 )
+from commentary.sim import MatchSim, SimOracle, SimSource
+from commentary.voice import LogSpeaker
 
 # -- fixtures ---------------------------------------------------------------
 
@@ -318,3 +335,258 @@ def test_a_new_goal_forgets_the_last_one_s_replay() -> None:
 
     assert not follow.rebuilt_by_replay
     assert follow.beat(52.0) == 2
+
+
+# -- one thing said once ----------------------------------------------------
+
+
+CALLED = "Over the wall, into the top corner! Three-three."
+
+
+def test_a_run_of_three_words_from_the_call_is_the_same_thing_said_twice() -> None:
+    """The free-kick trace, phrase by phrase.
+
+    The call at 21.2 s, beat 2 at 25.2 and the rebuild at 32.5 all carried
+    "over the wall, into the top corner". One piece of information, three
+    times, eleven seconds.
+    """
+    assert shared_run("Ronaldo! Over the wall, into the top corner!", [CALLED]) == (
+        "over the wall"
+    )
+    assert shared_run(
+        "Ronaldo took his steps back and whipped it over the wall, into the top corner.",
+        [CALLED],
+    )
+    assert REPEAT_RUN == 3
+
+
+def test_a_run_of_nothing_but_ordinary_words_is_not_a_repeat() -> None:
+    """"and he has" twice is how English works, not a phrase said twice."""
+    assert shared_run("And he has done it again, away to the flag.", ["And he has gone."]) == ""
+
+
+def test_a_line_that_shares_nothing_is_left_alone() -> None:
+    assert shared_run("The keeper never moved a muscle.", [CALLED]) == ""
+    assert shared_run("Short.", [CALLED]) == "", "a line shorter than the run"
+
+
+def test_the_beats_are_shown_every_word_that_has_gone_out() -> None:
+    block = goal_followup_block(
+        3, since_s=10.0, scorer="Cristiano Ronaldo", said=[CALLED, "Ronaldo wheels away."]
+    )
+
+    assert "WHAT HAS ALREADY GONE OUT ABOUT THIS GOAL, the call first:" in block
+    assert CALLED in block
+    assert "Ronaldo wheels away." in block
+    assert f"NOT ONE RUN OF {REPEAT_RUN} WORDS" in block
+
+
+def test_a_call_that_named_nobody_sends_the_name_to_beat_two() -> None:
+    """"Over the wall, into the top corner!" tells nobody whose goal it is."""
+    block = goal_followup_block(2, since_s=4.0, scorer="Cristiano Ronaldo", said=[CALLED])
+
+    assert "AND THE CALL NAMED NOBODY" in block
+    assert "with a comma after" in block
+
+    named = goal_followup_block(
+        2, since_s=4.0, scorer="Cristiano Ronaldo", said=["Ronaldo! Into the top corner!"]
+    )
+    assert "AND THE CALL NAMED NOBODY" not in named
+
+
+def test_the_rebuild_is_told_it_has_to_carry_something_new() -> None:
+    assert "IT HAS TO CARRY SOMETHING THE CALL DID NOT" in GOAL_BEATS[REBUILD_BEAT]
+
+
+def test_the_window_remembers_the_call_and_every_beat_since() -> None:
+    follow = GoalFollowup()
+    follow.arm(10.0, a_goal_form(), CALLED)
+    assert follow.spoken == [CALLED]
+    assert follow.call == CALLED
+
+    follow.said(14.0, "Ronaldo wheels away to the flag.")
+    follow.rebuilt(18.0, "It was struck the moment the whistle went.")
+
+    assert follow.spoken == [
+        CALLED,
+        "Ronaldo wheels away to the flag.",
+        "It was struck the moment the whistle went.",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_a_beat_that_says_the_call_again_is_asked_for_the_other_half() -> None:
+    backend = saying(
+        PhrasedLine(line="And he has put it over the wall, into the top corner.", excitement=0.9),
+        PhrasedLine(line="And the wall never moved an inch.", excitement=0.9),
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Portugal 3 Spain 3",
+        goal_beat=2,
+        scorer="Cristiano Ronaldo",
+        roster=["Cristiano Ronaldo"],
+        said_of_the_goal=[CALLED],
+        followup=GOAL_BEATS[2],
+    )
+
+    assert phrased is not None
+    assert phrased.line == "And the wall never moved an inch."
+    assert phrased.repeat_retry
+    note = "\n".join(
+        block["text"] for block in backend.calls[-1].blocks if block.get("type") == "text"
+    )
+    assert 'THAT SAYS "over the wall" AGAIN' in note
+    assert len(backend.calls) == 2, "asked once"
+
+
+@pytest.mark.asyncio
+async def test_a_beat_that_says_it_again_anyway_is_dropped_rather_than_aired() -> None:
+    """A third saying of one phrase is worse than a hole in the window."""
+    backend = saying(
+        PhrasedLine(line="Ronaldo whipped it over the wall, into the top corner.", excitement=0.6)
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Portugal 3 Spain 3",
+        goal_beat=REBUILD_BEAT,
+        scorer="Cristiano Ronaldo",
+        roster=["Cristiano Ronaldo"],
+        said_of_the_goal=[CALLED],
+        followup=GOAL_BEATS[REBUILD_BEAT],
+    )
+
+    assert phrased is not None
+    assert phrased.line == ""
+    assert phrased.repeat_retry
+    assert phraser.last_reason.startswith("repeat:")
+    assert "over the wall" in phraser.last_reason
+    assert phraser.chose_silence, "no beat goes out, and no fallback to the caller"
+
+
+@pytest.mark.asyncio
+async def test_the_shout_comes_off_but_the_name_stays_when_the_call_had_none() -> None:
+    """The only naming of the scorer in the sequence is not thrown away."""
+    backend = saying(
+        PhrasedLine(line="Ronaldo! Straight down the middle of the goal.", excitement=0.9)
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Portugal 3 Spain 3",
+        goal_beat=2,
+        scorer="Cristiano Ronaldo",
+        roster=["Cristiano Ronaldo"],
+        said_of_the_goal=[CALLED],
+        followup=GOAL_BEATS[2],
+    )
+
+    assert phrased is not None
+    assert phrased.line == "Ronaldo, straight down the middle of the goal."
+    assert phrased.shout_rewritten
+
+
+@pytest.mark.asyncio
+async def test_a_call_that_named_him_loses_the_shout_and_the_name_with_it() -> None:
+    backend = saying(PhrasedLine(line="Ronaldo! The wall never moved.", excitement=0.9))
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Portugal 3 Spain 3",
+        goal_beat=2,
+        scorer="Cristiano Ronaldo",
+        roster=["Cristiano Ronaldo"],
+        said_of_the_goal=["Ronaldo! Three-three."],
+        followup=GOAL_BEATS[2],
+    )
+
+    assert phrased is not None
+    assert phrased.line == "The wall never moved."
+
+
+# -- and live ---------------------------------------------------------------
+
+
+def _built_runtime() -> Runtime:
+    sim = MatchSim(seed=5, duration_s=120.0)
+    settings = Settings(
+        capture=CaptureConfig(
+            width=640, height=360, fps=8, delay_s=4.0, history_s=3.0, present_offset_s=3.0
+        ),
+        caller=CallerConfig(min_gap_s=2.0),
+        predictor=PredictorConfig(tick_s=0.05),
+        director=DirectorConfig(max_beat_age_s=30.0),
+    )
+    runtime = Runtime(
+        source=SimSource(sim, settings.capture, realtime=False),
+        backend=SimOracle(sim=sim),
+        pack=sim.knowledge_pack,
+        settings=settings,
+        speaker=LogSpeaker(words_per_second=120),
+    )
+    blank = np.zeros((8, 8, 3), dtype=np.uint8)
+    for index in range(96):
+        runtime.buffer.append(Frame(ts=index / settings.capture.fps, image=blank))
+    return runtime
+
+
+@pytest.mark.asyncio
+async def test_the_runtime_airs_the_call_and_drops_the_beat_that_repeats_it() -> None:
+    """The whole of change 1, on the live path, in two calls.
+
+    The goal is called and the number goes on it. The celebration that comes
+    back is the call again with a name shouted in front of it, twice, so
+    nothing goes out — and what the listener is left with is one saying of
+    one phrase rather than three.
+    """
+    runtime = _built_runtime()
+    assert runtime.pack is not None
+    scorer = runtime.pack.away.starters[0]
+    # The board has already counted it, so the scoreline is the board's.
+    runtime.state.home_score, runtime.state.away_score = 1, 1
+    runtime._last_goal_ts = 0.0
+    form = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.AWAY,
+        sightings=[Sighting(number=scorer.number, name=scorer.name, side=Side.AWAY)],
+        confidence=0.9,
+        speak=True,
+        line=f"{scorer.surname} turns it in from six yards and the net bulges.",
+    )
+
+    async def call(*_args: Any, **_kw: Any) -> CallerLine:
+        return form
+
+    runtime.caller.call = call  # type: ignore[method-assign]
+    backend = saying(
+        PhrasedLine(line=f"{scorer.surname}! From six yards!", excitement=1.0),
+        PhrasedLine(line=f"{scorer.surname} got there from six yards.", excitement=0.9),
+    )
+    runtime.phraser = Phraser(
+        backend,
+        config=PhraserConfig(model="claude-haiku-4-5"),
+        home=runtime.home,
+        away=runtime.away,
+    )
+    beats: list[Beat] = []
+    original = runtime.director.submit
+
+    def spy(beat: Beat) -> None:
+        beats.append(beat)
+        original(beat)
+
+    runtime.director.submit = spy  # type: ignore[method-assign]
+
+    await runtime._call([Trigger.SCHEDULED])
+    await runtime._call([Trigger.SCHEDULED])
+
+    assert len(beats) == 1, "the celebration repeated the call and was dropped"
+    assert beats[0].text.startswith(f"{scorer.surname}! From six yards!")
+    assert runtime.phraser.last_reason.startswith("repeat:")

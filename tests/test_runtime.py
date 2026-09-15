@@ -923,3 +923,79 @@ async def test_a_dead_ball_name_is_never_carried(tmp_path: Path) -> None:
         confidence=0.8, speak=True, line="and it is buried",
     )
     assert runtime._carried_name(kick, 12.0) is None
+
+
+# -- the colour seat's attribution check, on the live path -------------------
+
+
+def _built_runtime() -> Runtime:
+    """A runtime with frames in the buffer, built rather than run."""
+    sim = MatchSim(seed=5, duration_s=120.0)
+    settings = fast_settings()
+    runtime = Runtime(
+        source=SimSource(sim, settings.capture, realtime=False),
+        backend=SimOracle(sim=sim),
+        pack=sim.knowledge_pack,
+        settings=settings,
+        speaker=LogSpeaker(words_per_second=120),
+    )
+    blank = np.zeros((8, 8, 3), dtype=np.uint8)
+    for index in range(96):
+        runtime.buffer.append(Frame(ts=index / settings.capture.fps, image=blank))
+    return runtime
+
+
+@pytest.mark.asyncio
+async def test_a_colour_utterance_that_blames_the_wrong_man_is_refused_live() -> None:
+    """The attribution check, through the runtime rather than the offline pass.
+
+    ``judge_utterance`` takes ``attributed``, ``named_before`` and ``after``,
+    and without them ``misattributes`` returns on its first line: the check
+    was inert on the live path while the offline rephrase had it. What is
+    held here is the wiring — the second utterance is judged knowing who the
+    first one named, because the second one says "he" and means him, and
+    knowing who the caller's own forms put on the penalty.
+    """
+    runtime = _built_runtime()
+    assert runtime.pack is not None
+    on_the_penalty = runtime.pack.home.starters[0]
+    somebody_else = runtime.pack.away.starters[0]
+    cursor = runtime.cursor_ts
+    runtime.colour.saw_form(
+        cursor,
+        CallerLine(
+            scene=Scene.LIVE_PLAY,
+            event=Event.PENALTY,
+            side=Side.HOME,
+            sightings=[
+                Sighting(number=on_the_penalty.number, name=on_the_penalty.name, side=Side.HOME)
+            ],
+            confidence=0.9,
+            speak=True,
+            line=f"{on_the_penalty.surname} stands over it, the referee pointing to the spot.",
+        ),
+    )
+    judged: list[tuple[str, Any]] = []
+    original = runtime._publish
+
+    def spy(topic: Any, ts: float, value: Any = None, **extra: Any) -> None:
+        judged.append((str(getattr(topic, "value", topic)), value))
+        original(topic, ts, value, **extra)
+
+    runtime._publish = spy  # type: ignore[method-assign]
+
+    await runtime._say_colour(
+        [
+            f"Well, {somebody_else.surname} is the man here.",
+            "And he's just conceded the penalty.",
+        ],
+        [cursor, cursor],
+        "over_a_replay",
+    )
+
+    verdicts = [value for topic, value in judged if topic == "gate"]
+    assert len(verdicts) == 2
+    assert verdicts[0].passed, "naming the man is a line, and it is the antecedent"
+    assert not verdicts[1].passed
+    assert verdicts[1].reasons[0].startswith("attribution:")
+    assert somebody_else.surname in verdicts[1].reasons[0]

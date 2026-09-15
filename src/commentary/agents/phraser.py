@@ -186,6 +186,17 @@ def _shout_retry_note(name: str, beat: int) -> str:
     )
 
 
+def _repeat_retry_note(phrase: str) -> str:
+    """Name the phrase that is already on air, and ask for the other thing."""
+    return (
+        f'THAT SAYS "{phrase}" AGAIN, AND IT HAS ALREADY GONE OUT ABOUT THIS GOAL. '
+        "The listener has those words; saying them a second time tells them nothing "
+        "they do not have.\n"
+        "Write the part of it nobody has heard yet — the run-up, the keeper, where "
+        "the ball came from, the man who made it — or return an empty line."
+    )
+
+
 def opening_shout(text: str, names: Sequence[str]) -> str | None:
     """The name this line opens by shouting, or ``None``.
 
@@ -210,7 +221,7 @@ def opening_shout(text: str, names: Sequence[str]) -> str | None:
     return None
 
 
-def unshout(text: str) -> str:
+def unshout(text: str, *, keep_name: bool = False, names: Sequence[str] = ()) -> str:
     """Take a "Name!" off the front of a follow-up beat, leaving a line behind.
 
     Two shapes, and which one is used is decided by the word after the
@@ -221,6 +232,15 @@ def unshout(text: str) -> str:
     it, so the shout comes off: "Mbappé! The keeper sent the wrong way."
     becomes "The keeper sent the wrong way."
 
+    ``keep_name`` is the third shape and it is the free-kick trace's: the goal
+    was called "Over the wall, into the top corner!" and named nobody, so the
+    listener has not been told whose goal it is and beat 2 is where the name
+    goes. Dropping the shout there would drop the only naming of the scorer
+    in the sequence, so the name is kept and the shout is not —
+    "Ronaldo! Over the wall" becomes "Ronaldo, over the wall". ``names`` stops
+    the lower-casing where the next word is somebody else's name: "Ronaldo!
+    De Gea beaten." keeps its capital.
+
     A line that is *only* the shout is returned untouched. There is nothing
     under it to promote, and an empty line here would drop the beat — which
     is the one thing this must not do, because the beat is what the thirty
@@ -229,12 +249,83 @@ def unshout(text: str) -> str:
     match = _OPENING_SHOUT.match(text)
     if match is None:
         return text
+    name = match.group(1).strip()
     rest = text[match.end() :].lstrip()
     if not rest:
         return text
     if rest[0].islower():
-        return f"{match.group(1).strip()}, {rest}"
+        return f"{name}, {rest}"
+    if keep_name:
+        head = rest.split(maxsplit=1)[0].strip(".,!?;:'\u2019\"")
+        if not _is_a_name(head, names):
+            rest = rest[0].lower() + rest[1:]
+        return f"{name}, {rest}"
     return rest
+
+
+def _is_a_name(word: str, names: Sequence[str]) -> bool:
+    """Is this word somebody on the sheet, by any part of their name?"""
+    folded = word.casefold()
+    return any(
+        folded == part.casefold() for name in names for part in name.split() if part
+    )
+
+
+#: A run of words this long, shared with something already said about the
+#: same goal, is the same thing said twice. Three: two is ordinary English
+#: ("and the", "off the") and four would let "over the wall, into the top
+#: corner" through on a single changed word. Kept beside the prompt's own
+#: statement of the rule in :data:`commentary.prompts.phraser.REPEAT_RUN`.
+REPEAT_RUN = 3
+
+_WORD = re.compile(r"[\w'\u2019-]+")
+
+#: Words a run of three may be made entirely of without meaning anything.
+#: "and he has" repeated is English; "into the top" repeated is the same
+#: piece of information twice.
+_FUNCTION_TEXT = """
+a an and are as at be been but by for from had has have he her here him his
+i if in into is it its me my no not now of off on one or our out she so than
+that the their them then there they this to too up us was we were what when
+which who will with you your
+"""
+_FUNCTION_WORDS = frozenset(_FUNCTION_TEXT.split())
+
+
+def _tokens(text: str) -> list[str]:
+    return [match.group().casefold() for match in _WORD.finditer(text)]
+
+
+def shared_run(text: str, said: Sequence[str], *, run: int = REPEAT_RUN) -> str:
+    """The run of words this line repeats from something already said, or ``""``.
+
+    The fault it is for is on ``runs/rephrased/r2-colour/freekick``: the free
+    kick is called "Over the wall, into the top corner!" at 21.2 s, beat 2
+    says "Ronaldo! Over the wall, into the top corner!" at 25.2, and the
+    rebuild says "Ronaldo took his steps back and whipped it over the wall,
+    into the top corner." at 32.5. One piece of information, three times,
+    eleven seconds. Every rule the prompt has about not repeating itself is
+    about the *last lines spoken*; inside a goal window every beat is handed
+    the same description of the same move and reaches for the same phrase in
+    it.
+
+    A run made only of function words is not a repeat — "and he has" is how
+    English works — so at least one word in the run has to carry something.
+    """
+    mine = _tokens(text)
+    if len(mine) < run:
+        return ""
+    before: set[tuple[str, ...]] = set()
+    for old in said:
+        tokens = _tokens(old)
+        before.update(
+            tuple(tokens[index : index + run]) for index in range(len(tokens) - run + 1)
+        )
+    for index in range(len(mine) - run + 1):
+        gram = tuple(mine[index : index + run])
+        if gram in before and not all(word in _FUNCTION_WORDS for word in gram):
+            return " ".join(gram)
+    return ""
 
 
 def roster_names(pack: KnowledgePack | None) -> list[str]:
@@ -478,6 +569,7 @@ class Phraser:
         goal_beat: int | None = None,
         scorer: str | None = None,
         roster: Sequence[str] = (),
+        said_of_the_goal: Sequence[str] = (),
         replay_first: bool = True,
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
@@ -527,6 +619,14 @@ class Phraser:
         shouted on a name — see :data:`UNSHOUTED_BEATS` — and the check needs
         to know which capitalised words are people. Empty is safe; the scorer
         and the names on the form are checked either way.
+
+        ``said_of_the_goal`` is every line that has already gone out about the
+        goal being celebrated, the call first, from
+        :attr:`commentary.goalfollow.GoalFollowup.spoken`. It does two things
+        and both of them are the free-kick trace's: a beat that repeats three
+        words of it is re-asked once and then dropped, and a beat 2 whose call
+        named nobody keeps the scorer's name at the front when the shout comes
+        off it.
 
         ``replay_first`` matters only on a replay form and is the one thing
         the model cannot see for itself: whether an earlier line in this same
@@ -603,10 +703,16 @@ class Phraser:
         # that comes back shouting the name again is rewritten rather than
         # dropped, because a dropped beat is a hole in the thirty seconds
         # after a goal and the shout is the one thing wrong with the line.
+        names = self._names_here(line, scorer, roster)
+        # The call named nobody — "Over the wall, into the top corner!" — so
+        # the shout coming off beat 2 must not take the only naming of the
+        # scorer with it.
+        keep_name = bool(
+            scorer and said_of_the_goal and not mentions(said_of_the_goal[0], scorer)
+        )
         shout_retry = False
         shout_rewritten = False
         if goal_beat in UNSHOUTED_BEATS:
-            names = self._names_here(line, scorer, roster)
             shouted = opening_shout(proposed.line, names)
             if shouted is not None:
                 retry = await self._reask(blocks, _shout_retry_note(shouted, goal_beat))
@@ -615,8 +721,54 @@ class Phraser:
                     proposed = retry.value
                     shout_retry = True
                 if opening_shout(proposed.line, names) is not None:
-                    proposed = proposed.model_copy(update={"line": unshout(proposed.line)})
+                    proposed = proposed.model_copy(
+                        update={
+                            "line": unshout(proposed.line, keep_name=keep_name, names=names)
+                        }
+                    )
                     shout_rewritten = True
+
+        # The same thing said twice about one goal. Unlike every other check
+        # here this one ends in the line being dropped: a beat that repeats
+        # the call carries nothing, and an empty beat is better than a third
+        # saying of one phrase.
+        repeat_retry = False
+        if goal_beat is not None and said_of_the_goal:
+            repeated = shared_run(proposed.line, said_of_the_goal)
+            if repeated:
+                retry = await self._reask(blocks, _repeat_retry_note(repeated))
+                if retry is not None:
+                    usage = usage + retry.usage
+                    proposed = retry.value
+                    repeat_retry = True
+                    # The fresh answer has not been through the shout check,
+                    # and it is not worth a third call: fixed in code.
+                    if goal_beat in UNSHOUTED_BEATS and opening_shout(proposed.line, names):
+                        proposed = proposed.model_copy(
+                            update={
+                                "line": unshout(
+                                    proposed.line, keep_name=keep_name, names=names
+                                )
+                            }
+                        )
+                        shout_rewritten = True
+                still = shared_run(proposed.line, said_of_the_goal)
+                if still:
+                    self.last_usage = usage
+                    self.chose_silence = True
+                    self.last_reason = (
+                        f'repeat: "{still}" had already gone out about this goal'
+                    )
+                    return PhrasedLine(
+                        line="",
+                        excitement=0.0,
+                        opener_retry=opener_retry,
+                        closer_retry=closer_retry,
+                        name_retry=name_retry,
+                        shout_retry=shout_retry,
+                        shout_rewritten=shout_rewritten,
+                        repeat_retry=True,
+                    )
 
         # The replay is named once a sequence, and this is the line after
         # the one that named it.
@@ -635,6 +787,7 @@ class Phraser:
                 "name_retry": name_retry,
                 "shout_retry": shout_retry,
                 "shout_rewritten": shout_rewritten,
+                "repeat_retry": repeat_retry,
                 "replay_marker_stripped": marker[:64],
             }
         )

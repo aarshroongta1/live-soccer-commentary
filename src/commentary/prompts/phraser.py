@@ -809,6 +809,12 @@ The name may be anywhere in the line — "and away he goes", "<Scorer> wheels
 away towards his own bench" are both this beat. What it may not be is the
 first word with a shout after it.
 
+WHEN THE CALL NAMED NOBODY, THIS IS WHERE THE NAME GOES, and the block below
+says which of the two you are in. A call of "Over the wall, into the top
+corner!" leaves a listener who has not been told whose goal it is, so this
+beat opens on him — with a comma, not a shout. "<Scorer>, over the wall from
+twenty-five yards." Not "<Scorer>! Over the wall."
+
 No number of any kind on this beat. The score went out on the call.""",
     3: """BEAT 3 — ONE NUMBER ABOUT THE SCORER, IN A SENTENCE. This is the beat
 the corpus fills about ten seconds in, and it fills it every time: "It's his
@@ -878,6 +884,18 @@ still running, and corrects itself halfway through.
 
 Same move, same names. The difference is the first verb and the join.
 
+IT HAS TO CARRY SOMETHING THE CALL DID NOT. A rebuild that says the call
+again with a past-tense verb on it is not a rebuild — it is the same six
+words a third time. What the call never had room for is what goes here: the
+run-up, the wall, the keeper's dive, where the ball came from, the second man
+in the move. One of those, at least, or there is no line to write and an
+empty one is the right answer.
+
+  called:   Over the wall, into the top corner!
+    wrong:  <Scorer> took his steps back and whipped it over the wall, into
+            the top corner.
+    right:  <Scorer> stood over it a long time, and the wall never moved.
+
 Use the move and the names below and nothing else. No score, no tally, no
 number.""",
 }
@@ -891,6 +909,7 @@ def goal_followup_block(
     notes: Sequence[Note] = (),
     moves: Sequence[str] = (),
     names: Sequence[str] = (),
+    said: Sequence[str] = (),
 ) -> str:
     """What is due next in the thirty seconds after a goal.
 
@@ -922,6 +941,7 @@ def goal_followup_block(
         "said about a goal everybody has now seen, and if it could have gone out",
         "as the call itself it is the wrong line.",
         "",
+        *_already_said(said, scorer, beat),
         instruction,
     ]
     if beat == 3:
@@ -1011,6 +1031,65 @@ def strip_replay_marker(text: str) -> tuple[str, str]:
             return text, ""
         return rest[0].upper() + rest[1:], stripped[: offset + len(marker)]
     return text, ""
+
+
+#: How long a run of words counts as saying the same thing again. Three: two
+#: is ordinary English — "and the", "off the" — and four lets "over the wall,
+#: into the top corner" through as long as one word in the middle moves.
+#: Measured on the free-kick trace, where the call, beat 2 and the rebuild
+#: shared "over the wall" and "into the top corner" between them.
+REPEAT_RUN = 3
+
+
+def _already_said(said: Sequence[str], scorer: str | None, beat: int) -> list[str]:
+    """The words that have gone out about this goal, and the ban on reusing them.
+
+    Printed on every follow-up beat because the fault it exists for is not
+    the model forgetting the call — it is the model being shown the caller's
+    description of the move and saying the most vivid phrase in it once per
+    beat. On ``runs/rephrased/r2-colour/freekick`` the call at 21.2 s, beat 2
+    at 25.2 and the rebuild at 32.5 all carried "over the wall, into the top
+    corner": one piece of information, three times, eleven seconds.
+
+    The rule is stated in words here and enforced in code afterwards, the way
+    every other rule in this prompt that a model has ignored three times now
+    is — a run of three words shared with anything below and the line is
+    asked for again, then dropped.
+    """
+    if not said:
+        return []
+    rows = [f"  - {text.strip()}" for text in said if text.strip()]
+    if not rows:
+        return []
+    block = [
+        "WHAT HAS ALREADY GONE OUT ABOUT THIS GOAL, the call first:",
+        *rows,
+        "",
+        f"NOT ONE RUN OF {REPEAT_RUN} WORDS FROM ANY OF THOSE. Not the detail, not the",
+        "phrase you like best in it, not reworded around the edges. Those words are",
+        "spent: the listener has them. A line that repeats one is asked for again",
+        "and then dropped, and a beat that is dropped is a hole in the loudest",
+        "half-minute of the match.",
+    ]
+    if beat == 2 and scorer and not _names_him(said[0], scorer):
+        block += [
+            "",
+            f"AND THE CALL NAMED NOBODY. {scorer} scored it and nobody listening has",
+            "been told. Put his name at the front of this line, with a comma after",
+            "it and no exclamation mark.",
+        ]
+    return [*block, ""]
+
+
+def _names_him(text: str, scorer: str) -> bool:
+    """Is the scorer in this line, by any part of his name?
+
+    The same loose test the rest of the system uses: the form spells him
+    "Kylian Mbappé" and the line says "Mbappé".
+    """
+    lowered = text.casefold()
+    parts = [part for part in scorer.split() if len(part) > 2]
+    return any(part.casefold() in lowered for part in parts)
 
 
 def replay_block(event: Event, *, first: bool) -> str:

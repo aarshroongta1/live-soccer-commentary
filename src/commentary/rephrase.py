@@ -537,10 +537,27 @@ async def rephrase(
             goal_beat=follow.beat(at),
             scorer=follow.scorer,
             roster=roster_names(pack),
+            said_of_the_goal=follow.spoken,
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
         if phrased is None or not phrased.line.strip():
+            # A beat asked for and not written — a dropped repeat, or a call
+            # that failed. Both are worth a row: this is the only record.
+            out.rows.append(
+                {
+                    "topic": Topic.PHRASED.value,
+                    "ts": at,
+                    "original": form.line,
+                    "line": "",
+                    "excitement": 0.0,
+                    "event": Event.GOAL.value,
+                    "form_event": Event.GOAL.value,
+                    "reason": phraser.last_reason or "the phraser wrote no follow-up",
+                    "usd": round(usd, 6),
+                    "synthetic": True,
+                }
+            )
             return False
         settled = settle_numbers(
             phrased.line, state=state, side=form.side, goal_in_state=True, append=False
@@ -612,7 +629,7 @@ async def rephrase(
             phraser.accept(verdict.line, Event.GOAL, ts=at)
             thread_rows(at, threads.said(verdict.line, ts=at, pack=pack), "used")
             ledger_rows(at, counts_said(verdict.line, at, scorer_names), "used")
-            follow.said(at)
+            follow.said(at, verdict.line)
             follow.synthesised += 1
         out.lines.append(
             Line(
@@ -768,7 +785,7 @@ async def rephrase(
                 # spends that beat and not merely the next one: the shout and
                 # the tally are still owed, and the synthesiser will not write
                 # a second past-tense account of the same move.
-                follow.rebuilt(ts)
+                follow.rebuilt(ts, verdict.line)
         else:
             out.rows.append(
                 {
@@ -884,6 +901,7 @@ async def rephrase(
             goal_beat=follow.beat(ts),
             scorer=follow.scorer,
             roster=roster_names(pack),
+            said_of_the_goal=follow.spoken,
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
@@ -1068,7 +1086,7 @@ async def rephrase(
             threads.credit_goal(follow.scorer, ts)
             ledger.credit_goal(follow.scorer, ts, form.side)
         elif follow.active(ts):
-            follow.said(ts)
+            follow.said(ts, verdict.line)
         if follow.active(ts):
             after = next((at for at in beat_times if at > ts + SAME_TS), None)
             for at in follow.synth_times(ts, after):
