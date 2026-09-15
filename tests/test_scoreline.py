@@ -155,6 +155,37 @@ def test_a_score_hiding_in_ordinary_words_comes_out_too() -> None:
     assert strip_score("Molina! Argentina's third!").removed == ("Argentina's third",)
 
 
+def test_a_side_named_and_then_level_is_a_score_claim_the_strip_can_reach() -> None:
+    """The celebration beat the gate refused whole, at 2-1.
+
+    "France level!" needs no verb, so it matches none of the level claims
+    built out of one, and without the two teams' names the strip could not
+    see it: the line reached the gate carrying a score the board contradicts
+    and the gate refused all three fragments rather than the one. With the
+    names, the claim comes off and the commentary survives.
+    """
+    said = "Mbappé! The ball back to centre. France level!"
+
+    stripped = strip_score(said, ("Argentina", "France"))
+
+    assert stripped.text == "Mbappé! The ball back to centre."
+    assert stripped.removed == ("France level",)
+    # And a caller with no state in front of it behaves as it always did.
+    assert strip_score(said).text == said
+
+
+def test_the_call_site_hands_the_strip_the_two_teams() -> None:
+    """``settle_numbers`` is the one call site, and it has the state."""
+    settled = settle_numbers(
+        "Mbappé! The ball back to centre. France level!",
+        state=a_state(2, 1),
+        side=Side.AWAY,
+    )
+
+    assert settled.line == "Mbappé! The ball back to centre."
+    assert settled.stripped == ("France level",)
+
+
 def test_the_scorers_own_tally_is_left_alone_because_it_is_the_third_beat() -> None:
     """"His third of the campaign" is a pack claim, and beat 3 of a goal."""
     said = "Mbappé! His third of the tournament."
@@ -577,7 +608,43 @@ async def test_the_runtime_appends_the_score_to_the_goal_line_and_strips_the_mod
 
 @pytest.mark.asyncio
 async def test_a_celebration_after_the_same_goal_loses_its_number_and_gains_none() -> None:
-    """Point 2. Both of the lines the gate used to refuse were this line."""
+    """Point 2. Both of the lines the gate used to refuse were this line.
+
+    The celebration written here is beat 2 and does not open by shouting the
+    scorer's name, because that shape is now taken off follow-up beats in
+    code — see the test below, and ``UNSHOUTED_BEATS``. What is being checked
+    is the number: it goes out on the call and comes off everything after it.
+    """
+    runtime = a_runtime()
+    form = a_goal_form(runtime)
+    surname = form.sightings[0].name.rsplit(" ", 1)[-1]
+    calling(runtime, form)
+    phraser_saying(
+        runtime,
+        PhrasedLine(line=f"{surname}! Off the ground!", excitement=1.0),
+        PhrasedLine(line="The keeper sent the wrong way. Two-one!", excitement=0.9),
+    )
+    beats = caught_beats(runtime)
+
+    await runtime._call([Trigger.SCHEDULED])
+    await runtime._call([Trigger.SCHEDULED])
+
+    assert [beat.text for beat in beats] == [
+        f"{surname}! Off the ground! One-one.",
+        "The keeper sent the wrong way.",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_a_celebration_that_is_only_the_name_and_the_score_says_nothing() -> None:
+    """The two rules meeting, and both of them are right.
+
+    "<Scorer>! Two-one!" as the line after the call is the goal call written
+    twice: the shout is beat 1's shape, and the number went out on beat 1.
+    Code takes the shout off the front and the score out of the middle, and
+    what is left is nothing — which is the honest answer, because the line
+    carried nothing that had not already been said.
+    """
     runtime = a_runtime()
     form = a_goal_form(runtime)
     surname = form.sightings[0].name.rsplit(" ", 1)[-1]
@@ -592,10 +659,7 @@ async def test_a_celebration_after_the_same_goal_loses_its_number_and_gains_none
     await runtime._call([Trigger.SCHEDULED])
     await runtime._call([Trigger.SCHEDULED])
 
-    assert [beat.text for beat in beats] == [
-        f"{surname}! Off the ground! One-one.",
-        f"{surname}!",
-    ]
+    assert [beat.text for beat in beats] == [f"{surname}! Off the ground! One-one."]
 
 
 @pytest.mark.asyncio

@@ -75,6 +75,14 @@ MAX_SYNTH = 2
 #: The last beat the model is asked to write. Beat 1 is the call itself.
 LAST_BEAT = max(GOAL_BEATS)
 
+#: The beat that goes back over the move in the past tense, and the one a
+#: replay line replaces. ``GOAL_BEATS[4]`` and
+#: :func:`~commentary.prompts.phraser.replay_block` ask for the same line —
+#: the past-tense rebuild — and the replay is the one with a picture behind
+#: it, so a replay inside the window spends this beat and the synthesiser
+#: does not write a second rebuild of the same move.
+REBUILD_BEAT = 4
+
 #: How long after the window closes a scoreline-and-clock restatement still
 #: stays out of the way. The corpus's celebration does not stop dead at the
 #: window's edge, and a restatement landing right on it reads as stepping on
@@ -123,6 +131,12 @@ class GoalFollowup:
     scorer: str | None = None
     beats_said: int = 0
     synthesised: int = 0
+    #: Has a replay line already rebuilt this move? Beat 4 and a replay line
+    #: are the same line — the past-tense account of how the goal was scored
+    #: — and the corpus never says it twice. The replay wins because it has
+    #: the pictures behind it: the broadcast is showing the move again while
+    #: it is described.
+    rebuilt_by_replay: bool = False
     _last_said: float = 0.0
     _moves: list[str] = field(default_factory=list)
     _names: list[str] = field(default_factory=list)
@@ -157,6 +171,9 @@ class GoalFollowup:
         if not self.active(ts):
             return None
         due = self.beats_said + 1
+        if due == REBUILD_BEAT and self.rebuilt_by_replay:
+            # The replay said it. There is no beat 5, so the window is spent.
+            return None
         return due if due in GOAL_BEATS else None
 
     def due(self, ts: float) -> bool:
@@ -202,6 +219,7 @@ class GoalFollowup:
         self.side = line.side
         self.beats_said = 1
         self.synthesised = 0
+        self.rebuilt_by_replay = False
         self._last_said = ts
         self._moves = []
         self._names = []
@@ -215,6 +233,20 @@ class GoalFollowup:
         if not self.active(ts):
             return
         self.beats_said += 1
+        self._last_said = ts
+
+    def rebuilt(self, ts: float) -> None:
+        """A replay line has gone out over this goal. Beat 4 is spent.
+
+        Not :meth:`said`, which would spend whichever beat happened to be
+        next. A replay line arriving four seconds after the call is the
+        past-tense rebuild whatever the counter says, and the celebration and
+        the tally are still owed — so the flag is set, the clock for the next
+        beat is pushed back, and the count is left where it was.
+        """
+        if not self.active(ts):
+            return
+        self.rebuilt_by_replay = True
         self._last_said = ts
 
     def close(self) -> None:
@@ -273,7 +305,8 @@ class GoalFollowup:
         at = after + SYNTH_GAP_S
         room = MAX_SYNTH - self.synthesised
         while len(times) < room and at <= ends - BEAT_GAP_S:
-            if self.beats_said + 1 + len(times) not in GOAL_BEATS:
+            due = self.beats_said + 1 + len(times)
+            if due not in GOAL_BEATS or (due == REBUILD_BEAT and self.rebuilt_by_replay):
                 break
             times.append(round(at, 3))
             at += SYNTH_GAP_S

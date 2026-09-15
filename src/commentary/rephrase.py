@@ -64,7 +64,7 @@ from pathlib import Path
 from typing import Any
 
 from commentary.agents.colour import ColourPass, _merge, colour_pass
-from commentary.agents.phraser import Phraser
+from commentary.agents.phraser import Phraser, nameless_build_up, roster_names
 from commentary.bus import Topic
 from commentary.config import SETTINGS, Settings
 from commentary.gate import FactGate, claims_goal, facts_used, fold
@@ -382,6 +382,8 @@ async def rephrase(
     phraser = Phraser(
         backend,
         config=settings.phraser,
+        silence=settings.silence,
+        dead_ball=settings.dead_ball,
         model=model,
         home=teams.home,
         away=teams.away,
@@ -534,6 +536,7 @@ async def rephrase(
             followup=follow.block(at, pack),
             goal_beat=follow.beat(at),
             scorer=follow.scorer,
+            roster=roster_names(pack),
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
@@ -568,7 +571,10 @@ async def rephrase(
                 "usd": round(usd, 6),
                 "synthetic": True,
                 "opener_retry": phrased.opener_retry,
+                "closer_retry": phrased.closer_retry,
                 "name_retry": phrased.name_retry,
+                "shout_retry": phrased.shout_retry,
+                "shout_rewritten": phrased.shout_rewritten,
                 "score_stripped": list(settled.stripped),
                 "tokens_in": phraser.last_usage.input_tokens,
                 "cache_read": phraser.last_usage.cache_read_tokens,
@@ -603,7 +609,7 @@ async def rephrase(
                     "preemptable": False,
                 }
             )
-            phraser.accept(verdict.line, Event.GOAL)
+            phraser.accept(verdict.line, Event.GOAL, ts=at)
             thread_rows(at, threads.said(verdict.line, ts=at, pack=pack), "used")
             ledger_rows(at, counts_said(verdict.line, at, scorer_names), "used")
             follow.said(at)
@@ -724,7 +730,9 @@ async def rephrase(
                 "usd": round(usd, 6),
                 "replay": True,
                 "opener_retry": phrased.opener_retry,
+                "closer_retry": phrased.closer_retry,
                 "name_retry": phrased.name_retry,
+                "replay_marker_stripped": phrased.replay_marker_stripped,
                 "score_stripped": list(settled.stripped),
                 "tokens_in": phraser.last_usage.input_tokens,
                 "cache_read": phraser.last_usage.cache_read_tokens,
@@ -752,13 +760,15 @@ async def rephrase(
                     "replay": True,
                 }
             )
-            phraser.accept(verdict.line, form.event)
+            phraser.accept(verdict.line, form.event, ts=ts)
             replays.spoke(ts)
             lead_times.append(ts)
             if follow.active(ts):
                 # Inside a goal window the replay line *is* the rebuild, so it
-                # spends the beat the synthesiser would have spent on one.
-                follow.said(ts)
+                # spends that beat and not merely the next one: the shout and
+                # the tally are still owed, and the synthesiser will not write
+                # a second past-tense account of the same move.
+                follow.rebuilt(ts)
         else:
             out.rows.append(
                 {
@@ -820,6 +830,40 @@ async def rephrase(
         names += [s.name for s in form.sightings if s.name]
         names += [state.home, state.away]
         feed(ts)
+        passed_over = phraser.passes_over(form, ts=ts, on_the_ball=carried)
+        if passed_over is not None:
+            # No model call at all — the nameless build-up the corpus passes
+            # over a quarter of the time. Same row shape as a chosen silence,
+            # with the reason code decided it rather than the model's, and no
+            # beat and no gate row because nothing was said.
+            out.rows.append(
+                {
+                    "topic": Topic.PHRASED.value,
+                    "ts": ts,
+                    "original": form.line,
+                    "line": "",
+                    "excitement": 0.0,
+                    "event": form.event.value,
+                    "form_event": form.event.value,
+                    "reason": passed_over,
+                    "usd": 0.0,
+                }
+            )
+            out.lines.append(
+                Line(
+                    ts=ts,
+                    original=form.line,
+                    phrased="",
+                    excitement=0.0,
+                    passed=True,
+                    reason="",
+                    usd=0.0,
+                    event=form.event,
+                    form_event=form.event,
+                    silent=True,
+                )
+            )
+            continue
         followup = follow.block(ts, pack)
         if followup and follow.scorer:
             # The scorer's clauses go to the front, because beat 3 is a number
@@ -839,6 +883,7 @@ async def rephrase(
             followup=followup,
             goal_beat=follow.beat(ts),
             scorer=follow.scorer,
+            roster=roster_names(pack),
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
@@ -861,6 +906,7 @@ async def rephrase(
                     # offered "open differently or say nothing" and took the
                     # second.
                     "opener_retry": phrased.opener_retry,
+                    "closer_retry": phrased.closer_retry,
                     "name_retry": phrased.name_retry,
                     "tokens_in": phraser.last_usage.input_tokens,
                     "cache_read": phraser.last_usage.cache_read_tokens,
@@ -949,7 +995,10 @@ async def rephrase(
                     "form_event": form.event.value,
                     "usd": round(usd, 6),
                     "opener_retry": phrased.opener_retry,
+                    "closer_retry": phrased.closer_retry,
                     "name_retry": phrased.name_retry,
+                    "shout_retry": phrased.shout_retry,
+                    "shout_rewritten": phrased.shout_rewritten,
                     "score_appended": settled.appended,
                     "score_stripped": list(settled.stripped),
                     "how_stripped": list(settled.how_removed),
@@ -996,7 +1045,12 @@ async def rephrase(
         )
         if not verdict.passed:
             continue
-        phraser.accept(verdict.line, form.event)
+        phraser.accept(
+            verdict.line,
+            form.event,
+            ts=ts,
+            nameless=nameless_build_up(form, on_the_ball=carried),
+        )
         cover.remember(form, verdict.line, ts)
         cover.note_event(form, ts)
         thread_rows(ts, threads.said(verdict.line, ts=ts, pack=pack), "used")

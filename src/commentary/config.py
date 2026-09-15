@@ -223,6 +223,74 @@ class PhraserConfig:
 
 
 @dataclass(frozen=True)
+class SilenceConfig:
+    """When the lead says nothing without asking the model at all.
+
+    ``docs/research/real-commentary-corpus.md`` section 3.1a: 24% of carries
+    and passes in build-up have nothing said within ±3 s of them, and only
+    38% of carries name the man on the ball. Four rounds of prompt work asked
+    the phraser to make that choice for itself and it chose silence once in
+    35 calls, writing "Through midfield now. / Wide on the right now. / Into
+    the corner now." instead — three lines with no name, no detail and
+    nothing in them a listener could not see.
+
+    So the second of those is decided here rather than asked for, and the
+    model call is never made. What is protected is the narrow case the
+    corpus is emphatic about: a form with nobody bound to it, no detail, and
+    another one just like it already spoken.
+
+    :func:`commentary.agents.phraser.nameless_build_up` is the predicate;
+    both :mod:`commentary.runtime` and :mod:`commentary.rephrase` ask it
+    through :meth:`commentary.agents.phraser.Phraser.passes_over`.
+    """
+
+    #: Off restores the runtime that asked the model on every form.
+    enabled: bool = True
+    #: How many nameless build-up lines have to have gone out in a row before
+    #: the next nameless build-up form is passed over. One, because the
+    #: corpus's own rate is a quarter of all touches and this fires on a
+    #: strict subset of them — the second of a pair, never the first.
+    after_nameless: int = 1
+    #: And how recently. Without this the rule would hold through a long
+    #: silence: the last thing said might be forty seconds old, and a system
+    #: that answers a quiet passage with more quiet goes mute. Fifteen
+    #: seconds is longer than any gap the corpus leaves inside build-up
+    #: (section 2.3: median 4.2 s, 11% over ten) and shorter than the
+    #: silences section 2.6 measures around a dead ball.
+    within_s: float = 15.0
+
+
+@dataclass(frozen=True)
+class DeadBallConfig:
+    """The restart slot: the long line, and how long it may run.
+
+    ``docs/research/real-commentary-corpus.md`` section 2.3 is the finding
+    this exists for. In an attacking move the commentator speaks half again
+    as fast and says *less* each time — median gap 2.8 s, median 7 words. At
+    a restart the gap opens to 4.5 s and the line gets **longer**: median 10
+    words, and one in five over sixteen. A goal kick is silent 43% of the
+    time and when it is not it is where the storyline goes ("been in fine
+    goal scoring form for Villa Scott Sinclair with five in four appearances
+    so far this season", section 3.1b).
+
+    The same licence covers the thirty seconds after a goal, where beats 2 to
+    4 are 8 to 24 words by instruction (section 2.4: 60 words in 30 seconds).
+    """
+
+    #: The word cap on a restart line and on a goal follow-up beat. The
+    #: phraser's default backstop of 28 is the 95th percentile of the whole
+    #: corpus; these are the kinds that live above it, so the trim is lifted
+    #: rather than removed — a model that ignores the instruction still
+    #: cannot hold the channel. Section 1's longest-in-a-match is 50 and up,
+    #: and 34 is enough for the corpus's own restart lines with room.
+    max_words: int = 34
+    #: What the block asks for, in words, at a restart. Section 2.3's median
+    #: is 10 and the top fifth is over 16.
+    min_words: int = 12
+    target_words: int = 22
+
+
+@dataclass(frozen=True)
 class AnalystConfig:
     """The old colour voice: a silence timer that sees frames.
 
@@ -671,6 +739,8 @@ class Settings:
     board: BoardConfig = field(default_factory=BoardConfig)
     caller: CallerConfig = field(default_factory=CallerConfig)
     phraser: PhraserConfig = field(default_factory=PhraserConfig)
+    silence: SilenceConfig = field(default_factory=SilenceConfig)
+    dead_ball: DeadBallConfig = field(default_factory=DeadBallConfig)
     analyst: AnalystConfig = field(default_factory=AnalystConfig)
     colour: ColourConfig = field(default_factory=ColourConfig)
     predictor: PredictorConfig = field(default_factory=PredictorConfig)

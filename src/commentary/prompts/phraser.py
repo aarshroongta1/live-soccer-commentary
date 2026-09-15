@@ -39,10 +39,17 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from commentary.config import DeadBallConfig
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import Block, text_block
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
 from commentary.schemas import CallerLine, Event, Note, Scene, Side
+
+#: The restart numbers, for a caller that has not been given a settings
+#: object. Every runtime path passes one down from
+#: :class:`~commentary.config.Settings`; this is what a test that builds a
+#: body by hand gets.
+DEAD_BALL = DeadBallConfig()
 
 #: What each kind is called in the prompt. The generated file's keys are
 #: identifiers; these are the words a commentator would use.
@@ -467,6 +474,13 @@ the next moment gets its own call. Return the empty line when
 Silence is never the answer to a shot, a save, a goal, a card, a penalty, a
 foul, a substitution or a cross. Those are always called.
 
+One of those two is no longer only yours. A build-up form with nobody bound
+to it, no detail on it, and another one just like it already spoken, is
+passed over in code and you are never asked about it — because asked about
+it, this stage wrote "Through midfield now." and then "Wide on the right
+now." So every build-up form that reaches you has a name on it, a detail on
+it, or a spoken line in front of it that had one, and it is worth a line.
+
 EXCITEMENT, AND IT HAS TO MOVE
 
 A number from 0 to 1 for how this is said. It is the volume knob for the
@@ -514,6 +528,21 @@ pairs went out and all three are the same tell:
     wrong: Brenner, set on his line.        (Name, comma, participle, twice)
 
 Change the subject, change the verb, or say the detail instead.
+
+AND THE LAST WORD COUNTS AS MUCH AS THE FIRST. A tail repeated is the same
+tell as an opener repeated, and it is the one this voice actually commits:
+
+  Through the middle at speed.
+  Through midfield now.
+  Wide on the right now.
+  Into the corner now.
+  Striding out now, in no hurry to move it on.
+
+Four of those five end on the same word and no two of them open on one. "now"
+is the worst offender and it is not the only one: do not end two lines in five
+on the same word. "now" tacked onto a line that was finished without it is not
+commentary, it is a jingle — the line is where the ball is, and the ball is
+always now.
 
 And if the last line you were shown is about the same player doing the same
 thing again, that is the empty line. Not a bare surname, not a rephrase of
@@ -604,6 +633,12 @@ def _stride(items: Sequence[str], count: int) -> list[str]:
 #: about the form's event field: a form that says `penalty` is a penalty
 #: being *stood over*. The kick has not been taken, which is precisely why
 #: there is a gap to fill.
+#:
+#: A substitution is on the list for the reason the corpus gives rather than
+#: for the reason the others are on it: it is not a lull, it is a stoppage
+#: with a name attached, and section 3 measures the median window around one
+#: at **50 words** — the longest of any event kind in the study. A seat that
+#: is offered no clause there says "Change for France." and stops.
 QUIET_EVENTS = frozenset(
     {
         Event.BUILD_UP,
@@ -615,8 +650,39 @@ QUIET_EVENTS = frozenset(
         Event.PENALTY,
         Event.CORNER,
         Event.THROW_IN,
+        Event.SUBSTITUTION,
     }
 )
+
+#: The kinds of moment that get the long line. Section 2.3: at a restart or a
+#: stoppage the gap opens to 4.5-4.6 s and the median utterance is 10 words
+#: against 7 in an attacking move, with one in five over sixteen. These are
+#: the moments where the researched clause, the ledger count and the
+#: storyline go, and the reason the word cap is lifted for them.
+#:
+#: :data:`Event.PENALTY` is not here. A penalty being stood over is quiet,
+#: which is why it is in :data:`QUIET_EVENTS`, but it is also about to be the
+#: loudest moment in the match and a twenty-word line would still be running
+#: when the ball is struck.
+LONG_LINE_EVENTS = frozenset(
+    {
+        Event.KICKOFF,
+        Event.THROW_IN,
+        Event.FREE_KICK,
+        Event.CORNER,
+        Event.SUBSTITUTION,
+        Event.STOPPAGE,
+    }
+)
+
+#: What a goal kick looks like from a form that has no word for one. There is
+#: no ``Event.GOAL_KICK``: the caller's enum is what can be read off a
+#: picture, and a goalkeeper with the ball on the edge of his own area is
+#: filed as build-up or as nothing. Section 3 measures goal kicks as 43%
+#: silent and, when spoken, the slot the storyline goes in — 1% of them use
+#: the words "goal kick" at all — so it is worth catching cheaply rather than
+#: not at all.
+_GOAL_KICK_WORDS = ("goal kick", "goalkick", "goalkeeper", "the keeper", "his keeper")
 
 
 def notes_allowed(line: CallerLine) -> bool:
@@ -630,8 +696,17 @@ def notes_allowed(line: CallerLine) -> bool:
     account of one concrete thing the picture is showing, and a number
     dropped into it is the one shape :func:`replay_block` forbids outright —
     so the clauses are not offered rather than offered and refused.
+
+    And always on a goal kick, however the caller filed it. Section 3.1b of
+    the study is that a goal kick is the commentator's slot for something
+    else: 43% pass in silence and 1% use the words "goal kick", and what goes
+    there instead is the storyline. A form filed ``none`` — the emptiest
+    picture there is — with the goalkeeper on the ball is that slot, and
+    offering it nothing to say is what makes it "Goal kick." or silence.
     """
-    return line.scene is not Scene.REPLAY and line.event in QUIET_EVENTS
+    if line.scene is Scene.REPLAY:
+        return False
+    return line.event in QUIET_EVENTS or looks_like_a_goal_kick(line)
 
 
 def phraser_blocks(
@@ -648,6 +723,7 @@ def phraser_blocks(
     followup: str = "",
     ledger: Sequence[LedgerFact] = (),
     replay_first: bool = True,
+    dead_ball: DeadBallConfig = DEAD_BALL,
 ) -> list[Block]:
     """One call's content. Text only, and deliberately small.
 
@@ -671,6 +747,11 @@ def phraser_blocks(
     the one thing about a replay the model cannot see: whether an earlier
     line in this same sequence has already said we are watching it again. See
     :func:`replay_block`.
+
+    ``dead_ball`` is the restart slot's numbers — what the long line is asked
+    for, in words. At a restart with a clause or a detail attached to it the
+    body says THIS IS THE LONG ONE and asks for twice the usual length; with
+    nothing attached it asks for silence. See :func:`_restart_block`.
     """
     return [
         text_block(
@@ -687,6 +768,7 @@ def phraser_blocks(
                 followup,
                 ledger,
                 replay_first,
+                dead_ball,
             )
         )
     ]
@@ -698,38 +780,57 @@ def phraser_blocks(
 #: block for it. Beats 2 to 4 are the follow-up, and each is one short line of
 #: its own two to five seconds after the last, not a clause of a long one.
 GOAL_BEATS: dict[int, str] = {
-    2: """BEAT 2 — THE MOMENT AGAIN, NOW. Eight to fourteen words, and not one
-sentence: two or three fragments stacked with no gap between them, which is
-how the corpus shouts. The name again, the celebration, where he has run, what
-the bench or the crowd is doing.
+    2: """BEAT 2 — THE CELEBRATION, AND IT IS NOT A SECOND CALL. Present tense,
+eight to fourteen words: where he has run, what the keeper did, what the bench
+is doing, how long he has known.
 
-Verbatim, and each of these is one beat, not one line:
+DO NOT OPEN ON A NAME AND AN EXCLAMATION MARK. "<Scorer>!" is beat 1. It has
+already gone out, with the score written on the end of it by the broadcast,
+and a listener who hears that shape a second time hears a second goal. Three
+consecutive lines opening "<Scorer>!" went out on this system — the listener
+is told he has scored three times in twelve seconds — and this beat is written
+the way it is to stop it. No name followed by "!" begins this line: not the
+scorer's, not the keeper's, not anybody's. If the first answer does, code
+takes the shout off the front and the line goes out without it.
 
-  LISTEN TO THE NOISE. THAT'S THE SOUND OF PREMIER LEAGUE HISTORY BEING MADE.
-  OH! HE'S DONE IT! IT'S HEARTBREAK FOR REAL MADRID, BUT IT'S JUBILATION FOR BARCA.
+Real ones, and each of these is one beat:
+
+  And look at him go, straight to the corner flag.
+  The keeper sent the wrong way, and the whole bench is up.
+  He knew it from the moment it left his boot.
   Quick thinking by ter Stegen, and Griezmann celebrates.
   And another standing ovation. It's exhibition stuff.
 
-Thirteen words, fourteen, eight, seven. Never fewer than eight: one fragment
-on its own is this beat written short, and the shout carries on past it. This
-is the one place repetition is right.
+Eleven words, twelve, eleven, seven, seven. Never fewer than eight: one
+fragment on its own is this beat written short, and the shout carries on past
+it.
+
+The name may be anywhere in the line — "and away he goes", "<Scorer> wheels
+away towards his own bench" are both this beat. What it may not be is the
+first word with a shout after it.
 
 No number of any kind on this beat. The score went out on the call.""",
-    3: """BEAT 3 — ONE NUMBER ABOUT THE SCORER. This is the beat the corpus fills
-about ten seconds in, and it fills it every time: "It's his third goal of
-this La Liga campaign.", "Griezmann gets his fifth goal of the season.", "11
-CONSECUTIVE GOALS IN PREMIER League games.", "His first ever goal for the
-club."
+    3: """BEAT 3 — ONE NUMBER ABOUT THE SCORER, IN A SENTENCE. This is the beat
+the corpus fills about ten seconds in, and it fills it every time: "It's his
+third goal of this La Liga campaign.", "Griezmann gets his fifth goal of the
+season.", "11 CONSECUTIVE GOALS IN PREMIER League games.", "His first ever
+goal for the club."
 
-A whole line, eight to fourteen words, never fewer than eight. Those four run
-nine words, eight, six and seven, and the corpus goes longer still — "A quick
-ball out by ter Stegen and Griezmann gets his fifth goal of the season" is
-sixteen. Every one is a sentence with a subject and a verb, and this is a
-moment the gaps are open: the long line belongs here.
+A WHOLE SENTENCE, WITH A SUBJECT AND A VERB, eight to fourteen words. "Six in
+the tournament." is a caption, and it is what this beat keeps writing. "That's
+his sixth of the tournament." and "Six goals in this World Cup now for
+<Scorer>." are the same fact said by a person. The corpus goes longer still —
+"A quick ball out by ter Stegen and Griezmann gets his fifth goal of the
+season" is sixteen words — and this is a moment the gaps are open, so the long
+line belongs here.
+
+NOT A SHOUT, AND NOT ON HIS NAME. Like beat 2, this line does not open on a
+name with an exclamation mark after it. The call was the shout. This is the
+man who has just scored being counted, and a count is said, not roared.
 
 **Name him.** A figure with nobody attached to it is not a fact about anyone,
 and it is thrown away before it reaches the microphone. The scorer's name, or
-the pronoun with his name already in the same line — the number alone is not a
+a pronoun with his name already in the same line — the number alone is not a
 line.
 
 Take the number from the researched clauses below, reworded but never
@@ -737,28 +838,48 @@ renumbered. That is the whole of what this beat may contain, and it is
 expected, not permitted: if there is a clause about the scorer, say it.
 
 If there is no clause about him, do not invent one and do not reach for the
-score. Say what he has done instead — where he has put it, who he beat — in
-a line of the same length.""",
-    4: """BEAT 4 — REBUILD THE MOVE, IN THE PAST TENSE. Ten to twenty seconds after
-a goal the corpus goes back over how it happened, naming two or three of the
-players: "The shot rebounded off the post and fell very kindly for Casemiro
-who slotted the ball home.", "Schweinsteiger made the run. He beat Azpilicueta
-and headed it past a stranded Schmeichel.", "A quick ball out by ter Stegen."
+score. Say what he has done instead — where he has put it, who he beat — in a
+sentence of the same length.""",
+    4: """BEAT 4 — REBUILD THE MOVE, IN THE PAST TENSE. Ten to twenty seconds
+after a goal the corpus goes back over how it happened, naming two or three of
+the players:
 
-This is the longest line anybody says about a goal: ten to twenty words, and
-the first two of those examples are seventeen and fourteen. It is the one
-place a second clause is not padding, because there are two things to say —
-what made it and what finished it.
+  It was an excellent cross that was put back into the box by Marcelo. The
+  shot rebounded off the post and fell very kindly for Casemiro who slotted
+  the ball home.
+  Schweinsteiger made the run. He beat Azpilicueta and headed it past a
+  stranded Schmeichel.
 
-Past tense from the first word, not from the second clause. This is the one
+Twelve to twenty-four words. This is the longest line anybody says about a
+goal, and it is the one place a second clause is not padding, because there
+are two things to say: what made it and what finished it.
+
+THE JOIN IS THE POINT. Two flat sentences with a full stop between them —
+"France drove into the box. <Scorer> came off the ground and buried the
+volley." — is a list of two facts, and it is what this beat keeps writing. A
+rebuilt move has connective tissue, because the man is describing one thing
+happening and not two:
+
+  It was <X>'s ball in, <Y> let it run, and <Z> was there to turn it home.
+  <X> won it back on halfway, and by the time the cross came in <Y> had the
+  whole six-yard box to himself.
+  The shot came back off the post, and it fell for <Z>, who could not miss.
+
+"and", "who", "by the time", "so that", "which is why" — one of those, once.
+Not two full stops.
+
+PAST TENSE FROM THE FIRST WORD, not from the second clause. This is the other
 thing this beat gets wrong: it opens in the present, as though the move were
 still running, and corrects itself halfway through.
 
-  written wrong:  France drive into the box. Okafor off the ground, the volley buried.
-  written right:  France drove into the box. Okafor came off the ground and buried the volley.
+  written wrong:  They drive into the box. <Scorer> off the ground, the volley buried.
+  written right:  It was a ball driven into the box, and <Scorer> came off the
+                  ground to bury the volley.
 
-Same move, same names, same length. The difference is the first verb. Use the
-move and the names below and nothing else. No score, no tally, no number.""",
+Same move, same names. The difference is the first verb and the join.
+
+Use the move and the names below and nothing else. No score, no tally, no
+number.""",
 }
 
 
@@ -814,6 +935,82 @@ def goal_followup_block(
         ]
         lines += ["", "players seen in it: " + (", ".join(names) if names else "(none read)")]
     return "\n".join(lines)
+
+
+#: Every way the corpus names a replay as a replay, and the shapes this
+#: system's own lines reached for. One list, next to the block that teaches
+#: them, because :func:`strip_replay_marker` is the enforcement of the rule
+#: :func:`replay_block` states: the sequence is named once, in its first
+#: line, and the ones after it go straight at what the picture shows.
+#:
+#: Sourced from ``docs/research/real-commentary-corpus.md`` section 3.2 —
+#: "As we see …", "Having seen the replay …", "Watch this." — plus the two
+#: the model actually wrote on ``r1-replay``: at 25-38 s it named the replay
+#: in two lines of three, "You see in the replay, …" and "In the replay, …".
+REPLAY_MARKERS: tuple[str, ...] = (
+    "having seen the replay",
+    "as we see it again",
+    "as we see that again",
+    "as we see this again",
+    "as we see it once more",
+    "as we see that once more",
+    "as we look at it again",
+    "looking at it again",
+    "seeing it again",
+    "you see in the replay",
+    "you can see in the replay",
+    "in the replay",
+    "on the replay",
+    "watch the replay",
+    "watch this again",
+    "watch this",
+    "here it is again",
+    "let's see it again",
+    "we see it again",
+)
+
+#: What may sit in front of a marker and still be one: "And in the replay,
+#: …" is the same line as "In the replay, …".
+_MARKER_LEAD_INS = ("and", "but", "so", "well", "now", "oh")
+
+
+def strip_replay_marker(text: str) -> tuple[str, str]:
+    """Take a leading "as we see it again" off a line, and say what was taken.
+
+    The rule is :func:`replay_block`'s and the corpus's: a replay sequence is
+    named as a replay once, in its first line, and then talked through — the
+    run at 37:24 is "Watch this." / "Rakitic into Messi." / "Brilliant touch
+    … and a fine finish", and only the first of the three says what is on the
+    screen. Told this in the prompt, the model named the replay in two lines
+    of three, so the second and third have it taken off here.
+
+    Only a *leading* marker, and only a whole one. "the ball actually came
+    off his knee in the replay" is a line about the contact with the phrase
+    where it belongs, and a line that is nothing *but* the marker is left
+    alone — there is no line underneath to uncover.
+
+    Returns the line and the marker removed, ``""`` when nothing was.
+    """
+    stripped = text.strip()
+    if not stripped:
+        return text, ""
+    lowered = stripped.casefold()
+    for lead in _MARKER_LEAD_INS:
+        if lowered.startswith(f"{lead} "):
+            lowered = lowered[len(lead) + 1 :]
+            break
+    offset = len(stripped) - len(lowered)
+    for marker in REPLAY_MARKERS:
+        if not lowered.startswith(marker):
+            continue
+        rest = stripped[offset + len(marker) :].lstrip(" ,.:;—-")
+        if not rest:
+            # Nothing under it. A line that is only "Watch the replay." has
+            # no second half to promote, and an empty line here would be a
+            # beat dropped rather than a phrase removed.
+            return text, ""
+        return rest[0].upper() + rest[1:], stripped[: offset + len(marker)]
+    return text, ""
 
 
 def replay_block(event: Event, *, first: bool) -> str:
@@ -888,6 +1085,93 @@ def replay_block(event: Event, *, first: bool) -> str:
 BUILD_UP_FORMS = frozenset({Event.BUILD_UP, Event.PASS, Event.CARRY})
 
 
+def looks_like_a_goal_kick(line: CallerLine) -> bool:
+    """Is this nothing-much form actually a goalkeeper restarting the game?
+
+    Only asked of ``build_up`` and ``none`` forms, because those are the two
+    words the caller has for a picture in which nothing is happening, and a
+    goal kick is exactly that picture. Section 3 of the corpus study: 43% of
+    goal kicks pass in silence, the words "goal kick" are said at 1% of them,
+    and what *does* get said there is the storyline — "been in fine goal
+    scoring form for Villa Scott Sinclair with five in four appearances so
+    far this season". So the slot is worth finding even by a keyword sniff,
+    and the sniff is bounded by the event so that "the keeper gets a hand to
+    it" on a save form is not a restart.
+    """
+    if line.event not in (Event.BUILD_UP, Event.NONE):
+        return False
+    text = f"{line.line} {line.detail or ''}".casefold()
+    return any(word in text for word in _GOAL_KICK_WORDS)
+
+
+def is_long_line(line: CallerLine, *, followup_beat: int | None = None) -> bool:
+    """Is this a moment the corpus gives a long line to?
+
+    Two of them, and they are the two section 2.3 measures the open gaps at:
+    a restart or a stoppage (median 10 words, one in five over sixteen), and
+    the thirty seconds after a goal (section 2.4: 60 words in 30 seconds,
+    with beats 2 to 4 written at 8 to 24 words apiece).
+
+    Never on a replay. A replay line is six to twenty words about one
+    concrete thing on the picture, and the pictures change before a long one
+    is finished.
+    """
+    if line.scene is Scene.REPLAY:
+        return False
+    if followup_beat is not None:
+        return True
+    return line.event in LONG_LINE_EVENTS or looks_like_a_goal_kick(line)
+
+
+def _restart_block(
+    line: CallerLine,
+    *,
+    material: bool,
+    min_words: int,
+    target_words: int,
+) -> str:
+    """THE LONG ONE, or the silence — which of the two a restart gets.
+
+    Section 2.3 and section 3. At a restart the gap opens and the line gets
+    *longer*: median 10 words against 7 in an attacking move, and one in five
+    over sixteen. And a third to nearly half of restarts are not called at
+    all — 43% of goal kicks, 37% of throw-ins, 33% of free-kick deliveries,
+    31% of kickoffs. Which of the two happens turns on one thing: whether
+    there is anything to say beyond the restart itself.
+
+    ``material`` is that question answered in code — a researched clause, a
+    count off this match, or a detail the eyes picked out. With it, this is
+    where the storyline goes and the block says so. Without it, the restart
+    is the silence.
+    """
+    if not material:
+        return (
+            "\nTHIS IS A RESTART WITH NOTHING ON IT, AND A THIRD OF THOSE ARE NOT\n"
+            "CALLED AT ALL. No clause, no count, no detail: 43% of goal kicks, 37% of\n"
+            "throw-ins, 33% of free-kick deliveries and 31% of kickoffs pass in\n"
+            "silence in real commentary. Return an empty line.\n\n"
+        )
+    return (
+        "\nTHIS IS THE LONG ONE. The ball is dead, the gap is open, and this is where\n"
+        f"the context goes: {min_words} to {target_words} words, which is twice the\n"
+        "length you would write with the ball moving. The restart is the short half\n"
+        "of it and the clause above is the long half.\n"
+        "\n"
+        "The shape, and the corpus says it this way every time: the restart in a\n"
+        "clause, then the storyline.\n"
+        "\n"
+        "  <Side> to restart, and <Name>, the man who has not been beaten in three.\n"
+        "  Throw-in, deep in their own half — and this is a back four with one\n"
+        "  change in it all season.\n"
+        "  been in fine goal scoring form for Villa Scott Sinclair with five in\n"
+        "  four appearances so far this season\n"
+        "\n"
+        "Nothing about the restart itself is worth more than a clause. Nobody\n"
+        "listening needs to be told a throw-in is a throw-in; what they cannot see\n"
+        "is the fact beside it.\n\n"
+    )
+
+
 def _silence_nudge(line: CallerLine, last_event: Event | None) -> str:
     """One line in the body when this is a moment the corpus usually passes over.
 
@@ -897,6 +1181,11 @@ def _silence_nudge(line: CallerLine, last_event: Event | None) -> str:
     consecutive build-up line about the same player — went past unremarked
     every time. So the condition is computed here, in code, and said again
     where the model is actually looking.
+
+    The restart half of what this used to say has moved to
+    :func:`_restart_block`, which has the other half of the answer as well:
+    at a restart with a clause attached to it, the line is not shorter than
+    usual, it is twice as long.
     """
     if line.scene is Scene.REPLAY:
         # A replay has its own block and its own reason for existing. The
@@ -908,12 +1197,6 @@ def _silence_nudge(line: CallerLine, last_event: Event | None) -> str:
             "\nTHE LAST LINE WAS THIS SAME KIND OF MOMENT. If it was about this same\n"
             "player, say nothing: return an empty line. A quarter of build-up touches\n"
             "in real commentary are met with silence, and this is one of them.\n"
-        )
-    if line.event in (Event.KICKOFF, Event.THROW_IN, Event.FREE_KICK):
-        return (
-            "\nTHIS IS A RESTART, AND A THIRD OF THEM ARE NOT CALLED AT ALL. Unless the\n"
-            "form carries a detail or the context block has a clause about somebody\n"
-            "you would name, return an empty line.\n"
         )
     return ""
 
@@ -931,6 +1214,7 @@ def _body(
     followup: str = "",
     ledger: Sequence[LedgerFact] = (),
     replay_first: bool = True,
+    dead_ball: DeadBallConfig = DEAD_BALL,
 ) -> str:
     said = (
         "\n".join(f"  - {text.strip()}" for text in recent_lines if text.strip())
@@ -944,6 +1228,17 @@ def _body(
         after = replay_block(line.event, first=replay_first) + "\n\n"
     else:
         after = f"{followup.strip()}\n\n" if followup.strip() else ""
+    # The restart slot, and never beside the goal follow-up or the replay
+    # block: each of those is already a length instruction, and two of them
+    # in one body is the model choosing which to obey.
+    if not after and (line.event in LONG_LINE_EVENTS or looks_like_a_goal_kick(line)):
+        quiet = notes_allowed(line)
+        after = _restart_block(
+            line,
+            material=bool((quiet and (notes or ledger)) or (line.detail or "").strip()),
+            min_words=dead_ball.min_words,
+            target_words=dead_ball.target_words,
+        )
     return (
         f"THE TEAMS\n  {home} (home) v {away} (away)\n\n"
         f"{_state_heading(line)}\n"

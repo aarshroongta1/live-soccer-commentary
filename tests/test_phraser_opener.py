@@ -139,7 +139,8 @@ async def test_the_retry_names_the_offending_opener_and_asks_for_a_change() -> N
 
     retry_text = _last_text(backend)
     assert '"France"' in retry_text
-    assert "Open differently" in retry_text
+    assert "it OPENED on" in retry_text
+    assert "Say it differently" in retry_text
     # the first call's body is still there — this is the same call, extended
     assert "THE LAST LINES SPOKEN" in retry_text
 

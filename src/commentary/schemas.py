@@ -190,6 +190,27 @@ class PhrasedLine(BaseModel):
     #: is a fact about nobody until the gate's ``note_claim`` rule has a name
     #: to check it against, and it refuses the line rather than guess one.
     name_retry: bool = Field(default=False)
+    #: True when the first answer *ended* on the same word as one of the last
+    #: five spoken lines and the phraser was re-asked. The opener is the
+    #: louder tell and was fixed first; the tail is the same fault and the
+    #: register judge counts it the same way — "Through midfield now. / Wide
+    #: on the right now. / Into the corner now." repeats no opening word at
+    #: all.
+    closer_retry: bool = Field(default=False)
+    #: True when this was goal follow-up beat 2 or 3 — the celebration and
+    #: the tally, neither of which is the call — and the first answer opened
+    #: on the scorer's name and an exclamation mark, so the phraser was
+    #: re-asked once. Three consecutive lines opening "Mbappé!" is a listener
+    #: hearing three goals.
+    shout_retry: bool = Field(default=False)
+    #: True when the re-ask came back shouting the name again and code took
+    #: the shout off the front rather than drop the beat. The corpus's
+    #: follow-up beats never open that way; beat 1 is the only shout.
+    shout_rewritten: bool = Field(default=False)
+    #: The replay marker phrase code removed from this line, or ``""``. The
+    #: replay is named once per sequence ("as we see it again") and the model
+    #: named it in two lines of three, so later lines have it taken off.
+    replay_marker_stripped: str = Field(default="", max_length=64)
 
 
 class Angle(StrEnum):

@@ -38,6 +38,7 @@ from commentary.prompts.phraser import (
     phraser_blocks,
     phraser_system,
     replay_block,
+    strip_replay_marker,
 )
 from commentary.rephrase import rephrase
 from commentary.runtime import Runtime
@@ -277,6 +278,69 @@ def test_the_replay_is_named_once_and_only_in_the_first_line_of_a_sequence() -> 
     assert "having seen the replay" in first
     assert "THIS REPLAY HAS ALREADY BEEN NAMED" in later
     assert "do not say so a second time" in later
+
+
+def test_a_later_line_in_a_sequence_has_the_marker_taken_off_in_code() -> None:
+    """The rule is in the prompt and the model broke it two lines in three.
+
+    On ``runs/rephrased/r1-replay/mbappe`` the replay sequence at 25-38 s
+    named the replay in two of its three lines — "You see in the replay, …"
+    and "In the replay, …" — with the block in front of it saying the
+    sequence had already been named. So it comes off afterwards.
+    """
+    assert strip_replay_marker("In the replay, the leg was in behind him.") == (
+        "The leg was in behind him.",
+        "In the replay",
+    )
+    assert strip_replay_marker("You see in the replay the ball came off his knee.") == (
+        "The ball came off his knee.",
+        "You see in the replay",
+    )
+    assert strip_replay_marker("And as we see it again, the foot was never near it.") == (
+        "The foot was never near it.",
+        "And as we see it again",
+    )
+
+
+def test_the_marker_is_only_taken_off_the_front_and_only_whole() -> None:
+    """A line about the contact with the phrase where it belongs is a line."""
+    assert strip_replay_marker("The ball came off his knee in the replay.")[1] == ""
+    assert strip_replay_marker("Wonderful turn to get beyond the full-back.")[1] == ""
+
+
+def test_a_line_that_is_nothing_but_the_marker_is_left_alone() -> None:
+    """There is no line underneath it, and an empty line is a beat dropped."""
+    assert strip_replay_marker("Watch the replay.") == ("Watch the replay.", "")
+
+
+@pytest.mark.asyncio
+async def test_the_first_line_of_a_sequence_keeps_the_phrase_it_is_allowed() -> None:
+    backend = saying(PhrasedLine(line="Watch this. The leg was in behind him.", excitement=0.4))
+    phraser = a_phraser(backend)
+    form = a_form("The leg was in behind him.", event=Event.FOUL).model_copy(
+        update={"scene": Scene.REPLAY}
+    )
+
+    phrased = await phraser.phrase(form, "", replay_first=True)
+
+    assert phrased is not None
+    assert phrased.line == "Watch this. The leg was in behind him."
+    assert phrased.replay_marker_stripped == ""
+
+
+@pytest.mark.asyncio
+async def test_the_second_line_of_a_sequence_loses_it() -> None:
+    backend = saying(PhrasedLine(line="In the replay, the leg was in behind him.", excitement=0.4))
+    phraser = a_phraser(backend)
+    form = a_form("The leg was in behind him.", event=Event.FOUL).model_copy(
+        update={"scene": Scene.REPLAY}
+    )
+
+    phrased = await phraser.phrase(form, "", replay_first=False)
+
+    assert phrased is not None
+    assert phrased.line == "The leg was in behind him."
+    assert phrased.replay_marker_stripped == "In the replay"
 
 
 def test_a_replay_line_is_offered_no_number_at_all() -> None:

@@ -43,8 +43,15 @@ from typing import Any
 
 from commentary.agents.analyst import Analyst
 from commentary.agents.caller import Caller
-from commentary.agents.colour import EXCITEMENT, ColourSeat, judge_utterance, space_out
-from commentary.agents.phraser import Phraser
+from commentary.agents.colour import (
+    EXCITEMENT,
+    ColourSeat,
+    judge_utterance,
+    mentions,
+    one_subject,
+    space_out,
+)
+from commentary.agents.phraser import Phraser, nameless_build_up, roster_names
 from commentary.bus import Bus, Topic
 from commentary.capture.audio import CutDetector
 from commentary.capture.buffer import DelayBuffer, Frame
@@ -264,6 +271,8 @@ class Runtime:
         phraser = Phraser(
             self.backend,
             config=self.settings.phraser,
+            silence=self.settings.silence,
+            dead_ball=self.settings.dead_ball,
             home=self.home,
             away=self.away,
         )
@@ -731,8 +740,25 @@ class Runtime:
         the ball moves" (section 4.6) — there is no verbal hand-back anywhere
         in it — so the moment the lead submits a beat, the rest of the turn
         is dropped rather than queued behind it.
+
+        The three arguments after ``said_before`` are the attribution check,
+        and they are what makes it work at all. ``attributed`` is who the
+        caller's own forms put on each event; ``named_before`` is the one man
+        this turn has already named, so that a bare "he" is resolved to
+        somebody before it is checked; ``after`` is the utterance of this turn
+        that actually reached air, which is what lets a continuation say "he"
+        without being struck out as filler. They are computed exactly as
+        :func:`commentary.agents.colour.colour_pass` computes them — off what
+        passed the gate rather than off what the model wrote, because an
+        utterance nobody heard is no antecedent for a pronoun — and without
+        them ``misattributes`` returns early on every line and the whole check
+        is inert on the live path while the offline one has it.
         """
         started = self._lead_beats
+        attributed = self.colour.attributed(self.cursor_ts)
+        #: What has actually gone out of this turn, and the one man it named.
+        spoken = ""
+        referent = ""
         try:
             for index, (text, at) in enumerate(zip(utterances, spacing, strict=False)):
                 if index:
@@ -750,6 +776,9 @@ class Runtime:
                     # phrase the seat has settled into is struck out
                     # whether it read it in the prompt or wrote it itself.
                     said_before=self.colour.history,
+                    attributed=attributed,
+                    named_before=[referent] if referent else (),
+                    after=spoken,
                 )
                 self._publish(
                     Topic.GATE, self.cursor_ts, verdict, event=Event.NONE.value, where="colour"
@@ -775,6 +804,15 @@ class Runtime:
                         excitement=EXCITEMENT.get(situation, 0.2),
                         preemptable=True,
                     )
+                )
+                spoken = verdict.line
+                # A continuation that names nobody keeps the man it inherited,
+                # and one that names two people hands on nobody.
+                named_here = any(
+                    mentions(verdict.line, name) for name in roster_names(self.pack)
+                )
+                referent = one_subject(verdict.line, self.pack) or (
+                    "" if named_here else referent
                 )
                 self.colour.accept([verdict.line])
                 self.colour.spoke_colour(self.cursor_ts)
@@ -844,6 +882,7 @@ class Runtime:
             followup=self.follow.block(cursor, self.pack),
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
+            roster=roster_names(self.pack),
         )
         if phrased is None or not phrased.line.strip():
             return False
@@ -864,7 +903,10 @@ class Runtime:
             line=settled.line,
             excitement=phrased.excitement,
             opener_retry=phrased.opener_retry,
+            closer_retry=phrased.closer_retry,
             name_retry=phrased.name_retry,
+            shout_retry=phrased.shout_retry,
+            shout_rewritten=phrased.shout_rewritten,
             score_stripped=list(settled.stripped),
             synthetic=True,
         )
@@ -903,7 +945,7 @@ class Runtime:
         self.follow.said(cursor)
         self.follow.synthesised += 1
         self.colour.saw_lead_line(cursor, verdict.line)
-        self.phraser.accept(verdict.line, Event.GOAL)
+        self.phraser.accept(verdict.line, Event.GOAL, ts=cursor)
         self._mark_spoken(cursor, verdict.line, Event.GOAL)
         self.stats.spoken += 1
         return True
@@ -1140,7 +1182,12 @@ class Runtime:
         self._lead_beats += 1
         self.colour.saw_lead_line(cursor, verdict.line)
         if self.phraser is not None:
-            self.phraser.accept(verdict.line, line.event)
+            self.phraser.accept(
+                verdict.line,
+                line.event,
+                ts=cursor,
+                nameless=nameless_build_up(line, on_the_ball=self._carried_name(line, cursor)),
+            )
         if not replay:
             # Who was on the ball in a replay is who was on the ball a minute
             # ago. Carrying that name into the next live line would name the
@@ -1163,7 +1210,14 @@ class Runtime:
             self.threads.credit_goal(self.follow.scorer, cursor)
             self.ledger.credit_goal(self.follow.scorer, cursor, line.side)
         elif self.follow.active(cursor):
-            self.follow.said(cursor)
+            # A replay line *is* beat 4, whatever beat the counter is on:
+            # both are the past-tense account of how the goal was scored, and
+            # the replay has the pictures behind it. Every other line inside
+            # the window spends the next beat in order.
+            if replay:
+                self.follow.rebuilt(cursor)
+            else:
+                self.follow.said(cursor)
         if self.follow.active(cursor) and self._goal_turn is None:
             self._goal_turn = asyncio.create_task(self._fill_the_goal_window())
         # -- end of the goal window --------------------------------------
@@ -1197,6 +1251,20 @@ class Runtime:
         if self.phraser is None:
             return line, 0.0
         carried = self._carried_name(line, cursor)
+        passed_over = self.phraser.passes_over(line, ts=cursor, on_the_ball=carried)
+        if passed_over is not None:
+            # No model call at all. The same row a chosen silence publishes,
+            # with the reason code decided it rather than the model's.
+            self._publish(
+                Topic.PHRASED,
+                cursor,
+                original=line.line,
+                line="",
+                excitement=0.0,
+                reason=passed_over,
+            )
+            self._last_quiet_ts = cursor
+            return None
         followup = self.follow.block(cursor, self.pack)
         names = self._named_by(line, carried)
         if followup and self.follow.scorer:
@@ -1230,6 +1298,7 @@ class Runtime:
             followup=followup,
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
+            roster=roster_names(self.pack),
             replay_first=self.replays.first,
         )
         if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:
@@ -1244,6 +1313,7 @@ class Runtime:
                 # offered "open differently or say nothing" and took the
                 # second.
                 opener_retry=phrased.opener_retry,
+                closer_retry=phrased.closer_retry,
                 name_retry=phrased.name_retry,
             )
             self._last_quiet_ts = cursor
@@ -1290,7 +1360,11 @@ class Runtime:
             line=settled.line,
             excitement=phrased.excitement,
             opener_retry=phrased.opener_retry,
+            closer_retry=phrased.closer_retry,
             name_retry=phrased.name_retry,
+            shout_retry=phrased.shout_retry,
+            shout_rewritten=phrased.shout_rewritten,
+            replay_marker_stripped=phrased.replay_marker_stripped,
             score_appended=settled.appended,
             score_stripped=list(settled.stripped),
             how_stripped=list(settled.how_removed),
