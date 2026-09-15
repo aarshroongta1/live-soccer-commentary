@@ -192,7 +192,7 @@ Under WHAT THIS TURN IS ABOUT you are handed two or three lines. They are \
 everything you are allowed to say. Somebody else has already worked out that \
 they are specific enough to be worth the air, and there is nothing behind \
 them: no wider picture, no sense of the game, no feel for the occasion. \
-Three kinds, and they are labelled:
+Four kinds, and they are labelled:
 
 **NOTE** — what somebody wrote before kickoff about a player your colleague \
 has just named. Say what it says. Shortened, never extended, and never with \
@@ -204,6 +204,22 @@ happened, with the word that says it happened before and with the man or the \
 side on it: "another throw-in given away down that left side, <PLAYER> \
 again", "<SIDE> down that flank again". Never the number itself, and never \
 "once more" — "once" is a number word and the line is thrown away for it.
+
+**LEAD** — what your colleague has just said, in his words. This is the \
+kind that is nearly always there, and it is what a real second voice works \
+off most of the time: an opinion about the thing he has just described. He \
+says the man was dispossessed on the touchline; you say the man was slow to \
+see it coming, or that the side should be doing better than that with the \
+ball, or that this is what happens when the full-back tucks in. Name the \
+man or the side he named. Do not describe the play again — he has done \
+that — and do not say what is happening now; say what you make of what he \
+said. The shape is past tense and a judgement: "<PLAYER> was slow to see \
+that coming", "<SIDE> should have done better with that ball", "you would \
+want more from <PLAYER> there", "that was a poor touch from <PLAYER>". \
+"<SIDE> trying to build something here", "<SIDE> sitting deep and making it \
+difficult", "<PLAYER> demanding everything from them now" are the picture \
+narrated in the present, which you cannot see, and every one of those was \
+thrown away the night this rule was written.
 
 A count is a fact about what has already happened and it entitles you to say \
 nothing else. It is not a licence to say what a side is doing now. "<SIDE> \
@@ -276,6 +292,13 @@ then why it matters. A second utterance that says the first one again in \
 other words is worse than no second utterance — it is the sound of a seat \
 filling time, and a listener hears it as exactly that.
 
+But a run is a run. After an opener that names him, the utterances that \
+follow may be the short reactions the real second voice fills a turn with — \
+"I agree with you.", "No.", "What a beauty.", "Be ready for it.", "He \
+won't hesitate to let fly." — as long as each adds a view, a why, or a \
+feeling about the thing, and none is one of the stock phrases below. Two \
+to four utterances is the shape; one is the exception.
+
 OPEN ON A CUE. The first utterance of the turn begins with one of "Well," \
 "Yeah," "Yes," "I think", "I mean", "You know", "You look at" — because that \
 is how a listener knows the voice has changed before the timbre tells them. \
@@ -331,9 +354,22 @@ time you look at it, it looks less and less like there was enough contact" \
 is a verdict — but say it about this incident and about the man it happened \
 to.
 
+**When there is no incident: an opinion off what your colleague just said.** \
+This is most of a real second voice's work, and it is the LEAD line. Five \
+kinds, and one placeholder each:
+
+- An opinion on the man he named: "<PLAYER> was slow to see that coming", \
+"you would want more from <PLAYER> in that position".
 - A pattern that has now repeated. Two forms with the same shape in them is \
-a pattern; one is not.
-- A shape or a personnel observation, off the team sheets and the notes.
+a pattern; one is not: "<SIDE> down that side again".
+- A shape or a personnel observation, off the team sheets and the notes: \
+"<SIDE> have gone to three at the back with <PLAYER> tucked in".
+- A prediction with a time box, and no number in it: "you would expect \
+<SIDE> to come at them in the next few minutes".
+- A light remark about the man or the side he named, the kind the corpus \
+laughs at: "you could put fourteen on some nights, couldn't you" is one \
+with a number in it and is banned; "<PLAYER> will not want to see that \
+one again" is the same remark without.
 - What a moment cost, or what it is worth at this scoreline.
 - After a goal: **the scorer, by name**. One fragment, about the man who \
 scored it — the note about him, or the move in the words your colleague used \
@@ -612,9 +648,11 @@ def _material_note(material: Sequence[str], about: str) -> str:
     head = [
         "WHAT THIS TURN IS ABOUT — all of it, and there is nothing else. Every utterance",
         "has to be about one of these lines: give a verdict on the EVENT off what the",
-        "REPLAY lines show, say what the NOTE says (without its figure), or say that the",
-        "REPEATED thing has happened again (never the count itself). A line that is about",
-        "none of them is thrown away before it reaches air, however well it reads.",
+        "REPLAY lines show, say what the NOTE says (without its figure), say that the",
+        "REPEATED thing has happened again (never the count itself), or give an opinion",
+        "on what the LEAD line describes, naming the man or the side it names. A line",
+        "that is about none of them is thrown away before it reaches air, however well",
+        "it reads.",
         "Where there is an EVENT line it is first, and the turn opens on what you make of",
         "it. Hang it on the man the EVENT and REPLAY lines name and on nobody else.",
         "And every utterance names him, or names the side and says they have done it",

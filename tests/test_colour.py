@@ -299,11 +299,13 @@ def test_live_build_up_is_allowed_twenty_seconds_after_the_last_big_event() -> N
     assert not may_speak(a_moment(115.0, last_big=(Event.SAVE, 100.0))).allowed
 
 
-def test_one_turn_a_minute_in_build_up() -> None:
-    """Section 4.2 again, translated: about one turn per 45 s of build-up."""
+def test_a_turn_every_twenty_five_seconds_in_build_up() -> None:
+    """Section 4.2 translated was one turn per 45 s; the first listen said
+    "barely any comments from the second commentator", and a third of the
+    words in turns of four is a turn every 25 s or so."""
     cfg = ColourConfig()
-    assert not may_speak(a_moment(140.0, last_turn_ts=100.0, last_big=None), cfg).allowed
-    assert may_speak(a_moment(146.0, last_turn_ts=100.0, last_big=None), cfg).allowed
+    assert not may_speak(a_moment(120.0, last_turn_ts=100.0, last_big=None), cfg).allowed
+    assert may_speak(a_moment(126.0, last_turn_ts=100.0, last_big=None), cfg).allowed
 
 
 def test_one_turn_per_big_event() -> None:
@@ -520,13 +522,14 @@ def test_the_seat_reads_the_phase_off_forms_the_caller_never_spoke() -> None:
 # -- what it is allowed to talk about ----------------------------------------
 
 
-def test_a_turn_is_not_offered_when_there_is_nothing_to_make_one_out_of() -> None:
-    """The judge's complaint, stopped before the call rather than after it.
-
-    A dead ball with no note, no repeated pattern and no completed event
-    produced "Everything turns on what the ref decides next" — a line that
-    would fit any match ever played. There is no prompt that reliably turns
-    nothing into something, so the seat is not asked.
+def test_the_leads_own_lines_are_material_for_an_opinion() -> None:
+    """A dead ball with no note, no repeated pattern and no completed event
+    used to be refused before the call ("nothing specific to say"), and the
+    first listen came back "barely any comments from the second
+    commentator": four one-line turns against twenty-seven lead lines. The
+    corpus's second voice mostly gives an opinion on what the lead just
+    described, so his last lines are material, labelled LEAD, and the
+    fabrication checks do the refusing afterwards instead.
     """
     seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=None)
     seat.saw_lead_line(1.0, "Messi.")
@@ -535,9 +538,16 @@ def test_a_turn_is_not_offered_when_there_is_nothing_to_make_one_out_of() -> Non
     seat.saw_form(3.0, blank)
     seat.saw_form(4.0, blank)
     assert may_speak(seat.moment(5.0), seat.config).allowed
-    offer = seat.offer(5.0)
-    assert not offer.allowed
-    assert "nothing specific" in offer.reason
+    assert seat.offer(5.0).allowed
+    material = seat.material(5.0)
+    assert material
+    assert material.lead == ("Messi.", "Now De Paul.")
+    assert not material.only_a_count
+    assert material.lines()[-1] == "LEAD, what your colleague has just said: Now De Paul."
+
+
+def test_with_no_lead_line_there_is_still_nothing_to_make_a_turn_out_of() -> None:
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=None)
     assert not seat.material(5.0)
 
 
@@ -558,7 +568,10 @@ def test_a_team_level_note_is_not_material() -> None:
     seat.saw_form(3.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
     seat.saw_form(4.0, a_caller(Event.NONE, "", scene=Scene.CROWD))
     assert may_speak(seat.moment(5.0), seat.config).allowed
-    assert not seat.offer(5.0).allowed
+    # The turn is offered now — the lead's lines are material for an opinion
+    # — but the team note is still not among the notes it may say.
+    assert seat.offer(5.0).allowed
+    assert not seat.material(5.0).notes
 
 
 def test_a_note_about_a_man_the_lead_has_just_named_is_material() -> None:

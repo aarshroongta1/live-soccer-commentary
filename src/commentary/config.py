@@ -360,9 +360,11 @@ class ColourConfig:
     settled_after_big_s: float = 20.0
     #: One turn per this long in build-up. Section 4.2's 5.9 entries per 100
     #: utterances in build-up, against a system that says a line every four
-    #: to six seconds, is about one turn a minute; 45 s is that, rounded
-    #: towards speaking.
-    min_gap_s: float = 45.0
+    #: to six seconds, is about one turn a minute; 45 s was that, rounded
+    #: towards speaking, and the first listen came back "barely any comments
+    #: from the second commentator". A third of the words in turns of four
+    #: is a turn every 25 s or so.
+    min_gap_s: float = 25.0
     #: How many caller forms back the phase is read off. Two, because a
     #: single close-up inside a live move is a cutaway and not a stoppage.
     phase_forms: int = 2

@@ -286,11 +286,11 @@ def test_a_seat_at_its_share_still_waits_the_full_build_up_gap() -> None:
     """The governor is a corrective, not a new default."""
     offer = may_speak(_a_dead_ball_moment(120.0, last_turn_ts=100.0, stretch=0.0))
     assert not offer.allowed
-    assert "45 s" in offer.reason
+    assert "25 s" in offer.reason
 
 
 def test_a_seat_behind_its_share_is_offered_the_next_dead_ball() -> None:
-    """Twenty seconds after its last turn, which the 45 s rate refuses."""
+    """Twenty seconds after its last turn, which the 25 s rate refuses."""
     offer = may_speak(_a_dead_ball_moment(120.0, last_turn_ts=100.0, stretch=1.0))
     assert offer.allowed
     assert offer.situation == AT_A_DEAD_BALL

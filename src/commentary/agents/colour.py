@@ -437,12 +437,17 @@ def may_speak(moment: Moment, cfg: ColourConfig | None = None) -> Offer:
     if moment.last_turn_ts is not None:
         gap = moment.now - moment.last_turn_ts
         if since < cfg.settled_after_big_s:
-            if moment.turns_since_big >= 1:
+            # A goal gets two: the reaction fragment inside the lead's window
+            # and a turn once he has finished, which is where the corpus's
+            # "Well, they've done a Real Madrid" lands (+14 s). Anything
+            # smaller gets one.
+            allowed = 2 if big is not None and big[0] is Event.GOAL else 1
+            if moment.turns_since_big >= allowed:
                 return Offer(
                     False,
                     reason=(
-                        "one turn per big event, and this one has already had "
-                        f"{moment.turns_since_big}"
+                        f"{'two turns' if allowed == 2 else 'one turn'} per big event, and "
+                        f"this one has already had {moment.turns_since_big}"
                     ),
                 )
         else:
@@ -687,8 +692,7 @@ def says_a_number(text: str) -> bool:
     counted = {found.span() for found in _ONE.finditer(text)}
     pronouns = {found.span() for found in _ONE_AS_A_PRONOUN.finditer(text)}
     return any(
-        not any(start >= low and end <= high for low, high in pronouns)
-        for start, end in counted
+        not any(start >= low and end <= high for low, high in pronouns) for start, end in counted
     )
 
 
@@ -1000,10 +1004,7 @@ def misattributes(
         allowed = attributed.names_on(kind)
         for name in named:
             if not any(_same_man(name, other) for other in allowed):
-                return (
-                    f"attribution: {name} was not the man on that "
-                    f"{kind.value.replace('_', ' ')}"
-                )
+                return f"attribution: {name} was not the man on that {kind.value.replace('_', ' ')}"
     return ""
 
 
@@ -1247,13 +1248,76 @@ NOTE_ECHO_PREFIX = 3
 #: Words that carry none of a note. Everything else in it is content.
 _NOT_CONTENT = frozenset(
     {
-        "the", "a", "an", "and", "or", "but", "of", "in", "on", "at", "to", "for", "with",
-        "from", "by", "as", "that", "this", "it", "its", "he", "his", "him", "she", "her",
-        "they", "them", "their", "is", "was", "are", "were", "be", "been", "has", "have",
-        "had", "not", "no", "so", "up", "out", "off", "who", "what", "when", "here",
-        "there", "now", "then", "back", "into", "over", "after", "before", "again",
-        "down", "all", "just", "still", "very", "more", "most", "well", "yeah", "you",
-        "know", "think", "one", "two",
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "but",
+        "of",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "with",
+        "from",
+        "by",
+        "as",
+        "that",
+        "this",
+        "it",
+        "its",
+        "he",
+        "his",
+        "him",
+        "she",
+        "her",
+        "they",
+        "them",
+        "their",
+        "is",
+        "was",
+        "are",
+        "were",
+        "be",
+        "been",
+        "has",
+        "have",
+        "had",
+        "not",
+        "no",
+        "so",
+        "up",
+        "out",
+        "off",
+        "who",
+        "what",
+        "when",
+        "here",
+        "there",
+        "now",
+        "then",
+        "back",
+        "into",
+        "over",
+        "after",
+        "before",
+        "again",
+        "down",
+        "all",
+        "just",
+        "still",
+        "very",
+        "more",
+        "most",
+        "well",
+        "yeah",
+        "you",
+        "know",
+        "think",
+        "one",
+        "two",
     }
 )
 
@@ -1479,11 +1543,26 @@ class Material:
     about: str = ""
     ledger: tuple[Fact, ...] = ()
     replays: tuple[str, ...] = ()
+    #: The lead's last aired lines. The first listen came back "barely any
+    #: comments from the second commentator": the fence above gave the seat
+    #: four one-line turns against twenty-seven lead lines, because it could
+    #: only speak with a note, a count or an incident in hand. The corpus's
+    #: second voice is a third of the words and most of them are an opinion
+    #: about what the lead just described — "Spurs might have made more of
+    #: that", "you don't want to be giving him a sight of goal" — and an
+    #: opinion about the colleague's words is not a claim about the pitch.
+    #: Every fabrication check still runs on it.
+    lead: tuple[str, ...] = ()
 
     def __bool__(self) -> bool:
         """Is there anything specific enough here to make a turn out of?"""
         return bool(
-            self.notes or self.patterns or self.last_event or self.ledger or self.replays
+            self.notes
+            or self.patterns
+            or self.last_event
+            or self.ledger
+            or self.replays
+            or self.lead
         )
 
     @property
@@ -1496,7 +1575,7 @@ class Material:
         happened again.
         """
         return bool(self.patterns or self.ledger) and not (
-            self.notes or self.last_event or self.replays
+            self.notes or self.last_event or self.replays or self.lead
         )
 
     def lines(self) -> list[str]:
@@ -1546,6 +1625,7 @@ class Material:
         # says the figure. A count with no clause is not offered at all, so
         # there is no figure here to leave out.
         out.extend(f"REPEATED: {fact.clause}" for fact in self.ledger if fact.clause)
+        out.extend(f"LEAD, what your colleague has just said: {text}" for text in self.lead)
         return out
 
 
@@ -1773,9 +1853,32 @@ def says_nothing(text: str) -> str:
 #: the left".
 _A_PHRASE_NOT_A_PREDICATE = frozenset(
     {
-        "from", "on", "in", "into", "at", "off", "over", "under", "down", "up",
-        "across", "through", "past", "behind", "beyond", "inside", "outside",
-        "near", "with", "without", "for", "to", "by", "against", "around", "after",
+        "from",
+        "on",
+        "in",
+        "into",
+        "at",
+        "off",
+        "over",
+        "under",
+        "down",
+        "up",
+        "across",
+        "through",
+        "past",
+        "behind",
+        "beyond",
+        "inside",
+        "outside",
+        "near",
+        "with",
+        "without",
+        "for",
+        "to",
+        "by",
+        "against",
+        "around",
+        "after",
     }
 )
 
@@ -1807,6 +1910,19 @@ def says_meta(text: str) -> str:
     """The words in which this utterance names its own briefing, or ``""``."""
     found = _META.search(spelled_out(text))
     return found.group(0) if found else ""
+
+
+def _filler_retry_note(first: str) -> str:
+    """The opener described the pitch, or named nobody; say the opinion instead."""
+    return (
+        f'YOUR FIRST LINE WAS "{first}" AND IT IS THROWN AWAY: it describes the play as '
+        "it happens, or names nobody, and you cannot see the pitch. Write the turn again. "
+        "The first utterance is an OPINION about what your colleague said, in the past "
+        "tense, naming the man or the side he named: \"<PLAYER> was slow to see that "
+        'coming", "<SIDE> should have done better with that ball", "you would want more '
+        'from <PLAYER> there". No "trying to", no "sitting deep", no "looking to", no '
+        "present participle about a side. Then the short reactions that follow it."
+    )
 
 
 def _meta_retry_note(named: str) -> str:
@@ -1919,11 +2035,7 @@ def one_subject(text: str, pack: KnowledgePack | None) -> str:
         return named[0]
     if named:
         return ""
-    sides = {
-        word
-        for word in team_words(pack)
-        if mentions(text, word)
-    }
+    sides = {word for word in team_words(pack) if mentions(text, word)}
     folded = {fold(word) for word in sides}
     return sorted(sides)[0] if len(folded) == 1 else ""
 
@@ -1989,7 +2101,72 @@ def is_filler(text: str, pack: KnowledgePack | None, *, after: str = "") -> bool
         return True
     if named_side and words & SAID_AGAIN:
         return False
-    return not (after and one_subject(after, pack) and bool(_CARRIES_ON.search(text)))
+    # A side and a judgement is an opinion about what the lead described,
+    # not a guess at the picture: "Argentina were slow to react there",
+    # "France should have done better with that". The present-tense
+    # tactical shapes were refused above; what is left is a verdict.
+    if named_side and words & JUDGEMENT_WORDS:
+        return False
+    if after and one_subject(after, pack) and bool(_CARRIES_ON.search(text)):
+        return False
+    # A short reaction carries on a turn the way the corpus's does — "I agree
+    # with you.", "No.", "What a beauty.", "Be ready for it." — eight words
+    # or fewer, after an opener that passed, and not a stock phrase (checked
+    # first). The first listen had every second utterance refused for naming
+    # nobody, and a median of one utterance a turn against a real four.
+    # A pronoun with no referent is the one short shape that stays out: "he"
+    # after a line naming two men points at neither, and the attribution
+    # check could not read it.
+    return not (
+        after and len(text.split()) <= SHORT_REACTION_WORDS and not _CARRIES_ON.search(text)
+    )
+
+
+#: Words that make a line about a side an opinion rather than narration.
+JUDGEMENT_WORDS = frozenset(
+    {
+        "poor",
+        "good",
+        "better",
+        "best",
+        "worse",
+        "slow",
+        "sloppy",
+        "lucky",
+        "brave",
+        "clever",
+        "naive",
+        "careless",
+        "wasteful",
+        "sharp",
+        "nervous",
+        "composed",
+        "should",
+        "shouldn't",
+        "could",
+        "couldn't",
+        "wanted",
+        "deserved",
+        "deserve",
+        "badly",
+        "well",
+        "right",
+        "wrong",
+        "fortunate",
+        "unlucky",
+        "harsh",
+        "soft",
+        "brilliant",
+        "terrific",
+        "superb",
+        "dreadful",
+        "awful",
+        "quality",
+    }
+)
+
+#: A continuation this short is a reaction, and a reaction is allowed.
+SHORT_REACTION_WORDS = 8
 
 
 def patterns_in(
@@ -2344,6 +2521,7 @@ class ColourSeat:
             last_event=self._last_completed(now),
             ledger=tuple(self._counts(now, since, patterns)),
             replays=tuple(self._replays(now)),
+            lead=tuple(list(self._lead)[-3:]),
         )
 
     def _replays(self, now: float) -> list[str]:
@@ -2582,6 +2760,18 @@ class ColourSeat:
             if again is not None:
                 self.last_usage = self.last_usage + again.usage
                 parsed = again
+        # And one more, for the opener that reads the picture. With the lead's
+        # lines as material the seat's first instinct is "France trying to
+        # build something here", which the filler check refuses and which
+        # costs the whole turn. The material is right and the tense is wrong;
+        # asked again with the shape spelled out, the same model writes the
+        # opinion it was meant to.
+        first = next((text for text in parsed.value.utterances if text.strip()), "")
+        if first and is_filler(first, self.pack):
+            again = await self._ask(_with_note(blocks, _filler_retry_note(first)))
+            if again is not None:
+                self.last_usage = self.last_usage + again.usage
+                parsed = again
         return self._settle(parsed.value, most)
 
     async def _ask(self, blocks: list[Block]) -> Parsed[ColourTurn] | None:
@@ -2761,9 +2951,7 @@ class ColourPass:
                 if utterance.after:
                     out.append(f"{'':>7}  {'lead':<17}  | {utterance.after}")
                 reason = "" if utterance.passed else f"   [{'; '.join(utterance.reasons)[:60]}]"
-                out.append(
-                    f"{utterance.ts:>7.1f}  {'':<17}{mark} {utterance.text}{reason}"
-                )
+                out.append(f"{utterance.ts:>7.1f}  {'':<17}{mark} {utterance.text}{reason}")
         return "\n".join(out)
 
     def counts(self) -> dict[str, float]:
