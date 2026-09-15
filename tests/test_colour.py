@@ -30,13 +30,17 @@ from commentary.agents.colour import (
     FormAt,
     Material,
     Moment,
+    Offer,
     colour_pass,
     is_filler,
     may_speak,
+    one_subject,
     patterns_in,
     says_a_number,
+    says_nothing,
     space_out,
     speaking_for,
+    swap_cue,
 )
 from commentary.config import ColourConfig, PredictorConfig, Settings
 from commentary.llm.base import Block
@@ -1484,3 +1488,119 @@ def test_a_fresh_incident_does_not_wait_out_the_build_up_gap() -> None:
     spent = replace(fresh, turns_since_big=1)
     assert not may_speak(spent).allowed
     assert "one turn per big event" in may_speak(spent).reason
+
+
+# -- the continuation, the note said twice, and the cue ----------------------
+#
+# All three are read off ``runs/rephrased/r2-colour/mbappe``, the first pass
+# with the incident seat in it. No fabrication in seven turns, and three other
+# things wrong: every turn was one utterance long because the second was
+# refused every time, one note about a substitute was said three times in
+# thirty seconds by two voices, and two turns running opened on "You know,".
+
+
+def test_a_continuation_may_say_he_when_the_line_before_it_named_one_man() -> None:
+    """Section 4.4's runs are full of them: "Morris is the man. / He's the
+    man here." The utterances go out two and a half seconds apart and nobody
+    is reintroduced in between.
+
+    All four of these were refused as ``colour_filler`` on the measured pass,
+    which is why every turn in it was one utterance long.
+    """
+    first = "Well, Otamendi went through the back of him there."
+    carries_on = "That's what he does — he never lets a runner past."
+    assert not is_filler(carries_on, a_pack(), after=first)
+    assert not is_filler("And here he is in a World Cup final.", a_pack(), after=first)
+
+
+def test_the_utterance_that_opens_a_turn_still_has_to_name_somebody() -> None:
+    """A listener coming to the turn cold has nobody to call "he"."""
+    assert is_filler("That's what he does — he never lets a runner past.", a_pack())
+    assert is_filler("And here he is in a World Cup final.", a_pack())
+
+
+def test_a_continuation_after_a_line_naming_two_men_has_no_referent() -> None:
+    """ "He" after a line naming two men points at neither."""
+    two = "Otamendi and Messi were both in there."
+    assert one_subject(two, a_pack()) == ""
+    assert is_filler("And he has done that all night.", a_pack(), after=two)
+
+
+def test_a_continuation_still_has_to_be_worth_hearing() -> None:
+    """The three the seat wrote last time, as second lines, after a good first."""
+    first = "You know, Mbappé took that penalty without looking up."
+    for empty in (
+        "And that is the price of it right there.",
+        "Now the question is what he can do again.",
+        "Yeah, that's a finish at this moment.",
+    ):
+        assert says_nothing(empty), empty
+        assert is_filler(empty, a_pack(), after=first), empty
+
+
+def test_a_stock_phrase_is_refused_wherever_it_sits() -> None:
+    """Naming the right man does not redeem a line that says nothing."""
+    assert says_nothing("Well, for Mbappé this is what it comes down to.")
+    assert is_filler("Well, for Mbappé this is what it comes down to.", a_pack())
+
+
+def test_pointing_at_itself_is_only_filler_at_the_end() -> None:
+    assert says_nothing("And that is the moment right there.")
+    assert not says_nothing("Otamendi's leg was right there for him to fall over.")
+
+
+def test_a_note_either_voice_has_just_said_is_not_material_again() -> None:
+    """The measured repetition: the lead at 133.2 s, the seat at 141.0 s and
+    again at 162.8 s, one note about a substitute, thirty seconds.
+
+    ``threads.CALLBACK_QUIET_S`` is the corpus's own number — section 7's
+    callbacks are minutes apart — and it is what the lead's notes are already
+    rested by.
+    """
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_wider_pack())
+    seat.saw_lead_line(120.0, "France work it out through Upamecano.")
+    assert [note.about for note in seat.notes(121.0)] == ["Dayotchanculle Upamecano"]
+    seat.saw_lead_line(133.2, "Upamecano, back in the side tonight.")
+    assert seat.notes(141.0) == [], "the lead has just said it"
+    assert seat.notes(460.0), "and five minutes on it is a callback again"
+
+
+def test_the_seats_own_utterance_rests_the_note_too() -> None:
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_wider_pack())
+    seat.saw_lead_line(120.0, "France work it out through Upamecano.")
+    seat.accept(["You know, Upamecano back after missing the semi with illness."], ts=141.0)
+    assert seat.notes(162.8) == []
+
+
+def test_a_line_about_another_man_leaves_the_note_alone() -> None:
+    """Two men went into that final level at the top of the scoring charts."""
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=a_wider_pack())
+    seat.saw_lead_line(120.0, "France work it out through Upamecano.")
+    seat.saw_lead_line(133.2, "Mbappé, back in the side tonight after the semi.")
+    assert seat.notes(141.0)
+
+
+def test_a_turn_does_not_open_on_the_cue_the_last_one_opened_on() -> None:
+    """The rules have asked for this since the seat existed; two turns
+    running opened on "You know," and two more on "Yeah,"."""
+    assert swap_cue("You know, Upamecano missing that semi.", "you know").startswith("Well,")
+    assert swap_cue("Well, Otamendi's leg was there.", "well").startswith("Yeah,")
+    assert swap_cue("Yeah, that was soft.", "well") == "Yeah, that was soft."
+    assert swap_cue("Otamendi's leg was there.", "well") == "Otamendi's leg was there."
+
+
+@pytest.mark.asyncio
+async def test_the_seat_swaps_the_cue_rather_than_paying_for_a_second_call() -> None:
+    """An opener carries no claim, so rewriting it can make nothing false —
+    and a re-ask would double what a turn costs for one word."""
+    backend = speaking(
+        a_turn("Well, Molina has been up that flank again."),
+        a_turn("Well, Messi has dropped in again."),
+    )
+    seat = a_seat(backend)
+    first = await seat.turn(Offer(True, AT_A_DEAD_BALL, "dead ball"), "0-0", now=10.0)
+    second = await seat.turn(Offer(True, AT_A_DEAD_BALL, "dead ball"), "0-0", now=70.0)
+    assert first is not None and second is not None
+    assert first.utterances[0].startswith("Well,")
+    assert not second.utterances[0].startswith("Well,")
+    assert "Messi has dropped in again" in second.utterances[0]

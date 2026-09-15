@@ -62,7 +62,13 @@ from commentary.config import SETTINGS, ColourConfig, Settings
 from commentary.gate import FactGate, fold, noun_for
 from commentary.ledger import Fact, Ledger
 from commentary.llm.base import LLMBackend, LLMError, Usage
-from commentary.prompts.colour import colour_blocks, colour_system, form_line, opens_with_a_cue
+from commentary.prompts.colour import (
+    OPENERS,
+    colour_blocks,
+    colour_system,
+    form_line,
+    opens_with_a_cue,
+)
 from commentary.schemas import (
     CallerLine,
     ColourTurn,
@@ -77,7 +83,7 @@ from commentary.schemas import (
 )
 from commentary.state import notes_for
 from commentary.tallies import Tallies
-from commentary.threads import Threads
+from commentary.threads import CALLBACK_QUIET_S, Threads
 from commentary.voice.speaker import WORDS_PER_SECOND
 
 #: The value of ``COLOUR_MODEL`` that means "no colour seat".
@@ -895,6 +901,7 @@ def judge_utterance(
     said_before: Sequence[str] = (),
     attributed: Attributed | None = None,
     named_before: Sequence[str] = (),
+    after: str = "",
 ) -> GateVerdict:
     """One colour utterance, judged exactly as a phrased caller line is.
 
@@ -911,11 +918,15 @@ def judge_utterance(
     numbers live, and the share of number-carrying lines that open like the
     colour voice is within noise of the base rate on every file.
 
-    Then :func:`is_filler`, which is the judge's 5.0 turned into a predicate:
-    an utterance that names nobody, names no side doing something again and
-    names no event is refused as ``colour_filler``. It sits here rather than
-    in the prompt because the prompt has asked for it twice and been given
-    "I think this is what it comes down to" both times.
+    Then :func:`says_nothing` and :func:`is_filler`, which are the judge's
+    5.0 turned into two predicates: a stock phrase is refused wherever it
+    sits, and an utterance that names nobody, names no side doing something
+    again and names no event is refused as ``colour_filler`` — unless it is a
+    continuation and ``after``, the utterance of this turn that has just gone
+    out, named exactly one man for it to call "he". They sit here rather than
+    in the prompt because the prompt has asked for it three times and been
+    given "I think this is what it comes down to", then "And that is the
+    price of it right there".
 
     Then :func:`repeats_itself`, against ``said_before`` — the seat's own
     last :data:`REPEAT_HISTORY` utterances in this match. Same reason, one
@@ -952,10 +963,24 @@ def judge_utterance(
             reasons=["number_claim: numbers are the lead's job, not this seat's"],
             line=text,
         )
-    if is_filler(text, pack):
+    stock = says_nothing(text)
+    if stock:
         return GateVerdict(
             passed=False,
-            reasons=["colour_filler: names no player, no side doing it again, and no event"],
+            reasons=[f'colour_filler: "{stock}" would fit any match ever played'],
+            line=text,
+        )
+    if is_filler(text, pack, after=after):
+        return GateVerdict(
+            passed=False,
+            reasons=[
+                "colour_filler: names no player, no side doing it again and no event"
+                + (
+                    ", and the utterance before it named nobody to call him"
+                    if after
+                    else ", and it opens the turn"
+                )
+            ],
             line=text,
         )
     shared = repeats_itself(text, said_before)
@@ -1005,6 +1030,71 @@ EVENT_FRESH_S = 25.0
 #: Three, because a note is only worth saying while the man it is about is
 #: still the man the listener is thinking about.
 LEAD_LINES_FOR_NOTES = 3
+
+#: How much of a note two lines have to share before the second one is
+#: saying it again. Two content words, stemmed to their first
+#: :data:`NOTE_ECHO_PREFIX` letters, and the man's name in the line as well.
+#:
+#: Looser than :func:`~commentary.gate.notes_used`, which wants *every*
+#: content word, and deliberately: that one decides whether a thread has been
+#: told, where a wrong yes means the thread never comes back, so it is strict.
+#: This one decides whether a note is worth saying for a third time in thirty
+#: seconds, where a wrong yes costs one line and a wrong no is what the
+#: Mbappé trace produced — the lead's "Upamecano, back in the side tonight"
+#: at 133.2 s, then "Upamecano back after missing the semi with illness" at
+#: 141.0 s, then "Upamecano missing that semi through illness" at 162.8 s.
+#: Not one of those pairs shares a four-word run or every content word.
+NOTE_ECHO_WORDS = 2
+
+#: Stemming, such as it is: missed and missing are the same word, and so are
+#: ill and illness. Three letters is crude and the short words it would
+#: confuse are dropped as stopwords before it is applied.
+NOTE_ECHO_PREFIX = 3
+
+#: Words that carry none of a note. Everything else in it is content.
+_NOT_CONTENT = frozenset(
+    {
+        "the", "a", "an", "and", "or", "but", "of", "in", "on", "at", "to", "for", "with",
+        "from", "by", "as", "that", "this", "it", "its", "he", "his", "him", "she", "her",
+        "they", "them", "their", "is", "was", "are", "were", "be", "been", "has", "have",
+        "had", "not", "no", "so", "up", "out", "off", "who", "what", "when", "here",
+        "there", "now", "then", "back", "into", "over", "after", "before", "again",
+        "down", "all", "just", "still", "very", "more", "most", "well", "yeah", "you",
+        "know", "think", "one", "two",
+    }
+)
+
+
+def _stems(text: str) -> set[str]:
+    """The content words of a line, cut to their first few letters."""
+    words = _NOT_A_WORD.sub(" ", fold(text)).split()
+    return {
+        word[:NOTE_ECHO_PREFIX]
+        for word in words
+        if word not in _NOT_CONTENT and len(word) > NOTE_ECHO_PREFIX
+    }
+
+
+def echoes(note: Note, line: str) -> bool:
+    """Has this line already carried this note?
+
+    Both halves have to hold: the line names the man the note is about, and
+    it shares :data:`NOTE_ECHO_WORDS` of the note's own content words with
+    it. The name is load-bearing — two men went into that final level at the
+    top of the scoring charts, and without it a line about one of them would
+    take the other's note off offer.
+    """
+    if not _names_the_man(line, note.about):
+        return False
+    wanted = _stems(note.clause or "") | _stems(note.text)
+    if len(wanted) < NOTE_ECHO_WORDS:
+        return False
+    return len(wanted & _stems(line)) >= NOTE_ECHO_WORDS
+
+
+def _names_the_man(line: str, about: str) -> bool:
+    """Is the note's subject in this line, under any of his spellings?"""
+    return bool(about) and mentions(line, about)
 
 
 #: Words that make a claim of repetition. Half of the material check: a line
@@ -1255,10 +1345,127 @@ def one_name_each(names: Sequence[str]) -> list[str]:
     return [best[key] for key in order]
 
 
-def is_filler(text: str, pack: KnowledgePack | None) -> bool:
+#: Lines that would fit any match ever played. The first eight came out of
+#: this seat's own mouth on the pooled night-one traces and have been in the
+#: rules ever since; the last three came out of it on
+#: ``runs/rephrased/r2-colour/mbappe`` — "And that is the price of it right
+#: there", "Now the question is what he can do again", "Yeah, that's a finish
+#: at this moment" — which is the same failure wearing a continuation's
+#: clothes. In code rather than in the prompt because the prompt has listed
+#: them, verbatim, for three passes and the seat wrote them anyway.
+ABOUT_NOTHING = (
+    "this is what it comes down to",
+    "that changes everything",
+    "have to find a way through",
+    "keeping it simple at the back",
+    "sitting deep and letting them have it",
+    "this is the moment right here",
+    "comes down to this",
+    "know what they are protecting",
+    "the price of it",
+    "the question is what",
+    "at this moment",
+)
+
+#: And the shape rather than the phrase: a line that ends by pointing at
+#: itself. "That is the price of it **right there**", "this is the moment
+#: **right here**". The words are only filler at the end of the thought,
+#: because "Otamendi's leg was right there" is an observation.
+_POINTING_AT_ITSELF = re.compile(r"\bright (?:there|here|now)\b[.!?]*\s*$", re.IGNORECASE)
+
+#: What a continuation is allowed to say instead of a name. Section 4.4's
+#: real runs are full of them — "Morris is the man. / He's the man here.",
+#: "He's backheeled the ball into the goal. / And another standing ovation."
+#: — because the utterances of one turn go out two and a half seconds apart
+#: and nobody has to be reintroduced in between.
+_CARRIES_ON = re.compile(r"\b(?:he|him|his|she|her|they|them|their|he's|they've)\b", re.IGNORECASE)
+
+
+def says_nothing(text: str) -> str:
+    """The stock phrase this utterance is built on, or ``""``."""
+    folded = " ".join(fold(text).split())
+    for phrase in ABOUT_NOTHING:
+        if phrase in folded:
+            return phrase
+    if _POINTING_AT_ITSELF.search(text):
+        return "right there"
+    return ""
+
+
+#: The cues a turn may be swapped onto. All four take a comma, which is what
+#: makes the swap safe to do in code: "You know, <rest>" becomes "Well,
+#: <rest>" and nothing else about the sentence moves. "Well" opens 2.77% of
+#: the club corpus's utterances and "Yeah" 2.23% (section 4.1), so a rotation
+#: through these is the corpus's own distribution rather than a house style.
+SWAPPABLE_CUES = ("Well", "Yeah", "Yes", "Oh")
+
+
+def cue_of(text: str) -> str:
+    """The opener this utterance begins on, folded, or ``""``."""
+    head = text.strip().lower().lstrip("\"'")
+    for cue in sorted(OPENERS, key=len, reverse=True):
+        if head.startswith(cue):
+            return cue
+    return ""
+
+
+def swap_cue(text: str, spent: str) -> str:
+    """Move this utterance off ``spent`` onto another cue, or leave it alone.
+
+    The rules have asked for a different cue every turn since the seat
+    existed and the measured pass opened two turns in a row on "You know,"
+    and two more on "Yeah,". A re-ask would cost a second model call for a
+    word, so the swap is done here: the opener is the one part of an
+    utterance that carries no claim, and replacing it can make nothing false.
+
+    Only an utterance that really opens on the spent cue is touched, and only
+    the cue itself: everything after the comma is the model's.
+    """
+    found = cue_of(text)
+    if not found or found != spent:
+        return text
+    rest = text.strip()[len(found) :].lstrip()
+    if rest.startswith(","):
+        rest = rest[1:].lstrip()
+    if not rest:
+        return text
+    for cue in SWAPPABLE_CUES:
+        if cue.lower() != spent:
+            return f"{cue}, {rest}"
+    return text
+
+
+def one_subject(text: str, pack: KnowledgePack | None) -> str:
+    """The one man or one side this line is about, or ``""`` if it is not one.
+
+    What the next utterance of the turn is allowed to call "he". Exactly one:
+    a line naming two players leaves a listener with no antecedent, and a
+    line naming none has nothing to hand on.
+    """
+    named = one_name_each([name for name in roster_names(pack) if mentions(text, name)])
+    if len(named) == 1:
+        return named[0]
+    if named:
+        return ""
+    sides = {
+        word
+        for word in team_words(pack)
+        if mentions(text, word)
+    }
+    folded = {fold(word) for word in sides}
+    return sorted(sides)[0] if len(folded) == 1 else ""
+
+
+def _names_anybody(text: str, pack: KnowledgePack | None) -> bool:
+    """Is anybody on either team sheet in this line?"""
+    return any(mentions(text, name) for name in roster_names(pack))
+
+
+def is_filler(text: str, pack: KnowledgePack | None, *, after: str = "") -> bool:
     """Is this utterance about nothing?
 
-    Three ways to be about something, and a line needs one of them:
+    Three ways to be about something, and the **first** utterance of a turn
+    needs one of them:
 
     - it names somebody on a team sheet;
     - it names a side **and** claims a repetition — "France down that side
@@ -1266,11 +1473,23 @@ def is_filler(text: str, pack: KnowledgePack | None) -> bool:
       picture the seat cannot see;
     - it names an event: a goal, a penalty, a save, a card, a foul, a corner.
 
-    Everything else is the failure the judge quoted: "I think this is what it
-    comes down to", "that changes everything", "they know what they are
-    protecting". Checked in code because asking the prompt nicely did not
-    stop it.
+    ``after`` is the utterance of this turn that has just gone out, and a
+    fourth way opens with it. A **continuation** may say "he" or "they" when
+    ``after`` named exactly one man or one side, because the two utterances
+    are two and a half seconds apart on one held microphone and that is how
+    the corpus's second voice talks: "Morris is the man. / He's the man
+    here." This rule was written for the case where the lead cuts in between
+    utterances, and it cost the seat the second line of every turn it took on
+    the Mbappé trace — "That's what he does — he's dangerous the moment he
+    comes on" was refused for naming nobody, a second and a half after it had
+    named him.
+
+    A continuation still has to be worth hearing. :func:`says_nothing` is
+    checked first and on every utterance, first or not: a stock phrase is a
+    stock phrase whoever it follows.
     """
+    if says_nothing(text):
+        return True
     words = set(fold(text).split())
     if not words:
         return True
@@ -1279,7 +1498,9 @@ def is_filler(text: str, pack: KnowledgePack | None) -> bool:
     if any(mentions(text, name) for name in roster_names(pack)):
         return False
     named_side = any(mentions(text, word) for word in team_words(pack))
-    return not (named_side and bool(words & REPEATS))
+    if named_side and words & REPEATS:
+        return False
+    return not (after and one_subject(after, pack) and bool(_CARRIES_ON.search(text)))
 
 
 def patterns_in(
@@ -1371,6 +1592,15 @@ class ColourSeat:
         #: from ``_said``, which is what the prompt is shown and is capped
         #: at the prompt's own window.
         self._history: deque[str] = deque(maxlen=REPEAT_HISTORY)
+        #: Every line either voice has put out, with its instant, for
+        #: :meth:`notes`. Both voices, because a note the lead has just
+        #: dropped into a dead ball is as said as one this seat said, and a
+        #: listener does not care which mouth it came out of.
+        self._carried: list[tuple[float, str]] = []
+        #: The cue the last turn opened on, so this one does not open on it
+        #: again. The prompt has asked for that since the seat existed and
+        #: the measured pass opened two turns in a row on "You know,".
+        self._last_cue = ""
         self._last_big: tuple[Event, float] | None = None
         self._lead_lines = 0
         self._lead_since_big = 0
@@ -1461,6 +1691,7 @@ class ColourSeat:
         if not said:
             return
         self._lead.append(said)
+        self._carried.append((ts, said))
         self._lead_lines += 1
         self._lead_since_big += 1
         self.share.said(ts, colour=False)
@@ -1526,17 +1757,24 @@ class ColourSeat:
         self._turns_since_big += 1
         self._since_turn = []
 
-    def accept(self, utterances: Iterable[str]) -> None:
-        """Record what actually went out, so it is not said twice."""
+    def accept(self, utterances: Iterable[str], ts: float | None = None) -> None:
+        """Record what actually went out, so it is not said twice.
+
+        ``ts`` is when it went out, for the note check in :meth:`notes`; the
+        instant of the last offer is the fallback, which is this turn's own
+        start and is within a few seconds of every utterance in it.
+        """
+        at = self._offered_at if ts is None else ts
         for text in utterances:
             said = text.strip()
             if said:
                 self._said.append(said)
                 self._history.append(said)
+                self._carried.append((at, said))
 
     # -- the call ---------------------------------------------------------
 
-    def notes(self) -> list[Note]:
+    def notes(self, now: float | None = None) -> list[Note]:
         """The pack's notes about the players the lead has just named.
 
         Players, and only players. The old version of this walked the forms
@@ -1552,8 +1790,23 @@ class ColourSeat:
         him. Adjusted by :attr:`tallies` before it goes anywhere: a note that
         counts goals is stale the instant the man it is about scores one, and
         this seat sees the match exactly as long as the lead does.
+
+        And never a note either voice has just said. ``now`` is the instant
+        the material is being built for, and a note carried by any line that
+        has gone out inside
+        :data:`~commentary.threads.CALLBACK_QUIET_S` — the lead's or this
+        seat's own — is not offered again. That number is the corpus's, out
+        of section 7: its callbacks are minutes apart and the shortest gap
+        anywhere that is not one continuous burst is about five minutes. What
+        happened without it is on ``runs/rephrased/r2-colour/mbappe``, where
+        one note about a substitute was said three times in thirty seconds,
+        once by the lead and twice by this seat.
         """
-        return self.tallies.adjusted(notes_for(self.pack, self.lead_named()))
+        found = self.tallies.adjusted(notes_for(self.pack, self.lead_named()))
+        if now is None:
+            return found
+        recent = [line for ts, line in self._carried if 0.0 <= now - ts <= CALLBACK_QUIET_S]
+        return [note for note in found if not any(echoes(note, line) for line in recent)]
 
     def lead_named(self) -> list[str]:
         """Who the lead has named in his last three lines, newest first."""
@@ -1575,7 +1828,7 @@ class ColourSeat:
         since = self._last_turn_ts if self._last_turn_ts is not None else -1.0
         patterns = tuple(patterns_in(self._since_turn, self.ledger, since))
         return Material(
-            notes=tuple(self.notes()),
+            notes=tuple(self.notes(now)),
             patterns=patterns,
             last_event=self._last_completed(now),
             ledger=tuple(self._counts(now, since, patterns)),
@@ -1857,6 +2110,8 @@ class ColourSeat:
         if not proposed.speak or not kept:
             self.last_reason = self.last_reason or "the seat chose silence"
             return proposed.model_copy(update={"utterances": kept, "speak": False})
+        kept[0] = swap_cue(kept[0], self._last_cue)
+        self._last_cue = cue_of(kept[0])
         self._last_angle = proposed.angle.value
         return proposed.model_copy(update={"utterances": kept, "speak": True})
 
@@ -1875,6 +2130,12 @@ class ColourUtterance:
     reasons: tuple[str, ...] = ()
     #: The lead's last line before this one went out, for the printed table.
     after: str = ""
+    #: The one man the utterance before it named, and so who this one means
+    #: by "he". Empty on the first utterance of a turn, and on any
+    #: continuation whose predecessor named nobody or named two people. It is
+    #: what lets a continuation carry a pronoun at all and what the
+    #: attribution check reads that pronoun as.
+    referent: str = ""
 
     @property
     def cue(self) -> bool:
@@ -2271,11 +2532,18 @@ def _schedule(
             )
         )
     attributed = seat.attributed(record.ts)
-    # Who this turn has named so far, newest first. A turn is a run and its
-    # second utterance takes its subject from its first: "Well, Upamecano was
-    # the man ruled out for the semi." then "Back in and he's just conceded
-    # the penalty." The second names nobody, and it is the one that lies.
-    named_before: list[str] = []
+    # The utterance of this turn that has actually gone out, and the one man
+    # it named. Both are what a listener has in their head when the next one
+    # arrives two and a half seconds later, so both are read off what passed
+    # the gate rather than off what the model wrote: an utterance nobody
+    # heard is no antecedent for "he".
+    #
+    # ``spoken`` is what lets a continuation carry a pronoun at all
+    # (:func:`is_filler`); ``referent`` is who that pronoun is, for the
+    # attribution check — "Back in and he's just conceded the penalty" names
+    # nobody and blames Upamecano.
+    spoken = ""
+    referent = ""
     for at, text in zip(when, turn.utterances, strict=False):
         verdict = judge_utterance(
             text,
@@ -2289,11 +2557,9 @@ def _schedule(
             # on its second utterance and not on its next turn.
             said_before=seat.history,
             attributed=attributed,
-            named_before=named_before,
+            named_before=[referent] if referent else (),
+            after=spoken,
         )
-        named_before = [
-            name for name in roster_names(pack) if mentions(text, name)
-        ] + named_before
         utterance = ColourUtterance(
             ts=at,
             text=text,
@@ -2301,10 +2567,19 @@ def _schedule(
             passed=verdict.passed,
             reasons=tuple(verdict.reasons),
             after=_lead_before(beats, at),
+            referent=referent,
         )
         record.utterances.append(utterance)
         if verdict.passed:
-            seat.accept([verdict.line])
+            spoken = verdict.line
+            # A continuation that names nobody keeps the man it inherited —
+            # "Morris is the man. / He's the man here. / And he has done it
+            # again." is one subject over three utterances — and one that
+            # names two people hands on nobody.
+            referent = one_subject(verdict.line, pack) or (
+                referent if not _names_anybody(verdict.line, pack) else ""
+            )
+            seat.accept([verdict.line], ts=at)
             seat.spoke_colour(at)
             threads.said(verdict.line, ts=at, pack=pack)
             additions.append((at, _beat_row(at, verdict.line, record.situation, lag)))
