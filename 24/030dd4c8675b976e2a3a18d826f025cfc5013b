@@ -1,0 +1,72 @@
+src/commentary/config.py
+  s_b9d647e85fe0bb::t_35d6b2baa7ee2f 328-334
+src/commentary/agents/colour.py
+  s_b9d647e85fe0bb::t_6735666c5ce02a 948,1135,1139-1141
+  s_b9d647e85fe0bb::t_b6040071e301e8 879
+  s_b9d647e85fe0bb::t_243ecbe510a595 1599-1600,1609
+  s_b9d647e85fe0bb::t_e2df78406653a6 172
+  s_b9d647e85fe0bb::t_bf647a908a190f 1430
+  s_b9d647e85fe0bb::t_0e24c13cbc5018 526-536,538-546
+  s_b9d647e85fe0bb::t_26ca816ca386ff 115-126,142-143,145-148,151-156
+  s_b9d647e85fe0bb::t_b9271d3d731fdd 1155-1157,1164-1168
+  s_b9d647e85fe0bb::t_833863c79ecb8a 1439-1446
+  s_b9d647e85fe0bb::t_ace76e43d7f356 706-797,809-878,880-886,896-897
+  s_b9d647e85fe0bb::t_4e8fb3cff6dd64 1713-1721,1726
+  s_b9d647e85fe0bb::t_cadb3c3969aa97 1582,1585-1598,1601-1608,1610-1642
+  s_b9d647e85fe0bb::t_07bf86fa168c63 324-329
+  s_b9d647e85fe0bb::t_a7e39f5dade076 2273-2278,2291-2292,2294-2296
+  s_b9d647e85fe0bb::t_6e9540d7aaadd4 969-972
+  s_b9d647e85fe0bb::t_8e6de5bfaf4338 1447,1449-1451
+  s_b9d647e85fe0bb::t_d72e26e82c9caa 968,973-975
+  s_b9d647e85fe0bb::t_1f713db55c0a19 2103-2110
+  s_b9d647e85fe0bb::t_595a4e80810a82 920,924-930,938-946
+  s_b9d647e85fe0bb::t_a41f9a6acfcfc6 54
+  s_b9d647e85fe0bb::t_1ee25a32d38489 798-808
+  s_b9d647e85fe0bb::t_27cad5c9ed3464 1102-1103,1106-1113
+  s_b9d647e85fe0bb::t_027c694eaf9a1b 1154,1158-1161
+  s_b9d647e85fe0bb::t_63ae50aefaa27d 2123
+  s_b9d647e85fe0bb::t_3f7012941a82d9 1738-1748,1752
+  s_b9d647e85fe0bb::t_0f3db15d874a03 127-141,144
+  s_b9d647e85fe0bb::t_e7745edd48f431 947
+  s_b9d647e85fe0bb::t_4ec192d2a48fe3 1643
+src/commentary/prompts/colour.py
+  s_b9d647e85fe0bb::t_d9f259c2aab0b0 286
+  s_b9d647e85fe0bb::t_d7f352e6431ea2 541-546
+  s_b9d647e85fe0bb::t_e309df610f61a6 205-214
+  s_b9d647e85fe0bb::t_1ea46b64eb24d1 92-115
+  s_b9d647e85fe0bb::t_938f71edfd6075 34-36
+  s_b9d647e85fe0bb::t_53565928be932f 327-332
+  s_b9d647e85fe0bb::t_d8492c72837958 281,283-284,287,289-294
+  s_b9d647e85fe0bb::t_4003a644b7987c 272-280,282,285,288,310-322
+  s_b9d647e85fe0bb::t_41fef614420867 1-2,295,323
+tests/test_colour_share.py
+  s_b9d647e85fe0bb::t_58e3f17475c6a8 946,948-951,991-1003
+  s_b9d647e85fe0bb::t_e84a6844328a95 451-460
+  s_b9d647e85fe0bb::t_4c3d3b28562c1a 796-945,947,952-980,983-985,989-990,1004-1021
+  s_b9d647e85fe0bb::t_72fee2571b8aad 981-982,986-988
+  s_b9d647e85fe0bb::t_0de83842979c3e 51
+tests/test_colour.py
+  s_b9d647e85fe0bb::t_c0dcc97c18e651 1364-1453,1462
+  s_b9d647e85fe0bb::t_9ffca722c78446 867-1048,1050-1058
+  s_b9d647e85fe0bb::t_9cb7ed337d1a9f 1454-1456
+  s_b9d647e85fe0bb::t_78527acbe53edd 28
+  s_b9d647e85fe0bb::t_75790686316383 1457-1461
+  s_b9d647e85fe0bb::t_94dccae3720358 1463-1486
+  s_b9d647e85fe0bb::t_a26ffc94181bfd 1049
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "24030dd4c8675b976e2a3a18d826f025cfc5013b",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
