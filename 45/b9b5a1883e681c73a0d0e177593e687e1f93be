@@ -1,0 +1,64 @@
+tests/test_gate.py
+  s_1eec300a49e1ff::t_e824eb56a885d8 1285,1291
+  s_1eec300a49e1ff::t_03d80ea17b376e 1270-1284,1286-1290,1292-1300
+src/commentary/config.py
+  s_1eec300a49e1ff::t_490cc0881b3b10 635
+  s_1eec300a49e1ff::t_1e8599f8047538 398-420
+  s_1eec300a49e1ff::t_0d7247704087b0 397
+src/commentary/runtime.py
+  s_1eec300a49e1ff::t_e8049cbbf47726 1164-1169,1176-1177,1179-1185,1196
+tests/test_scoreline.py
+  s_1eec300a49e1ff::t_320c5b78cb8ebd 57
+  s_1eec300a49e1ff::t_2cfa056f10bb75 187-227,229-241,243-247,249-250
+  s_1eec300a49e1ff::t_4c83cebd8bb7d1 228,242
+  s_1eec300a49e1ff::t_707b826f26ea3a 248
+  s_1eec300a49e1ff::t_8021de070bd08d 608,613
+src/commentary/__main__.py
+  s_1eec300a49e1ff::t_a965858fbdefca 498-500
+  s_1eec300a49e1ff::t_f97a6c3b279fb4 981-989
+  s_1eec300a49e1ff::t_0361e7a996303a 206-211,223-227,233,237-243,245-248
+  s_1eec300a49e1ff::t_4a73ae07c7705c 1060-1067
+  s_1eec300a49e1ff::t_eb04e8e8861036 279-281
+  s_1eec300a49e1ff::t_8cde8cf3ed5395 1059
+src/commentary/scoreline.py
+  s_1eec300a49e1ff::t_792995fa386a8b 416-418,422,433-434,443-449,451-452,459
+  s_1eec300a49e1ff::t_c7a9453431e3df 281-336
+tests/test_researcher.py
+  s_1eec300a49e1ff::t_c9f3a982b62881 697-732
+  s_1eec300a49e1ff::t_dfefe09cc28a52 26
+tests/test_cli.py
+  s_1eec300a49e1ff::t_2078056c10f5f0 116-144
+src/commentary/prompts/phraser.py
+  s_1eec300a49e1ff::t_a82c1b5ae452b2 299-313
+src/commentary/agents/researcher.py
+  s_1eec300a49e1ff::t_9f97b34d26b804 312-334
+src/commentary/gate.py
+  s_1eec300a49e1ff::t_c78c7d0a0ba2af 1350-1356,1361-1362,1369-1374,1376-1379
+  s_1eec300a49e1ff::t_60e1fdbe2a3c94 1406-1410,1413-1414
+  s_1eec300a49e1ff::t_562ae4ce46d05c 1388
+  s_1eec300a49e1ff::t_2dd26c6a1d3c7d 1357-1359
+src/commentary/rephrase.py
+  s_1eec300a49e1ff::t_c15e4035e3e84f 127-130
+  s_1eec300a49e1ff::t_d6c53d19161f37 801
+  s_1eec300a49e1ff::t_7016b9f0191e7a 762
+  s_1eec300a49e1ff::t_216624ed32c5db 808
+  s_1eec300a49e1ff::t_ae7cc075e621d0 714-720,727-728
+  s_1eec300a49e1ff::t_8d0a789f3f4b3a 333-344
+  s_1eec300a49e1ff::t_84249e91cf2ad8 273-277,284-287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "45b9b5a1883e681c73a0d0e177593e687e1f93be",
+  "prompts": {},
+  "sessions": {
+    "s_1eec300a49e1ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7feafbb1-43b3-4ee3-afb0-bb66484d3043",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
