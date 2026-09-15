@@ -1,0 +1,61 @@
+src/commentary/prompts/phraser.py
+  s_1eec300a49e1ff::t_4bef103b772ee7 486-489
+  s_1eec300a49e1ff::t_65e010fd259245 283-284,288-289
+  s_1eec300a49e1ff::t_97cfeee750a0b3 352,354-355,357,359-360,362,364-365
+  s_1eec300a49e1ff::t_6d6529d5a7ca0a 398-399
+  s_1eec300a49e1ff::t_29c98674167f6f 300-302
+  s_1eec300a49e1ff::t_5c22ec08cc8692 234,236-237,239-242,246,249,251-252
+  s_1eec300a49e1ff::t_56fe2072ca866a 500
+  s_1eec300a49e1ff::t_048b2b7ca190e7 327
+  s_1eec300a49e1ff::t_78fa1b36f8cfaa 318
+  s_1eec300a49e1ff::t_15b8a40a1329fa 713-714
+  s_1eec300a49e1ff::t_7c73d1c9e43728 263,266
+  s_1eec300a49e1ff::t_8825687a0ec421 203-205
+  s_1eec300a49e1ff::t_8894755c1ee7f0 206
+src/commentary/rephrase.py
+  s_1eec300a49e1ff::t_d530bc15930fd7 61
+  s_1eec300a49e1ff::t_c3d6f3733900c3 71
+  s_1eec300a49e1ff::t_f2f88f3de2b271 729
+  s_1eec300a49e1ff::t_ce4421ffaf1331 746-748
+  s_1eec300a49e1ff::t_4162dcd7a3b1d6 784-788,799-802,805-810,824,826,828-829,832-833,852,855,857-875,888
+  s_1eec300a49e1ff::t_e4c8e102dc46bb 825
+  s_1eec300a49e1ff::t_6fb0251755f15d 365-368
+  s_1eec300a49e1ff::t_1478de105c66b9 803-804
+  s_1eec300a49e1ff::t_5d9785477e2b63 66
+tests/test_scoreline.py
+  s_1eec300a49e1ff::t_d93e58d07c11b6 232-296,300-303
+  s_1eec300a49e1ff::t_8eb9bde2a04604 19,32
+  s_1eec300a49e1ff::t_303a6efc34728e 297-299
+  s_1eec300a49e1ff::t_2512fdb92d34e5 48
+tests/test_phraser.py
+  s_1eec300a49e1ff::t_34bc2453a1948c 315,319
+  s_1eec300a49e1ff::t_1008c3f5f4a014 355,359-360,363,365-366
+  s_1eec300a49e1ff::t_b9f14b34df1737 358
+  s_1eec300a49e1ff::t_0d24a297c6212f 353-354,356-357,361-362,364
+  s_1eec300a49e1ff::t_58df172f0f625f 33-39
+  s_1eec300a49e1ff::t_aab4e44f7d7234 13
+  s_1eec300a49e1ff::t_51efa4c35422a1 106-203
+  s_1eec300a49e1ff::t_024e6cf2559983 324
+  s_1eec300a49e1ff::t_15c4b7ed8ab3de 335-336,339-340
+src/commentary/goalfollow.py
+  s_1eec300a49e1ff::t_a26d1ab8704b6d 140-148
+  s_1eec300a49e1ff::t_dad34717112438 78-98
+src/commentary/runtime.py
+  s_1eec300a49e1ff::t_78aa762c43c0da 852-853
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "466748a47f13dad5f3ffa2bdbe13141efafc786a",
+  "prompts": {},
+  "sessions": {
+    "s_1eec300a49e1ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7feafbb1-43b3-4ee3-afb0-bb66484d3043",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
