@@ -33,6 +33,7 @@ rather than reaching into the frozen one.
 
 from __future__ import annotations
 
+import logging
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -42,10 +43,17 @@ from typing import Any
 from pydantic import ConfigDict
 
 from commentary.config import RESEARCHER_MODEL
-from commentary.gate import fold
+from commentary.gate import fold, is_the_same_name
 from commentary.llm.base import LLMBackend, Usage
-from commentary.prompts.researcher import researcher_blocks, researcher_system
-from commentary.schemas import KnowledgePack, Player, Side, TeamSheet
+from commentary.prompts.researcher import (
+    notes_blocks,
+    notes_system,
+    researcher_blocks,
+    researcher_system,
+)
+from commentary.schemas import KnowledgePack, Note, NoteSheet, Player, Side, TeamSheet
+
+log = logging.getLogger(__name__)
 
 #: Anthropic's server-side web search tool. The model issues the searches and
 #: the results never pass through this process, which is why the researcher can
@@ -75,6 +83,10 @@ class _FrozenPlayer(Player):
 
 
 class _FrozenTeamSheet(TeamSheet):
+    model_config = ConfigDict(frozen=True)
+
+
+class _FrozenNote(Note):
     model_config = ConfigDict(frozen=True)
 
 
@@ -110,6 +122,7 @@ def freeze(pack: KnowledgePack) -> KnowledgePack:
     fields = dict(pack)
     fields["home"] = _freeze_sheet(pack.home)
     fields["away"] = _freeze_sheet(pack.away)
+    fields["notes"] = [_FrozenNote(**dict(note)) for note in pack.notes]
     return _FrozenPack(**fields)
 
 
@@ -123,6 +136,79 @@ def _freeze_sheet(sheet: TeamSheet) -> _FrozenTeamSheet:
 def is_frozen(pack: KnowledgePack) -> bool:
     """Whether this pack has been through :func:`freeze`, i.e. whether we are live."""
     return bool(pack.model_config.get("frozen", False))
+
+
+# -- notes, and who they are about ---------------------------------------
+#
+# A note is only usable if its subject can be found again. The runtime looks
+# notes up by the names on the screen, and the fact gate looks them up by the
+# names in a line, so a note filed under "Kylian" or "the French captain" is
+# a note nobody will ever be handed. That is not worth failing a pack over —
+# a pack with one unusable note is still a pack — so the mismatch is reported
+# and, on a freshly researched pack, dropped.
+
+
+def note_subject(pack: KnowledgePack, about: str) -> str | None:
+    """The exact pack name a note's ``about`` refers to, or ``None``.
+
+    Exact first, then the fact gate's own name matching, so that a researcher
+    that wrote "Mbappe" for "Kylian Mbappé" is understood rather than thrown
+    away. The gate's matcher is deliberately the one used: the question being
+    asked is "will this note ever be found again by the code that looks notes
+    up", and that code has to agree with the gate about who a surname is.
+    """
+    wanted = about.strip()
+    if not wanted:
+        return None
+    known = [pack.home.name, pack.away.name] + [
+        player.name for sheet in (pack.home, pack.away) for player in sheet.squad
+    ]
+    for name in known:
+        if wanted == name:
+            return name
+    folded = fold(wanted)
+    for name in known:
+        if folded and folded == fold(name):
+            return name
+    for name in known:
+        if is_the_same_name(wanted, name):
+            return name
+    return None
+
+
+def check_notes(pack: KnowledgePack) -> list[Note]:
+    """Every note whose subject is on neither team sheet and is neither team.
+
+    Returns rather than raises. Old packs have no notes and pass trivially;
+    a hand-edited pack with one bad subject should still load.
+    """
+    return [note for note in pack.notes if note_subject(pack, note.about) is None]
+
+
+def settle_notes(pack: KnowledgePack) -> tuple[KnowledgePack, list[Note]]:
+    """Drop the notes nobody can look up, and rewrite the rest onto exact names.
+
+    The second half matters as much as the first. ``about`` is a key, and a
+    key that is nearly right is a key that misses: the runtime asks for the
+    notes about "Kylian Mbappé" because that is the spelling on the sheet,
+    and a note filed under "Mbappe" would sit in the pack unread.
+
+    Returns the settled pack and the notes that were dropped, so a caller can
+    say what it lost rather than losing it quietly.
+    """
+    kept: list[Note] = []
+    dropped: list[Note] = []
+    for note in pack.notes:
+        subject = note_subject(pack, note.about)
+        if subject is None:
+            dropped.append(note)
+            continue
+        kept.append(note if subject == note.about else note.model_copy(update={"about": subject}))
+    if not dropped and all(a.about == b.about for a, b in zip(kept, pack.notes, strict=True)):
+        return pack, []
+    fields = dict(pack)
+    fields["notes"] = kept
+    return KnowledgePack(**fields), dropped
 
 
 # -- persistence ---------------------------------------------------------
@@ -163,8 +249,17 @@ def load_pack(path: Path | str) -> KnowledgePack:
 
     The pack comes back unfrozen, because loading is a pre-match act and the
     freeze belongs at kickoff. Call :func:`freeze` when the whistle goes.
+
+    Notes are checked but never enforced here. A pack on disk may have been
+    written by hand, by an older version of this code, or by a researcher
+    that spelled a name its own way; none of those is a reason to refuse to
+    call the match. The unusable ones are logged and left where they are, and
+    the runtime simply never finds them.
     """
-    return KnowledgePack.model_validate_json(Path(path).read_text(encoding="utf-8"))
+    pack = KnowledgePack.model_validate_json(Path(path).read_text(encoding="utf-8"))
+    for note in check_notes(pack):
+        log.warning("note about %r is on no team sheet: %s", note.about, note.text)
+    return pack
 
 
 # -- the agent -----------------------------------------------------------
@@ -227,6 +322,11 @@ class Researcher:
         #: What the last pack cost. A pack is the most expensive single call
         #: this system makes, and it is the one nobody sees happen.
         self.last_usage: Usage | None = None
+        #: Notes the last call filed under a name that is on neither sheet,
+        #: and which were therefore thrown away. Kept so the command that
+        #: wrote the pack can print how many were lost rather than pretending
+        #: the model did as it was told.
+        self.dropped_notes: list[Note] = []
 
     async def research(
         self,
@@ -259,7 +359,55 @@ class Researcher:
                 tag="researcher",
             )
         self.last_usage = parsed.usage
-        return parsed.value
+        # A note about a name that is on no sheet is unreachable by every
+        # consumer — the runtime looks notes up by roster name and the fact
+        # gate checks a claim against notes about the names in the line — so
+        # it is not a note, it is a sentence nobody will ever read. Dropped
+        # here rather than downstream, because this is the last moment at
+        # which anything knows it existed.
+        pack, dropped = settle_notes(parsed.value)
+        self.dropped_notes = dropped
+        for note in dropped:
+            log.warning(
+                "dropping note about %r, who is on no team sheet: %s", note.about, note.text
+            )
+        return pack
+
+    async def write_notes(self, pack: KnowledgePack) -> KnowledgePack:
+        """Ask for notes about a pack that already exists, and return it with them.
+
+        A second, much cheaper research pass for a pack whose team sheets are
+        already right. It exists because the sheets are the expensive part and
+        the part that goes stale: a pack built the day before kickoff has
+        correct squad numbers in it, and re-running the whole researcher to
+        add context would risk them for no reason.
+
+        Replaces the notes rather than appending to them, so the command is
+        idempotent — running it twice gives one set of notes, not two.
+        """
+        tools = [self.search_tool] if self.search_tool else None
+        with _tools_enabled(self.backend, tools) as attached:
+            self.used_search = attached
+            parsed = await self.backend.parse(
+                model=self.model,
+                system=notes_system(),
+                blocks=notes_blocks(pack),
+                output_format=NoteSheet,
+                max_tokens=self.max_tokens,
+                effort=self.effort,
+                cache_system=True,
+                tag="notes",
+            )
+        self.last_usage = parsed.usage
+        fields = dict(pack)
+        fields["notes"] = parsed.value.notes
+        settled, dropped = settle_notes(KnowledgePack(**fields))
+        self.dropped_notes = dropped
+        for note in dropped:
+            log.warning(
+                "dropping note about %r, who is on no team sheet: %s", note.about, note.text
+            )
+        return settled
 
     async def load_or_research(
         self,

@@ -7,7 +7,9 @@ from commentary.schemas import (
     Event,
     Incident,
     KnowledgePack,
+    Note,
     Player,
+    Possession,
     Scene,
     Side,
     Sighting,
@@ -15,8 +17,10 @@ from commentary.schemas import (
     WireEvent,
 )
 from commentary.state import (
+    NOTES_PER_CALL,
     EntityRegistry,
     MatchStateTracker,
+    notes_for,
     parse_clock,
     period_for_clock,
 )
@@ -358,3 +362,70 @@ def test_a_substitution_teaches_the_registry_the_shirt():
         100.0,
     )
     assert tracker.registry.identified(100.0)[Side.HOME] == [(21, "Paulo Dybala")]
+
+
+# -- notes out of the pack ---------------------------------------------------
+#
+# The pack is frozen and full; a prompt is small and one moment wide. This is
+# the narrowing: given the names on the screen, the two or three clauses worth
+# putting in front of the voice, and nothing else.
+
+
+def noted_pack() -> KnowledgePack:
+    return pack().model_copy(
+        update={
+            "notes": [
+                Note(about="Bukayo Saka", text="four goals in this competition", kind="stat"),
+                Note(about="Bukayo Saka", text="scored in each of the last three", kind="stat"),
+                Note(about="Cole Palmer", text="takes every Chelsea penalty", kind="habit"),
+                Note(about="Arsenal", text="have not lost at home since April", kind="storyline"),
+                Note(about="Chelsea", text="unbeaten in eleven away", kind="storyline"),
+            ]
+        }
+    )
+
+
+def test_notes_are_found_by_the_name_a_line_actually_says():
+    """Surnames, because a commentator never says a first name."""
+    picked = notes_for(noted_pack(), ["Saka"])
+    assert [note.text for note in picked] == [
+        "four goals in this competition",
+        "scored in each of the last three",
+    ]
+
+
+def test_a_name_with_nothing_researched_about_it_yields_nothing():
+    assert notes_for(noted_pack(), ["Havertz"]) == []
+    assert notes_for(None, ["Saka"]) == []
+    assert notes_for(pack(), ["Saka"]) == []
+
+
+def test_the_same_player_named_twice_does_not_spend_two_places():
+    picked = notes_for(noted_pack(), ["Saka", "Bukayo Saka"])
+    assert len(picked) == 2
+
+
+def test_the_tracker_puts_the_man_on_the_ball_first_and_the_teams_last():
+    """Four places, and a wide shot names four players. The ball wins them."""
+    tracker = MatchStateTracker.from_pack(noted_pack())
+    tracker.state.ball = Possession(player="Bukayo Saka", side=Side.HOME, since_ts=0.0)
+    picked = tracker.pack_notes_for(["Cole Palmer"])
+    assert [note.about for note in picked] == [
+        "Bukayo Saka",
+        "Bukayo Saka",
+        "Cole Palmer",
+        "Arsenal",
+    ]
+    assert len(picked) == NOTES_PER_CALL
+
+
+def test_both_teams_are_always_offered_when_there_is_room():
+    tracker = MatchStateTracker.from_pack(noted_pack())
+    picked = tracker.pack_notes_for([])
+    assert [note.about for note in picked] == ["Arsenal", "Chelsea"]
+
+
+def test_the_cap_holds_however_many_names_arrive():
+    tracker = MatchStateTracker.from_pack(noted_pack())
+    picked = tracker.pack_notes_for(["Saka", "Palmer"], limit=3)
+    assert len(picked) == 3

@@ -673,10 +673,12 @@ class Runtime:
         """
         if self.phraser is None:
             return line, 0.0
+        carried = self._carried_name(line, cursor)
         phrased = await self.phraser.phrase(
             line,
             self.state_tracker.summary(cursor),
-            on_the_ball=self._carried_name(line, cursor),
+            on_the_ball=carried,
+            notes=self.state_tracker.pack_notes_for(self._named_by(line, carried)),
         )
         if phrased is None or not phrased.line.strip():
             self._publish(
@@ -694,6 +696,19 @@ class Runtime:
             excitement=phrased.excitement,
         )
         return line.model_copy(update={"line": phrased.line}), phrased.excitement
+
+    @staticmethod
+    def _named_by(line: CallerLine, carried: str | None) -> list[str]:
+        """Who this moment is about, most relevant first.
+
+        The carried name leads because it is the player the last line was
+        already about and the one still on the ball; the sightings follow in
+        the order the caller wrote them. Both teams are added by the tracker,
+        at the end, where they lose to anything more specific.
+        """
+        names = [carried] if carried else []
+        names += [s.name for s in line.sightings if s.name]
+        return names
 
     def _mark_spoken(self, cursor: float, text: str) -> None:
         """Remember when the voice was last given a line, and how long a one.

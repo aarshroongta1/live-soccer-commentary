@@ -81,6 +81,7 @@ from commentary.schemas import (
     PhrasedLine,
     Voice,
 )
+from commentary.state import notes_for
 from commentary.trace import read_trace
 
 #: Rows the replay regenerates for itself when a voice is attached. Dropped
@@ -325,10 +326,15 @@ async def rephrase(
 
         state = _state_at(states, ts) or teams
         fell_back = False
+        carried = cover.carried(form, ts)
+        names = [carried] if carried else []
+        names += [s.name for s in form.sightings if s.name]
+        names += [state.home, state.away]
         phrased = await phraser.phrase(
             form,
             _summary(state),
-            on_the_ball=cover.carried(form, ts),
+            on_the_ball=carried,
+            notes=notes_for(pack, names),
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd

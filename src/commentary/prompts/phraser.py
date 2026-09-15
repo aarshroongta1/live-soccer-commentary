@@ -30,7 +30,7 @@ from collections.abc import Sequence
 
 from commentary.llm.base import Block, text_block
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
-from commentary.schemas import CallerLine, Event, Scene, Side
+from commentary.schemas import CallerLine, Event, Note, Scene, Side
 
 #: What each kind is called in the prompt. The generated file's keys are
 #: identifiers; these are the words a commentator would use.
@@ -158,6 +158,31 @@ Do not repeat the last lines you are shown, and do not paraphrase them. If
 the form is about the same player doing the same thing, a bare surname is the
 honest line.
 
+CONTEXT, AND THE ONE THING YOU MAY ADD
+
+Every rule above says you may not add anything. There is one exception and it
+is narrow. Some calls carry a block headed `context:` — one-clause facts that
+somebody researched before kickoff and that a deterministic check will verify
+after you. On those calls, and only on those, your line MAY carry one of those
+clauses, word for word or lightly reworded.
+
+"Tagliafico." becomes "Tagliafico, and Argentina have not lost in thirty-six."
+"Mbappé steps up." becomes "Mbappé. Three in the tournament already."
+
+The limits, all of which are checked:
+
+  - One clause. Never two, and never a whole note plus a comment on it.
+  - The numbers are the note's numbers. A four where the note says three is
+    not a rephrase, it is a different claim, and it is struck out.
+  - Only about somebody the line already names. A statistic attached to
+    nobody is not commentary.
+  - The block is empty on anything big. If there is no `context:` block, or
+    it says none, then this section does not apply and you add nothing.
+  - It never makes the moment louder. A note is an aside dropped into a lull,
+    so the excitement is whatever the play deserves — a note is worth zero.
+  - You may ignore it. Most lines should. A bare surname is still the honest
+    line, and a commentator who used every fact he had would be unlistenable.
+
 EXCITEMENT
 
 A number from 0 to 1 for how this should be said. Ordinary build-up is 0.1 to
@@ -219,6 +244,41 @@ def _stride(items: Sequence[str], count: int) -> list[str]:
     return [items[int(i * step)] for i in range(count)]
 
 
+#: The moments a note may be dropped into. Two groups, and both of them are
+#: lulls: play that is going on and has not resolved into anything, and a
+#: dead ball that nobody has struck yet. Everything else — a shot, a save, a
+#: goal, a foul, a tackle — is the moment itself, and a commentator who
+#: reached for a statistic in the middle of one would be talking over it.
+#:
+#: The dead-ball four are safe here for the reason the rules already give
+#: about the form's event field: a form that says `penalty` is a penalty
+#: being *stood over*. The kick has not been taken, which is precisely why
+#: there is a gap to fill.
+QUIET_EVENTS = frozenset(
+    {
+        Event.BUILD_UP,
+        Event.PASS,
+        Event.CARRY,
+        Event.STOPPAGE,
+        Event.KICKOFF,
+        Event.FREE_KICK,
+        Event.PENALTY,
+        Event.CORNER,
+        Event.THROW_IN,
+    }
+)
+
+
+def notes_allowed(line: CallerLine) -> bool:
+    """Is this a moment quiet enough to drop a researched clause into?
+
+    Asked here rather than by the runtime so that the answer is part of the
+    prompt the prompt module builds, and so that a test can drive the builder
+    with a penalty and a goal and see the difference without a model.
+    """
+    return line.event in QUIET_EVENTS
+
+
 def phraser_blocks(
     line: CallerLine,
     state_summary: str,
@@ -227,15 +287,19 @@ def phraser_blocks(
     home: str,
     away: str,
     on_the_ball: str | None = None,
+    notes: Sequence[Note] = (),
 ) -> list[Block]:
     """One call's content. Text only, and deliberately small.
 
     No frames. The phraser is not a second opinion on the picture — it has
     never seen the picture, and giving it one would invite it to describe
     what it saw, which is the failure this whole stage exists to fix. It gets
-    the form and the state and nothing else.
+    the form, the state, and — in a lull — the notes about the people on it.
+
+    ``notes`` are already filtered to the moment by the caller; whether they
+    are shown at all is decided here, by the event.
     """
-    return [text_block(_body(line, state_summary, recent_lines, home, away, on_the_ball))]
+    return [text_block(_body(line, state_summary, recent_lines, home, away, on_the_ball, notes))]
 
 
 def _body(
@@ -245,6 +309,7 @@ def _body(
     home: str,
     away: str,
     on_the_ball: str | None,
+    notes: Sequence[Note] = (),
 ) -> str:
     said = (
         "\n".join(f"  - {text.strip()}" for text in recent_lines if text.strip())
@@ -257,9 +322,35 @@ def _body(
         f"{state}\n\n"
         "WHAT THE EYES SAW — the form, filled in by whoever is watching\n"
         f"{_form(line, home, away, on_the_ball)}\n\n"
+        f"{_context(line, notes)}\n\n"
         "THE LAST LINES SPOKEN — do not repeat or paraphrase these\n"
         f"{said}\n\n"
         "Say it."
+    )
+
+
+def _context(line: CallerLine, notes: Sequence[Note]) -> str:
+    """The `context:` block: researched clauses, or an explicit nothing.
+
+    Always printed, even when empty, and that is deliberate. A block that
+    appears and disappears teaches a model that its absence means "use your
+    own knowledge"; a block that is always there and sometimes says none
+    teaches it that none means none.
+    """
+    if not notes or not notes_allowed(line):
+        reason = (
+            "too big a moment for an aside"
+            if notes
+            else "nothing researched about anybody on this form"
+        )
+        return f"context:\n  (none — {reason})"
+    rows = [f"  - {note.about}: {note.text.strip()}  [{note.kind}]" for note in notes]
+    return "\n".join(
+        [
+            "context: verified notes. Your line MAY carry ONE of these clauses,",
+            "reworded but not renumbered, about somebody the line names. Or none.",
+            *rows,
+        ]
     )
 
 

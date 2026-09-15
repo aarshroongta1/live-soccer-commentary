@@ -11,6 +11,7 @@ off a substitution graphic ends up somewhere the fact gate will accept it.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypeVar, cast
@@ -22,11 +23,14 @@ from commentary.agents.researcher import (
     WEB_SEARCH_TOOL,
     Researcher,
     _tools_enabled,
+    check_notes,
     freeze,
     is_frozen,
     load_pack,
+    note_subject,
     pack_path,
     save_pack,
+    settle_notes,
     update_from_substitution,
 )
 from commentary.config import RESEARCHER_MODEL
@@ -34,12 +38,19 @@ from commentary.gate import FactGate
 from commentary.llm.anthropic_backend import AnthropicBackend
 from commentary.llm.base import Block, LLMError, Parsed
 from commentary.llm.fake import ScriptedBackend
-from commentary.prompts.researcher import researcher_blocks, researcher_system
+from commentary.prompts.researcher import (
+    notes_blocks,
+    notes_system,
+    researcher_blocks,
+    researcher_system,
+)
 from commentary.schemas import (
     CallerLine,
     Event,
     KnowledgePack,
     MatchState,
+    Note,
+    NoteSheet,
     Player,
     Scene,
     Side,
@@ -402,3 +413,200 @@ async def test_a_pre_existing_tools_entry_is_put_back():
     await Researcher(backend).research("Arsenal", "Chelsea")
 
     assert backend.extra_params["tools"] is theirs
+
+
+# -- notes -------------------------------------------------------------------
+#
+# The pack has always carried context and none of it has ever been spoken: the
+# storylines are paragraph-shaped and filed under nobody. A note is the same
+# information cut to a clause and filed under a name, and a name is the whole
+# point — the runtime looks notes up by the names on the screen and the fact
+# gate checks a spoken figure against the notes about the names in the line.
+# A note nobody can look up is not a note.
+
+
+def some_notes() -> list[Note]:
+    return [
+        Note(
+            about="Bukayo Saka",
+            text="four goals in this competition",
+            kind="stat",
+            source="Premier League records",
+        ),
+        Note(
+            about="Arsenal",
+            text="have not lost at home since April",
+            kind="storyline",
+            source="Premier League results",
+        ),
+        Note(
+            about="Cole Palmer",
+            text="always goes to the keeper's left from the spot",
+            kind="habit",
+            source="Chelsea penalties, 2024 onwards",
+        ),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_the_notes_the_researcher_writes_come_through_into_the_pack() -> None:
+    wanted = a_pack().model_copy(update={"notes": some_notes()})
+    researcher = Researcher(backend_returning(wanted))
+    pack = await researcher.research("Arsenal", "Chelsea")
+    assert [note.text for note in pack.notes] == [note.text for note in some_notes()]
+    assert pack.notes[0].kind == "stat"
+    assert pack.notes[0].source == "Premier League records"
+    assert researcher.dropped_notes == []
+
+
+@pytest.mark.asyncio
+async def test_a_note_about_a_name_on_no_roster_is_dropped_and_said_so(caplog) -> None:
+    """The one check that matters, because nothing downstream can make it.
+
+    The runtime asks the pack for the notes about the players it can see, so
+    a note filed under somebody who is not in the fixture is never asked for
+    and never found. Left in the pack it is a quiet lie about how much
+    context the system has; dropped, with a line in the log, it is a research
+    pass that did not quite do as it was told.
+    """
+    invented = Note(
+        about="Erling Haaland",
+        text="nine goals in this competition",
+        kind="stat",
+        source="somewhere else entirely",
+    )
+    wanted = a_pack().model_copy(update={"notes": [*some_notes(), invented]})
+    researcher = Researcher(backend_returning(wanted))
+    with caplog.at_level("WARNING"):
+        pack = await researcher.research("Arsenal", "Chelsea")
+
+    assert "Erling Haaland" not in [note.about for note in pack.notes]
+    assert len(pack.notes) == 3
+    assert [note.about for note in researcher.dropped_notes] == ["Erling Haaland"]
+    assert "Erling Haaland" in caplog.text
+    assert "no team sheet" in caplog.text
+
+
+def test_a_note_spelled_the_short_way_is_refiled_under_the_roster_name() -> None:
+    """``about`` is a key, and a key that is nearly right is a key that misses."""
+    pack = a_pack().model_copy(
+        update={"notes": [Note(about="Saka", text="four goals in this competition", kind="stat")]}
+    )
+    settled, dropped = settle_notes(pack)
+    assert dropped == []
+    assert settled.notes[0].about == "Bukayo Saka"
+
+
+def test_note_subject_answers_for_players_and_for_teams() -> None:
+    pack = a_pack()
+    assert note_subject(pack, "Bukayo Saka") == "Bukayo Saka"
+    assert note_subject(pack, "Rice") == "Declan Rice"
+    assert note_subject(pack, "Chelsea") == "Chelsea"
+    assert note_subject(pack, "Mikel Arteta") is None
+    assert note_subject(pack, "") is None
+
+
+def test_check_notes_names_the_ones_nobody_can_look_up() -> None:
+    """Reported, never raised: a hand-edited pack with one bad subject still loads."""
+    stray = Note(about="the Arsenal captain", text="wears the armband", kind="storyline")
+    pack = a_pack().model_copy(update={"notes": [*some_notes(), stray]})
+    assert [note.about for note in check_notes(pack)] == ["the Arsenal captain"]
+    assert check_notes(a_pack()) == []
+
+
+def test_notes_survive_the_round_trip_to_disk(tmp_path: Path) -> None:
+    pack = a_pack().model_copy(update={"notes": some_notes()})
+    path = save_pack(pack, tmp_path / "pack.json")
+    back = load_pack(path)
+    assert [(n.about, n.text, n.kind, n.source) for n in back.notes] == [
+        (n.about, n.text, n.kind, n.source) for n in some_notes()
+    ]
+
+
+def test_a_pack_written_before_notes_existed_loads_with_none(tmp_path: Path) -> None:
+    """The default that keeps every pack on disk working."""
+    path = tmp_path / "old.json"
+    payload = a_pack().model_dump()
+    payload.pop("notes")
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    assert load_pack(path).notes == []
+
+
+def test_an_unusable_note_on_disk_is_logged_and_kept(tmp_path: Path, caplog) -> None:
+    stray = Note(about="the Arsenal captain", text="wears the armband", kind="storyline")
+    path = save_pack(a_pack().model_copy(update={"notes": [stray]}), tmp_path / "pack.json")
+    with caplog.at_level("WARNING"):
+        back = load_pack(path)
+    assert len(back.notes) == 1
+    assert "the Arsenal captain" in caplog.text
+
+
+def test_the_notes_are_frozen_with_everything_else_at_kickoff() -> None:
+    """A note edited at sixty-three minutes could only have come from outside."""
+    frozen = freeze(a_pack().model_copy(update={"notes": some_notes()}))
+    assert is_frozen(frozen)
+    with pytest.raises(ValidationError):
+        frozen.notes[0].text = "nine goals in this competition"
+
+
+# -- the notes command -------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_write_notes_adds_context_without_touching_the_team_sheets() -> None:
+    """The reason this is a second command and not a second research call.
+
+    The sheets are the expensive part and the part that goes stale: a pack
+    built the night before has squad numbers somebody checked against two
+    sources, and re-running the full researcher to gain a sentence about form
+    would put them back in the hands of a model.
+    """
+    pack = a_pack()
+    backend = ScriptedBackend()
+    backend.always("notes", NoteSheet(notes=some_notes()))
+    researcher = Researcher(backend)
+
+    updated = await researcher.write_notes(pack)
+    assert [note.text for note in updated.notes] == [note.text for note in some_notes()]
+    assert updated.model_dump(exclude={"notes"}) == pack.model_dump(exclude={"notes"})
+    assert backend.calls_tagged("notes")[0].output_format is NoteSheet
+
+
+@pytest.mark.asyncio
+async def test_write_notes_replaces_rather_than_appends() -> None:
+    """Twice over the same pack gives one set of notes, not two."""
+    backend = ScriptedBackend()
+    backend.always("notes", NoteSheet(notes=some_notes()))
+    researcher = Researcher(backend)
+    once = await researcher.write_notes(a_pack())
+    twice = await researcher.write_notes(once)
+    assert len(twice.notes) == len(some_notes())
+
+
+@pytest.mark.asyncio
+async def test_write_notes_drops_a_subject_nobody_can_look_up(caplog) -> None:
+    stray = Note(about="Les Bleus", text="unbeaten in nine", kind="storyline")
+    backend = ScriptedBackend()
+    backend.always("notes", NoteSheet(notes=[*some_notes(), stray]))
+    researcher = Researcher(backend)
+    with caplog.at_level("WARNING"):
+        updated = await researcher.write_notes(a_pack())
+    assert "Les Bleus" not in [note.about for note in updated.notes]
+    assert "Les Bleus" in caplog.text
+
+
+def test_the_notes_prompt_shows_every_name_a_note_may_be_filed_under() -> None:
+    """A model cannot copy a spelling it was not shown."""
+    pack = a_pack()
+    body = "\n".join(
+        block["text"] for block in notes_blocks(pack) if block.get("type") == "text"
+    )
+    for player in list(pack.home.squad) + list(pack.away.squad):
+        assert player.name in body, player.name
+    assert pack.home.name in body
+    assert pack.away.name in body
+    assert "under fourteen words" in notes_system()
+
+
+def test_the_notes_rules_are_the_same_bytes_every_time() -> None:
+    assert notes_system() == notes_system()

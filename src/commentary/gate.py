@@ -49,6 +49,7 @@ from commentary.schemas import (
     GateVerdict,
     KnowledgePack,
     MatchState,
+    Note,
     Scene,
     Side,
 )
@@ -604,6 +605,242 @@ _SAID_A_GOAL = tuple(
 )
 
 
+# -- notes, and the claims that need one ---------------------------------
+#
+# The score rules above answer "is this number the scoreboard's number". This
+# one answers a different question: a line that says "three in the tournament"
+# is not talking about the scoreboard at all, and nothing in the state can
+# confirm or deny it. Only the pack can. So a numeric or record claim that is
+# not a scoreline has to point at a note somebody actually looked up, and a
+# line that reaches for one of its own is struck out whole — there is no
+# trimming a statistic out of a sentence and leaving commentary behind.
+
+
+def notes_for_name(pack: KnowledgePack | None, said: str) -> list[Note]:
+    """Every note about the player or team this name refers to.
+
+    The gate's own name matching, so a note filed under "Kylian Mbappé" is
+    found by a line that says "Mbappé" — which is how every line says it.
+    """
+    if pack is None:
+        return []
+    return [note for note in pack.notes if is_the_same_name(said, note.about)]
+
+
+def _name_words(pack: KnowledgePack | None) -> frozenset[str]:
+    """Every folded word that is part of somebody's name, or a team's.
+
+    Claims are compared word by word, and a name in the claim would otherwise
+    count as a word the note is missing — the note says "always goes to the
+    keeper's left" and the line says "Martínez always goes to his left",
+    which agree about everything except the one word the note deliberately
+    leaves out. Names are the roster rule's business, not this one's.
+    """
+    if pack is None:
+        return frozenset()
+    labels = [pack.home.name, pack.away.name, pack.home.short, pack.away.short]
+    labels += [pack.home.demonym, pack.away.demonym]
+    labels += [p.name for sheet in (pack.home, pack.away) for p in sheet.squad]
+    return frozenset(word for label in labels for word in fold(label).split())
+
+
+#: Words that carry nothing a claim can be checked on. Deliberately short:
+#: "not" and "never" and every number stay in, because they are the words a
+#: rephrase changes when it turns a true note into a false line.
+_NOTE_FILLER_TEXT = """
+    a an the this that these those his her their its our your my
+    of in on at to for from with by as and or but
+    he she it they we you him them
+    is am are was were be been being do does did
+    here there now then very quite really
+"""
+_NOTE_FILLER = frozenset(_NOTE_FILLER_TEXT.split())
+
+#: What a note-backed claim is allowed to say that the note does not. Two
+#: words, because a commentator says "three in the tournament already" for a
+#: note that reads "three goals in this tournament", and the slack is what
+#: lets a rephrase be a rephrase. Numbers are exempt from it entirely.
+NOTE_SLACK = 2
+
+#: Periods a count can be counted over. "Night" and "half" are absent on
+#: purpose: "their third of the night" is a scoreline with a word missing and
+#: belongs to the ordinal rule above, and "the second half" is a time of day.
+_NOTE_PERIOD = (
+    r"tournaments?|competitions?|world\s+cups?|seasons?|campaigns?|"
+    r"qualifying|group\s+stage|careers?|finals?|cups?"
+)
+#: Things a commentator counts that are not the scoreline.
+_NOTE_COUNTED = (
+    r"goals?|assists?|finals?|caps?|titles?|troph(?:y|ies)|wins?|"
+    r"clean\s+sheets?|shutouts?|penalties|appearances?|games?|matches?"
+)
+#: Numbers the scoreline rules never need and a statistic always does. A
+#: scoreline stops at ten and the words above are all about something else —
+#: "unbeaten in nineteen", "thirty-six without defeat", "his hundredth cap" —
+#: which is why they are kept apart from ``_NUMBER_WORDS`` rather than added
+#: to it. Widening that map would widen every scoreline pattern with it.
+_NOTE_NUMBER_WORDS: dict[str, int] = {
+    **_NUMBER_WORDS,
+    **{
+        word: value
+        for word, value in (
+            ("eleven", 11),
+            ("twelve", 12),
+            ("thirteen", 13),
+            ("fourteen", 14),
+            ("fifteen", 15),
+            ("sixteen", 16),
+            ("seventeen", 17),
+            ("eighteen", 18),
+            ("nineteen", 19),
+            ("twenty", 20),
+            ("thirty", 30),
+            ("forty", 40),
+            ("fifty", 50),
+            ("sixty", 60),
+            ("seventy", 70),
+            ("eighty", 80),
+            ("ninety", 90),
+            ("hundred", 100),
+            ("eleventh", 11),
+            ("twelfth", 12),
+            ("thirteenth", 13),
+            ("fourteenth", 14),
+            ("fifteenth", 15),
+            ("twentieth", 20),
+            ("hundredth", 100),
+        )
+    },
+}
+_NOTE_WORD_ALT = "|".join(sorted(_NOTE_NUMBER_WORDS, key=len, reverse=True))
+_NOTE_NUM = rf"[0-9]+|{_NOTE_WORD_ALT}"
+
+#: Every shape of claim that needs a note behind it. A hat-trick is here
+#: rather than with the score rules for the reason those rules give for
+#: leaving it out: it counts one man's goals, which the scoreboard does not
+#: know and the pack might.
+_NOTE_CLAIMS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bhat[\s-]?tricks?\b",
+        rf"\b(?:his|her)\s+(?:{_ORD_ALT}){_ORD_TAIL}",
+        rf"\b(?:{_ORD_ALT})\s+(?:goals?\s+)?of\s+(?:the|this)\s+(?:{_NOTE_PERIOD})\b",
+        rf"\b(?:{_NOTE_NUM})\s+(?:{_NOTE_COUNTED})\b",
+        rf"\b(?:{_NOTE_NUM})\s+in\s+(?:this|the)\s+(?:{_NOTE_PERIOD})\b",
+        r"\bunbeaten\b",
+        r"\bundefeated\b",
+        r"\b(?:has|have|had)\s+not\s+(?:lost|won|conceded|scored|been\s+beaten)\b",
+        r"\b(?:has|have|had)n[’']?t\s+(?:lost|won|conceded|scored|been\s+beaten)\b",
+        r"\bnever\s+(?:lost|won|conceded|scored|beaten|been\s+beaten)\b",
+        rf"\b(?:first|last)\s+(?:{_NOTE_PERIOD}|title|troph(?:y|ies))\b",
+        r"\bsince\s+(?:19|20)[0-9]{2}\b",
+        r"\bin\s+a\s+row\b",
+        r"\bconsecutive\b",
+        rf"\b(?:{_NOTE_NUM})\s+straight\b",
+        r"\balways\b",
+        r"\bevery\s+time\b",
+    )
+)
+
+#: Where one clause ends and the next begins. A claim is checked as the
+#: clause it sits in rather than as the words the pattern happened to match:
+#: "always" on its own is not a claim anybody could check, and "always goes
+#: to the keeper's left" is.
+_CLAUSE_BREAK = re.compile(r"[.,;:!?]|[-–—]{1,2}\s")
+
+
+def _clause_around(text: str, start: int, end: int) -> str:
+    """The run of words between the nearest clause breaks either side."""
+    left = 0
+    right = len(text)
+    for match in _CLAUSE_BREAK.finditer(text):
+        if match.end() <= start:
+            left = match.end()
+        elif match.start() >= end:
+            right = match.start()
+            break
+    return text[left:right].strip() or text[start:end]
+
+
+def _note_tokens(text: str, names: frozenset[str]) -> list[str]:
+    """The words of a claim or a note that a comparison can stand on.
+
+    Numbers fold together so that "three" and "3" and "third" are one token:
+    a note written in figures has to cover a line said in words, because that
+    is the direction every line goes.
+    """
+    tokens: list[str] = []
+    for word in fold(text).split():
+        if word in names or word in _NOTE_FILLER:
+            continue
+        if word in _NOTE_NUMBER_WORDS:
+            tokens.append(str(_NOTE_NUMBER_WORDS[word]))
+        elif word in _ORDINAL_WORDS:
+            tokens.append(str(_ORDINAL_WORDS[word]))
+        elif word.isdigit():
+            tokens.append(str(int(word)))
+        else:
+            tokens.append(word)
+    return tokens
+
+
+def _is_quantity(token: str) -> bool:
+    return token.isdigit()
+
+
+def _note_covers(claim: str, note: Note, names: frozenset[str]) -> bool:
+    """Does this note say what the claim says, give or take a word or two?
+
+    Every number in the claim has to be in the note. That is the whole rule:
+    the failure this exists to catch is a rephrase that keeps the shape of a
+    researched fact and changes the figure in it, and a changed figure is
+    indistinguishable from a true one to everything downstream.
+    """
+    wanted = _note_tokens(claim, names)
+    if not wanted:
+        return False
+    held = set(_note_tokens(note.text, names))
+    missing = [token for token in wanted if token not in held]
+    if any(_is_quantity(token) for token in missing):
+        return False
+    if len(missing) == len(wanted):
+        return False
+    return len(missing) <= NOTE_SLACK
+
+
+def _note_claims(text: str) -> list[str]:
+    """Every clause in the line that asserts something only a note can back."""
+    found: list[str] = []
+    seen: set[str] = set()
+    for pattern in _NOTE_CLAIMS:
+        for match in pattern.finditer(text):
+            clause = _clause_around(text, match.start(), match.end())
+            if clause in seen:
+                continue
+            seen.add(clause)
+            found.append(clause)
+    return found
+
+
+def _notes_in_play(text: str, pack: KnowledgePack | None) -> list[Note]:
+    """The notes about somebody this line actually names.
+
+    A statistic attached to nobody is not checkable and is not commentary; a
+    line that says "three in the tournament" without saying whose three is
+    rejected here, by having no notes to match against.
+    """
+    if pack is None or not pack.notes:
+        return []
+    joined = f" {' '.join(fold(text).split())} "
+    found: list[Note] = []
+    for note in pack.notes:
+        parts = fold(note.about).split()
+        tails = {" ".join(parts[i:]) for i in range(len(parts))}
+        if any(f" {tail} " in joined for tail in tails):
+            found.append(note)
+    return found
+
+
 #: How long a card stays cover for a line that mentions it. A booking is
 #: talked about for the next few seconds — the protest, the walk away, the
 #: manager on the touchline — and stops being news well before a minute is up.
@@ -861,6 +1098,7 @@ class FactGate:
         fatal += self._check_score_claims(text, line, state, pack, goal_incoming=goal_incoming)
         fatal += self._check_level_claim(text, state, goal_incoming=goal_incoming)
         fatal += self._check_card_claim(text, line, state, at=at)
+        fatal += self._check_note_claim(text, pack)
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
@@ -1026,6 +1264,40 @@ class FactGate:
         if self._card_in_state(line, state, at):
             return []
         return [f"card_claim: {said}, and no card in the form or the state"]
+
+    def _check_note_claim(self, text: str, pack: KnowledgePack | None) -> list[str]:
+        """A statistic is a claim, and the pack is the only thing that can back one.
+
+        Everything else the gate checks can be checked against something the
+        system saw for itself: the roster came off a team sheet, the score
+        came off the scoreboard, the card was on the form. A goal count is
+        different. "Mbappé, three in the tournament" is unfalsifiable from
+        inside the broadcast — no camera shows it, no scoreboard carries it —
+        and it is exactly the kind of sentence a model writes when it is
+        asked to sound like a commentator. Before notes existed the only safe
+        answer was that no line could say anything of the sort.
+
+        So the rule is a lookup, not arithmetic. Find the clauses that assert
+        a count, an ordinal, a streak or a habit; find the notes about the
+        people the line names; and require each clause to be one of those
+        notes, reworded by a word or two but not renumbered. A line with no
+        such clause never reaches any of this and is untouched.
+
+        Whole-line rejection, like the score rules and for the same reason: a
+        sentence with the statistic cut out of it is not a shorter sentence,
+        it is a different one.
+        """
+        claims = _note_claims(text)
+        if not claims:
+            return []
+        notes = _notes_in_play(text, pack)
+        names = _name_words(pack)
+        problems: list[str] = []
+        for claim in claims:
+            if any(_note_covers(claim, note, names) for note in notes):
+                continue
+            problems.append(f"note_claim: {claim} not in the pack")
+        return problems
 
     @staticmethod
     def _card_in_state(line: CallerLine, state: MatchState, at: float | None) -> bool:

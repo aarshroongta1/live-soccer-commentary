@@ -37,6 +37,7 @@ from commentary.schemas import (
     CallerLine,
     Event,
     KnowledgePack,
+    Note,
     PhrasedLine,
     Player,
     Scene,
@@ -46,6 +47,7 @@ from commentary.schemas import (
     Trigger,
 )
 from commentary.sim import MatchSim, SimOracle, SimSource
+from commentary.state import notes_for
 from commentary.trace import read_trace
 from commentary.voice import LogSpeaker
 
@@ -644,3 +646,149 @@ async def test_the_table_shows_the_event_and_says_when_the_words_moved_it() -> N
     rows = [row for row in result.rows if row.get("topic") == "phrased"]
     assert [row["form_event"] for row in rows] == ["carry", "shot"]
     assert [row["event"] for row in rows] == ["carry", "goal"]
+
+
+# -- notes in the prompt -----------------------------------------------------
+#
+# The pack has always held context and none of it has ever been said. These
+# pin down the two halves of the fix: that the notes about the people on this
+# form reach the body of the call, and that they are absent from the moments a
+# commentator would never drop a statistic into.
+
+
+def argfra_notes() -> list[Note]:
+    """The Argentina v France notes, as ``clips/add_notes_argfra.py`` writes them.
+
+    Restated here rather than read off disk because ``clips/`` is where the
+    broadcast footage lives and is not in the repository; the names and the
+    counts are the ones in that file.
+    """
+    return [
+        Note(
+            about="Kylian Mbappé",
+            text="five goals in this tournament",
+            kind="stat",
+            source="FIFA World Cup 2022, six matches played before the final",
+        ),
+        Note(
+            about="Kylian Mbappé",
+            text="a goal in the 2018 World Cup final at nineteen",
+            kind="storyline",
+            source="FIFA World Cup 2018 final, France 4-2 Croatia",
+        ),
+        Note(
+            about="Lionel Messi",
+            text="five goals in this tournament",
+            kind="stat",
+            source="FIFA World Cup 2022, six matches played before the final",
+        ),
+        Note(
+            about="Argentina",
+            text="chasing a first World Cup since 1986",
+            kind="storyline",
+            source="FIFA World Cup winners, 1930 to 2018",
+        ),
+    ]
+
+
+def argfra_pack() -> KnowledgePack:
+    return a_pack().model_copy(update={"notes": argfra_notes()})
+
+
+def context_of(body: str) -> str:
+    """Everything between the `context:` header and the next block."""
+    _, _, rest = body.partition("context:")
+    head, _, _ = rest.partition("THE LAST LINES SPOKEN")
+    return head
+
+
+def test_a_penalty_is_quiet_enough_to_carry_the_pack_notes() -> None:
+    """The kick has not been taken. That gap is exactly where a note belongs."""
+    form = a_form(
+        "Mbappé places the ball on the spot and steps back.",
+        event=Event.PENALTY,
+        sightings=[Sighting(number=10, name="Mbappé", side=Side.AWAY)],
+    )
+    pack = argfra_pack()
+    body = text_of(
+        phraser_blocks(
+            form,
+            "Argentina 2-0 France\n78:09",
+            [],
+            home="Argentina",
+            away="France",
+            notes=notes_for(pack, ["Mbappé", "Argentina", "France"]),
+        )
+    )
+    context = context_of(body)
+    assert "five goals in this tournament" in context
+    assert "2018 World Cup final" in context
+    assert "Kylian Mbappé" in context
+
+
+def test_a_goal_gets_an_empty_context_block() -> None:
+    """Nobody reads a statistic over a goal, and the block says so rather than vanishing."""
+    form = a_form(
+        "Mbappé turns away with his arms out as the net bulges.",
+        event=Event.GOAL,
+        sightings=[Sighting(number=10, name="Mbappé", side=Side.AWAY)],
+    )
+    pack = argfra_pack()
+    body = text_of(
+        phraser_blocks(
+            form,
+            "Argentina 2-0 France\n78:09",
+            [],
+            home="Argentina",
+            away="France",
+            notes=notes_for(pack, ["Mbappé", "Argentina", "France"]),
+        )
+    )
+    context = context_of(body)
+    assert "(none" in context
+    assert "five goals in this tournament" not in context
+
+
+def test_the_block_is_there_even_when_the_pack_has_nothing() -> None:
+    """Always printed. A block that comes and goes reads as a licence to improvise."""
+    body = text_of(
+        phraser_blocks(
+            a_form(),
+            "Argentina 0-0 France",
+            [],
+            home="Argentina",
+            away="France",
+        )
+    )
+    assert "context:" in body
+    assert "(none" in context_of(body)
+
+
+def test_the_man_on_the_form_outranks_his_country() -> None:
+    """Four places, and the specific notes take them."""
+    pack = argfra_pack()
+    picked = notes_for(pack, ["Mbappé", "Argentina", "France"], limit=2)
+    assert [note.about for note in picked] == ["Kylian Mbappé", "Kylian Mbappé"]
+
+
+def test_a_note_about_somebody_not_on_the_form_is_not_offered() -> None:
+    pack = argfra_pack()
+    picked = notes_for(pack, ["Molina"])
+    assert picked == []
+
+
+@pytest.mark.asyncio
+async def test_the_phraser_passes_the_notes_it_is_given_into_the_call() -> None:
+    """End to end through the agent, so the wiring is pinned and not just the builder."""
+    backend = saying(PhrasedLine(line="Mbappé. Five in the tournament already.", excitement=0.4))
+    phraser = a_phraser(backend)
+    form = a_form(
+        "Mbappé stands over it.",
+        event=Event.PENALTY,
+        sightings=[Sighting(number=10, name="Mbappé", side=Side.AWAY)],
+    )
+    await phraser.phrase(
+        form, "Argentina 2-0 France", notes=notes_for(argfra_pack(), ["Mbappé"])
+    )
+    body = backend.calls_tagged("phraser")[0].text
+    assert "five goals in this tournament" in context_of(body)

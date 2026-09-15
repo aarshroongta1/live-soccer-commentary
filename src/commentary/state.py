@@ -16,9 +16,11 @@ from __future__ import annotations
 
 import math
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Protocol
 
+from commentary.gate import notes_for_name
 from commentary.schemas import (
     CallerLine,
     Event,
@@ -26,6 +28,7 @@ from commentary.schemas import (
     KnowledgePack,
     MatchState,
     NamedEvent,
+    Note,
     Possession,
     Scene,
     Side,
@@ -48,6 +51,12 @@ JUST_NOW_S = 20.0
 
 #: The last few named events, so a quiet spell does not scroll the prompt.
 MAX_NAMED = 6
+
+#: How many notes the phraser is shown at once. A commentator drops one
+#: clause of context in a quiet moment, not a dossier, and the prompt this
+#: goes into is sent once per spoken line: four is enough to give the model a
+#: choice and small enough that the body stays a few hundred bytes.
+NOTES_PER_CALL = 4
 
 #: A wire goal this close to a board goal on the same side is the same goal,
 #: and the wire is naming it rather than reporting a second one.
@@ -306,6 +315,43 @@ class EntityRegistry:
         return named
 
 
+def notes_for(
+    pack: KnowledgePack | None,
+    names: Iterable[str],
+    *,
+    limit: int = NOTES_PER_CALL,
+) -> list[Note]:
+    """The pack's notes about these people, most specific first, capped.
+
+    Order is the whole design. The names arrive in the order that matters —
+    the man on the ball, then whoever else the caller could read, then the
+    two teams — and the cap falls off the end, so a note about the player
+    currently being watched wins a place over a note about his country.
+    Without that ordering the cap would hand the phraser four facts about
+    Argentina during a France attack.
+
+    Duplicates are dropped by identity of subject and text, because a player
+    named twice on one form should not spend two of the four places.
+    """
+    if pack is None or not pack.notes:
+        return []
+    found: list[Note] = []
+    seen: set[tuple[str, str]] = set()
+    for name in names:
+        cleaned = name.strip()
+        if not cleaned:
+            continue
+        for note in notes_for_name(pack, cleaned):
+            key = (note.about, note.text)
+            if key in seen:
+                continue
+            seen.add(key)
+            found.append(note)
+            if len(found) >= limit:
+                return found
+    return found
+
+
 class MatchStateTracker:
     """The single writable copy of what we believe, with the sources separated."""
 
@@ -530,6 +576,30 @@ class MatchStateTracker:
         if ts >= when:
             self.state.ball = possession
             self._handover = None
+
+    def pack_notes_for(
+        self,
+        names: Iterable[str] = (),
+        *,
+        limit: int = NOTES_PER_CALL,
+    ) -> list[Note]:
+        """The notes worth putting in front of the voice for this moment.
+
+        The player on the ball first, then the names given, then both teams.
+        The ball is put in front of the caller's own sightings on purpose: a
+        wide shot names four players and only one of them is about to do
+        something, and the four places go to the man who has it.
+
+        This is the only route from the pack to a spoken line, and it is
+        deliberately a lookup by name rather than a dump of the pack. A
+        phraser handed all forty notes would use the interesting one instead
+        of the relevant one.
+        """
+        ball = self.state.ball
+        wanted = [ball.player] if ball is not None else []
+        wanted += list(names)
+        wanted += [self.state.home, self.state.away]
+        return notes_for(self.pack, wanted, limit=limit)
 
     def summary(self, ts: float = 0.0) -> str:
         """A few lines of state for the top of a prompt. It goes in every call.

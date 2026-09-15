@@ -30,12 +30,13 @@ reaches the speaker. The prompt tells it this; the gate is what enforces it.
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Sequence
 
 from commentary.agents.caller import clean_line, trim_words
 from commentary.config import PHRASER_MODEL, PhraserConfig
 from commentary.llm.base import LLMBackend, LLMError, Usage
 from commentary.prompts.phraser import phraser_blocks, phraser_system
-from commentary.schemas import CallerLine, PhrasedLine
+from commentary.schemas import CallerLine, Note, PhrasedLine
 
 #: The value of ``PHRASER_MODEL`` that means "do not run this stage".
 OFF = "off"
@@ -103,6 +104,7 @@ class Phraser:
         state_summary: str,
         *,
         on_the_ball: str | None = None,
+        notes: Sequence[Note] = (),
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
 
@@ -110,6 +112,13 @@ class Phraser:
         falls back to the caller's own words either way rather than losing a
         line the gate was about to pass. They are kept apart here so the
         error row can say which happened.
+
+        ``notes`` are the pack's clauses about the people on this form, and
+        they are the only outside information this stage has ever been given.
+        The prompt decides whether to show them — a goal is no moment for a
+        statistic — and the fact gate checks whatever comes back against the
+        same notes, so a figure the model adjusts on its way out is a line
+        that never reaches the speaker.
         """
         self.last_reason = ""
         self.last_usage = Usage()
@@ -120,6 +129,7 @@ class Phraser:
             home=self.home,
             away=self.away,
             on_the_ball=on_the_ball,
+            notes=notes,
         )
         try:
             parsed = await self.backend.parse(

@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import pytest
 
-from commentary.__main__ import _crop_preview, build_parser, crop_box
+from commentary.__main__ import _crop_preview, build_parser, cmd_notes, crop_box
 
 
 def test_a_crop_box_is_four_fractions():
@@ -34,3 +34,22 @@ def test_the_preview_puts_the_bug_beside_the_marked_frame():
     assert int(image[:, :, 2].max()) == 200
     # The blown-up bug fills the right-hand panel.
     assert int(preview[:, 200:].max()) > 0
+
+
+def test_notes_reads_a_pack_and_writes_it_back_in_place():
+    args = build_parser().parse_args(["notes", "--pack", "clips/pack-x.json"])
+    assert args.pack == "clips/pack-x.json"
+    assert args.out is None
+    assert args.func is cmd_notes
+
+
+def test_notes_can_write_somewhere_else():
+    args = build_parser().parse_args(
+        ["notes", "--pack", "clips/pack-x.json", "--out", "packs/with-notes.json"]
+    )
+    assert args.out == "packs/with-notes.json"
+
+
+def test_notes_needs_a_pack_to_add_notes_to():
+    with pytest.raises(SystemExit):
+        build_parser().parse_args(["notes"])

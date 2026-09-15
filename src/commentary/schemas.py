@@ -8,6 +8,7 @@ schedules them. Nothing crosses a module boundary as a loose dict.
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -244,6 +245,61 @@ class Player(BaseModel):
         return self.name.rsplit(" ", 1)[-1]
 
 
+#: What a note is. Three kinds, because the three are used differently: a
+#: stat is a count and the gate checks the number, a storyline is a record or
+#: a stake, a habit is what this player does every time.
+NoteKind = Literal["stat", "storyline", "habit"]
+
+
+class Note(BaseModel):
+    """One short, verifiable thing a commentator can drop into a quiet moment.
+
+    The pack already had ``storylines``, and not one of them has ever reached
+    air: they are paragraph-shaped, they are about the fixture rather than
+    about a player, and nothing downstream knew which of them belonged to the
+    man currently on the ball. A note is the same information cut to the size
+    of a clause and filed under a name, so that the runtime can hand the
+    phraser the two or three that are about the people on the screen right
+    now — and so that the fact gate can check a number said out loud against
+    something somebody actually looked up.
+
+    ``about`` is a key, not prose: the exact roster spelling of a player's
+    name, or the exact name of one of the two teams. Anything else is a note
+    nobody can look up, which is why :func:`~commentary.agents.researcher.check_notes`
+    exists and why the researcher's prompt says the word "exact" twice.
+
+    ``text`` is what gets said, or near enough — one clause, under fourteen
+    words, no lead-in. "three goals in this tournament", not "Mbappé has
+    scored three goals in this tournament, which means...".
+
+    ``source`` is free text and is never spoken. It is there so that a note
+    that turns out to be wrong can be traced back to whatever said it was
+    right, which is the only defence a pre-match pack has against a confident
+    error going to air ninety minutes later.
+    """
+
+    about: str = Field(description="A player's exact roster name, or a team's exact name")
+    text: str = Field(max_length=120, description="One clause, under 14 words")
+    kind: NoteKind = "stat"
+    source: str = Field(default="", description="Where this came from; never spoken")
+
+    def __str__(self) -> str:
+        return f"{self.about}: {self.text}"
+
+
+class NoteSheet(BaseModel):
+    """Only the notes, for the one-off pass that adds them to a finished pack.
+
+    A pack already on disk has correct squad numbers that cost a research
+    call to get right, and asking a model to hand the whole pack back so that
+    thirty notes can be added to it is an invitation to lose them. So this is
+    the output format of the ``notes`` command: notes and nothing else, merged
+    into the pack locally.
+    """
+
+    notes: list[Note] = Field(default_factory=list)
+
+
 class TeamSheet(BaseModel):
     """One team as the researcher found it, before kickoff."""
 
@@ -279,6 +335,23 @@ class KnowledgePack(BaseModel):
     storylines: list[str] = Field(default_factory=list)
     form: dict[str, str] = Field(default_factory=dict)
     key_matchups: list[str] = Field(default_factory=list)
+    #: Short, filed, checkable context: the half of the pack that reaches a
+    #: spoken line. Empty by default, so every pack written before notes
+    #: existed loads unchanged and simply has nothing to offer.
+    notes: list[Note] = Field(
+        default_factory=list,
+        description="Short verifiable nuggets, each filed under a player or team name",
+    )
+
+    @property
+    def names(self) -> frozenset[str]:
+        """Every name a note may be filed under: both teams and both squads."""
+        people = [p.name for sheet in (self.home, self.away) for p in sheet.squad]
+        return frozenset([self.home.name, self.away.name, *people])
+
+    def notes_about(self, name: str) -> list[Note]:
+        """The notes filed under exactly this name, in pack order."""
+        return [note for note in self.notes if note.about == name]
 
     def team(self, side: Side) -> TeamSheet | None:
         if side is Side.HOME:

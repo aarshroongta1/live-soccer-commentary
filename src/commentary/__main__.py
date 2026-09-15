@@ -4,6 +4,7 @@
     uv run python -m commentary crop --path m.mp4    # check the score-bug box by eye
     uv run python -m commentary sim                  # watch the fake broadcast
     uv run python -m commentary research Arsenal PSG # pre-match notes, once
+    uv run python -m commentary notes --pack clips/pack-x.json   # add context to one
     uv run python -m commentary run --serve          # call a match, in a browser
     uv run python -m commentary replay --trace ... --path clip.mp4 --serve
     uv run python -m commentary rephrase --trace ... --pack clips/pack-x.json
@@ -568,6 +569,37 @@ async def cmd_research(args: argparse.Namespace) -> int:
     return 0
 
 
+async def cmd_notes(args: argparse.Namespace) -> int:
+    """Add the spoken-context notes to a pack that already has its team sheets.
+
+    Separate from ``research`` because the two ages differ. Team sheets go
+    stale an hour before kickoff and notes do not, and a pack whose squad
+    numbers were checked against two sources last night should not have to
+    risk them to gain a sentence about who is in form. One model call, the
+    researcher's model, and the pack is rewritten in place unless ``--out``
+    says otherwise.
+    """
+    from commentary.agents.researcher import Researcher, load_pack, save_pack
+    from commentary.llm import default_backend
+
+    pack = load_pack(Path(args.pack))
+    backend = default_backend()
+    researcher = Researcher(backend)
+    updated = await researcher.write_notes(pack)
+    path = Path(args.out) if args.out else Path(args.pack)
+    save_pack(updated, path)
+
+    searched = "with web search" if researcher.used_search else "from memory"
+    print(f"{updated.home.name} v {updated.away.name} — {len(updated.notes)} notes, {searched}")
+    for note in updated.notes:
+        print(f"  {note.about}: {note.text}  [{note.kind}]")
+    if researcher.dropped_notes:
+        print(f"  dropped {len(researcher.dropped_notes)} about names on no team sheet")
+    print(f"wrote {path}")
+    print(f"cost ${backend.total.cost_usd:.3f}")
+    return 0
+
+
 async def cmd_captions(args: argparse.Namespace) -> int:
     """Turn the broadcast's own captions into the transcript the eval reads.
 
@@ -832,6 +864,11 @@ def build_parser() -> argparse.ArgumentParser:
     res.add_argument("--when", default="")
     res.add_argument("--out", help="where to write the pack; defaults under packs/")
     res.set_defaults(func=cmd_research)
+
+    nts = sub.add_parser("notes", help="add spoken-context notes to an existing pack (needs a key)")
+    nts.add_argument("--pack", required=True, help="knowledge pack JSON to read")
+    nts.add_argument("--out", help="where to write it back; defaults to --pack, in place")
+    nts.set_defaults(func=cmd_notes)
 
     caps = sub.add_parser("captions", help="a yt-dlp .en.json3 caption file to a transcript")
     caps.add_argument("path")

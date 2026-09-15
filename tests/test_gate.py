@@ -8,6 +8,7 @@ from commentary.schemas import (
     Event,
     KnowledgePack,
     MatchState,
+    Note,
     Player,
     Scene,
     Side,
@@ -710,12 +711,23 @@ def test_a_scoreline_said_in_half_figures_is_still_a_scoreline(pack) -> None:
 
 def test_a_line_that_puts_no_number_on_the_score_is_untouched(pack) -> None:
     gate = FactGate()
-    for text in (
-        "Kimbanda holds it up on the edge of the box",
-        "A hat-trick for the captain",  # one man's goals, not the team's.
-        "His third of the night",  # likewise.
-    ):
-        assert gate.judge(call(text), at(2, 0), pack).passed, text
+    assert gate.judge(call("Kimbanda holds it up on the edge of the box"), at(2, 0), pack).passed
+
+
+def test_one_mans_goals_are_not_the_boards_but_they_are_still_somebodys(pack) -> None:
+    """A hat-trick and a "his third" are not scorelines, and are not free either.
+
+    The ordinal rule counts a *side's* goals and deliberately leaves these
+    two alone: the board cannot contradict them, because the board does not
+    know who scored. That used to make them unfalsifiable and therefore
+    sayable. The note rule is what closed it — they are now claims like any
+    other statistic, and a pack with no note behind them is a no.
+    """
+    gate = FactGate()
+    for text in ("A hat-trick for the captain", "His third of the night"):
+        verdict = gate.judge(call(text), at(2, 0), pack)
+        assert not verdict.passed, text
+        assert all(reason.startswith("note_claim:") for reason in verdict.reasons), verdict.reasons
 
 
 def test_an_ordinal_with_no_side_to_pin_it_on_is_left_alone(pack) -> None:
@@ -988,3 +1000,143 @@ def test_the_four_rewrites_that_went_out_on_the_mbappe_trace() -> None:
         at=171.5,
     )
     assert garbled.passed, "bad English is not a fact claim"
+
+
+# -- notes: the statistics rule ---------------------------------------------
+#
+# The score rules ask whether a number is the scoreboard's number. This one
+# asks a question the scoreboard cannot answer at all — how many goals has
+# this man scored in this tournament — and answers it out of the pack or not
+# at all.
+
+
+@pytest.fixture
+def noted(pack) -> KnowledgePack:
+    """The same squads, with four researched notes behind them."""
+    return pack.model_copy(
+        update={
+            "notes": [
+                Note(
+                    about="Tomás Peñaló",
+                    text="three goals in this competition",
+                    kind="stat",
+                    source="Coastal Cup records",
+                ),
+                Note(
+                    about="Errol Kimbanda",
+                    text="always goes to the keeper's left from the spot",
+                    kind="habit",
+                    source="Coastal Cup penalties, 2024 to 2026",
+                ),
+                Note(
+                    about="Northvale United",
+                    text="have not lost a final under Hovden",
+                    kind="storyline",
+                    source="Coastal Cup finals, 2021 onwards",
+                ),
+                Note(
+                    about="Carrowmere City",
+                    text="unbeaten in eleven away from home",
+                    kind="storyline",
+                    source="Coastal Cup away form",
+                ),
+            ]
+        }
+    )
+
+
+def test_a_line_that_uses_a_note_is_allowed_to_say_it(noted, state):
+    """The clause the pack put there, said back with a commentator's slack."""
+    gate = FactGate()
+    for text in (
+        "Peñaló, three in the competition already",
+        "Kimbanda always goes to the keeper's left from the spot",
+        "Northvale United have not lost a final under Hovden",
+        "Carrowmere City, unbeaten in eleven away",
+    ):
+        verdict = gate.judge(call(text), state, noted)
+        assert verdict.passed, (text, verdict.reasons)
+
+
+def test_the_same_line_with_the_number_changed_is_rejected(noted, state):
+    """The failure this rule exists for, and the only one it cannot let slide.
+
+    A rephrase that keeps the shape of a researched fact and moves the figure
+    inside it is indistinguishable, to everything downstream, from a fact. So
+    the slack that lets "three in the competition already" stand in for
+    "three goals in this competition" stops dead at the number.
+    """
+    gate = FactGate()
+    verdict = gate.judge(call("Peñaló, four in the competition already"), state, noted)
+    assert not verdict.passed
+    assert any(r.startswith("note_claim:") and "four" in r for r in verdict.reasons)
+
+    bumped = gate.judge(call("Carrowmere City, unbeaten in nineteen away"), state, noted)
+    assert not bumped.passed
+
+
+def test_a_line_with_no_statistic_in_it_never_meets_the_rule(noted, state):
+    """Most lines. The rule has to be invisible to them or it is not worth having."""
+    gate = FactGate()
+    for text in (
+        "Peñaló holds it up on the edge of the box",
+        "Kimbanda. Now Dunthorpe.",
+        "Played by Krastanov, collected by Ferreiro",
+        "Save! Olowokere denied at the near post",
+    ):
+        verdict = gate.judge(call(text), state, noted)
+        assert verdict.passed, (text, verdict.reasons)
+        assert not any(r.startswith("note_claim:") for r in verdict.reasons), text
+
+
+def test_the_rephrases_that_were_fine_before_are_still_fine(noted, state):
+    """The four lines the phrasing stage produced that the gate was right to pass.
+
+    A new rule earns its place by what it rejects; it loses it by what it
+    stops. These are the shapes the phraser actually writes — a shout, a
+    fragment, two names, a short sentence — and none of them says anything a
+    pack would need to have looked up.
+    """
+    gate = FactGate()
+    for text in (
+        "Peñaló! Buried!",
+        "Kimbanda.",
+        "Dunthorpe, Peñaló.",
+        "Krastanov drives at the defence",
+    ):
+        assert gate.judge(call(text), state, noted).passed, text
+
+
+def test_a_statistic_about_nobody_has_nothing_to_match(noted, state):
+    """Whose three? A count attached to no name is not checkable and not commentary."""
+    gate = FactGate()
+    verdict = gate.judge(call("Three in the competition already"), state, noted)
+    assert not verdict.passed
+    assert any(r.startswith("note_claim:") for r in verdict.reasons)
+
+
+def test_a_note_about_one_man_does_not_cover_another(noted, state):
+    """Notes are filed by name, and the filing is the point."""
+    gate = FactGate()
+    verdict = gate.judge(call("Dunthorpe, three in the competition already"), state, noted)
+    assert not verdict.passed
+
+
+def test_without_a_pack_there_are_no_notes_and_so_no_statistics(state):
+    """A run with no pack can name nobody and can count nothing."""
+    gate = FactGate()
+    assert not gate.judge(call("Peñaló, three in the competition"), state, None).passed
+    assert gate.judge(call("Peñaló holds it up"), state, None).passed
+
+
+def test_a_statistic_takes_the_whole_line_with_it(noted, state):
+    """Not trimmed, like an unverified name is. Rejected, like a wrong score.
+
+    A sentence with the number cut out of it is not a shorter sentence, it is
+    a different one, and the phraser wrote the sentence it wrote because of
+    the number.
+    """
+    gate = FactGate()
+    verdict = gate.judge(call("Peñaló, four in the competition, and away he goes"), state, noted)
+    assert not verdict.passed
+    assert verdict.line == ""
