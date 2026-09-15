@@ -1,0 +1,65 @@
+src/commentary/__main__.py
+  s_1eec300a49e1ff::t_1783471be687ee 663-679,681-699
+  s_1eec300a49e1ff::t_b22f8b19f9c12c 949-959,966
+  s_1eec300a49e1ff::t_e22575240f1e9f 29
+  s_1eec300a49e1ff::t_c46475023909a6 680
+  s_1eec300a49e1ff::t_2b8c24bf1df4a9 960-965
+  s_1eec300a49e1ff::t_ca9370d58d56e2 11
+  s_1eec300a49e1ff::t_4c974c1cbafec8 637-662
+  s_1eec300a49e1ff::t_ae0fec605b441d 967
+tests/test_cli.py
+  s_1eec300a49e1ff::t_94651b5a43c089 11,57-68
+src/commentary/grading/register.py
+  s_1eec300a49e1ff::t_9ee69e7b65bfff 778-779
+  s_1eec300a49e1ff::t_14d59fce952cd9 781-794
+  s_1eec300a49e1ff::t_2de7637c08ecc9 389
+  s_1eec300a49e1ff::t_55a8feef31d2c8 458,462-464,467,470-471
+  s_1eec300a49e1ff::t_ad167090c7207a 525,527-532
+  s_1eec300a49e1ff::t_8c2925ea49abfe 799-803
+  s_1eec300a49e1ff::t_87617e12a3578b 806,809-810
+  s_1eec300a49e1ff::t_c3db30079afe17 727-730
+  s_1eec300a49e1ff::t_2c9fc4b4f6d066 1-75,78,85-86,99-103,111-278,292,302-303,305,308-312,337-356,360-388,390-412,415-417,419-431,459-461,465-466,468-469,472-524,526,533-543,557-726,731-765,769-773,775-777,795-798,805,808,811-820,822-828,840-863,868-872,874,876-878,880-901,933-940,942-944,947-972,979
+  s_1eec300a49e1ff::t_09b1d189275e85 864
+  s_1eec300a49e1ff::t_31ef4501d4a1ab 865-867,873
+  s_1eec300a49e1ff::t_f5999579279a5d 432-457
+  s_1eec300a49e1ff::t_e78411f43f8e92 875,879
+  s_1eec300a49e1ff::t_97b60b1feb8de1 902-927,931-932
+  s_1eec300a49e1ff::t_8f6748f1c37718 104-110
+  s_1eec300a49e1ff::t_175ad3d59353c7 413-414
+  s_1eec300a49e1ff::t_b005c9fa1d41fc 418
+  s_1eec300a49e1ff::t_260678a85e2341 76-77,79-84,87-98
+  s_1eec300a49e1ff::t_e5db15ac6a3aec 766-768
+  s_1eec300a49e1ff::t_619e9fc45a9fcb 928-930
+  s_1eec300a49e1ff::t_1b3e5c565b7e9f 941,945-946
+  s_1eec300a49e1ff::t_a5713311eace1e 829-839
+  s_1eec300a49e1ff::t_a353d5212e3590 544-556
+  s_1eec300a49e1ff::t_1c27a82b5277e0 973-978
+  s_1eec300a49e1ff::t_c195c3145e482c 313-336
+  s_1eec300a49e1ff::t_a2ea05dc07e162 279-291,293-301,304,306-307
+  s_1eec300a49e1ff::t_a28ab7714d899a 774,780,804,807,821
+  s_1eec300a49e1ff::t_22128f90ead613 357-359
+tests/test_register.py
+  s_1eec300a49e1ff::t_285d4375f6d432 1-129,150-328
+  s_1eec300a49e1ff::t_5e0dcec05c9de7 145-147
+  s_1eec300a49e1ff::t_297f3f40debc2e 329-360
+  s_1eec300a49e1ff::t_087ef9bb54d4b1 130-144,148-149
+src/commentary/grading/register_reference.py
+  s_1eec300a49e1ff::t_50c0ac1461097c 71,78,85,92,99,106,114,121,129,136,142,148,151,156
+  s_1eec300a49e1ff::t_09c342504563a9 1-70,72-77,79-84,86-91,93-98,100-105,107-113,115-120,122-128,130-135,137-141,143-147,149-150,152-155,157-179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "90bdac9dcaaa08fb39461e14ce3910f87d962911",
+  "prompts": {},
+  "sessions": {
+    "s_1eec300a49e1ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7feafbb1-43b3-4ee3-afb0-bb66484d3043",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
