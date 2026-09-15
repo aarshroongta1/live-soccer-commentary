@@ -272,6 +272,33 @@ def strip_now_tail(text: str) -> str:
     return re.sub(r"\s+", " ", out).strip()
 
 
+def _thin_call_note(described: str) -> str:
+    """Ask for the how the form is holding, and quote the form back."""
+    return (
+        "THAT IS THE NAME AND NOTHING ELSE, AND THE FORM IS HOLDING THE REST OF IT. "
+        "A goal is the name, then how, and the how is whatever the person watching "
+        "wrote down — said back in three words or fewer.\n"
+        f"What they wrote: {described.strip()}\n"
+        "Write the name and the how. The score goes on after you, in code."
+    )
+
+
+def is_a_thin_call(text: str, described: str) -> bool:
+    """Is this goal call the scorer's name with the how thrown away?
+
+    Round four's first call was "Mbappé!" where round three's was "Mbappé!
+    The penalty, buried!" — same form, same description, the how gone. The
+    shout is right and it is half a line: the corpus's goal call is the name,
+    then how, then the score, and the score is code's.
+
+    Only ever asked of a goal-calling line whose form carried something to
+    keep. A description as short as the line is a description with no how in
+    it, and then the name alone is the right answer.
+    """
+    said = [word for word in _WORD.findall(text)]
+    return len(said) <= 2 and len(_WORD.findall(described)) >= 6
+
+
 def _repeat_retry_note(phrase: str) -> str:
     """Name the phrase that is already on air, and ask for the other thing."""
     return (
@@ -450,6 +477,37 @@ def roster_names(pack: KnowledgePack | None) -> list[str]:
     ]
 
 
+#: A dash holding two halves of a line together. The phraser used it to weld
+#: a researched fact onto a picture — "Scaloni, arms flung wide, roaring at
+#: his players — and Argentina chasing a first World Cup since 1986." — which
+#: the judge marked on ``runs/rephrased/r4-shape/mbappe`` as a stat bolted on
+#: rather than said. The corpus attaches a fact with a relative clause on the
+#: man ("Kenate, who's missed eight games with a knee injury") or gives it a
+#: sentence of its own.
+_WELDING_DASH = re.compile(r"\s*[\u2014\u2013]\s*|\s+-\s+")
+
+
+def unweld(text: str) -> str:
+    """Take the dash out and put the join a commentator would write in its place.
+
+    A lower-case word after it is a continuation, and that is a comma. A
+    capital is a new sentence, and that is a full stop. Either way the line
+    comes out as two things said rather than one thing with a fact bolted on
+    the end of it.
+    """
+    out = text
+    while True:
+        match = _WELDING_DASH.search(out)
+        if match is None:
+            return re.sub(r"\s+", " ", out).strip()
+        rest = out[match.end() :]
+        if not rest:
+            return out[: match.start()].strip()
+        before = out[: match.start()].rstrip(" ,;:")
+        join = ", " if rest[0].islower() else ". "
+        out = f"{before}{join}{rest}"
+
+
 def nameless_build_up(line: CallerLine, *, on_the_ball: str | None = None) -> bool:
     """Is this form the ball moving between nobody in particular?
 
@@ -599,6 +657,16 @@ class Phraser:
             for said in self._recent
         ]
 
+    @property
+    def said_lines(self) -> list[str]:
+        """What has actually gone out, oldest first, without the kind tags.
+
+        :attr:`recent` is what the prompt is shown and carries "(a carry)" on
+        the end of every line. This is the same lines as words, for the checks
+        that compare one line against another.
+        """
+        return [said.text for said in self._recent]
+
     def accept(
         self,
         line: str,
@@ -673,7 +741,7 @@ class Phraser:
         goal_beat: int | None = None,
         scorer: str | None = None,
         roster: Sequence[str] = (),
-        said_of_the_goal: Sequence[str] = (),
+        already_said: Sequence[str] = (),
         replay_first: bool = True,
     ) -> PhrasedLine | None:
         """Rewrite one caller line, or return ``None`` if the call failed.
@@ -724,13 +792,13 @@ class Phraser:
         to know which capitalised words are people. Empty is safe; the scorer
         and the names on the form are checked either way.
 
-        ``said_of_the_goal`` is every line that has already gone out about the
-        goal being celebrated, the call first, from
-        :attr:`commentary.goalfollow.GoalFollowup.spoken`. It does two things
-        and both of them are the free-kick trace's: a beat that repeats three
-        words of it is re-asked once and then dropped, and a beat 2 whose call
-        named nobody keeps the scorer's name at the front when the shout comes
-        off it.
+        ``already_said`` is every line that has gone out about the moment
+        this line is also about: inside a goal window, the call and the beats
+        since it (:attr:`commentary.goalfollow.GoalFollowup.spoken`); over a
+        replay, the live call and the earlier lines of the sequence. A line
+        that repeats three words of it is re-asked once and then dropped, and
+        a goal's beat 2 whose call named nobody keeps the scorer's name at the
+        front when the shout comes off it.
 
         ``replay_first`` matters only on a replay form and is the one thing
         the model cannot see for itself: whether an earlier line in this same
@@ -856,7 +924,7 @@ class Phraser:
         # the shout coming off beat 2 must not take the only naming of the
         # scorer with it.
         keep_name = bool(
-            scorer and said_of_the_goal and not mentions(said_of_the_goal[0], scorer)
+            scorer and already_said and not mentions(already_said[0], scorer)
         )
         shout_retry = False
         shout_rewritten = False
@@ -881,8 +949,8 @@ class Phraser:
         # the call carries nothing, and an empty beat is better than a third
         # saying of one phrase.
         repeat_retry = False
-        if goal_beat is not None and said_of_the_goal:
-            repeated = shared_run(proposed.line, said_of_the_goal)
+        if (goal_beat is not None or line.scene is Scene.REPLAY) and already_said:
+            repeated = shared_run(proposed.line, already_said)
             if repeated:
                 retry = await self._reask(blocks, _repeat_retry_note(repeated))
                 if retry is not None:
@@ -900,12 +968,12 @@ class Phraser:
                             }
                         )
                         shout_rewritten = True
-                still = shared_run(proposed.line, said_of_the_goal)
+                still = shared_run(proposed.line, already_said)
                 if still:
                     self.last_usage = usage
                     self.chose_silence = True
                     self.last_reason = (
-                        f'repeat: "{still}" had already gone out about this goal'
+                        f'repeat: "{still}" had already gone out about this moment'
                     )
                     return PhrasedLine(
                         line="",
@@ -929,6 +997,26 @@ class Phraser:
                 update={"line": _lead_with(proposed.line, scorer, names)}
             )
             shout_rewritten = True
+
+        # The name and nothing else, on a form holding a how. Asked once;
+        # what comes back is what goes out, because a shout is a line even
+        # when it is half of one.
+        thin_retry = False
+        if (
+            goal_beat is None
+            and line.event is Event.GOAL
+            and is_a_thin_call(proposed.line, line.line)
+        ):
+            retry = await self._reask(blocks, _thin_call_note(line.line))
+            if retry is not None:
+                usage = usage + retry.usage
+                proposed = retry.value
+                thin_retry = True
+
+        # No fact welded on with a dash.
+        welded = _WELDING_DASH.search(proposed.line) is not None
+        if welded:
+            proposed = proposed.model_copy(update={"line": unweld(proposed.line)})
 
         # The replay is named once a sequence, and this is the line after
         # the one that named it.
@@ -958,6 +1046,8 @@ class Phraser:
                 "opener_retry": opener_retry,
                 "closer_retry": closer_retry,
                 "now_stripped": now_stripped,
+                "thin_retry": thin_retry,
+                "unwelded": welded,
                 "swap_retry": swap_retry,
                 "figure_retry": figure_retry,
                 "name_retry": name_retry,

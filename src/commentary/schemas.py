@@ -224,6 +224,13 @@ class PhrasedLine(BaseModel):
     #: with a ``figure_not_in_the_clause`` reason: a number nobody looked up is
     #: the one mistake here that reaches air sounding right.
     figure_retry: bool = Field(default=False)
+    #: True when the goal call came back as the scorer's name and nothing
+    #: else while the form was still holding the how, and the phraser was
+    #: re-asked. The call is the name, then how, then the score.
+    thin_retry: bool = Field(default=False)
+    #: True when a dash welding two halves of a line together was replaced by
+    #: a comma or a full stop.
+    unwelded: bool = Field(default=False)
     #: True when a trailing "now" was taken off in code because a line already
     #: aired had the same tail.
     now_stripped: bool = Field(default=False)

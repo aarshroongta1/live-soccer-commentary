@@ -186,11 +186,17 @@ async def test_a_retry_that_repeats_again_is_kept_not_dropped() -> None:
 
 @pytest.mark.asyncio
 async def test_excitement_at_or_above_point_nine_skips_the_retry() -> None:
+    """Stacked repetition is how a goal sounds, and the opener check knows it.
+
+    The form is short on purpose: a goal form whose description carries a
+    finish sends the call back for the how it threw away, which is a
+    different rule with its own tests, and this one is about the opener.
+    """
     backend = queued(PhrasedLine(line="Mbappé! Mbappé!", excitement=0.95))
     phraser = a_phraser(backend)
     phraser.accept("Mbappé drives at goal.", Event.GOAL)
 
-    phrased = await phraser.phrase(a_form(event=Event.GOAL), "")
+    phrased = await phraser.phrase(a_form("Mbappé scores.", event=Event.GOAL), "")
 
     assert phrased is not None
     assert phrased.line == "Mbappé! Mbappé!"

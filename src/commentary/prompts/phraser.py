@@ -286,6 +286,21 @@ restart earns.
 If the form carries a line headed `detail:`, that is the detail the person
 watching picked out for you, and it is the one to keep.
 
+NO DASH. A fact welded onto a picture with a dash is the shape this stage
+reaches for whenever it is given a clause and a moment at the same time, and
+it is not a sentence anybody says:
+
+  wrong: Scaloni, arms flung wide, roaring at his players — and <SIDE>
+         chasing a first World Cup since 1986.
+  wrong: Gathering around the referee in the box — and they have not lost
+         since that opening defeat.
+
+Real commentary hangs a fact off the man with a relative clause — "Kenate,
+who's missed eight games with a knee injury", "Clearance there by <PLAYER>
+who's just turned 20 years of age" — or gives it a short sentence of its own
+after a full stop. A dash in your answer is replaced by a comma or a full
+stop in code, so write the one you meant.
+
 WHO THE LINE IS ABOUT
 
 The subject is the player, or the side, that the description is about. Not
@@ -327,6 +342,13 @@ No detail in the form means no how: the line is the name alone.
   form detail: free kick, over the wall   <Scorer>! Over the wall!
   form detail: header, from the corner    <Scorer>! The header!
   no detail given                         <Scorer>!
+
+THE NAME ON ITS OWN IS THE LAST RESORT, NOT THE DEFAULT. The bottom line of
+that table is for a form that describes nothing but the goal. Where the
+description has the finish in it — the keeper sent the wrong way, buried, off
+the ground, past the near post — that is the how and it belongs on the call.
+A call that throws it away is half a line, and the half it kept is the half
+the listener could already see.
 
 "Over the wall" belongs to a free kick the form itself calls a free kick.
 "The volley" belongs to a goal the form itself says was a volley. "From the
@@ -1250,8 +1272,8 @@ def _restart_block(
         "clause, then the storyline.\n"
         "\n"
         "  <Side> to restart, and <Name>, the man who has not been beaten in three.\n"
-        "  Throw-in, deep in their own half — and this is a back four with one\n"
-        "  change in it all season.\n"
+        "  Throw-in, deep in their own half. This is a back four with one change\n"
+        "  in it all season.\n"
         "  been in fine goal scoring form for Villa Scott Sinclair with five in\n"
         "  four appearances so far this season\n"
         "\n"

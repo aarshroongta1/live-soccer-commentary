@@ -1152,8 +1152,33 @@ async def test_a_replay_form_the_run_never_said_becomes_a_lead_beat() -> None:
 
 @pytest.mark.asyncio
 async def test_a_replay_sequence_gets_three_lines_offline_and_no_more() -> None:
+    """Three angles is the longest run in the corpus, and each one is new."""
     rows = a_trace_with_replays(
         *(a_replay_row(ts, f"Another angle, {ts:.0f}.") for ts in (25.0, 29.0, 33.0, 37.0, 41.0))
+    )
+    backend = saying(
+        PhrasedLine(line="Molina, down the right.", excitement=0.3),
+        PhrasedLine(line="Messi strikes.", excitement=0.75),
+        PhrasedLine(line="The trailing leg caught him and down he went.", excitement=0.4),
+        PhrasedLine(line="No contact on the ball at all.", excitement=0.4),
+        PhrasedLine(line="And the referee had a clear view of it.", excitement=0.4),
+    )
+    result = await rephrase(rows, backend, pack=a_pack(), colour=False)
+
+    assert len([row for row in rows_of(result.rows, "beat") if row.get("replay")]) == 3
+
+
+@pytest.mark.asyncio
+async def test_a_replay_sequence_that_says_the_incident_again_stops() -> None:
+    """The judge's "seven near-identical foul descriptions", stopped at one.
+
+    Every line of the sequence is handed what has already gone out about the
+    incident — the live call first, then the lines before it — and one that
+    repeats three words of it is re-asked once and then dropped. A sequence
+    that has had to do that gets two lines rather than three.
+    """
+    rows = a_trace_with_replays(
+        *(a_replay_row(ts, f"Another angle, {ts:.0f}.") for ts in (25.0, 29.0, 33.0, 37.0))
     )
     backend = saying(
         PhrasedLine(line="Molina, down the right.", excitement=0.3),
@@ -1162,7 +1187,14 @@ async def test_a_replay_sequence_gets_three_lines_offline_and_no_more() -> None:
     )
     result = await rephrase(rows, backend, pack=a_pack(), colour=False)
 
-    assert len([row for row in rows_of(result.rows, "beat") if row.get("replay")]) == 3
+    spoken = [row["text"] for row in rows_of(result.rows, "beat") if row.get("replay")]
+    assert spoken == ["The trailing leg caught him and down he went."]
+    dropped = [
+        row
+        for row in rows_of(result.rows, "phrased")
+        if row.get("replay") and str(row.get("reason", "")).startswith("repeat:")
+    ]
+    assert dropped, "the repeats are recorded, not silently lost"
 
 
 @pytest.mark.asyncio

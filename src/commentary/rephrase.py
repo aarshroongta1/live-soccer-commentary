@@ -537,7 +537,7 @@ async def rephrase(
             goal_beat=follow.beat(at),
             scorer=follow.scorer,
             roster=roster_names(pack),
-            said_of_the_goal=follow.spoken,
+            already_said=follow.spoken,
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
@@ -685,7 +685,10 @@ async def rephrase(
         form = _caller_line({k: v for k, v in row.items() if k not in ("topic", "ts")})
         if form is None or form.scene is not Scene.REPLAY:
             return
-        replays.look(ts)
+        # A new sequence starts from what the lead has just said live about
+        # the incident: the first replay line's job is to add to those words,
+        # not to say them again more slowly.
+        replays.look(ts, phraser.said_lines)
         if not form.line.strip() or not replays.may_speak(ts):
             return
         if any(abs(ts - at) <= settings.replay_talk.clear_of_a_beat_s for at in lead_times):
@@ -704,11 +707,29 @@ async def rephrase(
             # account of one concrete thing on the picture: who is on the ball
             # is a fact about live play, and a number is the one shape
             # ``replay_block`` forbids outright.
+            already_said=replays.lines,
             replay_first=replays.first,
         )
+        if phrased is not None and phrased.repeat_retry:
+            replays.said_again()
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd
         if phrased is None or not phrased.line.strip():
+            if phraser.last_reason:
+                out.rows.append(
+                    {
+                        "topic": Topic.PHRASED.value,
+                        "ts": ts,
+                        "original": form.line,
+                        "line": "",
+                        "excitement": 0.0,
+                        "event": form.event.value,
+                        "form_event": form.event.value,
+                        "reason": phraser.last_reason,
+                        "usd": round(usd, 6),
+                        "replay": True,
+                    }
+                )
             return
         # The score never goes on a replay line, so the strip runs with
         # nothing to append: whatever number the model reached for comes out
@@ -780,7 +801,7 @@ async def rephrase(
                 }
             )
             phraser.accept(verdict.line, form.event, ts=ts)
-            replays.spoke(ts)
+            replays.spoke(ts, verdict.line)
             lead_times.append(ts)
             if follow.active(ts):
                 # Inside a goal window the replay line *is* the rebuild, so it
@@ -903,7 +924,7 @@ async def rephrase(
             goal_beat=follow.beat(ts),
             scorer=follow.scorer,
             roster=roster_names(pack),
-            said_of_the_goal=follow.spoken,
+            already_said=follow.spoken,
         )
         usd = phraser.last_usage.cost_usd
         out.cost_usd += usd

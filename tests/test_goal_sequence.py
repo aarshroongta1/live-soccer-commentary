@@ -33,10 +33,12 @@ import pytest
 
 from commentary.agents.phraser import (
     Phraser,
+    is_a_thin_call,
     opening_shout,
     roster_names,
     shared_run,
     unshout,
+    unweld,
 )
 from commentary.capture.buffer import Frame
 from commentary.config import (
@@ -429,7 +431,7 @@ async def test_a_beat_that_says_the_call_again_is_asked_for_the_other_half() -> 
         goal_beat=2,
         scorer="Cristiano Ronaldo",
         roster=["Cristiano Ronaldo"],
-        said_of_the_goal=[CALLED],
+        already_said=[CALLED],
         followup=GOAL_BEATS[2],
     )
 
@@ -459,7 +461,7 @@ async def test_a_beat_that_says_it_again_anyway_is_dropped_rather_than_aired() -
         goal_beat=REBUILD_BEAT,
         scorer="Cristiano Ronaldo",
         roster=["Cristiano Ronaldo"],
-        said_of_the_goal=[CALLED],
+        already_said=[CALLED],
         followup=GOAL_BEATS[REBUILD_BEAT],
     )
 
@@ -485,7 +487,7 @@ async def test_the_shout_comes_off_but_the_name_stays_when_the_call_had_none() -
         goal_beat=2,
         scorer="Cristiano Ronaldo",
         roster=["Cristiano Ronaldo"],
-        said_of_the_goal=[CALLED],
+        already_said=[CALLED],
         followup=GOAL_BEATS[2],
     )
 
@@ -505,7 +507,7 @@ async def test_a_call_that_named_him_loses_the_shout_and_the_name_with_it() -> N
         goal_beat=2,
         scorer="Cristiano Ronaldo",
         roster=["Cristiano Ronaldo"],
-        said_of_the_goal=["Ronaldo! Three-three."],
+        already_said=["Ronaldo! Three-three."],
         followup=GOAL_BEATS[2],
     )
 
@@ -605,7 +607,7 @@ def test_the_rebuild_that_went_out_shares_a_run_with_the_call() -> None:
     """Fault 4, with the exact strings.
 
     Measured on ``runs/rephrased/r4-shape/freekick``, which was rewritten
-    before the repeat check existed — ``said_of_the_goal`` is not in c3e6d34
+    before the repeat check existed — ``already_said`` is not in c3e6d34
     at all, so nothing was compared. This pins the pair so that it cannot go
     uncompared again.
     """
@@ -631,7 +633,7 @@ async def test_the_rebuild_is_checked_against_the_call_like_every_other_beat() -
         goal_beat=REBUILD_BEAT,
         scorer="Cristiano Ronaldo",
         roster=["Cristiano Ronaldo"],
-        said_of_the_goal=[FREE_KICK],
+        already_said=[FREE_KICK],
         followup=GOAL_BEATS[REBUILD_BEAT],
     )
 
@@ -740,3 +742,107 @@ def test_a_skipped_beat_is_spent_rather_than_offered_again() -> None:
     follow.said(14.0, "It was struck before the wall had formed.")
 
     assert follow.beat(16.0) is None
+
+
+# -- the judge's three (r4-shape) -------------------------------------------
+
+
+PENALTY_FORM = "Mbappé steps up and strikes it — Martínez goes the other way. Buried."
+
+
+def test_a_fact_welded_on_with_a_dash_becomes_two_things_said() -> None:
+    """Item 7. The judge: "the storyline needs its own quiet beat."."""
+    assert unweld(
+        "Scaloni, arms flung wide, roaring at his players — and Argentina chasing a "
+        "first World Cup since 1986."
+    ) == (
+        "Scaloni, arms flung wide, roaring at his players, and Argentina chasing a "
+        "first World Cup since 1986."
+    )
+    assert unweld("Gathering around the referee — They have not lost since.") == (
+        "Gathering around the referee. They have not lost since."
+    )
+    assert unweld("No dash in this one at all.") == "No dash in this one at all."
+
+
+@pytest.mark.asyncio
+async def test_the_dash_never_reaches_the_speaker() -> None:
+    backend = saying(
+        PhrasedLine(
+            line="Molina, down the right — and Argentina have not lost in thirty-six.",
+            excitement=0.3,
+        )
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(a_goal_form(), "", on_the_ball="Nahuel Molina")
+
+    assert phrased is not None
+    assert "—" not in phrased.line
+    assert phrased.line == (
+        "Molina, down the right, and Argentina have not lost in thirty-six."
+    )
+    assert phrased.unwelded
+
+
+def test_the_name_on_its_own_is_a_call_with_the_how_thrown_away() -> None:
+    """Item 9. Round three called it "Mbappé! The penalty, buried!"."""
+    assert is_a_thin_call("Mbappé!", PENALTY_FORM)
+    assert not is_a_thin_call("Mbappé! The penalty, buried!", PENALTY_FORM)
+    # A form with nothing in it is a form whose call is the name alone.
+    assert not is_a_thin_call("Mbappé!", "Mbappé scores.")
+
+
+@pytest.mark.asyncio
+async def test_a_call_that_drops_the_how_is_asked_for_it_once() -> None:
+    backend = saying(
+        PhrasedLine(line="Mbappé!", excitement=1.0),
+        PhrasedLine(line="Mbappé! The penalty, buried!", excitement=1.0),
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(a_goal_form(), "Argentina 2 France 1")
+
+    assert phrased is not None
+    assert phrased.line == "Mbappé! The penalty, buried!"
+    assert phrased.thin_retry
+    note = "\n".join(
+        block["text"] for block in backend.calls[-1].blocks if block.get("type") == "text"
+    )
+    assert "THAT IS THE NAME AND NOTHING ELSE" in note
+
+
+@pytest.mark.asyncio
+async def test_a_call_that_keeps_the_how_is_left_alone() -> None:
+    backend = saying(PhrasedLine(line="Mbappé! The penalty, buried!", excitement=1.0))
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(a_goal_form(), "Argentina 2 France 1")
+
+    assert phrased is not None
+    assert not phrased.thin_retry
+    assert len(backend.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_a_replay_line_is_checked_against_what_the_live_call_said() -> None:
+    """Item 8. The contact, said live and then three times over the pictures."""
+    backend = saying(
+        PhrasedLine(line="The trailing leg was in behind him.", excitement=0.4),
+        PhrasedLine(line="And the referee had a clear view of it.", excitement=0.4),
+    )
+    phraser = a_phraser(backend)
+    form = a_goal_form().model_copy(
+        update={"scene": Scene.REPLAY, "event": Event.FOUL, "line": "The leg in behind him."}
+    )
+
+    phrased = await phraser.phrase(
+        form,
+        "Argentina 2 France 0",
+        already_said=["Otamendi gets across and the trailing leg was in behind him."],
+        replay_first=False,
+    )
+
+    assert phrased is not None
+    assert phrased.repeat_retry
+    assert phrased.line == "And the referee had a clear view of it."

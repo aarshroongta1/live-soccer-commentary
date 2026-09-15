@@ -719,6 +719,12 @@ class ReplayTalkConfig:
     #: The most lines one replay sequence gets. Three is the longest run in
     #: the corpus and the fourth angle is where a commentator stops.
     max_lines: int = 3
+    #: How many it gets without earning the rest. The judge counted "seven
+    #: near-identical foul descriptions" on the Mbappé trace — the live call,
+    #: the protest, and three replay lines all about the same contact — so a
+    #: sequence gets two, and the third only where nothing in it has had to be
+    #: re-asked or dropped for saying the incident again.
+    default_lines: int = 2
     #: How close a line the lead already has may be before a replay line
     #: gives way. Same number and same reason as
     #: :attr:`RestatementConfig.clear_of_a_beat_s`: a second voice landing

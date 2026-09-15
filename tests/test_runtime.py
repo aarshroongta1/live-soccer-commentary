@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 import pytest
 
+from commentary.agents.colour import Material
 from commentary.capture.buffer import Frame
 from commentary.config import (
     CallerConfig,
@@ -999,3 +1000,72 @@ async def test_a_colour_utterance_that_blames_the_wrong_man_is_refused_live() ->
     assert not verdicts[1].passed
     assert verdicts[1].reasons[0].startswith("attribution:")
     assert somebody_else.surname in verdicts[1].reasons[0]
+
+
+@pytest.mark.asyncio
+async def test_a_colour_utterance_that_echoes_the_lead_is_refused_live() -> None:
+    """Two voices sharing four words eleven seconds apart is one voice.
+
+    ``judge_utterance`` takes ``lead_said`` for this and the live path passed
+    nothing, so the check was inert on air while the offline pass had it.
+    """
+    runtime = _built_runtime()
+    assert runtime.pack is not None
+    scorer = runtime.pack.home.starters[0].surname
+    runtime.colour.saw_lead_line(
+        runtime.cursor_ts, f"{scorer} knew it from the moment it left his boot."
+    )
+    judged: list[tuple[str, Any]] = []
+    original = runtime._publish
+
+    def spy(topic: Any, ts: float, value: Any = None, **extra: Any) -> None:
+        judged.append((str(getattr(topic, "value", topic)), value))
+        original(topic, ts, value, **extra)
+
+    runtime._publish = spy  # type: ignore[method-assign]
+
+    await runtime._say_colour(
+        [f"Yeah, {scorer} knew it from the moment it left his boot."],
+        [runtime.cursor_ts],
+        "after_a_goal",
+    )
+
+    verdicts = [value for topic, value in judged if topic == "gate"]
+    assert len(verdicts) == 1
+    assert not verdicts[0].passed
+    assert verdicts[0].reasons[0].startswith("echoes_lead:")
+
+
+@pytest.mark.asyncio
+async def test_a_turn_made_only_of_a_count_has_to_say_it_happened_again() -> None:
+    """``only_repeated`` is the other argument the live path was not passing.
+
+    A count is material for one thing and one thing only: the observation
+    that it has happened again. A line that takes the count and says
+    something else about the man is a line with nothing behind it.
+    """
+    runtime = _built_runtime()
+    # A turn whose whole material is a count: patterns and nothing else.
+    runtime.colour.last_material = Material(patterns=("the same man down that side, four times",))
+    assert runtime.colour.last_material.only_a_count
+    judged: list[tuple[str, Any]] = []
+    original = runtime._publish
+
+    def spy(topic: Any, ts: float, value: Any = None, **extra: Any) -> None:
+        judged.append((str(getattr(topic, "value", topic)), value))
+        original(topic, ts, value, **extra)
+
+    runtime._publish = spy  # type: ignore[method-assign]
+    assert runtime.pack is not None
+    somebody = runtime.pack.home.starters[0].surname
+
+    await runtime._say_colour(
+        [f"Well, {somebody} has been the best of them tonight."],
+        [runtime.cursor_ts],
+        "in_build_up",
+    )
+
+    verdicts = [value for topic, value in judged if topic == "gate"]
+    assert len(verdicts) == 1
+    assert not verdicts[0].passed
+    assert verdicts[0].reasons[0].startswith("pattern_unsaid:")

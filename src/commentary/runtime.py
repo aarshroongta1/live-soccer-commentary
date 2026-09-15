@@ -140,12 +140,28 @@ class ReplaySequence:
     last_said: float | None = None
     #: How many have been spoken in this sequence.
     said: int = 0
+    #: Has anything in this sequence had to be re-asked or dropped for saying
+    #: the incident over again? The third line is what that costs.
+    repeated: bool = False
+    #: What has gone out about this incident, the live call first. Handed to
+    #: the phraser as :meth:`~commentary.agents.phraser.Phraser.phrase`'s
+    #: ``already_said``, which is where a line that says the contact for the
+    #: fourth time is caught.
+    lines: list[str] = field(default_factory=list)
 
-    def look(self, ts: float) -> None:
-        """A replay form arrived. Starts a new sequence if the gap is long."""
+    def look(self, ts: float, said_before: Sequence[str] = ()) -> None:
+        """A replay form arrived. Starts a new sequence if the gap is long.
+
+        ``said_before`` is what the lead has just said, live, about the thing
+        being shown again — the call and whatever followed it. A new sequence
+        starts from those words rather than from nothing, because the first
+        replay line's job is to add to them.
+        """
         if self.last_look is None or ts - self.last_look > self.cfg.sequence_gap_s:
             self.said = 0
             self.last_said = None
+            self.repeated = False
+            self.lines = [text.strip() for text in said_before if text.strip()]
         self.last_look = ts
 
     @property
@@ -154,15 +170,30 @@ class ReplaySequence:
         return self.said == 0
 
     def may_speak(self, ts: float) -> bool:
-        """Is there room in this sequence for a line at ``ts``?"""
-        if self.said >= self.cfg.max_lines:
+        """Is there room in this sequence for a line at ``ts``?
+
+        Two, and a third only where the sequence has said something new every
+        time: a run of lines that keeps being re-asked for repeating the
+        incident is a run that should have stopped at two.
+        """
+        room = self.cfg.max_lines if not self.repeated else self.cfg.default_lines
+        if self.said >= min(room, self.cfg.max_lines):
+            return False
+        if self.said >= self.cfg.default_lines and self.repeated:
             return False
         return self.last_said is None or ts - self.last_said >= self.cfg.min_gap_s
 
-    def spoke(self, ts: float) -> None:
+    def spoke(self, ts: float, text: str = "") -> None:
         """A replay line went out."""
         self.said += 1
         self.last_said = ts
+        said = text.strip()
+        if said:
+            self.lines.append(said)
+
+    def said_again(self) -> None:
+        """A line in this sequence had to be re-asked for repeating itself."""
+        self.repeated = True
 
 
 #: How long a name stays on the ball. The caller reads a shirt, the player
@@ -779,6 +810,12 @@ class Runtime:
                     attributed=attributed,
                     named_before=[referent] if referent else (),
                     after=spoken,
+                    # The lead's own last lines, so the seat is not caught
+                    # saying back what the man beside it has just said; and
+                    # whether this turn's whole material was a count, which
+                    # buys the word "again" and nothing else.
+                    lead_said=self.colour.lead_lines,
+                    only_repeated=self.colour.last_material.only_a_count,
                 )
                 self._publish(
                     Topic.GATE, self.cursor_ts, verdict, event=Event.NONE.value, where="colour"
@@ -883,7 +920,7 @@ class Runtime:
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
             roster=roster_names(self.pack),
-            said_of_the_goal=self.follow.spoken,
+            already_said=self.follow.spoken,
         )
         if phrased is None or not phrased.line.strip():
             # A beat asked for and not written. The reason is worth a row —
@@ -1108,8 +1145,12 @@ class Runtime:
         replay = line.scene is Scene.REPLAY
         if replay:
             # Every look, spoken or not: the sequence is a fact about what
-            # the broadcast is showing, not about what this system said.
-            self.replays.look(cursor)
+            # the broadcast is showing, not about what this system said. A
+            # new sequence starts from the lead's own last lines, which are
+            # what it has already said about the incident being shown again.
+            self.replays.look(
+                cursor, self.phraser.said_lines if self.phraser is not None else ()
+            )
         self.state_tracker.apply_caller(line, cursor)
         if not replay:
             self._note_restart(line, cursor)
@@ -1195,7 +1236,7 @@ class Runtime:
         )
         self.director.submit(beat)
         if replay:
-            self.replays.spoke(cursor)
+            self.replays.spoke(cursor, verdict.line)
         self._lead_beats += 1
         self.colour.saw_lead_line(cursor, verdict.line)
         if self.phraser is not None:
@@ -1316,9 +1357,13 @@ class Runtime:
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
             roster=roster_names(self.pack),
-            said_of_the_goal=self.follow.spoken,
+            already_said=(
+                self.replays.lines if line.scene is Scene.REPLAY else self.follow.spoken
+            ),
             replay_first=self.replays.first,
         )
+        if line.scene is Scene.REPLAY and phrased is not None and phrased.repeat_retry:
+            self.replays.said_again()
         if phrased is not None and not phrased.line.strip() and self.phraser.chose_silence:
             self._publish(
                 Topic.PHRASED,
