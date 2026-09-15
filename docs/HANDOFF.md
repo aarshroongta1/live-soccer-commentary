@@ -3,10 +3,13 @@
 Start here, then read `docs/CLIPS.md`. This file is the state; that one is the
 evidence.
 
-**HEAD:** `main` in `/Users/Aarsh/Desktop/commentary`. One repo, one branch, no
-PRs. `.env` at the root. `clips/` and `runs/` are in the repo and gitignored —
-the clips are 26 MB each and the traces are somebody's API spend. HEAD as of
-14 Sep 2026 is `fd699e4`.
+**HEAD:** `main` in `/Users/Aarsh/Desktop/commentary`. `.env` at the root.
+`clips/` and `runs/` are in the repo and gitignored — the clips are 26 MB each
+and the traces are somebody's API spend. HEAD as of 15 Sep 2026 is `5425fdb`.
+One branch is in flight and not merged: `feat/phraser-quality`, the v4 phraser
+(section 3d). Worktrees live under `.worktrees/` and `.claude/worktrees/`;
+neither is in `.gitignore`, and ruff wants `--exclude .worktrees` or it lints
+another branch's files.
 
 **Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
 `uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`
@@ -46,9 +49,25 @@ speaker, so a change to a voice, a sink or the director can be heard on lines
 that were already paid for; `--out` writes a trace of the playback, which is
 where `seconds` and `first_audio_s` come from.
 
+**Rewriting a finished run's prose costs about a cent** and needs no clip:
+
+```
+uv run python -m commentary rephrase \
+    --trace runs/<name>/<run>.jsonl --pack clips/pack-<match>.json \
+    --out runs/rephrased/<name>
+```
+
+It runs the phrasing stage over a trace on disk, re-judges every rewritten line
+through the gate, and writes a trace `replay --voice` will play — so a change to
+the register is audible on lines the model was already paid for. Every number in
+section 3d was measured in this loop. `commentary notes --pack p.json` adds
+spoken-context notes to a finished pack; it calls a model, so ask first.
+
 **Env that matters.** `CALLER_MODEL` / `BOARD_MODEL` / `ANALYST_MODEL` in
 `.env`: Opus 5 calls, Haiku 4.5 reads the board, Opus 5 on the analyst.
-`DELAY_S` 8. `MAX_USD_PER_MATCH` 35. `CALLER_FRAME_WIDTH` (default 768) is the
+`PHRASER_MODEL` is Haiku 4.5, and `off` removes the phrasing stage — the
+behaviour before 15 September. `VOICE_CURVE=off` does the same for the voice
+settings. `DELAY_S` 8. `MAX_USD_PER_MATCH` 35. `CALLER_FRAME_WIDTH` (default 768) is the
 width the caller's frames go out at; 1280 costs 1.75x and two clips could not
 tell it from noise (section 7). `PRESENT_OFFSET_S` (default 3.5) holds the
 picture served to the viewer that far behind the narration cursor; it is
@@ -208,13 +227,11 @@ Per-line seconds barely moved, and that is the finding: the free tier's PCM
 stream arrives at about playback speed, so a six-word line still holds the
 channel 2.8 to 3.2 s. Section 4.
 
-**Sonnet versus Opus.** `runs/sonnet/RESULTS.md` has the table. Sonnet is about
-half the cost ($0.10 a clip against $0.20) and called 4 of 6 events against
-Opus's 5 of 11 on the same clips — but **8 of 23 Sonnet spoken lines carry code
-tokens** glued to the line field (`.replace('','')`, `.strip()`, `.line`), and
-the gate let every one through. Opus produced none in 63 runs. **Stay on
-Opus.** The two untried fixes: a gate rule that cuts a line at the first
-non-prose token, and a stricter output schema for the caller.
+**Sonnet versus Opus.** `runs/sonnet/RESULTS.md` has the table. Sonnet is half
+the cost and calls events at about the same rate, but **8 of 23 Sonnet spoken
+lines carry code tokens** glued to the line field, and the gate let every one
+through; Opus produced none in 63 runs. **Stay on Opus for the caller.** Haiku
+is fine downstream of it — the board reader and the phraser both run on it.
 
 **ElevenLabs, what a match would cost.** Spoken volume measured across four
 traces runs 256 to 711 characters a minute, so ninety minutes is roughly 23,000
@@ -223,8 +240,158 @@ to 64,000 characters, which at Flash's 0.5 credit a character is **12,000 to
 commercial licence; the Creator plan (about $11 for the first month, 121,000
 credits) covers the demo with room to spare.
 
+## 3d. What changed on 15 September
+
+| commit | |
+|---|---|
+| `3ee6e26` | The phraser. The caller keeps the pictures, the form and the rules about what may be claimed; a Haiku stage rewrites the line, taught from 228 real caption utterances. It never sees a frame. The gate judges the *phrased* line. `PHRASER_MODEL=off` is the old behaviour and a test asserts it. `commentary rephrase` rewrites a finished trace offline. |
+| `a8e7ae4` | Two gate rules, `level_claim` and `card_claim`, beside `score_claim` and sharing its latitude. The phraser's rules rebuilt around compression: the event field is binding, and the line may only use nouns, names and outcomes already in front of it. |
+| `0cf4151` | `VoiceConfig`. The excitement every beat has always carried becomes ElevenLabs settings — two points a seat, stability falling, style and speed rising, straight line between. `VOICE_CURVE=off` sends nothing. The settings that were sent ride into the spoken trace row. `scripts/voice_sweep.py` renders a listening board and refuses to run without `--yes`. |
+| `5425fdb` | `Note{about,text,kind,source}` on the pack, filed by name. The researcher emits them, `commentary notes` adds them to a finished pack, the phraser gets a `context:` block on quiet events only, and the gate's `note_claim` checks any number that is not the scoreline against the notes about the people the line names. |
+
+**The verdict that started it.** The caller's prose "read like a feature
+description, not an exciting game commentator" — the user, on the Mbappé trace.
+The diagnosis was register, not knowledge: perception was already good, 63 runs
+on real footage with no wrong name ever on air. So seeing and speaking were
+split. The caller still writes the form; a second stage writes the words.
+
+**Register moved in one pass.** All three columns are the same 27 calls on
+`runs/trigger/mbappe`, rewritten offline. Cost is the `usd` field on the
+`phrased` rows, not the run's republished `cost` rows.
+
+| | caller | phrased v2 | phrased v3 |
+|---|---:|---:|---:|
+| median words a line | 14 | 3 | 5 |
+| phraser cost, 27 lines | — | $0.098 | $0.032 |
+| cost a line | — | $0.0036 | $0.0012 |
+| calls reading a cached prefix | — | 0 of 27 | 26 of 27 |
+
+At v2's rate a ninety-minute match is roughly $2 of phrasing on top of the
+caller. At v3's it is well under a dollar.
+
+**Prompt caching, which was an open item and is not any more.** v2 billed the
+whole ~3,500-token prefix on every line and `cache_read` was zero across 33
+calls; that is what `a8e7ae4` recorded, and why the sample shown per kind
+dropped from 14 to 10. On the v3 branch the prefix caches: 4,819 tokens written
+once and read back on 26 of the 27 calls, and the cost a line falls by two
+thirds. Confirm it again after v4 merges.
+
+**The inventions, and what was done about them.** The first phrasing pass
+invented facts in 4 of 33 lines — "in the book" with no card, "Mbappé strikes"
+before the kick had been taken, "Levels it" at 2-1, and "Mbappé in numbers",
+which is not English. Two were fact claims and got deterministic gate rules;
+two were the prompt's and got prompt fixes, with "compress, never add" and the
+event field binding. On the v2 rerun all four are gone and the gate refused
+nothing.
+
+**v3, in flight on `feat/phraser-quality` and not merged.** Three faults read
+off v2's 27 lines by hand: detail thrown away (7 of 27), the wrong subject (2
+of 27), and flat repetitive build-up (9 of 27). v3 keeps one concrete detail,
+makes the subject whoever the caller's line is about, spells a goal as name,
+how and score, moves the excitement through build-up, bans a repeated opener,
+adds a `detail` field on `CallerLine` and thirty-odd more goal and chance
+examples. The detail survives — "Buried past Martínez", "Off the ground", "The
+volley" — and then the score check refused two goal lines:
+
+| cursor | phrased line | gate |
+|---:|---|---|
+| 82.5 | Mbappé! Buried past Martínez! Two-one. | passed |
+| 86.8 | Mbappé! Three-two. | `scoreline_mismatch: said 3-2, board 2-1` |
+| 176.7 | Mbappé! Off the ground! Two-two. | passed, on the anticipatory latitude |
+| 180.5 | Mbappé! The volley! Three-two. | `scoreline_mismatch: said 3-2, board 2-1` |
+
+Both refusals are the phraser guessing a number nobody handed it, and the
+guesses were wrong. The fix in flight is to give it the score after the goal as
+data instead of letting it infer one, then rerun as v4. It was also judged in
+the session that the offline `rephrase` cover path does not reproduce the
+anticipatory latitude as faithfully as the runtime does; check that against v4
+before reading a rejection as a phraser fault.
+
+**Pack notes, and how little reached air.** `clips/pack-argfra-2022.json`
+carries 13 hand-checked notes — 8 storylines, 4 stats, 1 habit — about seven
+players and two teams. Two of v3's 27 lines carry a number from outside the
+scoreline: "Mbappé steps up. Five in the tournament." off a note, and
+"Argentina to restart. Ten minutes remaining." off the clock. Three reasons,
+all of them fixable: the prompt says the phraser *may* use a note, the pack is
+thin (nothing at all about Upamecano, who has the ball for three build-up
+lines), and the seat that should be carrying this does not exist yet.
+
+**Voice, and what was not copied.** worldcupvoice
+(github.com/zicojiao/worldcupvoice) gets its tone from one fixed set of
+ElevenLabs settings — stability 0.35, style 0.35, similarity 0.8, speed 1.12 —
+on a Voice-Design sportscaster voice, and sends nothing per line. That is a
+choice about the average line and therefore wrong at both ends, so `0cf4151`
+made it a curve instead. None of the defaults in `config.py` has been chosen by
+ear; the sweep script exists to fix that and has not been run. The user designed
+two voices in ElevenLabs Voice Design, a lead male and a colour female. Their
+ids are in `.env` as `ELEVENLABS_LEAD_VOICE` and `ELEVENLABS_SUPPORTING_VOICE`,
+the user's names, and copied to `ELEVENLABS_CALLER_VOICE` and
+`ELEVENLABS_ANALYST_VOICE`, which is what the code actually reads. The code
+should take the user's names and keep the old ones working.
+
+**Two research passes, written down so they survive.**
+[`docs/research/tts-research.md`](research/tts-research.md): nothing in open
+weights clearly beats ElevenLabs on goal excitement, and Qwen3-TTS 0.6B through
+mlx-audio is the one to try if we ever go open.
+[`docs/research/finetune-plan.md`](research/finetune-plan.md): SoccerNet-Caption
+and MatchTime are scraped written match-report prose, not speech, and training
+on them would undo the register work; SoccerNet-Echoes is the corpus — ASR of
+550 games, 4.4M segments, CC BY 4.0; this Mac is a base M1 with 8 GB, so
+Qwen3-1.7B 4-bit through `mlx_lm` is the ceiling; 7 to 8 hours and about $15.
+Deferred by decision: the user will skip it if the phraser output is good
+enough.
+
+**Spend.** About **$0.27 of Anthropic** on this day, all of it rephrases,
+counted off the `usd` field on the `phrased` rows of the six traces in
+`runs/rephrased/`. No voice ran: ElevenLabs is still at about 780 credits total
+across the two voiced sessions from 13-14 September, and the standing
+instruction is no voice until the commentary reads well.
+
+## 3e. The two-seat model, which is the target
+
+Agreed with the user on 15 September. Two seats, not one voice with a timer:
+
+- **The lead** calls the action, and drops one clause of context into a quiet
+  moment. It goes sparser in build-up than it is now.
+- **The colour seat** is event-driven: it reacts two to four seconds after a big
+  moment, and in slow build-up it observes off the lead's recent forms and the
+  pack notes. It never speaks over an action call. Its own example set, its own
+  excitement curve.
+
+What is in the tree is not that. The analyst fires on a silence timer, and on
+the traces it spoke zero times on the 45-second clips and about every 70 seconds
+on the 210-second one, at the 30-word cap, in the same feature-description
+register the phraser was built to fix. Rebuilding it is step 3 of section 5.
+
 ## 4. Known gaps
 
+- **Nobody has heard any of this.** The phraser's lines have been read, never
+  spoken. The voice curve's defaults in `config.py` are guesses, written down as
+  guesses; `scripts/voice_sweep.py` exists to replace them with numbers somebody
+  has listened to and has not been run, because the default grid is about 1,074
+  credits. Trim the grid before running it.
+- **v4 is not merged.** `feat/phraser-quality` carries the detail, subject,
+  goal-shape and build-up variety fixes and the cached prefix. Its open fault is
+  the two `scoreline_mismatch` refusals in section 3d: the phraser is guessing a
+  score because nothing hands it one.
+- **Numbers barely reach air.** Two lines in 27 carried one, and only one of
+  those came from a note. The rule says the phraser *may* use a note, the pack
+  holds 13 of them and nothing about half the players on the pitch, and the seat
+  that should be saying them does not exist.
+- **There is no colour seat.** Section 3e says what it should be. What is there
+  is the silence-timer analyst, which on the traces spoke zero times on a 45 s
+  clip and about every 70 s on the 210 s one, at the 30-word cap, in the register
+  the phraser was built to replace.
+- **There is no number on phrasing quality.** Every judgement in section 3d is
+  somebody reading 27 lines and counting faults by hand. An Opus judge against a
+  written rubric would make one rephrase iteration comparable to the last; until
+  then "it reads better" is the whole instrument.
+- **The phraser cannot choose silence.** It returns a line for every call it is
+  given, so cadence is still the predictor's alone. Real commentary's median gap
+  is 2.4 s but 22% of gaps are over four seconds, and build-up is where those
+  gaps live.
+- **No story runs across lines.** Each call sees the last five lines and nothing
+  else, so nothing is ever picked back up. A thread in the state is step 5.
 - **Open-play naming, and what it actually is.** Across 208 live-play caller
   lines on Opus, 57% had no sighting at all — nothing legible in the frame —
   10% had sightings that bound to nobody, and 33% had a bound name. Of those
@@ -240,29 +407,26 @@ credits) covers the demo with room to spare.
   to a close-up. The trigger fires on the bug, and a broadcaster's bug lags the
   ball by about six seconds. Nothing cheap is left here except a second source
   of evidence — the Haiku yes-or-no on the lookahead frames described in
-  section 6.
-- **The ElevenLabs stream is a floor under line length.** The cadence work
-  bought a 1.5 s rate-cap floor and real commentary's median utterance is five
-  words. On the free tier's `pcm_22050` stream, no line in the replay came out
-  under 2.8 s and a six-word line took 3.2 s, because the bytes arrive at about
-  playback speed. Until that changes, short lines buy less than the cadence
-  numbers suggest. A paid tier may or may not stream faster; untested.
+  section 6. The phraser does not move this: it rewrites a line, it does not
+  make one arrive sooner.
+- **The ElevenLabs stream is a floor under line length, and the phraser has
+  walked right into it.** No line in the PCM replay came out under 2.8 s and a
+  six-word line took 3.2 s, because the bytes arrive at about playback speed.
+  The phrased median is now five words, so most lines are at the floor and the
+  cadence they were written for cannot be delivered. A paid tier may or may not
+  stream faster; untested.
 - **The scoreboard clock on the page freezes between state publishes.** A
   `state` row goes out only when something changes: 2 rows in the 60 s screen
   run, 7 in the 210 s Mbappé run. Between them the page shows a stopped clock.
   Either tick it client-side off `clock_s` and the row's timestamp, or publish
-  state on a timer.
+  state on a timer. Fix this before anything is screen-recorded.
 - **Haiku phantoms.** The `score_claim` rule (`5636351`) stops the two lines
   that got out, and a test asserts it. It has not been re-run against a Haiku
   caller on a goal clip; that costs about $0.06 and has not been done.
-- **Fragments do not come.** With real fragment examples in the prompt and a
-  cadence that rewards short lines, the Opus caller wrote no line under seven
-  words on the Mbappé clip. Three gates stood in front of the style; two are
-  open now (section 7); the third is the caller's own choice, and the fourth is
-  the audio stream above.
 - **No run longer than 3.5 minutes.** The Mbappé rerun reached cursor 202 s.
   Nothing has shown the state, the cost cap, the goal-talk cap or the analyst's
-  spacing over a half.
+  spacing over a half. The phraser adds a second per-line call to that, and its
+  per-match cost is an extrapolation from 27 lines, not a measurement.
 - **Voice has never run against a live source.** `--voice elevenlabs` has run
   on a file and on a replay. It has not run with `--source screen`, and the
   screen path has not run longer than 60 s.
@@ -277,53 +441,83 @@ credits) covers the demo with room to spare.
 
 ## 5. Next steps, in this order
 
-The target is not a full match. It is **testing on 60-90 second clips with
-voice**, then a fixture. The fixture and the app it streams in are both still
-unchosen, and that choice blocks everything from step 4 on.
+The target is unchanged: **60-90 second clips with voice**, then a fixture. What
+changed is that the first six steps are text. They run Haiku over traces already
+on disk, cost cents, need no clip and make no sound. Do them before spending
+anything on voice or on a match.
 
-**Now, from clips on disk, no match needed and no model called.**
+**Text. The standing instruction is no voice until the commentary reads well.**
 
-1. **60-90 second voiced replays.** `replay --voice elevenlabs` over the
-   traces already in `runs/` — the Di María goal, the Mbappé penalty, two or
-   three of the twelve short clips. ElevenLabs credits only, about 260 a
-   minute of commentary. What to watch: whether the goal cuts the analyst
-   cleanly, whether `first_audio_s` stays under half a second across a longer
-   trace, and whether the line-length floor above shows up as dead air.
-2. **The same, with `--serve`, screen-recorded.** This is the demo artefact,
-   and it costs nothing but credits. Fix the frozen page clock first if it is
-   visible on camera.
-3. **One Haiku goal clip through the new gate rule**, about $0.06, to see the
-   `score_claim` rejection fire on the lines that got out.
+1. **Merge v4 with the score fix.** Hand the phraser the score after the goal as
+   a field instead of letting it infer one, rerun the Mbappé rephrase, and check
+   that the two `scoreline_mismatch` refusals are gone, that no new invention
+   arrived, and that the cached prefix still reads. About $0.03.
+2. **Numbers as data.** The score after the line, the minutes remaining, and
+   incident counts off the state — "third foul on Mbappé" — handed to the
+   phraser as fields and checked by the gate the way `note_claim` checks a note.
+   Note use becomes expected rather than permitted: roughly one clause every 40
+   seconds of build-up.
+3. **The colour seat.** Section 3e is the design. This is the largest piece of
+   work left and the one the notes are waiting on.
+4. **Cadence.** Let the phraser return empty, and let the predictor tolerate a
+   longer silence in build-up. Both are needed before a sparse lead sounds like
+   restraint rather than a dropped call.
+5. **Threads.** A running story line in the state, so a line can pick something
+   back up instead of starting from the last five lines every time.
+6. **An Opus-judge rubric**, so a rephrase iteration gets a number. Everything in
+   section 3d is a hand count; nothing here is repeatable without this.
 
-**Once the fixture is picked. Ask before any of this — it all spends.**
+**Then voice. Credits only, no model called. Ask first.**
 
-4. **Which app or site the broadcast plays in** decides the capture device and
-   whether the picture is capturable at all. Ask first.
-5. **Build the pack with the researcher** for the real fixture and check the
-   numbers and kits by hand. A wrong number here is a wrong name on air.
-6. **Set the score-bug crop** for that broadcaster with `commentary crop` on
-   any recent frame of its feed. The reader has read three unfamiliar layouts
-   perfectly; the crop still has to point at the corner.
-7. **One 20-minute dry run** off the same broadcaster if a recording is
-   obtainable, about $6. First run past four minutes.
-8. **The live run**: `MAX_USD_PER_MATCH` set, trace on, screen-record the watch
-   page with audio. Fallback if capture fails: record the broadcast and run it
-   as a file twenty minutes behind; the demo survives.
+7. **The listen.** `replay --voice elevenlabs` over the Mbappé trace with the
+   two new voices and the curve on. About 260 credits a minute. Fix the frozen
+   page clock first if it will be on camera.
+8. **The sweep**, trimmed well below its 1,074-credit default grid, to replace
+   the curve's guessed numbers with ones somebody has heard.
+
+**Then the fixture. All of it spends; ask before each, with the cost.**
+
+9. **A researcher pass on the 2022 pack** for about 40 notes, roughly $0.50. The
+   cheapest available test of whether steps 2 and 3 have anything to say.
+10. **Which app or site the broadcast plays in** decides the capture device and
+    whether the picture is capturable at all. Ask first.
+11. **Build the pack with the researcher** for the real fixture and check the
+    numbers and kits by hand. A wrong number here is a wrong name on air.
+12. **Set the score-bug crop** for that broadcaster with `commentary crop` on
+    any recent frame of its feed. The reader has read three unfamiliar layouts
+    perfectly; the crop still has to point at the corner.
+13. **One 20-minute dry run** off the same broadcaster if a recording is
+    obtainable, about $6 plus the phraser. First run past four minutes.
+14. **The live run**: `MAX_USD_PER_MATCH` set, trace on, screen-record the watch
+    page with audio. Fallback if capture fails: record the broadcast and run it
+    as a file twenty minutes behind; the demo survives.
 
 **After.** Demo video, README numbers, this file. Judge the trace with
 `commentary grade` sans feed and the Opus judge.
 
 Skip: grading the live match against a feed; the shootout crop; anything
-tracker-shaped; more work on fragments; the simulator ablation table.
+tracker-shaped; the simulator ablation table; the fine-tune in
+`docs/research/finetune-plan.md`, unless the phraser still reads badly after
+step 2.
 
 ## 6. Do not do these again
 
-- **Ask before any paid run.** Every number in section 3c came from a trace
-  already on disk or from a run that was agreed first. The one time that
-  slipped, five runs fired from one script before a change of plan landed and
-  $4.90 went on clips that had just been deprioritised.
-- **Discuss before launching implementation.** More than one thing in section
-  3c was built before it was clear it was wanted.
+- **Ask before any paid run, and say what it will cost.** Every number in
+  sections 3c and 3d came from a trace already on disk or from a run that was
+  agreed first. The one time that slipped, five runs fired from one script
+  before a change of plan landed and $4.90 went on clips that had just been
+  deprioritised. `commentary notes`, `commentary research`, `voice_sweep.py` and
+  every `--voice elevenlabs` invocation all spend.
+- **Discuss the options before launching implementation. A question is not a
+  go.** More than one thing in section 3c was built before it was clear it was
+  wanted.
+- **Real clips only.** Nothing the simulator produces is evidence about what the
+  caller sees or what the phraser says. The sim is for plumbing.
+- **60 to 90 seconds, not a full match.** Everything in section 3d was decided
+  by rewriting one 210-second trace offline for a few cents. A long run is a
+  thing you do once the short one is right.
+- **No voice until the text is decent.** The user's instruction on 15 September,
+  and the reason no credits were spent that day.
 - **Never cut `say` mid-word on this Mac.** Replaying a whole trace through
   `--voice say` cuts `say` off on every preemption, and two of those wedged
   CoreAudio: nothing on the machine would play — not `say`, not PortAudio, not
@@ -331,10 +525,14 @@ tracker-shaped; more work on fragments; the simulator ablation table.
   device after five seconds so the match keeps calling, but the sound does not
   come back on its own. Use `--voice say` to check the plumbing, not to
   rehearse.
-- **`EnterWorktree` grabs the Desktop repo.** `~/Desktop` is itself a git repo
-  and claims this directory, so the tool can land you in a worktree of the
-  wrong project. Make one by hand:
+- **`EnterWorktree` grabs the Desktop repo, and the harness moves you.**
+  `~/Desktop` is itself a git repo and claims this directory, so the tool can
+  land you in a worktree of the wrong project; and a session can be re-pinned
+  into another agent's worktree between tool calls. Make the worktree by hand
+  and use absolute paths for everything:
   `git -C /Users/Aarsh/Desktop/commentary worktree add -b <branch> .worktrees/<name> main`.
+  A worktree under `.claude/worktrees/` is the one `EnterWorktree <path>` will
+  accept.
 - **No batch scripts that cannot be interrupted.** See the first item.
 - **`--seconds` must be the clip length plus at least twenty.** The cursor is
   pinned at the live edge minus the delay, so the last eight seconds of a clip
@@ -347,10 +545,12 @@ tracker-shaped; more work on fragments; the simulator ablation table.
   oracle decodes a timestamp and never reads a pixel. The marks A/B in the old
   README was 12 lines on the sim and it was the whole case for a stack that
   lost on real clips.
+- **Do not add up a rephrased trace's `cost` rows.** They are the original run's,
+  republished. The phrasing spend is the `usd` field on the `phrased` rows.
 - **Ask the traces before building.** The tracker, the whistle, the roar and
   the repetition veto were each answered from `runs/` for nothing before any
-  code moved. `runs/readtrace.py` prints a trace; the trigger, sighting, gate
-  and spoken rows carry everything needed.
+  code moved. `runs/readtrace.py` prints a trace; the trigger, sighting, gate,
+  phrased and spoken rows carry everything needed.
 
 ## 7. What was removed, and why it stays removed
 
@@ -401,9 +601,11 @@ twice each (about $4) would settle it. Not worth it before the live run.
 2022 final's YouTube captions and local Whisper transcripts of three short
 clips: 115 utterances over ten windows of live open play, median 5 words, 24%
 two words or fewer, 19% a bare surname, longest 28. Whole match: median gap
-2.4 s, 78% of gaps under 4 s. This system's floor was 4 s. That is what the
-cadence work (`e1166e0`, `193ab26`) was aimed at, and section 4 says how far it
-got.
+2.4 s, 78% of gaps under 4 s. This system's floor was 4 s. The cadence work
+(`e1166e0`, `193ab26`) aimed at it and the caller would not write short; the
+phraser (`3ee6e26`) reached the median in one pass by taking the writing away
+from the caller altogether. What is left is the audio floor and the fact that
+the phraser cannot choose to say nothing — both in section 4.
 
 ## Things the next person will trip over
 

@@ -129,6 +129,7 @@ The settings worth knowing, all in `.env`:
 | | |
 |---|---|
 | `CALLER_MODEL` `BOARD_MODEL` `ANALYST_MODEL` | Opus 5 calls, Haiku 4.5 reads the board, Opus 5 on the analyst. |
+| `PHRASER_MODEL` | Haiku 4.5, one call per spoken line, rewrites the caller's form into a commentator's line. `off` removes the stage and the caller's own words go out, which is what it did before. |
 | `DELAY_S` | How far the narration cursor trails the live edge. 8.0. |
 | `PRESENT_OFFSET_S` | How far the viewer's picture trails the cursor. 3.5, and no deeper than the buffer's history. |
 | `CALLER_FRAME_WIDTH` | Width the caller's frames go out at. 768; 1280 costs 1.75x and did not pay. |
@@ -386,6 +387,9 @@ ablations are wired correctly enough to run against the real thing.
 | `run --source sim\|screen\|file` | Call a match. `--serve` adds the watch page, `--voice say` adds free sound via macOS's built-in speech (testing only), `--voice elevenlabs` adds the real two-voice sound and needs a key. |
 | `replay --trace t.jsonl --path clip.mp4` | Watch a finished run again: its clip through the delay buffer, its trace back onto the bus. `--start` is the clip offset the run began at, `--serve` adds the watch page, `--loop` plays it round again when the clip ends. Calls nothing and costs nothing. |
 | `replay --trace t.jsonl --path clip.mp4 --voice elevenlabs` | The same, but said out loud through a real director, so a voice or a sink can be heard on lines the model was already paid for. `--voice say` is free; `--out` says where to write the trace of what actually came out. No model is called either way. |
+| `rephrase --trace t.jsonl --pack p.json` | Rewrite a finished run's lines in the commentator's register and re-judge every one through the gate, writing a trace `replay --voice` will play. About a cent for a three-minute run; needs no clip. `--model` overrides `PHRASER_MODEL`. |
+| `research HOME AWAY` | Write the pre-match pack: team sheets, shirt numbers, kits, storylines and spoken-context notes. Calls a model. |
+| `notes --pack p.json` | Add spoken-context notes to a pack that already has its team sheets, without re-running the expensive half. Calls a model. |
 | `sim` | Describe the synthetic match, or `--out x.mp4` to render it. |
 | `capture [seconds]` | Prove frames reach Python. The day-one gate. |
 | `crop --path m.mp4 --at 300` | One frame with the score-bug box drawn on it and the bug beside it, so the crop is checked by eye before a run spends money. |
