@@ -203,6 +203,41 @@ def _speaker(args: argparse.Namespace) -> Speaker:
     return LogSpeaker(echo=True)
 
 
+def _pack_for_air(path: Path, *, trust_unchecked: bool = False) -> KnowledgePack:
+    """The pack as a match may use it: checked notes only, unless told otherwise.
+
+    A note is a figure said out loud in a confident voice, and the fact gate
+    lets it through for one reason — it is in the pack. So being in the pack
+    has to mean a person read it beside its source and agreed. A freshly
+    researched pack is forty-odd claims nobody has looked at yet, and the
+    honest default is that they stay off air until somebody ticks them.
+
+    ``--trust-unchecked`` is the rehearsal switch. It is how a rephrase over
+    a trace finds out whether a bigger pack changes anything before the
+    twenty minutes of checking are spent, and it is never the right flag for
+    a broadcast.
+
+    What was skipped is printed rather than logged, because a run that
+    silently has no context looks exactly like a run whose notes were all
+    unusable, and those want different fixes.
+    """
+    from commentary.agents.researcher import load_pack, only_checked
+
+    pack = load_pack(path)
+    if trust_unchecked:
+        unchecked = sum(1 for note in pack.notes if not note.checked)
+        if unchecked:
+            print(f"--trust-unchecked: {unchecked} of {len(pack.notes)} notes nobody has checked")
+        return pack
+    trimmed, skipped = only_checked(pack)
+    if skipped:
+        print(
+            f"{skipped} of {len(pack.notes)} notes are unchecked and will not be said; "
+            "tick them in the pack or pass --trust-unchecked"
+        )
+    return trimmed
+
+
 async def cmd_run(args: argparse.Namespace) -> int:
     settings = _settings(args)
     sim = None
@@ -224,9 +259,7 @@ async def cmd_run(args: argparse.Namespace) -> int:
         source = ScreenCapture(settings.capture)
 
     if args.pack:
-        from commentary.agents.researcher import load_pack
-
-        pack = load_pack(Path(args.pack))
+        pack = _pack_for_air(Path(args.pack), trust_unchecked=args.trust_unchecked)
 
     wire = _wire(args, sim, pack)
 
@@ -438,12 +471,15 @@ async def cmd_rephrase(args: argparse.Namespace) -> int:
     What comes out is a trace, so ``commentary replay`` plays it — with a
     voice, which is the only way to actually hear the difference.
     """
-    from commentary.agents.researcher import load_pack
     from commentary.llm import default_backend
     from commentary.rephrase import load, rephrase
 
     rows = load(args.trace)
-    pack = load_pack(Path(args.pack)) if args.pack else None
+    pack = (
+        _pack_for_air(Path(args.pack), trust_unchecked=args.trust_unchecked)
+        if args.pack
+        else None
+    )
     if pack is None:
         # Said out loud: the gate's roster comes from the pack, and without
         # one every surname in every phrased line is trimmed as unverified.
@@ -566,6 +602,41 @@ def _crop_preview(image: np.ndarray, box: tuple[float, float, float, float]) -> 
 # -- serve --------------------------------------------------------------
 
 
+def _researcher_backend() -> LLMBackend:
+    """The client a research pass needs, which is not the one a match needs.
+
+    :func:`default_backend` is tuned for the caller: eight seconds and one
+    retry, because a line that arrives after the moment has passed is worse
+    than no line. A researcher writing fifty notes issues eight web searches
+    and thinks between them, which takes minutes, so on that client every
+    pack would time out having already been billed. ``max_retries=0`` for the
+    same reason the judge uses it: a timed-out request has very likely been
+    charged, and a retry pays twice for an answer nobody sees.
+    """
+    from commentary.llm import grading_backend
+
+    return grading_backend(
+        timeout_s=1200.0,
+        no_key_hint="this is the one command that cannot run offline",
+    )
+
+
+def _search_tool(max_searches: int) -> dict[str, object] | None:
+    """The web search tool this pass may use, or ``None`` for none at all.
+
+    Every search puts its results into the next turn's input, and the turns
+    accumulate, so the number of searches is the one dial that decides what a
+    research pass costs. Eight is right for a fixture nobody has seen; a pass
+    over a match the model already knows, checking rather than discovering,
+    should be told to use fewer.
+    """
+    from commentary.agents.researcher import WEB_SEARCH_TOOL
+
+    if max_searches <= 0:
+        return None
+    return {**WEB_SEARCH_TOOL, "max_uses": max_searches}
+
+
 async def cmd_research(args: argparse.Namespace) -> int:
     """Write the pre-match notes, once, before anybody is waiting.
 
@@ -574,10 +645,9 @@ async def cmd_research(args: argparse.Namespace) -> int:
     live match is not the time to discover the squad numbers are wrong.
     """
     from commentary.agents.researcher import Researcher, pack_path, save_pack
-    from commentary.llm import default_backend
 
-    backend = default_backend()
-    researcher = Researcher(backend)
+    backend = _researcher_backend()
+    researcher = Researcher(backend, search_tool=_search_tool(args.max_searches))
     pack = await researcher.research(
         args.home, args.away, competition=args.competition, when=args.when
     )
@@ -605,24 +675,50 @@ async def cmd_notes(args: argparse.Namespace) -> int:
     researcher's model, and the pack is rewritten in place unless ``--out``
     says otherwise.
     """
-    from commentary.agents.researcher import Researcher, load_pack, save_pack
-    from commentary.llm import default_backend
+    from commentary.agents.researcher import (
+        Researcher,
+        hand_check_list,
+        load_pack,
+        researched_path,
+        save_pack,
+    )
 
-    pack = load_pack(Path(args.pack))
-    backend = default_backend()
-    researcher = Researcher(backend)
+    source = Path(args.pack)
+    pack = load_pack(source)
+    path = Path(args.out) if args.out else researched_path(source)
+    checked = sum(1 for note in pack.notes if note.checked)
+    if path == source and checked:
+        raise SystemExit(
+            f"{source} holds {checked} hand-checked notes; writing over it would put "
+            "a model's output where somebody's checking is. Leave --out off, or name "
+            "a different file."
+        )
+
+    backend = _researcher_backend()
+    researcher = Researcher(backend, search_tool=_search_tool(args.max_searches))
     updated = await researcher.write_notes(pack)
-    path = Path(args.out) if args.out else Path(args.pack)
     save_pack(updated, path)
 
     searched = "with web search" if researcher.used_search else "from memory"
     print(f"{updated.home.name} v {updated.away.name} — {len(updated.notes)} notes, {searched}")
-    for note in updated.notes:
-        print(f"  {note.about}: {note.text}  [{note.kind}]")
+    merge = researcher.last_merge
+    if merge is not None:
+        print(
+            f"  {merge.kept} hand-checked kept, {merge.added} added, "
+            f"{merge.clauses} no-number forms filled in, "
+            f"{len(merge.duplicates)} repeats dropped"
+        )
     if researcher.dropped_notes:
         print(f"  dropped {len(researcher.dropped_notes)} about names on no team sheet")
+    subjects = {note.about for note in updated.notes}
+    starters = [p.name for sheet in (updated.home, updated.away) for p in sheet.starters]
+    uncovered = [name for name in starters if name not in subjects]
+    if uncovered:
+        print(f"  {len(uncovered)} starters with no note: {', '.join(uncovered)}")
     print(f"wrote {path}")
     print(f"cost ${backend.total.cost_usd:.3f}")
+    print()
+    print(hand_check_list(updated))
     return 0
 
 
@@ -856,6 +952,11 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--backend", choices=["oracle", "anthropic"], default="oracle")
     run.add_argument("--voice", choices=["log", "say", "elevenlabs"], default="log")
     run.add_argument("--pack", help="knowledge pack JSON written by the researcher")
+    run.add_argument(
+        "--trust-unchecked",
+        action="store_true",
+        help="say the pack notes nobody has hand-checked; off by default",
+    )
     run.add_argument("--seconds", type=float, default=60.0, help="wall-clock run length")
     run.add_argument("--duration", type=float, default=600.0, help="sim match length")
     run.add_argument("--delay", type=float, default=None, help="override the buffer depth")
@@ -921,6 +1022,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="knowledge pack the run used; without it the gate trims every surname",
     )
     rph.add_argument(
+        "--trust-unchecked",
+        action="store_true",
+        help="say the pack notes nobody has hand-checked; off by default",
+    )
+    rph.add_argument(
         "--model",
         default=None,
         help=f"phrasing model; defaults to PHRASER_MODEL ({SETTINGS.phraser.model})",
@@ -951,11 +1057,26 @@ def build_parser() -> argparse.ArgumentParser:
     res.add_argument("--competition", default="")
     res.add_argument("--when", default="")
     res.add_argument("--out", help="where to write the pack; defaults under packs/")
+    res.add_argument(
+        "--max-searches",
+        type=int,
+        default=8,
+        help="how many web searches the pass may make; 0 researches from memory",
+    )
     res.set_defaults(func=cmd_research)
 
     nts = sub.add_parser("notes", help="add spoken-context notes to an existing pack (needs a key)")
     nts.add_argument("--pack", required=True, help="knowledge pack JSON to read")
-    nts.add_argument("--out", help="where to write it back; defaults to --pack, in place")
+    nts.add_argument(
+        "--out",
+        help="where to write it; defaults to <pack>-researched.json, never over the pack",
+    )
+    nts.add_argument(
+        "--max-searches",
+        type=int,
+        default=8,
+        help="how many web searches the pass may make; 0 researches from memory",
+    )
     nts.set_defaults(func=cmd_notes)
 
     caps = sub.add_parser("captions", help="a yt-dlp .en.json3 caption file to a transcript")

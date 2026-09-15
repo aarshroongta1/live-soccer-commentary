@@ -109,17 +109,12 @@ class AnthropicBackend:
         except (anthropic.APIConnectionError, anthropic.APITimeoutError) as exc:
             raise LLMError(f"{tag or model}: {type(exc).__name__}") from exc
 
-        if response.stop_reason == "refusal":
-            raise LLMError(f"{tag or model}: refused")
-
-        text = next((b.text for b in response.content if b.type == "text"), None)
-        if text is None:
-            raise LLMError(f"{tag or model}: no text block in response")
-        try:
-            value = output_format.model_validate(json.loads(text))
-        except (json.JSONDecodeError, ValidationError) as exc:
-            raise LLMError(f"{tag or model}: unparseable output: {exc}") from exc
-
+        # Counted here, before anything can go wrong with the content. A
+        # response that arrives has been billed whether or not this process
+        # can use it, and the two failures below are exactly the expensive
+        # ones: a refusal and a truncated answer both come off long calls.
+        # Two research passes died on them in one evening and reported no
+        # spend at all, because the accounting used to sit after the parse.
         usage = Usage(
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
@@ -130,4 +125,28 @@ class AnthropicBackend:
         usage = replace(usage, cost_usd=cost_usd(model, usage))
         async with self._lock:
             self._total = self._total + usage
+
+        if response.stop_reason == "refusal":
+            raise LLMError(f"{tag or model}: refused after ${usage.cost_usd:.3f}")
+
+        text = next((b.text for b in response.content if b.type == "text"), None)
+        if text is None:
+            raise LLMError(
+                f"{tag or model}: no text block in response after ${usage.cost_usd:.3f} "
+                f"(stop_reason {response.stop_reason}, "
+                f"blocks {[b.type for b in response.content]})"
+            )
+        try:
+            value = output_format.model_validate(json.loads(text))
+        except (json.JSONDecodeError, ValidationError) as exc:
+            # Nearly always the output cap: adaptive thinking spends the same
+            # budget the answer is written from, so a long think leaves a
+            # string unterminated. Say the stop reason, or the next reader
+            # spends another call finding out.
+            raise LLMError(
+                f"{tag or model}: unparseable output after ${usage.cost_usd:.3f} "
+                f"(stop_reason {response.stop_reason}, "
+                f"{usage.output_tokens} of {max_tokens} output tokens): {exc}"
+            ) from exc
+
         return Parsed(value=value, usage=usage, model=model)

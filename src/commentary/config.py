@@ -142,6 +142,18 @@ class CallerConfig:
     min_gap_attacking_s: float = 2.5
     min_gap_build_up_s: float = 4.5
     min_gap_dead_ball_s: float = 5.0
+    #: What the build-up cap stretches to when the colour seat is short of
+    #: its share of the channel (``ColourConfig.colour_share_target``).
+    #: Build-up is 54.6% of the match and the widest of the three phases the
+    #: lead owns outright, so it is where a hole for the second voice can be
+    #: opened without taking anything off an attacking move. The stretch is
+    #: linear in the shortfall and 6.0 s is the far end of it: study section
+    #: 2.3 puts 31% of real build-up gaps over six seconds, so a cap there
+    #: is still inside what a broadcast does, and study section 2.2's whole
+    #: point is that the gaps are where the other voice lives. Attacking and
+    #: dead-ball caps never stretch: the box is the lead's and a restart
+    #: already gives the seat 10.5 entries per 100 utterances.
+    min_gap_build_up_stretched_s: float = 6.0
     #: Lines shown back to the model as "the last lines spoken". This is the
     #: whole of what stops it repeating itself; a similarity veto used to sit
     #: behind it and fired zero times in 63 real-clip runs.
@@ -315,6 +327,46 @@ class ColourConfig:
     min_lead_lines: int = 2
     #: Small. The answer is three short sentences and two short lists.
     max_tokens: int = 700
+
+    # -- the ratio governor ----------------------------------------------
+    #: What share of all spoken utterances the colour seat should have.
+    #:
+    #: ``docs/research/real-commentary-corpus.md`` does not state this
+    #: number, so it is measured off the caption files three ways and all
+    #: three land on the same place (``scripts/corpus_numbers.py`` runs the
+    #: same reconstruction; the measurement itself is in
+    #: ``tests/test_colour_share.py``):
+    #:
+    #: 1. Section 4.2's phase table counts 325 colour entries over 4,613
+    #:    utterances in the four StatsBomb-aligned matches, and section 4.4
+    #:    measures the turn they open at a mean of 4.4 utterances. 325 x 4.4
+    #:    / 4,613 = **31.0%**. On the median run of 4 it is 28.2%.
+    #: 2. Segmenting the four files that carry YouTube's ``>>`` speaker
+    #:    markers into turns and calling a turn colour when its first
+    #:    utterance opens on one of section 4.1's cues: 1,251 utterances in
+    #:    colour turns out of 3,949, **31.7%**.
+    #: 3. The colour-opener rate over all six club matches is 7.24 per 100
+    #:    utterances; at 4.4 utterances a turn that is **31.8%**.
+    #:
+    #: So club football runs at about 69:31 and the brief's floor is 30%.
+    #: The target is the greater of the two, which is the corpus.
+    colour_share_target: float = 0.31
+    #: How far back the running share is measured, in cursor seconds. Five
+    #: minutes: long enough that one turn does not swing it, short enough
+    #: that a seat which has been quiet for a half is behind now rather than
+    #: on average.
+    share_window_s: float = 300.0
+    #: Utterances needed in the window before the share means anything. A
+    #: window holding one lead line does not say the colour seat is 31%
+    #: short; it says the match has just started.
+    share_min_sample: int = 4
+    #: The build-up rate when the seat is as far behind as it can be, which
+    #: replaces :attr:`min_gap_s` in proportion to the shortfall. Not zero,
+    #: because an offer costs a model call whether or not it is taken (see
+    #: :meth:`ColourSeat.answered`) and a gate that says yes on every tick
+    #: would spend the budget on silence. At twelve seconds a dead ball is
+    #: offered the seat within one restart rather than within one minute.
+    min_gap_behind_s: float = 12.0
 
 
 @dataclass(frozen=True)

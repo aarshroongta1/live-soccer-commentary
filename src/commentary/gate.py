@@ -42,6 +42,7 @@ from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from difflib import SequenceMatcher
+from typing import Protocol
 
 from commentary.config import SETTINGS, GateConfig
 from commentary.schemas import (
@@ -912,13 +913,18 @@ def _notes_in_play(
 
 
 def _names_the_subject(joined: str, note: Note) -> bool:
-    """Does this line say whose note this is?
+    """Does this line say whose note this is?"""
+    return _names_subject(joined, note.about)
+
+
+def _names_subject(joined: str, about: str) -> bool:
+    """Does this line name this player or team?
 
     ``joined`` is the folded line with a space at each end. Any tail of the
     subject counts, because a line says "Mbappé" where the pack says "Kylian
     Mbappé", and "Di María" has to match from either word.
     """
-    parts = fold(note.about).split()
+    parts = fold(about).split()
     tails = {" ".join(parts[index:]) for index in range(len(parts))}
     return any(f" {tail} " in joined for tail in tails)
 
@@ -962,6 +968,187 @@ def notes_used(text: str, notes: Sequence[Note], pack: KnowledgePack | None) -> 
         if len(wanted) >= 2 and all(token in said for token in wanted):
             used.append(index)
     return used
+
+
+
+#: What the match ledger counts, and the nouns a commentator says for each.
+#: The vocabulary lives here, beside the note rules, because two things need
+#: it and neither may keep its own copy: :mod:`commentary.ledger` writes a
+#: clause out of it, and ``ledger_claim`` below reads a clause back through
+#: it. The first two entries of each row are the singular and the plural the
+#: ledger writes with; the rest are only ever read.
+#:
+#: Deliberately short. "Effort", "attempt" and "stop" are all real words for
+#: a shot and a save, and all three turn true lines into count claims — "his
+#: second effort" is what a commentator says about a rebound, and a rule that
+#: demanded a ledger fact for it would refuse a line about something the
+#: caller never filed. The list is the nouns a count is actually attached to.
+COUNT_NOUNS: dict[str, tuple[str, ...]] = {
+    "shot_on_target": ("shot on target", "shots on target"),
+    "shot": ("shot", "shots"),
+    "save": ("save", "saves"),
+    "goal": ("goal", "goals"),
+    "corner": ("corner", "corners"),
+    "free_kick": ("free kick", "free kicks", "free-kick", "free-kicks"),
+    "penalty": ("penalty", "penalties"),
+    "foul": ("foul", "fouls"),
+    "offside": ("offside", "offsides"),
+    "throw_in": ("throw-in", "throw-ins", "throw in", "throw ins"),
+    "card": ("booking", "bookings", "card", "cards"),
+    "substitution": ("substitution", "substitutions"),
+    "clearance": ("clearance", "clearances"),
+    "tackle": ("tackle", "tackles"),
+    "cross": ("cross", "crosses"),
+}
+
+
+def noun_for(kind: str, *, plural: bool = False) -> str:
+    """What a commentator calls this count. "booking", not "card"."""
+    nouns = COUNT_NOUNS.get(kind, ())
+    if not nouns:
+        return kind.replace("_", " ")
+    return nouns[1] if plural and len(nouns) > 1 else nouns[0]
+
+
+#: Folded noun back to the kind it counts, so a claim can be read.
+_NOUN_KIND: dict[str, str] = {
+    fold(noun): kind for kind, nouns in COUNT_NOUNS.items() for noun in nouns
+}
+
+#: Longest first, so "shots on target" is never read as "shots" with a
+#: leftover, and "free kick" never as "free".
+_COUNT_NOUN_ALT = "|".join(sorted(_NOUN_KIND, key=len, reverse=True))
+_COUNT_WORD_ALT = "|".join(
+    sorted(set(_NOTE_NUMBER_WORDS) | set(_ORDINAL_WORDS), key=len, reverse=True)
+)
+
+#: A count of something that happened in this match: a number, cardinal or
+#: ordinal, in figures or in words, directly in front of the thing it counts.
+#: "Fourth corner", "his second foul", "3 shots".
+#:
+#: Directly in front, and that is the whole of why this rule is safe to have.
+#: A pattern that fired on every number in a line would spend the match
+#: rejecting "first time", "second ball", "one-two" and "eight yards out" —
+#: the trap ``_ORD_TAIL`` was drawn to avoid for the scoreline, and the one
+#: the position-zero name trim fell into and was deleted for.
+_COUNTED = re.compile(
+    rf"\b(?P<n>[0-9]+(?:st|nd|rd|th)?|{_COUNT_WORD_ALT})\s+(?P<noun>{_COUNT_NOUN_ALT})\b",
+    re.IGNORECASE,
+)
+
+_LEDGER_CLAIMS = (_COUNTED,)
+
+
+class CountFact(Protocol):
+    """What ``ledger_claim`` needs of a :class:`commentary.ledger.Fact`.
+
+    A protocol rather than the class itself, because
+    :mod:`commentary.ledger` imports this module for its name matching and
+    the dependency may only run one way.
+    """
+
+    @property
+    def about(self) -> str: ...
+
+    @property
+    def kind(self) -> str: ...
+
+    @property
+    def count(self) -> int: ...
+
+
+def _count_value(token: str) -> int | None:
+    """What this number token means, whatever shape it is written in."""
+    word = token.lower().strip()
+    if word.isdigit():
+        return int(word)
+    figures = re.fullmatch(r"(\d+)(?:st|nd|rd|th)", word)
+    if figures:
+        return int(figures.group(1))
+    if word in _ORDINAL_WORDS:
+        return _ORDINAL_WORDS[word]
+    return _NOTE_NUMBER_WORDS.get(word)
+
+
+def counts_in(text: str) -> list[tuple[int, str]]:
+    """Every "number, thing counted" pair in this text, as value and kind."""
+    found: list[tuple[int, str]] = []
+    for match in _COUNTED.finditer(text):
+        value = _count_value(match.group("n"))
+        kind = _NOUN_KIND.get(fold(match.group("noun")))
+        if value is not None and kind:
+            found.append((value, kind))
+    return found
+
+
+def _ledger_claims(text: str) -> list[str]:
+    """Every clause in the line that asserts a count of something this match."""
+    found: list[str] = []
+    seen: set[str] = set()
+    for pattern in _LEDGER_CLAIMS:
+        for match in pattern.finditer(text):
+            clause = _clause_around(text, match.start(), match.end())
+            if clause in seen:
+                continue
+            seen.add(clause)
+            found.append(clause)
+    return found
+
+
+def fact_covers(claim: str, fact: CountFact) -> bool:
+    """Does this ledger fact hold the number this clause puts on this thing?
+
+    Exact, both ways round. The claim's figure has to be the fact's count and
+    the claim's noun has to be the fact's kind — "France's fourth corner"
+    against four corners for France, and nothing looser. A count is the one
+    kind of claim where being nearly right is the same as being wrong, and
+    the whole reason the numbers are written in code is that a model asked to
+    copy one adds to it.
+    """
+    return any(value == fact.count and kind == fact.kind for value, kind in counts_in(claim))
+
+
+def facts_used(
+    text: str, facts: Sequence[CountFact], pack: KnowledgePack | None = None
+) -> list[int]:
+    """Which of these ledger facts this line actually said. Indices, in order.
+
+    The same match ``ledger_claim`` makes, read the other way round: the gate
+    asks "is there a count behind this clause", and the trace asks "which
+    count was that", so a row can say that a fact reached air. The pairing
+    :func:`notes_used` has with ``note_claim``.
+    """
+    if not facts:
+        return []
+    joined = f" {' '.join(fold(text).split())} "
+    claims = _ledger_claims(text)
+    return [
+        index
+        for index, fact in enumerate(facts)
+        if _subject_said(joined, fact.about, pack)
+        and any(fact_covers(claim, fact) for claim in claims)
+    ]
+
+
+def _subject_said(joined: str, about: str, pack: KnowledgePack | None) -> bool:
+    """Does this line say whose count this is?
+
+    A team answers to more than one word — Argentina, the Argentines, whatever
+    the team sheet's ``short`` is — and a count about a side said with the
+    demonym is the same count. A player answers to any tail of his name, which
+    is :func:`_names_subject`'s rule and the one every line already uses.
+    """
+    if _names_subject(joined, about):
+        return True
+    if pack is None:
+        return False
+    for sheet in (pack.home, pack.away):
+        if not is_the_same_name(about, sheet.name):
+            continue
+        for label in (sheet.short, sheet.demonym, f"{sheet.demonym}s"):
+            if label.strip() and _names_subject(joined, label):
+                return True
+    return False
 
 
 #: How long a card stays cover for a line that mentions it. A booking is
@@ -1211,6 +1398,7 @@ class FactGate:
         carried: str | None = None,
         at: float | None = None,
         notes: Sequence[Note] | None = None,
+        ledger: Sequence[CountFact] = (),
     ) -> GateVerdict:
         """Pass, trim, or reject — and always say why.
 
@@ -1245,6 +1433,15 @@ class FactGate:
         they have to be what the line is checked against, or the gate rejects
         the model for using the number it was handed. Left out, the pack's own
         notes are used, which is every caller of this before tallies existed.
+
+        ``ledger`` is what :class:`commentary.ledger.Ledger` holds right now:
+        the counts this broadcast has seen for itself, as the clauses the
+        voice was offered. It backs ``ledger_claim`` the way ``notes`` backs
+        ``note_claim``, and the two are checked together — a number covered by
+        either passes — because a researched fact and a count off the pictures
+        are two sources for the same sentence. Left out, no line may put a
+        number on anything the pack does not already say, which is every
+        caller of this before the ledger existed.
         """
         verdict = self._judge(
             line,
@@ -1256,6 +1453,7 @@ class FactGate:
             carried=carried,
             at=at,
             notes=notes,
+            ledger=ledger,
         )
         self.stats.record(verdict)
         return verdict
@@ -1272,6 +1470,7 @@ class FactGate:
         carried: str | None = None,
         at: float | None = None,
         notes: Sequence[Note] | None = None,
+        ledger: Sequence[CountFact] = (),
     ) -> GateVerdict:
         text = line.line.strip()
         if line.scene is Scene.REPLAY:
@@ -1308,7 +1507,7 @@ class FactGate:
         fatal += self._check_score_claims(text, line, state, pack, goal_incoming=goal_incoming)
         fatal += self._check_level_claim(text, state, goal_incoming=goal_incoming)
         fatal += self._check_card_claim(text, line, state, at=at)
-        fatal += self._check_note_claim(text, pack, notes)
+        fatal += self._check_counts(text, pack, notes, ledger)
         if (
             self.cfg.require_board_for_goal
             and _claims_goal(line)
@@ -1479,40 +1678,77 @@ class FactGate:
             return []
         return [f"card_claim: {said}, and no card in the form or the state"]
 
-    def _check_note_claim(
-        self, text: str, pack: KnowledgePack | None, notes: Sequence[Note] | None = None
+    def _check_counts(
+        self,
+        text: str,
+        pack: KnowledgePack | None,
+        notes: Sequence[Note] | None = None,
+        ledger: Sequence[CountFact] = (),
     ) -> list[str]:
-        """A statistic is a claim, and the pack is the only thing that can back one.
+        """Every number in the line that is not the score, against its source.
 
-        Everything else the gate checks can be checked against something the
-        system saw for itself: the roster came off a team sheet, the score
-        came off the scoreboard, the card was on the form. A goal count is
-        different. "Mbappé, three in the tournament" is unfalsifiable from
-        inside the broadcast — no camera shows it, no scoreboard carries it —
-        and it is exactly the kind of sentence a model writes when it is
-        asked to sound like a commentator. Before notes existed the only safe
-        answer was that no line could say anything of the sort.
+        Two rules and one pass, because a clause can only be judged once. A
+        line may put a number on something for exactly two reasons: somebody
+        researched it before kickoff, which is ``note_claim`` below, or this
+        broadcast counted it for itself, which is ``ledger_claim``. A clause
+        either of them covers passes; a clause neither covers is refused
+        whole, and the tag says which rule found it.
 
-        So the rule is a lookup, not arithmetic. Find the clauses that assert
-        a count, an ordinal, a streak or a habit; find the notes about the
-        people the line names; and require each clause to be one of those
-        notes, reworded by a word or two but not renumbered. A line with no
-        such clause never reaches any of this and is untouched.
+        Checking them together rather than one after the other is the whole
+        of the coordination. "Mbappé's second goal" is a count off the ledger
+        and a tally off the pack, and a rule that ran alone would refuse it
+        for not being the other kind.
 
-        Whole-line rejection, like the score rules and for the same reason: a
-        sentence with the statistic cut out of it is not a shorter sentence,
+        **note_claim.** Everything else the gate checks can be checked against
+        something the system saw for itself: the roster came off a team sheet,
+        the score came off the scoreboard, the card was on the form. A career
+        count is different. "Mbappé, three in the tournament" is unfalsifiable
+        from inside the broadcast — no camera shows it, no scoreboard carries
+        it — and it is exactly the kind of sentence a model writes when it is
+        asked to sound like a commentator. So the rule is a lookup, not
+        arithmetic: find the clauses that assert a count, an ordinal, a streak
+        or a habit, find the notes about the people the line names, and
+        require each clause to be one of those notes, reworded by a word or
+        two but not renumbered.
+
+        **ledger_claim.** The other half of the same thought, and the half
+        that was missing. A count of this match — a fourth corner, a second
+        foul, a first shot on target — is not in the pack and cannot be,
+        because nobody knew it before kickoff. It is in
+        :mod:`commentary.ledger`, which counted it off the caller's own forms,
+        and the clause the voice was shown came out of there with the figure
+        already written. A number the model wrote instead of the one it was
+        handed is caught here by being a number the match does not hold.
+
+        A line with no such clause reaches none of this and is untouched.
+        Rejection is whole-line, like the score rules and for the same reason:
+        a sentence with the statistic cut out of it is not a shorter sentence,
         it is a different one.
         """
-        claims = _note_claims(text)
+        note_claims = _note_claims(text)
+        claims: list[tuple[str, str]] = [(clause, "note_claim") for clause in note_claims]
+        claims += [
+            (clause, "ledger_claim")
+            for clause in _ledger_claims(text)
+            if clause not in note_claims
+        ]
         if not claims:
             return []
         in_play = _notes_in_play(text, pack, notes)
         names = _name_words(pack)
+        joined = f" {' '.join(fold(text).split())} "
+        held = [fact for fact in ledger if _subject_said(joined, fact.about, pack)]
         problems: list[str] = []
-        for claim in claims:
+        for claim, tag in claims:
             if any(_note_covers(claim, note, names) for note in in_play):
                 continue
-            problems.append(f"note_claim: {claim} not in the pack")
+            if any(fact_covers(claim, fact) for fact in held):
+                continue
+            problems.append(
+                f"note_claim: {claim} not in the pack"
+                if tag == "note_claim"
+                else f"ledger_claim: {claim} is not a count this match holds"
+            )
         return problems
 
     @staticmethod

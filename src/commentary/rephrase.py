@@ -67,8 +67,10 @@ from commentary.agents.colour import ColourPass, _merge, colour_pass
 from commentary.agents.phraser import Phraser
 from commentary.bus import Topic
 from commentary.config import SETTINGS, Settings
-from commentary.gate import FactGate, claims_goal, fold
+from commentary.gate import FactGate, claims_goal, facts_used, fold
 from commentary.goalfollow import FOLLOWUP_S, GoalFollowup, blocks_restatement
+from commentary.ledger import CONTEXT_FACTS, Ledger
+from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import LLMBackend
 from commentary.runtime import CARRY_NAME_S, GOAL_GRAPHIC_LAG_S
 from commentary.schemas import (
@@ -360,6 +362,11 @@ async def rephrase(
     #: 3 of a goal and a clause dropped into a lull are one selection and one
     #: tally. ``docs/research/real-commentary-corpus.md`` section 7.
     threads = Threads.from_pack(pack)
+    #: And what the broadcast counted for itself as the walk goes past it:
+    #: corners, fouls, shots, who has had how many. Sharing the threads'
+    #: tallies, so a player's goals in this match are counted in one place.
+    #: ``docs/research/real-commentary-corpus.md`` section 5.2.
+    ledger = Ledger.from_pack(pack, tallies=threads.tallies)
     follow = GoalFollowup(threads=threads)
     out = Rephrased()
     #: When each goal's follow-up window opened, for the restatement pass:
@@ -385,6 +392,34 @@ async def rephrase(
                 }
             )
 
+    def ledger_rows(at: float, facts: Sequence[LedgerFact], action: str) -> None:
+        """Trace every count offered and every count said, so both can be counted.
+
+        Both ends, unlike ``thread_rows``, which only records an offer that
+        was a callback. Gap 1 of the corpus study is that numbers barely
+        reach air, and the only way to tell a voice that will not say one
+        from a system that never offers one is to have both rows.
+        """
+        for fact in facts:
+            out.rows.append(
+                {
+                    "topic": Topic.LEDGER.value,
+                    "ts": at,
+                    "action": action,
+                    "about": fact.about,
+                    "kind": fact.kind,
+                    "count": fact.count,
+                    "text": fact.text,
+                }
+            )
+
+    def counts_for(at: float, names: Sequence[str]) -> list[LedgerFact]:
+        return ledger.facts(at, names)
+
+    def counts_said(text: str, at: float, names: Sequence[str]) -> list[LedgerFact]:
+        facts = counts_for(at, names)
+        return [facts[index] for index in facts_used(text, facts, pack)]
+
     #: Every caller form in the trace, spoken or not, oldest first. The
     #: follow-up state is fed all of them: after the Mbappé penalty the caller
     #: wrote four forms in a row and said none of them, and those four are the
@@ -403,6 +438,7 @@ async def rephrase(
         """Hand the follow-up every form the caller filled in up to now."""
         nonlocal fed
         while fed < len(forms) and forms[fed][0] <= upto + SAME_TS:
+            ledger.saw_form(forms[fed][0], forms[fed][1])
             follow.saw_form(forms[fed][1])
             fed += 1
 
@@ -426,16 +462,21 @@ async def rephrase(
         """
         feed(at)
         threads.see_state(state)
+        ledger.see_state(state)
         form = follow.synthetic()
         offered = (
             threads.offer([follow.scorer], ts=at, payoff=True) if follow.scorer else []
         )
         thread_rows(at, offered, "offered")
+        scorer_names = [follow.scorer] if follow.scorer else []
+        counts = counts_for(at, scorer_names)[:CONTEXT_FACTS]
+        ledger_rows(at, counts, "offered")
         phrased = await phraser.phrase(
             form,
             _summary(state),
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
+            ledger=counts,
             followup=follow.block(at, pack),
             goal_beat=follow.beat(at),
             scorer=follow.scorer,
@@ -459,6 +500,7 @@ async def rephrase(
             goal_in_state=cover.goal_in_state(at),
             at=at,
             notes=threads.notes(),
+            ledger=counts_for(at, scorer_names),
         )
         out.rows.append(
             {
@@ -509,6 +551,7 @@ async def rephrase(
             )
             phraser.accept(verdict.line, Event.GOAL)
             thread_rows(at, threads.said(verdict.line, ts=at, pack=pack), "used")
+            ledger_rows(at, counts_said(verdict.line, at, scorer_names), "used")
             follow.said(at)
             follow.synthesised += 1
         out.lines.append(
@@ -552,6 +595,7 @@ async def rephrase(
 
         state = _state_at(states, ts) or teams
         threads.see_state(state)
+        ledger.see_state(state)
         fell_back = False
         carried = cover.carried(form, ts)
         names = [carried] if carried else []
@@ -565,12 +609,15 @@ async def rephrase(
             names = [follow.scorer] + names
         offered = threads.offer(names, ts=ts, payoff=bool(followup))
         thread_rows(ts, offered, "offered")
+        counts = counts_for(ts, names)[:CONTEXT_FACTS]
+        ledger_rows(ts, counts, "offered")
         phrased = await phraser.phrase(
             form,
             _summary(state),
             on_the_ball=carried,
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
+            ledger=counts,
             followup=followup,
             goal_beat=follow.beat(ts),
             scorer=follow.scorer,
@@ -659,6 +706,10 @@ async def rephrase(
                 carried=cover.carried(form, ts),
                 at=ts,
                 notes=threads.notes(),
+                # Every count about anybody the line names, not only the two
+                # the phraser was shown: the check is whether the number is
+                # one the match holds, and the match holds all of them.
+                ledger=counts_for(ts, names),
             )
             out.rows.append(
                 {
@@ -719,6 +770,7 @@ async def rephrase(
         phraser.accept(verdict.line, form.event)
         cover.remember(form, verdict.line, ts)
         thread_rows(ts, threads.said(verdict.line, ts=ts, pack=pack), "used")
+        ledger_rows(ts, counts_said(verdict.line, ts, names), "used")
 
         # -- the thirty seconds after a goal -----------------------------
         # A goal line that got through opens the window; a line inside it
@@ -730,6 +782,7 @@ async def rephrase(
             # Whose goal it was is the one thing the board never knows, and
             # every running count about him is wrong from this second on.
             threads.credit_goal(follow.scorer, ts)
+            ledger.credit_goal(follow.scorer, ts, form.side)
         elif follow.active(ts):
             follow.said(ts)
         if follow.active(ts):

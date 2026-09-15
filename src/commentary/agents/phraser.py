@@ -36,6 +36,7 @@ from collections.abc import Sequence
 from commentary.agents.caller import clean_line, trim_words
 from commentary.agents.colour import mentions, says_a_number
 from commentary.config import PHRASER_MODEL, PhraserConfig
+from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import Block, LLMBackend, LLMError, Usage, text_block
 from commentary.prompts.phraser import phraser_blocks, phraser_system
 from commentary.schemas import CallerLine, Event, Note, PhrasedLine
@@ -211,6 +212,7 @@ class Phraser:
         on_the_ball: str | None = None,
         notes: Sequence[Note] = (),
         callbacks: Sequence[bool] = (),
+        ledger: Sequence[LedgerFact] = (),
         followup: str = "",
         goal_beat: int | None = None,
         scorer: str | None = None,
@@ -229,6 +231,12 @@ class Phraser:
         statistic — and the fact gate checks whatever comes back against the
         same notes, so a figure the model adjusts on its way out is a line
         that never reaches the speaker.
+
+        ``ledger`` is the same offer made out of this match's own counts —
+        a fourth corner, a second foul — written by
+        :class:`commentary.ledger.Ledger` rather than researched, and checked
+        afterwards by the gate's ``ledger_claim`` exactly as a note is checked
+        by ``note_claim``.
 
         ``callbacks`` marks which of those clauses have already been said
         once in this match, one flag a note, so the prompt can ask for a new
@@ -262,6 +270,7 @@ class Phraser:
             on_the_ball=on_the_ball,
             notes=notes,
             callbacks=callbacks,
+            ledger=ledger,
             last_event=self._recent[-1][1] if self._recent else None,
             followup=followup,
         )

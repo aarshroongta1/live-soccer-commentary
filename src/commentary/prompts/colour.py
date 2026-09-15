@@ -31,9 +31,18 @@ from commentary.config import ColourConfig
 from commentary.llm.base import Block, text_block
 from commentary.schemas import KnowledgePack, Player, TeamSheet
 
-#: Fifty real colour utterances, copied exactly from
+#: Fifty-two real colour utterances, copied exactly from
 #: ``docs/research/real-commentary-corpus.md`` sections 4.4 and 4.5, grouped
 #: by the situation that produced them.
+#:
+#: They are the one place in this prompt where a name may sit beside a
+#: specific claim, because the claim is a thing somebody really said about a
+#: match this system will never call. Everything the *rules* invent uses
+#: <PLAYER> and <SIDE>: seventeen of the eighty colour lines in the pooled
+#: night-one set said "has been here before", which was a phrase out of a
+#: worked example, on the players of whatever pack was loaded. The count
+#: below is pinned by a test so that an example added to the rules cannot
+#: quietly arrive dressed as a corpus line.
 #:
 #: They are YouTube's automatic captions and they carry its noise: "uh",
 #: "cuz", "Greish" for Grealish, "Lester" for Leicester, "Kaisedo" for
@@ -185,8 +194,12 @@ Not the turn: every utterance in it, on its own. Each one has to carry a \
 player's name off the team sheets, or a side plus the word that says they \
 have done it again, or the name of an event — the goal, the penalty, the \
 save, the card, the foul, the corner. "He", "they", "it" and "that" are not \
-names. "Yeah, he's been here before" is thrown away; "Yeah, Mbappé has been \
-here before" is not.
+names. "Yeah, he has done that all night" is thrown away; "Yeah, <PLAYER> \
+has done that all night" is not.
+
+Every worked example in these rules writes the name as <PLAYER> or <SIDE>. \
+That is not a name to say: it is the slot your own material fills. A line \
+that reaches air with a pointed bracket in it is not a line.
 
 This is because your utterances go out two or three seconds apart and your \
 colleague can cut you off after any of them. A listener who hears only your \
@@ -232,7 +245,7 @@ a pattern; one is not.
 - What a moment cost, or what it is worth at this scoreline.
 - After a goal: **the scorer, by name**. One fragment, about the man who \
 scored it — the note about him, or the move in the words your colleague used \
-to call it: "that is the finish of a man who has been here before", "off the \
+to call it: "<PLAYER>, and that is what the note said he does", "off the \
 post and in, and nobody claimed it". His name is in the material and it goes \
 in the line. Never the scoreline, and never a line that would fit any goal \
 ever scored: "that changes everything" and "that is a different game now" \
@@ -255,9 +268,16 @@ line. An utterance with a digit or a number word in it is thrown away before \
 it reaches air, however true it is.
 
 The notes are still yours. They tell you who takes the free kicks, who has \
-been here before, what a side is chasing — use what they say and leave the \
-figure out of it. "Chasing a first World Cup since 1986" becomes "this is \
-what they have been waiting for", not "forty minutes from their first".
+played in one of these before, what a side is chasing — use what they say \
+and leave the figure out of it. "Chasing a first World Cup since 1986" \
+becomes "this is what they have been waiting for", not "forty minutes from \
+their first".
+
+And say it in your own words, not in the ones you used last time. You are \
+shown what you have already said this match: an utterance that repeats four \
+words in a row from any of them is thrown away in code before it reaches \
+air. A phrase you liked once is the fastest way for a second voice to sound \
+like a jingle.
 
 Anything about a previous match, a record or a career that is not in the \
 notes. You may shorten a note and you may not extend one.

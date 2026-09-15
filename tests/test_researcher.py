@@ -25,10 +25,14 @@ from commentary.agents.researcher import (
     _tools_enabled,
     check_notes,
     freeze,
+    hand_check_list,
     is_frozen,
     load_pack,
+    merge_notes,
     note_subject,
+    only_checked,
     pack_path,
+    researched_path,
     save_pack,
     settle_notes,
     update_from_substitution,
@@ -610,3 +614,314 @@ def test_the_notes_prompt_shows_every_name_a_note_may_be_filed_under() -> None:
 
 def test_the_notes_rules_are_the_same_bytes_every_time() -> None:
     assert notes_system() == notes_system()
+
+
+# -- forty notes instead of thirteen -----------------------------------------
+#
+# The pack for the 2022 final carried thirteen notes about seven players, and
+# on both traces of that match the colour seat went quiet: the man on the ball
+# was somebody nobody had written a line about. The researcher's brief now
+# asks for forty to sixty, one about every starter, and that changes three
+# things a test can hold on to — a note carries its own confidence and a tick
+# box, a research pass merges rather than overwrites, and what comes out is a
+# list a human reads before any of it is allowed on air.
+
+
+def a_checked_note() -> Note:
+    return Note(
+        about="Bukayo Saka",
+        text="four goals in this competition",
+        kind="stat",
+        source="Premier League records",
+        counts="goals",
+        checked=True,
+    )
+
+
+def test_a_note_is_unchecked_and_fully_confident_until_told_otherwise() -> None:
+    """The two defaults, and the asymmetry between them.
+
+    ``checked`` defaults to False because the safe assumption about a note is
+    that nobody has read it. ``confidence`` defaults to 1.0 because it is the
+    researcher's own estimate, and a note written by hand into a pack — or
+    into a test — has no researcher to doubt.
+    """
+    note = Note(about="Bukayo Saka", text="four goals in this competition")
+    assert note.checked is False
+    assert note.confidence == 1.0
+
+
+def test_every_pack_in_the_repository_still_loads() -> None:
+    """Two new fields with defaults, and twelve packs on disk that predate them."""
+    packs = sorted(Path("clips").glob("pack-*.json"))
+    assert len(packs) >= 12
+    for path in packs:
+        pack = load_pack(path)
+        assert pack.home.name and pack.away.name
+
+
+def test_a_note_written_before_these_fields_existed_loads(tmp_path: Path) -> None:
+    path = tmp_path / "old.json"
+    payload = a_pack().model_dump()
+    payload["notes"] = [{"about": "Bukayo Saka", "text": "four goals in this competition"}]
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    note = load_pack(path).notes[0]
+    assert (note.checked, note.confidence, note.clause) == (False, 1.0, "")
+
+
+def test_confidence_outside_nought_to_one_is_refused() -> None:
+    with pytest.raises(ValidationError):
+        Note(about="Bukayo Saka", text="four goals", confidence=1.4)
+
+
+# -- the unchecked are not said ----------------------------------------------
+
+
+def test_only_checked_keeps_the_ticked_notes_and_says_how_many_went() -> None:
+    fresh = Note(about="Cole Palmer", text="eleven goals this season", confidence=0.8)
+    pack = a_pack().model_copy(update={"notes": [a_checked_note(), fresh]})
+    trimmed, skipped = only_checked(pack)
+    assert [note.about for note in trimmed.notes] == ["Bukayo Saka"]
+    assert skipped == 1
+
+
+def test_a_pack_whose_notes_are_all_checked_comes_back_untouched() -> None:
+    """The common case on matchday allocates nothing and compares equal."""
+    pack = a_pack().model_copy(update={"notes": [a_checked_note()]})
+    trimmed, skipped = only_checked(pack)
+    assert trimmed is pack
+    assert skipped == 0
+
+
+def test_the_hand_checked_pack_on_disk_is_ticked() -> None:
+    """The thirteen in the 2022 pack were checked by hand and now say so.
+
+    Without this the new default would silence the one pack in the
+    repository whose notes somebody actually looked up.
+    """
+    pack = load_pack(Path("clips/pack-argfra-2022.json"))
+    assert len(pack.notes) == 13
+    assert all(note.checked for note in pack.notes)
+
+
+# -- merging over notes somebody has checked ---------------------------------
+
+
+def test_a_hand_checked_note_survives_a_second_research_pass() -> None:
+    fresh = Note(about="Cole Palmer", text="eleven goals this season", confidence=0.8)
+    merge = merge_notes([a_checked_note()], [fresh])
+    assert [note.about for note in merge.notes] == ["Bukayo Saka", "Cole Palmer"]
+    assert merge.notes[0] == a_checked_note()
+    assert (merge.kept, merge.added) == (1, 1)
+
+
+def test_a_fresh_note_arrives_unchecked_however_it_was_marked() -> None:
+    """A model does not get to tick its own work."""
+    eager = Note(about="Cole Palmer", text="eleven goals this season", checked=True)
+    merge = merge_notes([], [eager])
+    assert merge.notes[0].checked is False
+
+
+def test_an_unchecked_note_already_in_the_pack_is_replaced_not_kept() -> None:
+    """What keeps a second run over the same pack idempotent."""
+    stale = Note(about="Cole Palmer", text="ten goals this season")
+    fresh = Note(about="Cole Palmer", text="eleven goals this season")
+    merge = merge_notes([stale], [fresh])
+    assert [note.text for note in merge.notes] == ["eleven goals this season"]
+
+
+def test_the_same_note_back_again_donates_its_no_number_form() -> None:
+    """The one thing a repeat may contribute, and the reason to ask for it.
+
+    The thirteen notes in the 2022 pack were written before ``clause``
+    existed, so the colour seat — which may not say a number — cannot say any
+    of them. The prompt asks for those back with the text copied exactly, and
+    all that comes across is the missing wording.
+    """
+    again = Note(
+        about="Bukayo Saka",
+        text="four goals in this competition",
+        clause="scoring in every round of this competition",
+        source="a worse source",
+        confidence=0.4,
+    )
+    merge = merge_notes([a_checked_note()], [again])
+    assert len(merge.notes) == 1
+    kept = merge.notes[0]
+    assert kept.clause == "scoring in every round of this competition"
+    assert kept.checked is True
+    assert kept.source == "Premier League records"
+    assert kept.confidence == 1.0
+    assert merge.clauses == 1
+
+
+def test_a_repeat_of_a_note_that_already_has_a_clause_is_dropped() -> None:
+    checked = a_checked_note().model_copy(update={"clause": "scoring in every round"})
+    merge = merge_notes([checked], [checked.model_copy(update={"clause": "in form"})])
+    assert merge.notes == [checked]
+    assert len(merge.duplicates) == 1
+    assert merge.clauses == 0
+
+
+@pytest.mark.asyncio
+async def test_write_notes_keeps_what_a_human_checked() -> None:
+    pack = a_pack().model_copy(update={"notes": [a_checked_note()]})
+    backend = ScriptedBackend()
+    backend.always("notes", NoteSheet(notes=some_notes()))
+    researcher = Researcher(backend)
+
+    updated = await researcher.write_notes(pack)
+
+    assert updated.notes[0] == a_checked_note()
+    assert researcher.last_merge is not None
+    assert researcher.last_merge.kept == 1
+    # "four goals in this competition" is in some_notes() too, under the same
+    # name, so it comes back as the repeat rather than as a fourth note.
+    assert len(updated.notes) == len(some_notes())
+
+
+# -- the list a human ticks --------------------------------------------------
+
+
+def a_pack_to_check() -> KnowledgePack:
+    return a_pack().model_copy(
+        update={
+            "notes": [
+                Note(
+                    about="Cole Palmer",
+                    text="eleven goals this season",
+                    kind="stat",
+                    source="https://example.test/palmer",
+                    counts="goals",
+                    clause="among the league's leading scorers",
+                    confidence=0.95,
+                ),
+                a_checked_note(),
+                Note(
+                    about="Declan Rice",
+                    text="seven set-piece assists since January",
+                    kind="stat",
+                    source="counted from match reports",
+                    confidence=0.5,
+                ),
+                Note(
+                    about="Arsenal",
+                    text="have not lost at home since April",
+                    kind="storyline",
+                    source="Premier League results",
+                    confidence=0.9,
+                ),
+            ]
+        }
+    )
+
+
+def test_the_hand_check_list_groups_by_subject_in_team_sheet_order() -> None:
+    """One player, every claim about him, one source page open."""
+    printed = hand_check_list(a_pack_to_check())
+    order = [printed.index(name) for name in ("Arsenal", "Bukayo Saka", "Declan Rice")]
+    assert order == sorted(order)
+    assert printed.index("Declan Rice") < printed.index("Cole Palmer")
+
+
+def test_the_hand_check_list_shows_the_source_and_the_tick_box() -> None:
+    printed = hand_check_list(a_pack_to_check())
+    assert "[x] four goals in this competition" in printed
+    assert "[ ] eleven goals this season" in printed
+    assert "source: https://example.test/palmer" in printed
+    assert "counts goals" in printed
+
+
+def test_the_hand_check_list_flags_the_shaky_ones_and_the_missing_clauses() -> None:
+    """The two things it exists to put in front of somebody.
+
+    A note the researcher was unsure of is where the checking time is worth
+    most, and a note with a figure and no no-number form is one the colour
+    seat cannot say at all.
+    """
+    printed = hand_check_list(a_pack_to_check())
+    shaky = [line for line in printed.splitlines() if "<< LOW" in line]
+    assert len(shaky) == 1
+    assert "set-piece assists" in shaky[0]
+    assert "no number: among the league's leading scorers" in printed
+    assert printed.count("MISSING, the colour seat cannot say this one") == 2
+    assert "4 notes about 4 subjects, 1 already checked, 1 under 0.7 confidence" in printed
+
+
+def test_the_hand_check_list_does_not_ask_for_a_clause_where_there_is_no_number() -> None:
+    pack = a_pack().model_copy(
+        update={
+            "notes": [
+                Note(
+                    about="Cole Palmer",
+                    text="always goes to the keeper's left from the spot",
+                    kind="habit",
+                    source="Chelsea penalties",
+                )
+            ]
+        }
+    )
+    assert "MISSING" not in hand_check_list(pack)
+
+
+def test_a_researched_pack_is_written_beside_the_one_it_read_never_over_it() -> None:
+    source = Path("clips/pack-argfra-2022.json")
+    assert researched_path(source) == Path("clips/pack-argfra-2022-researched.json")
+    assert researched_path(source) != source
+
+
+# -- what the brief now asks for ---------------------------------------------
+
+
+def test_the_notes_prompt_asks_for_a_pack_that_covers_the_whole_pitch() -> None:
+    rules = notes_system()
+    assert "forty to sixty" in rules.lower()
+    assert "EVERY STARTER, BOTH SIDES" in rules
+    assert "confidence" in rules
+    assert "NEVER INVENT A NUMBER" in rules
+
+
+def test_the_notes_prompt_shows_the_shirt_number_and_the_position() -> None:
+    """A researcher told to write about every starter has to know who they are."""
+    body = "\n".join(
+        block["text"] for block in notes_blocks(a_pack()) if block.get("type") == "text"
+    )
+    assert "David Raya  (number 22, GK)" in body
+    assert "Marc Cucurella  (LB)" in body  # no number confirmed, so none shown
+    assert "at least one" in body
+
+
+def test_the_notes_prompt_puts_the_checked_notes_in_front_of_the_model() -> None:
+    """Twice over: do not repeat them, except to fill in the missing clause."""
+    pack = a_pack().model_copy(update={"notes": [a_checked_note()]})
+    body = "\n".join(
+        block["text"] for block in notes_blocks(pack) if block.get("type") == "text"
+    )
+    assert "ALREADY CHECKED BY A HUMAN" in body
+    assert "four goals in this competition  [needs a no-number form]" in body
+    assert "copied character for character" in body
+
+
+def test_a_pack_with_no_checked_notes_is_not_told_about_any() -> None:
+    body = "\n".join(
+        block["text"] for block in notes_blocks(a_pack()) if block.get("type") == "text"
+    )
+    assert "ALREADY CHECKED" not in body
+
+
+def test_the_prompt_only_asks_for_a_clause_where_there_is_a_figure() -> None:
+    """A habit has no number to take out, and asking for one invites invention."""
+    habit = Note(
+        about="Cole Palmer",
+        text="always goes to the keeper's left from the spot",
+        kind="habit",
+        source="Chelsea penalties",
+        checked=True,
+    )
+    pack = a_pack().model_copy(update={"notes": [a_checked_note(), habit]})
+    body = "\n".join(
+        block["text"] for block in notes_blocks(pack) if block.get("type") == "text"
+    )
+    assert "four goals in this competition  [needs a no-number form]" in body
+    marked = [line for line in body.splitlines() if line.startswith("  Cole Palmer: ")]
+    assert marked == ["  Cole Palmer: always goes to the keeper's left from the spot"]

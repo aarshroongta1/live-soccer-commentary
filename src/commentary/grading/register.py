@@ -343,6 +343,12 @@ class Shape:
     source: Source = Source.PHRASED
     lines: int = 0
     colour_lines: int = 0
+    #: The second voice's share of everything a listener heard. Counted
+    #: rather than the raw line count because the line count says nothing
+    #: on its own: two colour lines is generous on a four-line passage and
+    #: nothing on a hundred-line one. Club football is 0.31 (study section
+    #: 4, three measurements; see the band's ``basis``).
+    colour_share: float = 0.0
     median_words: float = 0.0
     share_le_2: float = 0.0
     share_le_4: float = 0.0
@@ -402,6 +408,8 @@ def measure(rows: list[dict[str, Any]], pack: KnowledgePack | None = None) -> Sh
         known_people=len(people),
         duration_s=max((line.ts for line in spoken), default=0.0),
     )
+    if spoken:
+        shape.colour_share = len(colour) / len(spoken)
     for refusal in refused:
         shape.refusal_reasons[refusal.tag] = shape.refusal_reasons.get(refusal.tag, 0) + 1
     judged = len(lead) + len(refused)
@@ -683,7 +691,9 @@ def passage_block(shape: Shape, *, name: str = "") -> str:
     head = [
         f"The passage: {name or 'one trace'}, {shape.duration_s:.0f} seconds of match video.",
         f"Lines are {shape.source.value}. {shape.lines} from the lead, "
-        f"{shape.colour_lines} from a second voice.",
+        f"{shape.colour_lines} from a second voice — "
+        f"{shape.colour_share * 100:.0f}% of what was said, against "
+        f"{BANDS['colour_share'].value:.0%} in real club football.",
         "",
         "Timestamps are seconds from the start of the passage.",
         "",

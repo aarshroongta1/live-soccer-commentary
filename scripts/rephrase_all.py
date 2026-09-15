@@ -14,6 +14,15 @@ per-trace shares, which is not the same arithmetic once trace lengths differ.
     uv run python scripts/rephrase_all.py --tag v6
     uv run python scripts/rephrase_all.py --tag v6 --limit 2 --force
     uv run python scripts/rephrase_all.py --tag v6 --compare v5
+    uv run python scripts/rephrase_all.py --tag v6 --judge --judge-sample 5
+
+The free layer is pooled; **the judge is not.** One trace is one passage and
+`--judge` makes one paid call per sampled trace, deduplicating reruns of the
+same clip and taking the longest distinct ones (`--judge-sample`, default 5).
+Pooled judging was tried and is wrong: handed all thirty-nine traces as a
+single passage, nineteen of them reruns over one clip, Opus scored the
+repetition — 1.5 overall, "the same goal forty times" — which is a true
+statement about what it was shown and a false one about the system.
 
 Traces land in `runs/rephrased/<tag>/<run-key>/`, mirroring the discovered
 trace's own path under `runs/` so two tags never collide and a rerun with
@@ -40,6 +49,7 @@ import re
 import statistics
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -57,6 +67,11 @@ CLIPS_ROOT = Path("clips")
 #: section 3d is $0.0012 a line on a cached prefix; $0.0015 leaves headroom
 #: for the calls that miss the cache.
 PHRASE_LINE_COST_USD = 0.0015
+
+#: How many distinct clips the judge is shown by default, one call each.
+#: Five: enough that the spread says whether the mean means anything, few
+#: enough that a judged run is a few dollars rather than forty.
+JUDGE_SAMPLE = 5
 
 #: How far back an opener is compared for repetition, mirrored from
 #: `commentary.grading.register` so pooling can recompute the same flag per
@@ -173,6 +188,45 @@ MODEL_PREFIX: dict[str, str] = {
 }
 
 _TIMESTAMP_SUFFIX = re.compile(r"-\d{8}-\d{6}$")
+
+#: Run keys that are reruns over the **same** clip under another name: the
+#: gallery pair, the calibration passes, the tracker ablation and the model
+#: comparison are all the Di María goal (``docs/CLIPS.md``, "the tuned
+#: clip"). Everything not listed here takes the last path segment of its run
+#: key with a rerun suffix trimmed, so ``cadence/mbappe``,
+#: ``trigger/mbappe`` and ``mbappe`` are one clip and
+#: ``abl/marks-e01-counter-r2`` is ``e01-counter``.
+#:
+#: This exists for the judge. Handing Opus thirty-nine traces of which
+#: nineteen are the same ninety seconds of football is how the pooled run
+#: came back with "the same goal forty times" and a 1.5.
+CLIP_ALIASES: dict[str, str] = {
+    "A": "dimaria",
+    "B": "dimaria",
+    "c11": "dimaria",
+    "c12": "dimaria",
+    "c12b": "dimaria",
+    "dimaria-goal": "dimaria",
+    "marks": "dimaria",
+    "nomarks": "dimaria",
+    "opus": "dimaria",
+    "r2": "dimaria",
+    "r3": "dimaria",
+    "r4": "dimaria",
+    "r5": "dimaria",
+    "sonnet": "dimaria",
+}
+
+_RERUN_SUFFIX = re.compile(r"-r\d+$")
+_ARM_PREFIX = re.compile(r"^(?:marks|nomarks)-")
+
+
+def clip_of(run_key: str) -> str:
+    """Which piece of football this run is over. The judge's dedup key."""
+    if run_key in CLIP_ALIASES:
+        return CLIP_ALIASES[run_key]
+    base = _ARM_PREFIX.sub("", _RERUN_SUFFIX.sub("", run_key.rsplit("/", 1)[-1]))
+    return CLIP_ALIASES.get(base, base)
 
 
 def run_key_of(trace: Path) -> str:
@@ -498,32 +552,146 @@ def per_trace_table(pooled: Pooled) -> str:
     return "\n".join(rows)
 
 
+# -- the judge, one trace at a time -----------------------------------------
+
+
+@dataclass(frozen=True)
+class Judged:
+    """One trace's verdict, kept beside the trace it is about."""
+
+    run_key: str
+    clip: str
+    shape: Shape
+    verdict: Any  # reg.RegisterVerdict, imported lazily with the backend
+    usd: float
+
+
+def judge_sample(pooled: Pooled, n: int) -> list[tuple[str, str, Shape]]:
+    """Which traces the judge is shown: the longest of each distinct clip.
+
+    Pooling the free layer over every trace is the right arithmetic — it is
+    counting lines, and 505 lines is a better estimate than 39 averages.
+    Pooling the *judge* is not. Handed all thirty-nine as one passage it
+    scored a stuck loop: 1.5 overall, "the same goal forty times". It was
+    right about what it was shown and wrong about the system, because
+    nineteen of those traces are reruns over one clip and it read them as
+    one broadcast repeating itself.
+
+    So one trace is one passage. Traces of the same clip are deduplicated
+    by :func:`clip_of` — the longest of each, since a longer passage gives
+    the judge more to grade — and the ``n`` longest distinct clips go.
+    """
+    best: dict[str, tuple[str, Shape]] = {}
+    for run_key, _path, shape_i, _usd in pooled.per_trace:
+        clip = clip_of(run_key)
+        current = best.get(clip)
+        if current is None or shape_i.lines > current[1].lines:
+            best[clip] = (run_key, shape_i)
+    ranked = sorted(best.items(), key=lambda item: (-item[1][1].lines, item[0]))
+    return [(run_key, clip, shape_i) for clip, (run_key, shape_i) in ranked[: max(0, n)]]
+
+
+def _spread(values: Sequence[float]) -> tuple[float, float, float]:
+    """Mean, lowest, highest. The spread is the point: one judged trace is
+    eight points of noise and five of them say whether the mean means
+    anything."""
+    kept = [float(v) for v in values]
+    if not kept:
+        return 0.0, 0.0, 0.0
+    return statistics.fmean(kept), min(kept), max(kept)
+
+
+def judge_table(judged: list[Judged]) -> str:
+    """Mean and spread per dimension, then each trace's own overall."""
+    if not judged:
+        return "no traces judged"
+    rows = [
+        f"{'dimension':<14}{'mean':>7}{'low':>7}{'high':>7}{'n':>4}  what it is",
+        "-" * 74,
+    ]
+    for key, label, gloss in reg.DIMENSIONS:
+        scores = [float(getattr(j.verdict, key).score) for j in judged]
+        mean, low, high = _spread(scores)
+        rows.append(f"{label:<14}{mean:>7.1f}{low:>7.1f}{high:>7.1f}{len(scores):>4}  {gloss}")
+    rows += ["", f"{'trace':<28}{'clip':<16}{'lines':>7}{'overall':>9}{'usd':>9}", "-" * 74]
+    for j in judged:
+        rows.append(
+            f"{j.run_key:<28}{j.clip:<16}{j.shape.lines:>7}"
+            f"{float(j.verdict.overall.score):>9.1f}{j.usd:>9.4f}"
+        )
+    return "\n".join(rows)
+
+
+def worst_lines(judged: list[Judged], most: int = 6) -> str:
+    """The worst line each judged trace was asked to name, worst first."""
+    found: list[tuple[float, str, str, str]] = []
+    for j in judged:
+        for worst in j.verdict.worst[:1]:
+            found.append((float(j.verdict.overall.score), j.run_key, worst.line, worst.why))
+    found.sort(key=lambda item: item[0])
+    return "\n".join(
+        f"  [{run_key}] {line}\n      {why}" for _score, run_key, line, why in found[:most]
+    )
+
+
+async def judge_each(
+    pooled: Pooled, tag: str, *, sample: int, timeout_s: float
+) -> tuple[list[Judged], float]:
+    """Judge ``sample`` distinct clips separately. Returns the verdicts and the bill."""
+    from commentary.config import JUDGE_MODEL
+    from commentary.llm import grading_backend
+
+    picked = judge_sample(pooled, sample)
+    if not picked:
+        return [], 0.0
+    backend = grading_backend(timeout_s, no_key_hint="the judge needs a key")
+    out: list[Judged] = []
+    spent = 0.0
+    for run_key, clip, shape_i in picked:
+        print(f"== judging {run_key} ({clip}, {shape_i.lines} lead lines)")
+        verdict, usage = await reg.judge_register(
+            shape_i, backend, name=f"{tag}/{run_key}", model=JUDGE_MODEL
+        )
+        spent += usage.cost_usd
+        out.append(
+            Judged(
+                run_key=run_key,
+                clip=clip,
+                shape=shape_i,
+                verdict=verdict,
+                usd=usage.cost_usd,
+            )
+        )
+    return out, spent
+
+
 async def write_pooled_report(
-    pooled: Pooled, tag: str, *, judge: bool, timeout_s: float
+    pooled: Pooled,
+    tag: str,
+    *,
+    judge: bool,
+    timeout_s: float,
+    sample: int = JUDGE_SAMPLE,
 ) -> RegisterReport:
     n = len(pooled.per_trace)
     report = RegisterReport(name=f"POOLED tag={tag} ({n} traces)", shape=pooled.shape)
 
+    judged: list[Judged] = []
+    judge_usd = 0.0
     if judge and pooled.shape.lead:
-        from commentary.config import JUDGE_MODEL
-        from commentary.llm import grading_backend
-
-        backend = grading_backend(timeout_s, no_key_hint="the judge needs a key")
-        verdict, usage = await reg.judge_register(
-            pooled.shape, backend, name=f"pooled/{tag}", model=JUDGE_MODEL
-        )
-        report.verdict = verdict
-        report.usage = usage
-        report.model = JUDGE_MODEL
+        judged, judge_usd = await judge_each(pooled, tag, sample=sample, timeout_s=timeout_s)
 
     out_dir = REPHRASED_ROOT / tag
     out_dir.mkdir(parents=True, exist_ok=True)
     md_path = out_dir / "POOLED.md"
+    clips = {clip_of(run_key) for run_key, _p, _s, _u in pooled.per_trace}
     lines = [
         f"# Pooled register report, tag `{tag}`",
         "",
-        f"{n} trace(s) pooled, {pooled.shape.lines} lead lines, "
-        f"{pooled.shape.colour_lines} colour lines.",
+        f"{n} trace(s) pooled over {len(clips)} distinct clip(s), "
+        f"{pooled.shape.lines} lead lines, {pooled.shape.colour_lines} colour lines "
+        f"({pooled.shape.colour_share * 100:.0f}% of what was said, against "
+        f"{reg.BANDS['colour_share'].value:.0%} in real club football).",
         f"Phrasing spend (the `usd` field on `phrased` rows, not `cost` rows): "
         f"${pooled.total_usd:.4f}",
         "",
@@ -539,8 +707,64 @@ async def write_pooled_report(
         report.table(),
         "```",
     ]
+    if judged:
+        lines += [
+            "",
+            f"## The judge, one trace at a time ({len(judged)} of {len(clips)} clips)",
+            "",
+            "Each trace is judged on its own and the scores are summarised here. "
+            "Pooling the passage instead gave the judge thirty-nine traces of which "
+            "nineteen were the same clip, and it scored the repetition rather than "
+            "the system.",
+            "",
+            "```",
+            judge_table(judged),
+            "```",
+            "",
+            f"Judge spend: ${judge_usd:.4f} over {len(judged)} call(s).",
+            "",
+            "### The worst line of each judged trace",
+            "",
+            "```",
+            worst_lines(judged),
+            "```",
+        ]
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    report.write(out_dir / "POOLED.json")
+
+    payload = report.as_dict()
+    if judged:
+        payload["judge_per_trace"] = {
+            "model": reg.JUDGE_MODEL,
+            "sample": len(judged),
+            "clips": len(clips),
+            "usd": round(judge_usd, 6),
+            "traces": [
+                {
+                    "run_key": j.run_key,
+                    "clip": j.clip,
+                    "lines": j.shape.lines,
+                    "usd": round(j.usd, 6),
+                    "scores": {
+                        label: float(getattr(j.verdict, key).score)
+                        for key, label, _gloss in reg.DIMENSIONS
+                    },
+                }
+                for j in judged
+            ],
+            "scores": {
+                label: dict(
+                    zip(
+                        ("mean", "low", "high"),
+                        _spread([float(getattr(j.verdict, key).score) for j in judged]),
+                        strict=True,
+                    )
+                )
+                for key, label, _gloss in reg.DIMENSIONS
+            },
+        }
+    (out_dir / "POOLED.json").write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(f"\nwrote {md_path}")
     return report
 
@@ -571,18 +795,30 @@ def compare(tag: str, other: str) -> int:
             return f"{v * 100:.0f}%" if unit == "share" else f"{v:.1f}"
 
         print(f"{band['what']:<28}{fmt(va):>10}{fmt(vb):>10}{fmt(delta):>10}")
-    a_judge, b_judge = a.get("judge"), b.get("judge")
+    a_judge, b_judge = a.get("judge_per_trace"), b.get("judge_per_trace")
     if isinstance(a_judge, dict) and isinstance(b_judge, dict):
         print()
-        print(f"{'judge':<28}{tag:>10}{other:>10}{'delta':>10}")
-        for label in a_judge.get("scores", {}):
-            sa = a_judge["scores"].get(label, {}).get("score")
-            sb = b_judge.get("scores", {}).get(label, {}).get("score")
+        na, nb = a_judge.get("sample", 0), b_judge.get("sample", 0)
+        print(f"{'judge, mean over traces':<28}{tag:>10}{other:>10}{'delta':>10}")
+        for label, stats in a_judge.get("scores", {}).items():
+            sa = stats.get("mean")
+            sb = b_judge.get("scores", {}).get(label, {}).get("mean")
             if sa is None or sb is None:
                 continue
             print(f"{label:<28}{sa:>10.1f}{sb:>10.1f}{sa - sb:>+10.1f}")
+        print(f"({na} trace(s) judged in {tag}, {nb} in {other}; each on its own passage)")
     else:
-        print("\n(no --judge run on one or both tags: judge scores not compared)")
+        older = [t for t, j in ((tag, a), (other, b)) if isinstance(j.get("judge"), dict)]
+        if older:
+            print()
+            print(
+                "not compared: "
+                + ", ".join(older)
+                + " was judged as one pooled passage, which is a different measurement "
+                "from the per-trace judge and is not comparable to it"
+            )
+        else:
+            print("\n(no --judge run on one or both tags: judge scores not compared)")
     return 0
 
 
@@ -617,7 +853,13 @@ async def main_async(args: argparse.Namespace) -> int:
         packs[pack_path] = load_pack(Path(pack_path))
 
     pooled = pool(done, args.tag, packs)
-    await write_pooled_report(pooled, args.tag, judge=args.judge, timeout_s=args.timeout)
+    await write_pooled_report(
+        pooled,
+        args.tag,
+        judge=args.judge,
+        timeout_s=args.timeout,
+        sample=args.judge_sample,
+    )
     return 0
 
 
@@ -641,7 +883,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--include-haiku", action="store_true", help="also phrase traces whose caller was Haiku"
     )
     p.add_argument(
-        "--judge", action="store_true", help="also run the paid Opus judge on the pooled set"
+        "--judge",
+        action="store_true",
+        help="also run the paid Opus judge, once per sampled trace",
+    )
+    p.add_argument(
+        "--judge-sample",
+        type=int,
+        default=JUDGE_SAMPLE,
+        help=f"how many distinct clips the judge is shown, longest first "
+        f"(default {JUDGE_SAMPLE}, one paid call each)",
     )
     p.add_argument("--timeout", type=float, default=600.0, help="seconds to wait for the judge")
     p.add_argument(

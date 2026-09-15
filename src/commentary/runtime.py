@@ -36,6 +36,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import time
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -49,8 +50,10 @@ from commentary.capture.audio import CutDetector
 from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.config import SETTINGS, Settings
 from commentary.director import Director, next_beat_id
-from commentary.gate import FactGate, claims_goal, fold, is_the_same_name
+from commentary.gate import FactGate, claims_goal, facts_used, fold, is_the_same_name
 from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
+from commentary.ledger import CONTEXT_FACTS, Ledger
+from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import LLMBackend, Usage
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.predictor import SpeakPredictor
@@ -63,6 +66,7 @@ from commentary.schemas import (
     KnowledgePack,
     MatchState,
     Player,
+    Scene,
     Side,
     Sighting,
     SpeakDecision,
@@ -225,6 +229,12 @@ class Runtime:
         #: that seat can share its tallies: one match, one running count,
         #: whichever voice is reading a note off it.
         self.threads = Threads.from_pack(self.pack)
+        #: What this broadcast has counted for itself: corners, fouls, shots,
+        #: who has had how many. Built here, beside the threads and sharing
+        #: their tallies so a player's goals are counted once, and fed from
+        #: :meth:`_call` with every form and every state change. The colour
+        #: seat below reads it rather than keeping its own.
+        self.ledger = Ledger.from_pack(self.pack, tallies=self.threads.tallies)
         #: The second seat, event-driven and text-only. When it is enabled
         #: the old silence-timer analyst is not asked at all; see
         #: :meth:`_maybe_colour` and ``docs/HANDOFF.md`` section 3e.
@@ -233,6 +243,7 @@ class Runtime:
             config=self.settings.colour,
             pack=self.pack,
             tallies=self.threads.tallies,
+            ledger=self.ledger,
         )
         self.gate = FactGate(self.settings.gate)
         self.predictor = SpeakPredictor(self.settings.predictor, self.settings.caller)
@@ -318,6 +329,11 @@ class Runtime:
             "buffered_frames": len(self.buffer),
             "cursor_ts": self.buffer.cursor_ts,
             "live_ts": self.buffer.live_ts,
+            # The ratio governor's own number: what share of the last five
+            # minutes of utterances was the second voice, against club
+            # football's 31%. ``None`` means too few lines to say.
+            "colour_share": self.colour.share.share(self.cursor_ts),
+            "colour_share_target": self.settings.colour.colour_share_target,
             "gate": {
                 "judged": stats.judged,
                 "passed": stats.passed,
@@ -565,6 +581,10 @@ class Runtime:
                 last_spoken_seconds=self._last_spoken_seconds,
                 last_event=self._last_spoken_event,
                 last_quiet_ts=self._last_quiet_ts,
+                # The lead's build-up cap opens while the second voice is
+                # short of its share of the channel. See
+                # ``SpeakPredictor.cap_for`` and ``colour.Share``.
+                colour_stretch=self.colour.share.stretch(self.cursor_ts),
             )
             self._publish(Topic.TRIGGER, self.cursor_ts, decision)
             if self._over_budget():
@@ -622,6 +642,8 @@ class Runtime:
         self._publish(
             Topic.COLOUR,
             cursor,
+            share=self.colour.share.share(cursor),
+            share_target=self.settings.colour.colour_share_target,
             situation=offer.situation,
             reason=offer.reason,
             speak=turn.speak,
@@ -654,7 +676,6 @@ class Runtime:
         is dropped rather than queued behind it.
         """
         started = self._lead_beats
-        said: list[str] = []
         try:
             for index, (text, at) in enumerate(zip(utterances, spacing, strict=False)):
                 if index:
@@ -668,6 +689,10 @@ class Runtime:
                     self.gate,
                     goal_in_state=self._score_counts_the_goal(self.cursor_ts),
                     at=self.cursor_ts,
+                    # Its own last ten, updated as each one passes, so a
+                    # phrase the seat has settled into is struck out
+                    # whether it read it in the prompt or wrote it itself.
+                    said_before=self.colour.history,
                 )
                 self._publish(
                     Topic.GATE, self.cursor_ts, verdict, event=Event.NONE.value, where="colour"
@@ -694,10 +719,10 @@ class Runtime:
                         preemptable=True,
                     )
                 )
-                said.append(verdict.line)
+                self.colour.accept([verdict.line])
+                self.colour.spoke_colour(self.cursor_ts)
                 self._mark_spoken(self.cursor_ts, verdict.line)
         finally:
-            self.colour.accept(said)
             self._colour_turn = None
 
     async def _fill_the_goal_window(self) -> None:
@@ -951,6 +976,7 @@ class Runtime:
         # The colour seat reads the phase off the forms, spoken or not: a
         # form the caller filled in and chose not to say is still the best
         # evidence there is about what the picture was.
+        self.ledger.saw_form(cursor, line)
         self.colour.saw_form(cursor, line)
         # And so does the follow-up, for the same reason and one more: after
         # a goal the caller fills in form after form over the replays and
@@ -989,6 +1015,10 @@ class Runtime:
             carried=self._carried_name(line, cursor),
             at=cursor,
             notes=self.threads.notes(),
+            # Every count about anybody this line names, not only the two the
+            # phraser was shown: the check is whether the number is one the
+            # match holds, and the match holds all of them.
+            ledger=self._counts_for(judged, cursor),
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:
@@ -1025,6 +1055,7 @@ class Runtime:
         self._publish_threads(
             cursor, self.threads.said(verdict.line, ts=cursor, pack=self.pack), "used"
         )
+        self._publish_ledger(cursor, self._counts_said(verdict.line, cursor), "used")
         # -- the thirty seconds after a goal -----------------------------
         # A goal line that got through opens the window; any line inside it
         # spends one of its beats. Then, if the caller leaves the kind of
@@ -1035,6 +1066,7 @@ class Runtime:
             # Whose goal it was is the one thing the board never knows, and
             # every running count about him is wrong from this second on.
             self.threads.credit_goal(self.follow.scorer, cursor)
+            self.ledger.credit_goal(self.follow.scorer, cursor, line.side)
         elif self.follow.active(cursor):
             self.follow.said(cursor)
         if self.follow.active(cursor) and self._goal_turn is None:
@@ -1081,14 +1113,21 @@ class Runtime:
         wanted = ([ball.player] if ball is not None else []) + names
         wanted += [self.state.home, self.state.away]
         self.threads.see_state(self.state)
+        self.ledger.see_state(self.state)
         offered = self.threads.offer(wanted, ts=cursor, payoff=bool(followup))
         self._publish_threads(cursor, offered, "offered")
+        # The same people, the same order, asked of the other source of
+        # numbers. Two clauses, after the notes: the block is an offer and a
+        # menu of six is not one.
+        counts = self.ledger.facts(cursor, wanted, limit=CONTEXT_FACTS)
+        self._publish_ledger(cursor, counts, "offered")
         phrased = await self.phraser.phrase(
             line,
             self.state_tracker.summary(cursor),
             on_the_ball=carried,
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
+            ledger=counts,
             followup=followup,
             goal_beat=self.follow.beat(cursor),
             scorer=self.follow.scorer,
@@ -1163,6 +1202,46 @@ class Runtime:
                 times_said=item.times_said,
                 callback=item.callback,
             )
+
+
+    def _publish_ledger(self, cursor: float, facts: Sequence[LedgerFact], action: str) -> None:
+        """Put a count on the bus, offered or spoken, so it can be counted.
+
+        Every offer, unlike :meth:`_publish_threads`, which only rows a
+        callback: a count offered and not taken is the measurement this is
+        for. Gap 1 of the corpus study is that numbers barely reach air, and
+        the only way to tell a voice that will not say them from a system
+        that never gives it one is to trace both ends.
+        """
+        for fact in facts:
+            self._publish(
+                Topic.LEDGER,
+                cursor,
+                action=action,
+                about=fact.about,
+                kind=fact.kind,
+                count=fact.count,
+                text=fact.text,
+            )
+
+    def _counts_for(self, line: CallerLine, cursor: float) -> list[LedgerFact]:
+        """Every count about anybody this line could be talking about."""
+        ball = self.state.ball
+        wanted = ([ball.player] if ball is not None else []) + self._named_by(
+            line, self._carried_name(line, cursor)
+        )
+        wanted += [self.state.home, self.state.away]
+        return self.ledger.facts(cursor, wanted)
+
+    def _counts_said(self, text: str, cursor: float) -> list[LedgerFact]:
+        """The counts this line actually put on air."""
+        facts = self._counts_for(
+            CallerLine(
+                scene=Scene.LIVE_PLAY, event=Event.NONE, confidence=1.0, speak=True, line=text
+            ),
+            cursor,
+        )
+        return [facts[index] for index in facts_used(text, facts, self.pack)]
 
     @staticmethod
     def _named_by(line: CallerLine, carried: str | None) -> list[str]:

@@ -7,6 +7,7 @@ schedules them. Nothing crosses a module boundary as a loose dict.
 
 from __future__ import annotations
 
+import re
 from enum import StrEnum
 from typing import Literal
 
@@ -325,6 +326,19 @@ NoteKind = Literal["stat", "storyline", "habit"]
 TallyKind = Literal["goals", "assists", "games_scoring"]
 
 
+#: Any figure a commentator could say out loud, in digits or in words. The
+#: spelled-out forms are here because a note says "five goals in this
+#: tournament" and a year says "1962", and both are numbers to the one voice
+#: on this broadcast that may not say one.
+_A_FIGURE = re.compile(
+    r"\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|"
+    r"fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|"
+    r"sixty|seventy|eighty|ninety|hundred|thousand|dozen|first|second|third|fourth|fifth|"
+    r"sixth|seventh|eighth|ninth|tenth|once|twice|double|treble|brace|hat-trick)\b",
+    re.IGNORECASE,
+)
+
+
 class Note(BaseModel):
     """One short, verifiable thing a commentator can drop into a quiet moment.
 
@@ -377,6 +391,43 @@ class Note(BaseModel):
         max_length=120,
         description="The same fact with no figure in it, for a voice that may not say numbers",
     )
+    #: How sure the researcher was, nought to one. It is the researcher's own
+    #: estimate and nothing downstream reads it as truth: it exists to sort
+    #: the hand-check list, so that the twenty minutes a human has go on the
+    #: notes that are least likely to survive being looked up.
+    confidence: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=1.0,
+        description="The researcher's own confidence, 0 to 1; never spoken",
+    )
+    #: Whether a human has read this note beside its source and agreed with
+    #: it. Default ``False``, because a note nobody has checked is the normal
+    #: state of a freshly researched pack, and because the runtime skips the
+    #: unchecked ones unless it is told to trust them. A note written by hand
+    #: into a pack is checked by the act of writing it — see the thirteen in
+    #: ``clips/pack-argfra-2022.json`` — and says so in the file.
+    checked: bool = Field(
+        default=False,
+        description="A human has read this note beside its source; the runtime skips the rest",
+    )
+
+    @property
+    def has_figure(self) -> bool:
+        """Is there a number in ``text``, and therefore a need for ``clause``?
+
+        Asked in two places that must agree: the prompt, which marks the
+        notes it wants a no-number form for, and the hand-check list, which
+        warns about the ones that still have none. Answering it on the model
+        rather than in either of them is what keeps them agreeing.
+
+        A fourth number grammar in this repository, and deliberately the
+        loosest. The gate's and the tallies module's exist to decide what may
+        be said; this one only decides whether to ask for a second wording,
+        so erring towards "yes" costs a clause nobody needed and erring the
+        other way costs the colour seat a note it could have said.
+        """
+        return bool(_A_FIGURE.search(self.text))
 
     def __str__(self) -> str:
         return f"{self.about}: {self.text}"

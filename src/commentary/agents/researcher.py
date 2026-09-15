@@ -35,8 +35,9 @@ from __future__ import annotations
 
 import logging
 import os
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -62,6 +63,15 @@ WEB_SEARCH_TOOL: dict[str, Any] = {
     "type": "web_search_20260209",
     "name": "web_search",
     "max_uses": 8,
+    # Without this the first real notes pass died on "no text block in
+    # response" after several minutes of Opus and a billed call. This tool
+    # version defaults to being callable from inside a programmatic tool loop,
+    # and a model that takes that route answers in tool blocks and never
+    # writes the structured output this code reads. "direct" is the plain
+    # server-side search: the model asks, the server answers, and the final
+    # text block is the pack. A model that cannot do programmatic calling at
+    # all — Haiku — refuses the request outright without it.
+    "allowed_callers": ["direct"],
 }
 
 #: Where packs live. Relative on purpose: a pack belongs to a checkout, not to
@@ -211,6 +221,174 @@ def settle_notes(pack: KnowledgePack) -> tuple[KnowledgePack, list[Note]]:
     return KnowledgePack(**fields), dropped
 
 
+# -- merging, checking, and the list a human ticks -----------------------
+#
+# Two facts about a pack of forty-odd notes that a pack of thirteen never had
+# to face. The first is that nobody has read them. A researcher writes what it
+# can source and marks how sure it was; a human reads the list before kickoff
+# and ticks the ones that survive, because the fact gate downstream treats
+# every note as verified truth and cannot tell a checked one from a guess.
+# Until somebody ticks them they are `checked=False`, and the runtime leaves
+# them alone.
+#
+# The second is that a pack already has notes worth more than anything a fresh
+# call will produce — the ones a human checked last time. A second research
+# pass must not be able to lose them, or to quietly replace one with a model's
+# rewording of the same fact.
+
+
+#: Below this, a note goes to the top of the hand-check list. The researcher
+#: sets ``confidence`` itself and is the only thing that knows how hard the
+#: number was to find, so this is not a filter — nothing is dropped for being
+#: shaky — it is an ordering, so the twenty minutes a human has go where they
+#: are worth most.
+SHAKY_CONFIDENCE = 0.7
+
+
+@dataclass(frozen=True)
+class Merge:
+    """What a research pass did to a pack that already had notes in it."""
+
+    #: The merged list, hand-checked notes first, in pack order.
+    notes: list[Note]
+    #: Hand-checked notes carried through untouched.
+    kept: int
+    #: Fresh notes taken.
+    added: int
+    #: Hand-checked notes that gained a no-number form from the fresh pass.
+    clauses: int
+    #: Fresh notes thrown away for saying what a hand-checked note already said.
+    duplicates: list[Note]
+
+
+def merge_notes(existing: Sequence[Note], fresh: Sequence[Note]) -> Merge:
+    """Hand-checked notes survive a research pass; everything else is replaced.
+
+    Three rules, and the order matters.
+
+    A note somebody has checked is kept exactly as it is. It is the only part
+    of a pack anybody has verified, and a fresh call has no standing to
+    reword it, re-source it or change its number.
+
+    A fresh note that repeats a hand-checked one is dropped — except for the
+    one thing it may contribute. Notes written before the ``clause`` field
+    existed have no no-number form, and the colour seat cannot say any of
+    them; the prompt asks for those back with the text copied exactly, and a
+    fresh note that matches a hand-checked one word for word donates its
+    clause and nothing else.
+
+    Everything else on the pack that nobody checked is dropped rather than
+    merged, which is what keeps a second run over the same pack idempotent:
+    twice gives one set of notes, not two.
+    """
+    kept = [note for note in existing if note.checked]
+    by_key: dict[tuple[str, str], int] = {
+        (fold(note.about), fold(note.text)): index for index, note in enumerate(kept)
+    }
+    clauses = 0
+    duplicates: list[Note] = []
+    added: list[Note] = []
+    for note in fresh:
+        index = by_key.get((fold(note.about), fold(note.text)))
+        if index is None:
+            added.append(note if not note.checked else note.model_copy(update={"checked": False}))
+            continue
+        # The same note back again. All it may give us is the no-number form
+        # the older one was written without.
+        if note.clause and not kept[index].clause:
+            kept[index] = kept[index].model_copy(update={"clause": note.clause})
+            clauses += 1
+        else:
+            duplicates.append(note)
+    return Merge(
+        notes=[*kept, *added],
+        kept=len(kept),
+        added=len(added),
+        clauses=clauses,
+        duplicates=duplicates,
+    )
+
+
+def only_checked(pack: KnowledgePack) -> tuple[KnowledgePack, int]:
+    """The pack with every unchecked note removed, and how many went.
+
+    The default on the way into a match. A note is a thing said out loud in a
+    confident voice with a number in it, and the gate accepts it because it is
+    in the pack — so "in the pack" has to mean somebody looked at it. A
+    researched pack is forty notes nobody has read yet; ``--trust-unchecked``
+    is how a rehearsal says it does not care.
+
+    Returns the pack unchanged, and zero, when every note is checked, so the
+    common case allocates nothing and compares equal.
+    """
+    unchecked = [note for note in pack.notes if not note.checked]
+    if not unchecked:
+        return pack, 0
+    fields = dict(pack)
+    fields["notes"] = [note for note in pack.notes if note.checked]
+    return KnowledgePack(**fields), len(unchecked)
+
+
+def hand_check_list(pack: KnowledgePack) -> str:
+    """Every note, grouped by who it is about, in the order a human reads them.
+
+    This is the deliverable of a research pass as much as the JSON is. Forty
+    notes in a file are forty unverified claims; the same forty printed under
+    the player's name, with the source beside each one and the shaky ones
+    flagged, is twenty minutes of work with a definite end.
+
+    Grouped by subject in team-sheet order — home team, then its starters in
+    the order they were listed, then its bench, then the same for the away
+    side — because that is how a person checks: one player, every claim about
+    him, one source page open.
+    """
+    order = _subject_order(pack)
+    grouped: dict[str, list[Note]] = {}
+    for note in pack.notes:
+        grouped.setdefault(note.about, []).append(note)
+    known = [name for name in order if name in grouped]
+    stray = [name for name in grouped if name not in set(order)]
+
+    total = len(pack.notes)
+    shaky = sum(1 for note in pack.notes if note.confidence < SHAKY_CONFIDENCE)
+    lines = [
+        f"HAND-CHECK LIST — {total} notes about {len(grouped)} subjects, "
+        f"{sum(1 for n in pack.notes if n.checked)} already checked, "
+        f"{shaky} under {SHAKY_CONFIDENCE:g} confidence",
+        "Tick a note by setting \"checked\": true on it in the pack.",
+    ]
+    for name in [*known, *stray]:
+        lines.append("")
+        lines.append(f"{name}")
+        for note in grouped[name]:
+            lines.extend(_hand_check_rows(note))
+    return "\n".join(lines)
+
+
+def _hand_check_rows(note: Note) -> list[str]:
+    """One note as a person reads it: the claim, then what backs it."""
+    box = "[x]" if note.checked else "[ ]"
+    flag = "  << LOW" if note.confidence < SHAKY_CONFIDENCE else ""
+    tags = note.kind + (f", counts {note.counts}" if note.counts else "")
+    rows = [f"  {box} {note.text}   [{tags}, confidence {note.confidence:.2f}]{flag}"]
+    if note.clause:
+        rows.append(f"      no number: {note.clause}")
+    elif note.has_figure:
+        rows.append("      no number: — MISSING, the colour seat cannot say this one")
+    rows.append(f"      source: {note.source or '— none given'}")
+    return rows
+
+
+def _subject_order(pack: KnowledgePack) -> list[str]:
+    """Every name a note may be filed under, in team-sheet order."""
+    order: list[str] = []
+    for sheet in (pack.home, pack.away):
+        order.append(sheet.name)
+        order.extend(player.name for player in sheet.starters)
+        order.extend(player.name for player in sheet.bench)
+    return order
+
+
 # -- persistence ---------------------------------------------------------
 
 
@@ -226,6 +404,19 @@ def pack_path(home: str, away: str, directory: Path | str = PACKS_DIR) -> Path:
 
 def _slug(name: str) -> str:
     return "-".join(fold(name).split()) or "unknown"
+
+
+def researched_path(pack: Path | str) -> Path:
+    """Where a research pass over an existing pack writes its result.
+
+    Beside the pack it read, with ``-researched`` on the end, and never over
+    the top of it. A pack with hand-checked notes in it is the most expensive
+    object in this repository — somebody sat and looked forty claims up — and
+    the way to lose it is to make a model call's output the default
+    destination.
+    """
+    path = Path(pack)
+    return path.with_name(f"{path.stem}-researched{path.suffix or '.json'}")
 
 
 def save_pack(pack: KnowledgePack, path: Path | str) -> Path:
@@ -302,7 +493,7 @@ class Researcher:
         backend: LLMBackend,
         *,
         model: str = RESEARCHER_MODEL,
-        max_tokens: int = 8192,
+        max_tokens: int = 32000,
         effort: str | None = None,
         search_tool: dict[str, Any] | None = None,
     ) -> None:
@@ -310,6 +501,13 @@ class Researcher:
         self.model = model
         #: Two full squads of JSON is a lot of output, and a truncated pack is
         #: a failed pack. This is the one agent where generosity is free.
+        #: Raised twice on the way to the first fifty-note pack, and the
+        #: second time is the instructive one: adaptive thinking is on for
+        #: this model and spends the same budget the answer is written from,
+        #: so a 16,384 ceiling produced minutes of reasoning, six searches,
+        #: and JSON that stopped mid-string. The cap is not a cost control —
+        #: nothing is billed for room that goes unused — and a truncated pack
+        #: costs the whole call.
         self.max_tokens = max_tokens
         self.effort = effort
         #: Override to add a domain filter, or set to ``None`` to research
@@ -327,6 +525,11 @@ class Researcher:
         #: wrote the pack can print how many were lost rather than pretending
         #: the model did as it was told.
         self.dropped_notes: list[Note] = []
+        #: What the last notes pass did to the notes that were already in the
+        #: pack: how many hand-checked ones it kept, how many it added, how
+        #: many missing no-number forms it filled in, what it threw away as a
+        #: repeat. ``None`` until :meth:`write_notes` has run.
+        self.last_merge: Merge | None = None
 
     async def research(
         self,
@@ -383,7 +586,12 @@ class Researcher:
         add context would risk them for no reason.
 
         Replaces the notes rather than appending to them, so the command is
-        idempotent — running it twice gives one set of notes, not two.
+        idempotent — running it twice gives one set of notes, not two — with
+        the one exception that is the whole reason this is a merge and not an
+        assignment: a note somebody has ticked survives. See
+        :func:`merge_notes`. What the merge did is left on
+        :attr:`last_merge`, so the command can say it rather than the user
+        having to diff two files.
         """
         tools = [self.search_tool] if self.search_tool else None
         with _tools_enabled(self.backend, tools) as attached:
@@ -399,8 +607,10 @@ class Researcher:
                 tag="notes",
             )
         self.last_usage = parsed.usage
+        merge = merge_notes(pack.notes, parsed.value.notes)
+        self.last_merge = merge
         fields = dict(pack)
-        fields["notes"] = parsed.value.notes
+        fields["notes"] = merge.notes
         settled, dropped = settle_notes(KnowledgePack(**fields))
         self.dropped_notes = dropped
         for note in dropped:

@@ -46,6 +46,12 @@ class Topic(StrEnum):
     #: that a finished trace can be asked the only question that matters
     #: about a thread: how many facts were picked back up, and how often.
     THREAD = "thread"
+    #: A count off :mod:`commentary.ledger` put in front of a voice, and a
+    #: count that actually reached air. Two rows, one topic, the same shape
+    #: as ``thread`` and for the same reason: the question worth asking of a
+    #: finished trace is how many of the numbers this system worked out for
+    #: itself were ever said.
+    LEDGER = "ledger"
     CORRECTION = "correction"
     TRIGGER = "trigger"
     COST = "cost"

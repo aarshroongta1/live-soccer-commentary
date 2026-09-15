@@ -39,6 +39,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import Block, text_block
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
 from commentary.schemas import CallerLine, Event, Note, Scene, Side
@@ -380,9 +381,11 @@ CONTEXT, AND THE ONE THING YOU MAY ADD
 
 Every rule above says you may not add anything. There is one exception and it
 is narrow. Some calls carry a block headed `context:` — one-clause facts that
-somebody researched before kickoff and that a deterministic check will verify
-after you. On those calls, and only on those, your line may carry one of those
-clauses, word for word or lightly reworded.
+somebody researched before kickoff — and a block headed `ledger:` — counts of
+what has happened in this match so far, worked out from the calls themselves.
+A deterministic check verifies both after you. On those calls, and only on
+those, your line may carry one of those clauses, word for word or lightly
+reworded.
 
 USE IT. One real utterance in six carries a number and that is about two a
 minute for the whole ninety minutes, dropped into the flow of play by the man
@@ -390,13 +393,19 @@ calling it rather than saved up for the analyst. A quiet moment with a clause
 about a player your line names is exactly where it goes: if the block gives
 you one and your line names the man it is about, say it.
 
-None of that is about the score. A researched clause is never a scoreline and
-the block below never holds one; the score is counted for you and added to
-your words in code, as the goal section says. Every number you write yourself
-comes off the block below, and there is no second source.
+None of that is about the score. Neither block ever holds a scoreline; the
+score is counted for you and added to your words in code, as the goal section
+says. Every number you write yourself comes off one of the two blocks below,
+and there is no third source.
+
+The figure in a clause is the figure. Reword the clause all you like and leave
+the number exactly as it stands: a count said one higher than it is is the one
+mistake here that reaches air sounding right.
 
 "Kessler." becomes "Kessler, and Argentina have not lost in thirty-six."
 "Okafor steps up." becomes "Okafor. Three in the tournament already."
+"Corner." becomes "Corner. Fourth corner for France."
+"Ruiz fouls him." becomes "Ruiz again. His second foul."
 
 The limits, all of which are checked:
 
@@ -616,6 +625,7 @@ def phraser_blocks(
     callbacks: Sequence[bool] = (),
     last_event: Event | None = None,
     followup: str = "",
+    ledger: Sequence[LedgerFact] = (),
 ) -> list[Block]:
     """One call's content. Text only, and deliberately small.
 
@@ -629,6 +639,11 @@ def phraser_blocks(
     alongside them, one flag a note, saying which have already been said once
     in this match — see :mod:`commentary.threads`. Empty means none have, which
     is what every caller of this said before threads existed.
+
+    ``ledger`` is the other kind of clause: counts of what has happened in
+    this match, written by :mod:`commentary.ledger` out of the calls already
+    made. Shown under the notes, on the same quiet moments and under the same
+    rule, and checked afterwards by the gate's ``ledger_claim``.
     """
     return [
         text_block(
@@ -643,6 +658,7 @@ def phraser_blocks(
                 callbacks,
                 last_event,
                 followup,
+                ledger,
             )
         )
     ]
@@ -816,6 +832,7 @@ def _body(
     callbacks: Sequence[bool] = (),
     last_event: Event | None = None,
     followup: str = "",
+    ledger: Sequence[LedgerFact] = (),
 ) -> str:
     said = (
         "\n".join(f"  - {text.strip()}" for text in recent_lines if text.strip())
@@ -829,7 +846,7 @@ def _body(
         f"{state}\n\n"
         "WHAT THE EYES SAW — the form, filled in by whoever is watching\n"
         f"{_form(line, home, away, on_the_ball)}\n\n"
-        f"{_context(line, notes, callbacks)}\n\n"
+        f"{_context(line, notes, callbacks, ledger)}\n\n"
         f"{after}"
         f"{_silence_nudge(line, last_event)}"
         "THE LAST LINES SPOKEN, oldest first, with the kind of moment each was\n"
@@ -861,9 +878,17 @@ def _state_heading(line: CallerLine) -> str:
 
 
 def _context(
-    line: CallerLine, notes: Sequence[Note], callbacks: Sequence[bool] = ()
+    line: CallerLine,
+    notes: Sequence[Note],
+    callbacks: Sequence[bool] = (),
+    ledger: Sequence[LedgerFact] = (),
 ) -> str:
     """The `context:` block: researched clauses, or an explicit nothing.
+
+    And the `ledger:` block under it, which is the same offer made out of
+    counts this match produced rather than out of the pack. Both are held to
+    the same moment: a goal or a penalty is too big for an aside of either
+    kind, and :func:`notes_allowed` decides that once for the pair.
 
     Always printed, even when empty, and that is deliberate. A block that
     appears and disappears teaches a model that its absence means "use your
@@ -878,33 +903,64 @@ def _context(
     So the mark is on the row and the rule is under it, because a callback
     repeated word for word is not a thread, it is a loop.
     """
-    if not notes or not notes_allowed(line):
+    quiet = notes_allowed(line)
+    if not notes or not quiet:
         reason = (
             "too big a moment for an aside"
             if notes
             else "nothing researched about anybody on this form"
         )
-        return f"context:\n  (none — {reason})"
-    flags = list(callbacks) + [False] * (len(notes) - len(callbacks))
-    rows = [
-        f"  - {note.about}: {note.text.strip()}  [{note.kind}]"
-        + ("  [SAID BEFORE]" if said else "")
-        for note, said in zip(notes, flags, strict=False)
-    ]
-    block = [
-        "context: verified notes. Your line MAY carry ONE of these clauses,",
-        "reworded but not renumbered, about somebody the line names. Or none.",
-        *rows,
-    ]
-    if any(flags):
-        block += [
-            "",
-            "A clause marked [SAID BEFORE] has already gone out once in this match.",
-            "That is not a reason to avoid it — a fact said twice is what makes a",
-            "story run — but say it in a different shape from the one it has here:",
-            "same number, new words, and shorter than the first time.",
+        block = [f"context:\n  (none — {reason})"]
+    else:
+        flags = list(callbacks) + [False] * (len(notes) - len(callbacks))
+        rows = [
+            f"  - {note.about}: {note.text.strip()}  [{note.kind}]"
+            + ("  [SAID BEFORE]" if said else "")
+            for note, said in zip(notes, flags, strict=False)
         ]
-    return "\n".join(block)
+        block = [
+            "context: verified notes. Your line MAY carry ONE of these clauses,",
+            "reworded but not renumbered, about somebody the line names. Or none.",
+            *rows,
+        ]
+        if any(flags):
+            block += [
+                "",
+                "A clause marked [SAID BEFORE] has already gone out once in this match.",
+                "That is not a reason to avoid it — a fact said twice is what makes a",
+                "story run — but say it in a different shape from the one it has here:",
+                "same number, new words, and shorter than the first time.",
+            ]
+    return "\n".join([*block, "", _ledger_block(ledger if quiet else ())])
+
+
+def _ledger_block(ledger: Sequence[LedgerFact]) -> str:
+    """The `ledger:` block: counts off this match, or an explicit nothing.
+
+    Always printed, for the reason :func:`_context` gives for always printing
+    the notes: a block that comes and goes teaches a model that its absence
+    means "use your own knowledge".
+
+    These are not the pack's facts and the difference is worth the model
+    knowing, which is why they are a block of their own rather than more rows
+    under `context:`. A note was looked up by a person before kickoff; a
+    ledger clause was counted by this system out of the calls it has already
+    made tonight, and it is true of what the broadcast showed. The clause is
+    handed over finished — :mod:`commentary.ledger` wrote the figure and the
+    words around it — so the only thing left to do with it is fit it into a
+    sentence.
+    """
+    if not ledger:
+        return "ledger:\n  (none — nothing counted yet about anybody on this form)"
+    rows = [f"  - {fact.text.strip()}" for fact in ledger]
+    return "\n".join(
+        [
+            "ledger: counts this broadcast has made for itself, so far tonight.",
+            "Same rule as above and the same one clause: say it in your own words",
+            "about somebody your line names, and do not change the number.",
+            *rows,
+        ]
+    )
 
 
 def _form(line: CallerLine, home: str, away: str, on_the_ball: str | None) -> str:

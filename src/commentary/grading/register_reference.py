@@ -191,6 +191,18 @@ CLUB: dict[str, Band] = {
     ),
     "lines": Band(value=None, unit="count", what="lines spoken"),
     "colour_lines": Band(value=None, unit="count", what="lines from the second voice"),
+    "colour_share": Band(
+        value=0.31,
+        unit="share",
+        what="share said by the second voice",
+        tolerance=0.06,
+        basis="section 4, measured three ways and all three at about 31%: "
+        "325 colour entries over 4,613 utterances (4.2) at a mean run of "
+        "4.4 (4.4) is 31.0%; the four files with >> speaker markers, "
+        "segmented into turns and classified by 4.1's openers, give 1,251 "
+        "of 3,949, 31.7%; the six-match opener rate of 7.24 per 100 at the "
+        "same run length gives 31.8%. The brief's floor is 30%",
+    ),
     "gate_refused_share": Band(
         value=None,
         unit="share",
@@ -237,6 +249,17 @@ FINAL_2022: dict[str, Band] = {
         ),
         ("lines", Band(None, "count", "lines spoken")),
         ("colour_lines", Band(None, "count", "lines from the second voice")),
+        (
+            "colour_share",
+            Band(
+                0.31,
+                "share",
+                "share said by the second voice",
+                0.06,
+                "club football's figure; the 2022 final is not separately measured "
+                "for it and the study's own marker counts put it in the same place",
+            ),
+        ),
         ("gate_refused_share", Band(None, "share", "refused by the gate")),
     )
 }
@@ -258,6 +281,7 @@ BANDS: dict[str, Band] = REFERENCES[REFERENCE]
 ORDER: tuple[str, ...] = (
     "lines",
     "colour_lines",
+    "colour_share",
     "median_words",
     "share_le_2",
     "share_le_4",

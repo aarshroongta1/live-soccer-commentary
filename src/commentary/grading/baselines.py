@@ -35,7 +35,7 @@ from commentary.agents.caller import Caller
 from commentary.capture.buffer import DelayBuffer, Frame, now
 from commentary.config import SETTINGS, CallerConfig, PredictorConfig, Settings
 from commentary.director import Director
-from commentary.gate import FactGate
+from commentary.gate import CountFact, FactGate
 from commentary.grading import report
 from commentary.grading.report import Scorecard
 from commentary.predictor import SpeakPredictor
@@ -102,6 +102,7 @@ class OpenGate(FactGate):
         carried: str | None = None,
         at: float | None = None,
         notes: Sequence[Note] | None = None,
+        ledger: Sequence[CountFact] = (),
     ) -> GateVerdict:
         return GateVerdict(
             passed=True,
@@ -139,13 +140,15 @@ class FixedCadence(SpeakPredictor):
         last_spoken_seconds: float | None = None,
         last_event: Event | None = None,
         last_quiet_ts: float | None = None,
+        colour_stretch: float = 0.0,
     ) -> SpeakDecision:
         """Due every ``cadence_s`` of video time, and never for any other reason.
 
         Every keyword is ignored on purpose: the baseline is a timer, and a
         timer that made an exception for goals, or that shortened its wait
         after a short line, or that ran at one rate in the box and another on
-        the halfway line, would not be the baseline.
+        the halfway line — or that opened a hole because a second voice was
+        short of the channel — would not be the baseline.
 
         The timer runs off this object's own last attempt rather than off the
         runtime's last spoken line. worldcupvoice narrates every four seconds;

@@ -22,6 +22,15 @@ at a restart. One rate through both sounds too slow in the box and too busy on
 the halfway line, which is that study's Gap 3, so the cap is chosen by what
 the last line was about. :func:`phase_of` is the whole of the mapping.
 
+**The build-up cap opens when the other seat is short of the channel.**
+Section 4 of the same study gives the colour voice about 31% of the
+utterances in club football and this system was giving it 14%. The lead is
+not wrong to speak, but in build-up — 54.6% of the match — there is no hole
+for a second voice to stand in, so the build-up cap alone stretches from
+4.5 s towards 6.0 s in proportion to the shortfall (``colour_stretch``,
+computed by :class:`commentary.agents.colour.Share`). It is a ceiling, not
+a wait: a fragment still buys a fragment's silence.
+
 **A chosen silence is a decision and the cap counts it.** The phraser may now
 return an empty line, which is what a quarter of build-up touches and 43% of
 goal kicks get in real commentary. Nothing is spoken, so the silence that
@@ -117,23 +126,46 @@ class SpeakPredictor:
             return 0.0
         return (silence_s - start) / (forces - start)
 
-    def cap_for(self, last_event: Event | None) -> float:
-        """The longest the voice ever waits after a line about ``last_event``."""
-        return {
+    def cap_for(self, last_event: Event | None, colour_stretch: float = 0.0) -> float:
+        """The longest the voice ever waits after a line about ``last_event``.
+
+        ``colour_stretch`` is the second voice's shortfall, 0 to 1, out of
+        :class:`commentary.agents.colour.Share`. It opens the build-up cap
+        and nothing else: from ``min_gap_build_up_s`` at 0 towards
+        ``min_gap_build_up_stretched_s`` at 1, linear in between. The other
+        two phases do not move — an attacking move is the lead's and a
+        restart already gives the colour seat five times the rate.
+
+        This is a ceiling and not a wait. The gap actually owed is what the
+        last line took plus a breath (:meth:`gap_after`), so stretching the
+        cap only changes anything where a long line has already earned more
+        than 4.5 s of silence — which is exactly the hole the second voice
+        needs and cannot currently find.
+        """
+        caps = {
             "attacking": self.caller.min_gap_attacking_s,
-            "build_up": self.caller.min_gap_build_up_s,
+            "build_up": self._build_up_cap(colour_stretch),
             "dead_ball": self.caller.min_gap_dead_ball_s,
-        }.get(phase_of(last_event), self.caller.min_gap_s)
+        }
+        return caps.get(phase_of(last_event), self.caller.min_gap_s)
+
+    def _build_up_cap(self, colour_stretch: float) -> float:
+        reach = max(0.0, min(1.0, colour_stretch))
+        base = self.caller.min_gap_build_up_s
+        return base + (self.caller.min_gap_build_up_stretched_s - base) * reach
 
     def gap_after(
-        self, last_spoken_seconds: float | None, last_event: Event | None = None
+        self,
+        last_spoken_seconds: float | None,
+        last_event: Event | None = None,
+        colour_stretch: float = 0.0,
     ) -> float:
         """How long the voice owes the last line before the next one.
 
         ``None`` for the length means nobody recorded how long it took, and
         the honest answer then is the phase's cap on its own.
         """
-        cap = self.cap_for(last_event)
+        cap = self.cap_for(last_event, colour_stretch)
         if last_spoken_seconds is None:
             return cap
         earned = last_spoken_seconds + self.caller.gap_after_line_s
@@ -149,13 +181,16 @@ class SpeakPredictor:
         last_spoken_seconds: float | None = None,
         last_event: Event | None = None,
         last_quiet_ts: float | None = None,
+        colour_stretch: float = 0.0,
     ) -> SpeakDecision:
         """One tick's verdict, with a reason a human reading a trace can act on.
 
         ``last_event`` is what the last line was about and picks the rate.
         ``last_quiet_ts`` is when the phraser last chose to say nothing: it
         holds the rate cap off without touching the pressure that stops the
-        broadcast going mute.
+        broadcast going mute. ``colour_stretch`` is how far the second voice
+        is behind its share of the channel and opens the build-up cap; see
+        :meth:`cap_for`.
         """
         self.ticks += 1
         silence_s = float("inf") if last_spoken_ts is None else now_ts - last_spoken_ts
@@ -175,7 +210,7 @@ class SpeakPredictor:
         urgency = min(1.0, base + pressure * (1.0 - base))
 
         forced = silence_s >= self.cfg.silence_forces_at_s
-        gap = self.gap_after(last_spoken_seconds, last_event)
+        gap = self.gap_after(last_spoken_seconds, last_event, colour_stretch)
         # The cap runs from whichever came later, the last line or the last
         # decision to pass over a moment. Pressure, above, runs from the last
         # line only: a chosen silence is still silence to a listener.

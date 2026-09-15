@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from commentary.__main__ import _crop_preview, build_parser, cmd_notes, crop_box
+from commentary.__main__ import _crop_preview, _pack_for_air, build_parser, cmd_notes, crop_box
+from commentary.agents.researcher import load_pack, researched_path, save_pack
 from commentary.config import JUDGE_MODEL
+from commentary.schemas import Note
 
 
 def test_a_crop_box_is_four_fractions():
@@ -37,7 +41,7 @@ def test_the_preview_puts_the_bug_beside_the_marked_frame():
     assert int(preview[:, 200:].max()) > 0
 
 
-def test_notes_reads_a_pack_and_writes_it_back_in_place():
+def test_notes_reads_a_pack_and_knows_which_command_it_is():
     args = build_parser().parse_args(["notes", "--pack", "clips/pack-x.json"])
     assert args.pack == "clips/pack-x.json"
     assert args.out is None
@@ -66,3 +70,46 @@ def test_register_defaults_to_the_judge_and_takes_more_than_one_trace():
 def test_register_can_be_run_for_nothing():
     args = build_parser().parse_args(["register", "a.jsonl", "--no-model"])
     assert args.no_model is True
+
+
+def test_notes_writes_beside_the_pack_rather_than_over_it():
+    """The default destination is the researched copy, never the pack itself.
+
+    A pack with hand-checked notes in it took somebody an evening; a notes
+    pass takes a model ninety seconds. Making the model's output the default
+    destination is how the evening gets lost.
+    """
+    args = build_parser().parse_args(["notes", "--pack", "clips/pack-x.json"])
+    assert args.out is None
+    assert researched_path(Path(args.pack)) == Path("clips/pack-x-researched.json")
+
+
+def test_notes_refuses_to_write_over_a_pack_somebody_has_checked(tmp_path):
+    pack = load_pack(Path("clips/pack-argfra-2022.json"))
+    target = tmp_path / "pack.json"
+    save_pack(pack, target)
+    args = build_parser().parse_args(
+        ["notes", "--pack", str(target), "--out", str(target)]
+    )
+    with pytest.raises(SystemExit, match="hand-checked"):
+        asyncio.run(cmd_notes(args))
+
+
+def test_run_and_rephrase_both_know_how_to_trust_an_unchecked_pack():
+    assert build_parser().parse_args(["run"]).trust_unchecked is False
+    args = build_parser().parse_args(["rephrase", "--trace", "t.jsonl", "--trust-unchecked"])
+    assert args.trust_unchecked is True
+
+
+def test_a_pack_for_air_leaves_the_unchecked_notes_behind(tmp_path, capsys):
+    pack = load_pack(Path("clips/pack-argfra-2022.json"))
+    notes = [*pack.notes, Note(about="Lionel Messi", text="nine goals this year")]
+    target = tmp_path / "pack.json"
+    save_pack(pack.model_copy(update={"notes": notes}), target)
+
+    trimmed = _pack_for_air(target)
+    assert len(trimmed.notes) == 13
+    assert "1 of 14 notes are unchecked" in capsys.readouterr().out
+
+    trusted = _pack_for_air(target, trust_unchecked=True)
+    assert len(trusted.notes) == 14
