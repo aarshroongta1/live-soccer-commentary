@@ -349,6 +349,34 @@ class Cover:
             self._recent_event = (line.event, ts)
 
 
+#: What a beat's ``live_ts`` sits ahead of its ``ts`` by when the trace has
+#: no beat to measure it from: the default delay buffer plus the caller's
+#: measured median round trip (HANDOFF, PRESENT_OFFSET_S).
+DEFAULT_LIVE_LAG_S = 8.0 + 3.5
+
+
+def live_lag(rows: Sequence[dict[str, Any]]) -> float:
+    """How far the live edge sat ahead of the cursor on this run.
+
+    The median of ``live_ts - ts`` over the beats the run itself published,
+    so a beat this pass makes up schedules beside them in ``replay`` rather
+    than a buffer's depth ahead of them. The colour pass measures the same
+    thing for its own rows; one slow call does not move a median.
+    """
+    gaps = [
+        float(row.get("live_ts", 0.0)) - float(row.get("ts", 0.0))
+        for row in rows
+        if row.get("topic") == Topic.BEAT.value
+        and row.get("live_ts") is not None
+        and float(row.get("created_ts", 0.0)) > 0.0
+    ]
+    kept = sorted(gap for gap in gaps if gap > 0)
+    if not kept:
+        return DEFAULT_LIVE_LAG_S
+    middle = len(kept) // 2
+    return kept[middle] if len(kept) % 2 else (kept[middle - 1] + kept[middle]) / 2
+
+
 async def rephrase(
     rows: list[dict[str, Any]],
     backend: LLMBackend,
@@ -366,6 +394,13 @@ async def rephrase(
     unless ``colour`` is false — the colour seat, once at each moment its
     phase gate allows, which on a three-minute trace is a handful of times.
     """
+    # Every beat this pass makes up — a synthesised follow-up, a replay line,
+    # a restatement — is stamped the way the run stamped its own, or the
+    # replay plays it eight seconds early: "That's six goals" went out before
+    # "And look at him go", and "Seven in the tournament" before the goal it
+    # was about, because live_ts was the video time and the recorded beats
+    # carried the buffer plus the caller's round trip on top.
+    lag = live_lag(rows)
     states: list[tuple[float, MatchState]] = []
     for row in rows:
         if row.get("topic") == Topic.STATE.value:
@@ -635,7 +670,7 @@ async def rephrase(
                     "text": verdict.line,
                     "video_ts": at,
                     "created_ts": 0.0,
-                    "live_ts": at,
+                    "live_ts": at + lag,
                     "event": Event.GOAL.value,
                     "excitement": phrased.excitement,
                     "preemptable": False,
@@ -805,7 +840,7 @@ async def rephrase(
                     "text": verdict.line,
                     "video_ts": ts,
                     "created_ts": 0.0,
-                    "live_ts": ts,
+                    "live_ts": ts + lag,
                     # The form's own event, never promoted to a goal by the
                     # words, and always preemptable: the whole of what makes a
                     # replay line safe to say is that the moment the game is
@@ -1263,7 +1298,7 @@ def restatement_pass(
                     "text": text,
                     "video_ts": at,
                     "created_ts": 0.0,
-                    "live_ts": at,
+                    "live_ts": at + live_lag(rows),
                     "event": Event.NONE.value,
                     "excitement": cfg.excitement,
                     "preemptable": True,

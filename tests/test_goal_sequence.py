@@ -1090,6 +1090,32 @@ async def test_no_synthesised_beat_opens_on_the_shout() -> None:
         assert not text.startswith("Mbappé!"), text
 
 
+@pytest.mark.asyncio
+async def test_a_synthesised_beat_is_stamped_the_way_the_run_stamped_its_own() -> None:
+    """The voiced replay played "That's six goals" before "And look at him go".
+
+    A synthesised beat carried live_ts equal to its video time, while every
+    recorded beat carried the buffer plus the caller's round trip on top, so
+    the replay scheduled the made-up beat eight seconds ahead of the real
+    one. The lag is read off the run's own beats: here b1 is 3.0 s ahead.
+    """
+    backend = saying(
+        PhrasedLine(line="Mbappé! The penalty, buried!", excitement=1.0),
+        PhrasedLine(line="He wheels away to the corner flag.", excitement=0.9),
+    )
+
+    result = await rephrase(a_penalty_trace(), backend, pack=a_pack(), colour=False)
+
+    synth = [
+        row
+        for row in result.rows
+        if row.get("topic") == "beat" and str(row.get("id", "")).startswith("synth-")
+    ]
+    assert synth, "the caller went quiet, so the window synthesised one"
+    for row in synth:
+        assert row["live_ts"] - row["video_ts"] == pytest.approx(3.0), row
+
+
 # -- the first invented name on air -----------------------------------------
 
 
