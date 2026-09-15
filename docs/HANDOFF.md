@@ -416,36 +416,71 @@ overall and invention from 5.0 to 7.0; after the ledger, numbers off the
 scoreline reach 20% of lines. **Treat a single 27-line trace as ±8 points of
 noise on any length measure**: identical prompt, identical trace, "nine words
 or more" ranged 16-38%. `scripts/rephrase_all.py --tag <t>` is the honest
-measurement, about $0.94 for the set.
+measurement, about $0.94 for the set. The closing run below, measured with
+`register --no-model`: 27 lead lines and 5 colour, colour share 16% against
+31%, median 6 words, 26% nine words or more, names on 59%, numbers off the
+scoreline 15% against 16%, opener repeats 30%, median gap 4.3 s, nothing
+refused on the lead.
 
 **What it reads like now.** The Mbappé clip with everything on and the
-researched pack, lead and colour:
+researched pack (`runs/rephrased/mbappe-final2`, HEAD `45b9b5a`), every line,
+both voices, and what the gate refused:
 
 ```
-  12.9  LEAD    Otamendi gets across, and the referee waves it away.
-  17.3  LEAD    Protests waved away.
-  20.2  COLOUR  Well, Otamendi getting across there at his age.
+   0.3  LEAD    France work it across.
+   4.2  LEAD    Down the left now.
+   8.5  (silence chosen)
+  12.9  LEAD    Otamendi gets across. France attacker down.
+  17.3  LEAD    Protests. Waved away.
+  49.0  LEAD    Players gathering around the referee in the Argentina box.
   59.2  LEAD    Mbappé steps up. France's first penalty.
-  78.5  LEAD    Martínez on his line, daring the kick to come.
-  82.5  LEAD    Mbappé! Buried. Two-one to Argentina.
-  90.8  LEAD    Mbappé! Six in the tournament already.
-  94.8  LEAD    Mbappé drove it past Martínez. The whole move took seconds.
- 133.2  LEAD    Upamecano out from the back, and he's missed the semi-final ill but he's back in the side tonight.
- 143.2  COLOUR  Yeah, Upamecano back from that illness.
+  63.7  LEAD    Waiting on the whistle.
+  70.5  LEAD    Martínez on his line. Five in the tournament already for Mbappé.
+  78.5  LEAD    Martínez bouncing on his line.
+  82.5  LEAD    Mbappé! The penalty, buried! Two-one to Argentina.
+  86.8  LEAD    Mbappé! Into the net! France!
+  90.8  LEAD    Mbappé! Six in the tournament.
+  94.8  LEAD    Mbappé struck it past Martínez. The penalty, buried past the keeper.
+ 110.9  (silence chosen)
+ 115.3  LEAD    Argentina working it forward through midfield.
+ 119.6  LEAD    Down the right now, France dropping deep.
+ 124.6  LEAD    Arms up all round the halfway line, and the benches are up too.
+ 128.9  LEAD    Scaloni out of his box, arms flung wide.
+ 133.2  LEAD    Upamecano, and he's back in the side tonight.
+ 137.5  LEAD    Striding out, Upamecano. France in no rush to give it away.
+ 142.9  COLOUR  Well, Upamecano was the man ruled out for the semi.
+ 145.4  COLOUR  Back in and he's just conceded the penalty.
+ 153.1  LEAD    Squeezed infield, Argentina swarm the halfway line.
+ 157.1  (silence chosen)
+ 159.3  refused colour_filler  «Yeah, that's the cost of missing the semi.»
+ 161.5  LEAD    Messi, head up.
+ 165.7  LEAD    Dispossessed on the touchline.
+ 168.9  COLOUR  Upamecano back in and France level from the spot.
+ 171.5  LEAD    France arriving in numbers, and Mbappé is the danger.
  176.7  LEAD    Mbappé! Off the ground! Two-two.
- 184.5  LEAD    Mbappé. Seven in the tournament already.
+ 180.5  LEAD    Mbappé! The volley! What a finish!
+ 184.5  LEAD    Mbappé, and he's chasing a second World Cup.
  188.5  LEAD    France drove into the box. Mbappé came off the ground and buried the volley.
- 199.3  COLOUR  That volley, the technique at his age.
+ 193.7  refused decoration  «The whole bench erupts.»
+ 196.8  refused number_claim  «Yeah, Mbappé's got another one.»
+ 199.3  COLOUR  The teenager who scored in a final, still doing it.
+ 201.8  COLOUR  Off the ground and a finish like that.
 ```
 
-The score is code's, the tally is code's, the Upamecano thread is the pack's
-and both seats carry it. What is still not a broadcast: the colour seat spoke
-three times in 210 seconds where a human would have had three or four turns of
-several lines, and the reason is material, not rate — 96 offers were refused
-for nothing specific to say against 80 for the rate; the thirty seconds after
-a goal hold five utterances and about 40 words against a real seven and 60;
-and the lead's build-up is team-subject where the caller could not read a
-shirt, which no phrasing fixes.
+The score is code's, the tallies are code's, the silences are chosen, the
+penalty is a penalty, the bench that erupted was cut, and the Upamecano
+thread is the pack's, carried by both seats. What is still not a broadcast,
+read off this very listing: **the colour seat fabricated twice.** "Back in
+and he's just conceded the penalty" — Otamendi conceded it; the seat joined a
+note about Upamecano to the last event with no evidence they belong together.
+"France level from the spot" — 2-1 is not level, and the gate's level check
+did not fire on the colour voice. Both are in section 4. And the volume: the
+colour seat spoke five times in 210 seconds where a human would have had
+three or four turns of several lines each, and the reason is material, not
+rate — most offers are refused for nothing specific to say; the thirty seconds
+after a goal hold five utterances and about 40 words against a real seven and
+60; and the lead's build-up is team-subject where the caller could not read
+a shirt, which no phrasing fixes.
 
 **The judge on the pooled set is per trace now, and the first pooled judge
 was invalid**: it was handed 39 traces as one passage, a dozen of them the
@@ -459,6 +494,14 @@ celebration score, numbers on air, the missing colour seat, the missing
 instrument, the phraser's inability to choose silence, and threads. What
 remains, and what tonight opened:
 
+- **The colour seat joins a note to an event it did not cause.** On the
+  closing run it said Upamecano "has just conceded the penalty" (Otamendi did)
+  and "France level from the spot" at 2-1. The material block hands it a note
+  and the last event side by side and it writes a causal sentence across them.
+  Two fixes, neither built: the prompt and a check must forbid attributing an
+  event to a player the event's own form did not name, and the gate's
+  `level_claim` must run on the colour voice (it fired on nothing here).
+  First thing to do on this branch.
 - **The colour seat is empty rather than wrong.** Material is the hard gate
   and the 2022 pack, even at 64 notes, plus the ledger, gave it three turns in
   210 s. Share 9-14% against the 31% target. The governor's stretched lead cap
