@@ -2,7 +2,7 @@
 
 import pytest
 
-from commentary.gate import FactGate, GateStats
+from commentary.gate import FactGate, GateStats, decoration_claim
 from commentary.schemas import (
     CallerLine,
     Event,
@@ -1181,3 +1181,89 @@ def test_a_statistic_takes_the_whole_line_with_it(noted, state):
     verdict = gate.judge(call("Peñaló, four in the competition, and away he goes"), state, noted)
     assert not verdict.passed
     assert verdict.line == ""
+
+
+# -- decoration: the phraser's own ban, checked in code --------------------
+
+
+def test_decoration_claim_finds_a_crowd_noun_holding_an_atmosphere_verb() -> None:
+    """The real line, off ``runs/rephrased/mbappe-researched``, at 86.8."""
+    text = "Mbappé! Into the net! The whole bench erupts!"
+    spans = decoration_claim(text)
+    assert len(spans) == 1
+    start, end = spans[0]
+    assert text[start:end] == "The whole bench erupts!"
+
+
+def test_decoration_claim_catches_the_bare_corner() -> None:
+    assert decoration_claim("The corner erupts!") == [(0, len("The corner erupts!"))]
+
+
+def test_decoration_claim_leaves_a_line_with_no_crowd_subject_alone() -> None:
+    assert decoration_claim("Mbappé! The volley, buried!") == []
+
+
+def test_a_player_rising_is_not_a_crowd_rising() -> None:
+    """"Messi rises to meet it" has the same verb and a player in the subject seat."""
+    assert decoration_claim("Messi rises to meet it") == []
+
+
+def test_the_86_8_line_is_trimmed_to_the_goal_call(pack, state) -> None:
+    gate = FactGate()
+    verdict = gate.judge(
+        call("Mbappé! Into the net! The whole bench erupts!", event=Event.GOAL),
+        state,
+        pack,
+        board_changed=True,
+    )
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == "Mbappé! Into the net!"
+    assert "decoration: The whole bench erupts!" in verdict.reasons
+    assert "trimmed_decoration: The whole bench erupts!" in verdict.reasons
+
+
+def test_a_bare_decoration_line_is_refused_whole(pack, state) -> None:
+    verdict = FactGate().judge(call("The corner erupts!"), state, pack)
+    assert not verdict.passed
+    assert verdict.reasons == ["decoration: The corner erupts!"]
+
+
+def test_the_goal_call_itself_is_never_trimmed_from_the_front(pack, state) -> None:
+    verdict = FactGate().judge(
+        call("Mbappé! The volley, buried!", event=Event.GOAL), state, pack, board_changed=True
+    )
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == "Mbappé! The volley, buried!"
+    assert verdict.reasons == []
+
+
+def test_a_player_subject_with_rises_is_untouched(pack, state) -> None:
+    verdict = FactGate().judge(call("Messi rises to meet it"), state, pack)
+    assert verdict.passed
+    assert verdict.line == "Messi rises to meet it"
+    assert verdict.reasons == []
+
+
+def test_a_note_backed_crowd_line_is_not_decoration(pack, state) -> None:
+    """"The home end have been bouncing all night" is a fact, not atmosphere for its own sake."""
+    noted_pack = pack.model_copy(
+        update={
+            "notes": [
+                Note(
+                    about="Northvale United",
+                    text="The home end have been bouncing all night.",
+                    kind="stat",
+                    source="matchday notes",
+                )
+            ]
+        }
+    )
+    verdict = FactGate().judge(
+        call("Northvale come forward. The Northvale crowd is bouncing."),
+        state,
+        noted_pack,
+        notes=noted_pack.notes,
+    )
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == "Northvale come forward. The Northvale crowd is bouncing."
+    assert verdict.reasons == []

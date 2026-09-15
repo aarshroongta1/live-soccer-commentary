@@ -1329,6 +1329,133 @@ def _elsewhere_place(text: str) -> str | None:
     return found.group(1) if found else None
 
 
+# -- decoration: the ban only the model enforces --------------------------
+#
+# src/commentary/prompts/phraser.py tells the model never to decorate — "no
+# adjectives for atmosphere, no 'the crowd rises'" — and spells out the one
+# shape that keeps sneaking past it: "any group of people made to erupt. The
+# whole crowd erupts, and the corner erupts, the bench erupts — the noun
+# changes and the tell does not. Nobody who is not the ball or a player gets
+# a verb at all." A prompt is not a checker. On ``runs/rephrased/mbappe-researched``
+# "Mbappé! Into the net! The whole bench erupts!" went out at 86.8 because
+# nothing downstream of the model was holding that rule to it. This is that
+# checker: deterministic, and — like the rest of the gate — never rewriting a
+# line, only cutting the sentence that breaks the rule and judging what is
+# left.
+
+#: The nouns that are never allowed a verb. "Corner" is here for its crowd
+#: sense only ("the corner erupts"), which is safe to catch because nothing
+#: on this list is also on ``_ATMOSPHERE_VERB`` — a corner *kick* is never
+#: said to erupt, rise, roar, go wild, or sit on its feet.
+_DECORATION_SUBJECT = (
+    r"(?:the\s+(?:whole\s+|entire\s+)?)?"
+    r"(?:crowd|fans|supporters|stadium|ground|bench(?:es)?|dugout|corner|stands?|place)"
+    r"|everyone"
+)
+
+#: The verbs a crowd noun is never allowed. Spelled out rather than stemmed,
+#: because a stem wide enough to catch "erupted" is wide enough to catch
+#: "erupting into song" being sung by a player, which is nobody's decoration.
+_ATMOSPHERE_VERB = (
+    r"erupt(?:s|ed)?|rises?|roars?|goes?\s+wild|on\s+their\s+feet|"
+    r"in\s+raptures|bouncing|silenced|stunned"
+)
+
+#: A decoration claim only if the crowd noun *opens* the sentence — the
+#: subject seat, not just a word that turns up somewhere in it. "Messi rises
+#: to meet it" has the same verb and a player in the subject seat instead,
+#: and anchoring the pattern at the start of the sentence is what tells the
+#: two apart without parsing the rest of the grammar.
+_DECORATION_CLAIM = re.compile(
+    rf"^(?:{_DECORATION_SUBJECT})\b(?:['’]s)?\s+(?:is\s+|are\s+|was\s+|were\s+)?"
+    rf"(?:{_ATMOSPHERE_VERB})\b",
+    re.IGNORECASE,
+)
+
+#: A commentator's own sentence boundaries — the three marks the gate's own
+#: module docstring uses to describe a line. Not ``_CLAUSE_BREAK``, which also
+#: splits on commas and dashes for the note rule's purposes: a decoration
+#: claim is judged by the sentence it sits in, whole, because trimming it is
+#: trimming the sentence, not the clause.
+_SENTENCE_SPLIT = re.compile(r"[.!?]+")
+
+
+def decoration_claim(text: str) -> list[tuple[int, int]]:
+    """Every sentence in this line that is atmosphere, not commentary.
+
+    A sentence — split on ``.``, ``!``, ``?`` — is a decoration claim when it
+    opens with a crowd noun (the crowd, the fans, the stadium, the bench, the
+    dugout, the corner, the stands, everyone...) holding an atmosphere verb
+    (erupts, rises, roars, goes wild, on their feet, in raptures, bouncing,
+    silenced, stunned). "Mbappé! The volley, buried!" has neither sentence
+    open that way and is untouched; "Mbappé! Into the net! The whole bench
+    erupts!" has its third sentence flagged.
+
+    Spans are of the whole sentence, punctuation included, so a caller can
+    cut one out of the line and be left with a line rather than a stub with
+    a stray full stop.
+    """
+    found: list[tuple[int, int]] = []
+    start = 0
+    for match in _SENTENCE_SPLIT.finditer(text):
+        _record_decoration(text, start, match.end(), found)
+        start = match.end()
+    _record_decoration(text, start, len(text), found)
+    return found
+
+
+def _record_decoration(text: str, start: int, end: int, found: list[tuple[int, int]]) -> None:
+    sentence = text[start:end]
+    stripped = sentence.lstrip()
+    if not stripped:
+        return
+    lead = len(sentence) - len(stripped)
+    if _DECORATION_CLAIM.match(stripped):
+        found.append((start + lead, end))
+
+
+#: The floor a decoration trim leaves the sentence at, and it is a lower
+#: floor than ``min_words_after_trim``'s default of three on purpose: two
+#: words is "Mbappé! Into the net!" with the crowd cut off the end of it,
+#: and that line is worth keeping. What makes it worth keeping is not the
+#: word count alone — ``_has_content_after_trim`` below asks the second
+#: question a bare count cannot: is one of those words a name or an action,
+#: or is a stub of grammar all that is left.
+_DECORATION_MIN_WORDS = 2
+
+#: The football vocabulary that says something happened, for a sentence that
+#: has no verified name in it to lean on. Deliberately the actions and set
+#: pieces, not the grammar: a decoration trim that left "It is" behind should
+#: not pass for having two words, and neither list is the stopword list
+#: above, which exists to say what is *not* a name rather than what is an
+#: event.
+_EVENT_WORDS_TEXT = """
+    goal goals shot shots save saves cross crosses corner corners penalty
+    penalties header headers volley volleys chip chips slot slots strike
+    strikes tackle tackles chance chances offside foul fouls card cards
+    booking bookings free kick kicks throw pass passes clearance clearances
+    block blocks blocked net nets ball
+"""
+_EVENT_WORDS = frozenset(_EVENT_WORDS_TEXT.split())
+
+
+def _has_content_after_trim(kept: str, roster: _Roster, threshold: float) -> bool:
+    """Is there still commentary here, or only the scaffolding a name sat in?
+
+    Two words and either a verified name or a football action word — the
+    two ways a sentence says something. "Mbappé! Into the net!" clears it on
+    the name alone; a line with the decoration cut off and nothing else in
+    it does not.
+    """
+    if _word_count(kept) < _DECORATION_MIN_WORDS:
+        return False
+    if any(
+        _matches_roster(candidate.text, roster, threshold) for candidate in _candidates(kept)
+    ):
+        return True
+    return any(fold(word) in _EVENT_WORDS for word in kept.split())
+
+
 def _tidy(text: str) -> str:
     """Repair a line that has had a name cut out of the middle of it."""
     out = re.sub(rf"\b(?:{_DANGLERS})\s+(?=(?:[,.;!?]|and\b|as\b|but\b|who\b|then\b|$))", "", text)
@@ -1363,11 +1490,11 @@ class GateStats:
         tags = [reason.split(":", 1)[0] for reason in verdict.reasons]
         if verdict.passed:
             self.passed += 1
-            if "trimmed_name" in tags:
+            if "trimmed_name" in tags or "trimmed_decoration" in tags:
                 self.trimmed += 1
             return
         for tag in tags:
-            if tag != "trimmed_name":
+            if tag not in ("trimmed_name", "trimmed_decoration"):
                 self.by_reason[tag] += 1
 
     def table(self) -> str:
@@ -1496,6 +1623,16 @@ class FactGate:
         place = _elsewhere_place(text)
         if place:
             roster = replace(roster, people=roster.people | {fold(place)})
+        # The decoration ban the phraser's prompt states and only the model
+        # enforces: cut the sentence that gives a crowd noun a verb, or
+        # refuse the line if cutting it leaves nothing worth saying. Ahead of
+        # every other check because it is the same question ``_trim_unverified``
+        # asks of names, asked here of atmosphere, and everything below should
+        # see the line the caller would actually be left with.
+        decorated, decoration_reasons = self._check_decoration(text, pack, notes, roster)
+        if decorated is None:
+            return GateVerdict(passed=False, reasons=decoration_reasons)
+        text = decorated
         # A goal is being called that the score does not yet include: the ball
         # has crossed the line, something outside the caller agrees, and the
         # board has not caught up. That and only that buys a line the right to
@@ -1522,10 +1659,54 @@ class FactGate:
             return GateVerdict(passed=False, reasons=fatal)
 
         verdict = self._trim_unverified(text, roster)
+        verdict.reasons = decoration_reasons + verdict.reasons
         withheld = _name_withheld(line, verdict.line)
         if withheld:
             verdict.reasons.append(f"name_withheld: {withheld}")
         return verdict
+
+    def _check_decoration(
+        self,
+        text: str,
+        pack: KnowledgePack | None,
+        notes: Sequence[Note] | None,
+        roster: _Roster,
+    ) -> tuple[str | None, list[str]]:
+        """Cut the atmosphere out of the line, or say the line cannot survive it.
+
+        Returns the text with any decoration sentences removed and the
+        reasons to record, or ``None`` for the text when cutting them leaves
+        too little of the line to be worth saying — the whole-line refusal
+        the task's own rule calls for, tagged ``decoration`` the way every
+        other rejection in this gate is tagged with the question it failed.
+
+        A sentence backed by a pack note is not decoration at all: "the home
+        end have been bouncing all night" restates something somebody
+        actually looked up, and that is ``note_claim``'s question, asked here
+        with the same coverage check it uses everywhere else.
+        """
+        spans = decoration_claim(text)
+        if not spans:
+            return text, []
+        names = _name_words(pack)
+        in_play = _notes_in_play(text, pack, notes)
+        cut: list[tuple[int, int, str]] = []
+        for start, end in sorted(spans, reverse=True):
+            sentence = text[start:end].strip()
+            if any(_note_covers(sentence, note, names) for note in in_play):
+                continue
+            cut.append((start, end, sentence))
+        if not cut:
+            return text, []
+        kept = text
+        for start, end, _sentence in cut:
+            kept = kept[:start] + kept[end:]
+        kept = _tidy(kept)
+        problems = [f"decoration: {sentence}" for _, _, sentence in cut]
+        if not _has_content_after_trim(kept, roster, self.cfg.name_match_threshold):
+            return None, problems
+        trims = [f"trimmed_decoration: {sentence}" for _, _, sentence in cut]
+        return kept, problems + trims
 
     def _check_sightings(
         self, line: CallerLine, roster: _Roster, pack: KnowledgePack | None
