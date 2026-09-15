@@ -723,10 +723,21 @@ def repeats_itself(text: str, said_before: Sequence[str], n: int = REPEAT_GRAM) 
 #: what one of this pack's own notes about Mbappé says — and a level **ball**
 #: is a pass. Everything else is the scoreboard, and the scoreboard is not
 #: this seat's to read out whether or not it has it right.
+#: Narrow on purpose, and narrowed again after it refused "This is what
+#: experience at this level looks like" at 1-0. Football calls a great many
+#: things level that are not the score: a standard ("at this level", "the top
+#: level"), a defensive line, an offside ("level with the last man"), a
+#: scoring chart ("level at the top", "level on five"). Only the shapes whose
+#: subject can only be the scoreline are here.
 _SCORES_LEVEL = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
-        r"\blevel(?:s|led|ling)?\b(?!\s+(?:with|at|on|ball|pass|header|cross)\b)",
+        r"\blevell?(?:s|ed|ing)?\s+(?:it|things|matters|the\s+(?:scores?|game|tie|match))\b",
+        r"\b(?:are|is|'re|'s)\s+level\b(?!\s+(?:with|at|on|to)\b)",
+        r"\blevel\s+(?:from\s+the\s+spot|again|now)\b",
+        r"\blevel\s+(?:terms|pegging)\b",
+        r"\bthe\s+scores?\s+(?:are|is)\s+level\b",
+        r"\bit(?:'?s|\s+is)\s+(?:all\s+)?level\b(?!\s+with\b)",
         r"\bequali[sz]\w*\b",
         r"\ball\s+square\b",
         r"\b(?:back\s+)?on\s+terms\b",
@@ -1453,6 +1464,30 @@ def already_happened(note: Note) -> bool:
     return bool(_ALREADY_HAPPENED.search(f"{note.text} {note.clause}"))
 
 
+#: A note about where a man stands against other men. Unlike a tally, which
+#: :class:`~commentary.tallies.Tallies` can advance by counting, a standing
+#: cannot be advanced from inside the broadcast: "level at the top of the
+#: scoring charts" stops being true the moment either man scores and nothing
+#: here knows what the other one has done tonight. So it is not adjusted, it
+#: is withdrawn — the seat said "Yeah, Mbappé level with Messi on the charts
+#: now" after Mbappé had scored twice in the same trace.
+_A_STANDING = re.compile(
+    r"\blevel\s+(?:at\s+the\s+top|with)\b"
+    r"|\bjoint[\s-]top\b"
+    r"|\b(?:one|two)\s+(?:behind|clear|ahead)\b"
+    r"|\btop\s+of\s+the\s+(?:scoring\s+)?charts?\b"
+    r"|\b(?:leads?|leading)\s+the\s+(?:scoring\s+)?charts?\b"
+    r"|\btop\s+scorer\b"
+    r"|\bgolden\s+boot\b",
+    re.IGNORECASE,
+)
+
+
+def about_a_standing(note: Note) -> bool:
+    """Is this note about where a man stands against somebody else?"""
+    return bool(_A_STANDING.search(f"{note.text} {note.clause}"))
+
+
 def _already_said(fact: Fact, patterns: Sequence[str]) -> bool:
     """Is a spell pattern already making this count's point?"""
     subject = fold(fact.about)
@@ -1742,8 +1777,17 @@ def is_filler(text: str, pack: KnowledgePack | None, *, after: str = "") -> bool
         return False
     if any(mentions(text, name) for name in roster_names(pack)):
         return False
+    # Nobody named, no event named, and a verb saying what is being done as
+    # it is done. Whatever this is, it came off the picture, and the picture
+    # is the one thing the seat is never shown. Before the continuation
+    # allowance rather than after it: "You know, Molina again down that right
+    # side." then "That is where Argentina are finding their space." — the
+    # first is the count said properly and the second went out on the back of
+    # it, because "their" made it a continuation.
+    if _PRESENT_TACTICAL.search(text):
+        return True
     named_side = any(mentions(text, word) for word in team_words(pack))
-    if named_side and words & SAID_AGAIN and not _PRESENT_TACTICAL.search(text):
+    if named_side and words & SAID_AGAIN:
         return False
     return not (after and one_subject(after, pack) and bool(_CARRIES_ON.search(text)))
 
@@ -2047,11 +2091,33 @@ class ColourSeat:
         one note about a substitute was said three times in thirty seconds,
         once by the lead and twice by this seat.
         """
-        found = self.tallies.adjusted(notes_for(self.pack, self.lead_named()))
+        found = [
+            note
+            for note in self.tallies.adjusted(notes_for(self.pack, self.lead_named()))
+            if not self._overtaken(note)
+        ]
         if now is None:
             return found
         recent = [line for ts, line in self._carried if 0.0 <= now - ts <= CALLBACK_QUIET_S]
         return [note for note in found if not any(echoes(note, line) for line in recent)]
+
+    def _overtaken(self, note: Note) -> bool:
+        """Has tonight made this standing note false?
+
+        :meth:`~commentary.tallies.Tallies.adjust` can move a note that
+        *counts* — a man on five goals is on six when he scores — because the
+        arithmetic is inside the broadcast. A note about where he stands
+        against somebody else cannot be moved that way: whether he is still
+        level at the top depends on what the other man has done, tonight and
+        at every other ground, and nothing here knows. So the first goal by
+        anybody the note names takes it off offer.
+        """
+        if not about_a_standing(note):
+            return False
+        whom = [note.about] + [
+            name for name in roster_names(self.pack) if mentions(f"{note.text} {note.clause}", name)
+        ]
+        return any(self.tallies.count(name, "goals") for name in whom if name)
 
     def lead_named(self) -> list[str]:
         """Who the lead has named in his last three lines, newest first."""

@@ -1242,3 +1242,108 @@ def test_only_the_leads_last_few_lines_are_held_against_the_seat() -> None:
         lead_said=old,
     )
     assert verdict.passed, verdict.reasons
+
+
+# -- 10. round five: what level means, and a standing that has moved --------
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "This is what experience at this level looks like.",
+        "You do not see that at the top level.",
+        "Yeah, Mbappé level with Messi on the charts.",
+        "Well, Mbappé is level at the top of the scoring charts.",
+        "He was level with the last man there.",
+        "Level on goals, the pair of them.",
+    ],
+)
+def test_the_things_football_calls_level_that_are_not_the_scoreline(text: str) -> None:
+    """The first was refused at 1-0 on ``runs/rephrased/r5a``.
+
+    Football calls a great many things level: a standard, a defensive line,
+    an offside, a scoring chart. Only the shapes whose subject can only be
+    the scoreboard are the seat's to be refused for.
+    """
+    assert says_the_scores_are_level(text) == "", text
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Well, France are level.",
+        "Upamecano back in and France level from the spot.",
+        "And that levels it.",
+        "France back on terms.",
+        "It's all square.",
+        "Yeah, France have pegged them back.",
+        "Level terms now.",
+    ],
+)
+def test_the_score_shapes_are_still_all_refused(text: str) -> None:
+    assert says_the_scores_are_level(text), text
+
+
+def test_the_present_tense_is_filler_in_a_continuation_too() -> None:
+    """ "You know, Molina again down that right side." is the count said
+    properly; "That is where Argentina are finding their space." went out on
+    the back of it, because "their" made it a continuation."""
+    pack = the_2022_pack()
+    first = "You know, Otamendi again down that right side."
+    assert is_filler("That is where Argentina are finding their space.", pack, after=first)
+    assert is_filler("And they keep finding the space out there.", pack, after=first)
+    assert not is_filler("And he has done that all night.", pack, after=first)
+
+
+def test_a_note_about_where_a_man_stands_goes_when_he_scores() -> None:
+    """ "Yeah, Mbappé level with Messi on the charts now" went out at 190.8 s,
+    after Mbappé had scored twice in the same trace.
+
+    A tally can be advanced by counting, which is what
+    :class:`~commentary.tallies.Tallies` does. A standing cannot: whether he
+    is still level at the top depends on the other man, tonight and at every
+    other ground, and nothing here knows. So it is withdrawn rather than
+    adjusted.
+    """
+    pack = the_2022_pack()
+    pack.notes.append(
+        Note(
+            about="Kylian Mbappé",
+            text="five goals in this tournament",
+            clause="level at the top of the scoring charts here",
+            kind="stat",
+        )
+    )
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=pack, model="off")
+    seat.saw_lead_line(10.0, "Mbappé has it on the left.")
+    assert [note.clause for note in seat.notes()] == ["level at the top of the scoring charts here"]
+    seat.tallies.credit_goal("Kylian Mbappé", 20.0)
+    assert seat.notes() == []
+
+
+def test_the_other_man_scoring_takes_it_off_offer_as_well() -> None:
+    """Two men were level at the top of that chart; either one settles it."""
+    pack = the_2022_pack()
+    pack.notes.append(
+        Note(
+            about="Kylian Mbappé",
+            text="level with Messi at the top of the scoring charts",
+            kind="stat",
+        )
+    )
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=pack, model="off")
+    seat.saw_lead_line(10.0, "Mbappé has it on the left.")
+    assert seat.notes()
+    seat.tallies.credit_goal("Lionel Messi", 20.0)
+    assert seat.notes() == []
+
+
+def test_a_note_that_is_not_a_standing_survives_a_goal() -> None:
+    pack = the_2022_pack()
+    pack.notes.append(
+        Note(about="Kylian Mbappé", text="takes the full-back on down the left", kind="habit")
+    )
+    seat = ColourSeat(ScriptedBackend(), config=ColourConfig(), pack=pack, model="off")
+    seat.saw_lead_line(10.0, "Mbappé has it on the left.")
+    seat.tallies.credit_goal("Kylian Mbappé", 20.0)
+    assert seat.notes()
