@@ -1577,3 +1577,103 @@ def test_a_goal_in_this_match_still_needs_the_board(pack: KnowledgePack, state: 
 
     assert not verdict.passed
     assert verdict.reasons[0].startswith("unconfirmed_goal")
+
+
+def test_a_replay_line_that_says_it_is_a_replay_may_use_the_present(
+    pack: KnowledgePack, state: MatchState
+) -> None:
+    """Real replay talk goes into the present once the marker is down.
+
+    "Watch this. Rakitić into Messi. Brilliant touch … and a fine finish
+    beyond Navas" is the corpus\'s own. What the rule is for is a line that
+    sounds like a goal going in now, and a line that has told the listener it
+    is a replay cannot.
+    """
+    gate = FactGate()
+    marked = call(
+        "Having seen the replay, the keeper sent the wrong way, and Krastanov buries it.",
+        scene=Scene.REPLAY,
+        event=Event.GOAL,
+    )
+
+    verdict = gate.judge(marked, state, pack, goal_in_state=True)
+
+    assert verdict.passed, verdict.reasons
+
+
+def test_an_unmarked_replay_line_in_the_present_is_still_refused(
+    pack: KnowledgePack, state: MatchState
+) -> None:
+    gate = FactGate()
+    bare = call(
+        "The keeper sent the wrong way, and Krastanov buries it.",
+        scene=Scene.REPLAY,
+        event=Event.GOAL,
+    )
+
+    verdict = gate.judge(bare, state, pack, goal_in_state=True)
+
+    assert not verdict.passed
+    assert any(reason.startswith("replay_as_live:") for reason in verdict.reasons)
+
+
+def test_a_marked_replay_line_still_may_not_give_the_score(
+    pack: KnowledgePack, state: MatchState
+) -> None:
+    """The marker buys the tense and nothing else."""
+    gate = FactGate()
+    line = call(
+        "In the replay, Krastanov buries it, and it is two-one.",
+        scene=Scene.REPLAY,
+        event=Event.GOAL,
+    )
+
+    verdict = gate.judge(line, state, pack, goal_in_state=True)
+
+    assert not verdict.passed
+    assert any(reason.startswith("replay_score:") for reason in verdict.reasons)
+
+
+def test_a_word_the_pack_itself_writes_is_not_an_invented_name(
+    state: MatchState,
+) -> None:
+    """"Well, Tagliafico\'s come from to this summer." — a note with a hole in it.
+
+    The club is in the pack, in writing, where a person put it. The roster
+    check read it as a name nobody could verify and cut it out of the middle
+    of the clause.
+    """
+    gate = FactGate()
+    with_a_note = KnowledgePack(
+        home=TeamSheet(
+            name="Northvale United",
+            short="Northvale",
+            starters=[Player(name="Wes Dunthorpe", number=4)],
+        ),
+        away=TeamSheet(name="Carrowmere City", short="Carrowmere", starters=[]),
+        notes=[
+            Note(
+                about="Wes Dunthorpe",
+                text="came from Eastgate Rovers this summer",
+                kind="storyline",
+            )
+        ],
+    )
+
+    verdict = gate.judge(
+        call("Dunthorpe, who came from Eastgate Rovers this summer."), state, with_a_note
+    )
+
+    assert verdict.passed, verdict.reasons
+    assert verdict.line == "Dunthorpe, who came from Eastgate Rovers this summer."
+
+
+def test_a_capitalised_word_in_no_note_is_still_trimmed(
+    pack: KnowledgePack, state: MatchState
+) -> None:
+    gate = FactGate()
+
+    verdict = gate.judge(call("Dunthorpe, who came from Zaltimore this summer."), state, pack)
+
+    assert "Zaltimore" not in verdict.line
+    assert any(r.startswith("name_not_on_roster: Zaltimore") for r in verdict.reasons)

@@ -40,6 +40,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from commentary.config import DeadBallConfig
+from commentary.gate import REPLAY_MARKERS
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import Block, text_block
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
@@ -989,37 +990,11 @@ def goal_followup_block(
     return "\n".join(lines)
 
 
-#: Every way the corpus names a replay as a replay, and the shapes this
-#: system's own lines reached for. One list, next to the block that teaches
-#: them, because :func:`strip_replay_marker` is the enforcement of the rule
-#: :func:`replay_block` states: the sequence is named once, in its first
-#: line, and the ones after it go straight at what the picture shows.
-#:
-#: Sourced from ``docs/research/real-commentary-corpus.md`` section 3.2 —
-#: "As we see …", "Having seen the replay …", "Watch this." — plus the two
-#: the model actually wrote on ``r1-replay``: at 25-38 s it named the replay
-#: in two lines of three, "You see in the replay, …" and "In the replay, …".
-REPLAY_MARKERS: tuple[str, ...] = (
-    "having seen the replay",
-    "as we see it again",
-    "as we see that again",
-    "as we see this again",
-    "as we see it once more",
-    "as we see that once more",
-    "as we look at it again",
-    "looking at it again",
-    "seeing it again",
-    "you see in the replay",
-    "you can see in the replay",
-    "in the replay",
-    "on the replay",
-    "watch the replay",
-    "watch this again",
-    "watch this",
-    "here it is again",
-    "let's see it again",
-    "we see it again",
-)
+#: Every way the corpus names a replay as a replay. Defined in
+#: :mod:`commentary.gate` because both ends need it — the strip here, and the
+#: gate's ``replay_as_live`` rule, which lets the present tense through a
+#: line that has said what it is looking at — and the gate is the module
+#: neither of them may import in the other direction.
 
 #: What may sit in front of a marker and still be one: "And in the replay,
 #: …" is the same line as "In the replay, …".

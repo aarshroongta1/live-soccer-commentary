@@ -903,7 +903,9 @@ class Runtime:
         comes back empty or refused simply does not happen: there is no
         caller line here to fall back to.
         """
-        if self.phraser is None:
+        if self.phraser is None or self.follow.beat(cursor) is None:
+            # No beat due means no instruction block, and a call made with no
+            # brief writes the goal call again.
             return False
         form = self.follow.synthetic()
         self.stats.followups += 1

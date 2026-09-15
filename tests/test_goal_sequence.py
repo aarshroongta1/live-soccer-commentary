@@ -56,6 +56,7 @@ from commentary.config import (
 from commentary.goalfollow import REBUILD_BEAT, SCORER_BEAT, GoalFollowup
 from commentary.llm.fake import ScriptedBackend
 from commentary.prompts.phraser import GOAL_BEATS, REPEAT_RUN, goal_followup_block
+from commentary.rephrase import rephrase
 from commentary.runtime import Runtime
 from commentary.schemas import (
     Beat,
@@ -998,3 +999,89 @@ async def test_every_line_that_airs_ends_on_a_stop() -> None:
 
     assert phrased is not None
     assert phrased.line == "France through the middle at speed."
+
+
+# -- the synthesised beat, which is where the shout survived -----------------
+
+
+def a_penalty_trace() -> list[dict[str, Any]]:
+    """The Mbappé shape: a goal the caller reads no name off, then quiet.
+
+    Every sighting on that penalty came back with a shirt number and nothing
+    else, so the scorer is the roster's answer rather than the picture's — and
+    the caller says nothing for twenty seconds afterwards, which is what sends
+    the window to the synthesiser.
+    """
+    return [
+        {
+            "topic": "state",
+            "ts": 0.5,
+            "home": "Argentina",
+            "away": "France",
+            "home_score": 2,
+            "away_score": 1,
+            "clock": "79:33",
+            "period": 2,
+        },
+        {"topic": "board", "ts": 1.0, "bug_visible": True, "confidence": 0.9},
+        {
+            "topic": "caller",
+            "ts": 10.0,
+            "scene": "live_play",
+            "event": "goal",
+            "side": "away",
+            "team": "France",
+            "sightings": [{"number": 10, "side": "away"}],
+            "confidence": 0.9,
+            "speak": True,
+            "line": "Mbappé steps up and strikes it, and the keeper goes the other way.",
+        },
+        {
+            "topic": "gate",
+            "ts": 10.0,
+            "passed": True,
+            "reasons": [],
+            "line": "Mbappé steps up and strikes it.",
+            "event": "goal",
+            "board_changed": True,
+        },
+        {
+            "topic": "beat",
+            "ts": 10.0,
+            "id": "b1",
+            "voice": "caller",
+            "text": "Mbappé steps up and strikes it.",
+            "video_ts": 10.0,
+            "created_ts": 1.0,
+            "live_ts": 13.0,
+            "event": "goal",
+            "preemptable": False,
+        },
+    ]
+
+
+@pytest.mark.asyncio
+async def test_no_synthesised_beat_opens_on_the_shout() -> None:
+    """r6 aired "Mbappé! Over the keeper!" as a synthesised beat 4.
+
+    The rule was on the beat numbers, and the synthesiser can make a call the
+    window cannot put a number to. Now the check is that there is a beat at
+    all, and a call with no beat due is not made.
+    """
+    backend = saying(
+        PhrasedLine(line="Mbappé! The penalty, buried!", excitement=1.0),
+        PhrasedLine(line="Mbappé! Over the keeper!", excitement=0.9),
+    )
+
+    result = await rephrase(a_penalty_trace(), backend, pack=a_pack(), colour=False)
+
+    beats = [row for row in result.rows if row.get("topic") == "beat"]
+    spoken = [row["text"] for row in beats]
+    assert spoken, "the goal was called"
+    assert spoken[0].startswith("Mbappé!"), "beat 1 is the shout"
+    assert any(str(row.get("id", "")).startswith("synth-") for row in beats), (
+        "the caller went quiet, so the window synthesised one"
+    )
+    assert "Over the keeper!" in spoken[1:], "the beat went out with the shout taken off"
+    for text in spoken[1:]:
+        assert not text.startswith("Mbappé!"), text

@@ -526,6 +526,11 @@ async def rephrase(
         back to.
         """
         feed(at)
+        if follow.beat(at) is None:
+            # No beat is due, so there is no instruction block either, and a
+            # call made with no brief writes the goal call again: "Mbappé!
+            # Over the keeper!" went out that way twelve seconds in.
+            return False
         threads.see_state(state)
         ledger.see_state(state)
         form = follow.synthetic()

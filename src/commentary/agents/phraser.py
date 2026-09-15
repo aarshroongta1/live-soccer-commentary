@@ -63,6 +63,10 @@ from commentary.schemas import (
 SCORER_BEAT = 3
 
 #: The beats that are *not* the call, and so may not be shouted on a name.
+#: Kept as the list of what the follow-up beats are; the shout check asks
+#: whether there is a beat number at all, which catches the synthesised call
+#: whose beat the window could not name.
+#:
 #: Beat 1 is the goal call and "<Scorer>!" is exactly what it should be; every
 #: beat after it is a line about a goal the listener has already been told
 #: about. On ``runs/rephrased/r1-replay/mbappe`` beats 2 and 3 both opened
@@ -1137,9 +1141,13 @@ class Phraser:
         )
         shout_retry = False
         shout_rewritten = False
-        # A replay line is past-tense and about something already called, so
-        # the shout is beat 1's there too.
-        if goal_beat in UNSHOUTED_BEATS or line.scene is Scene.REPLAY:
+        # Any line under a beat number, and any replay line. The set below is
+        # what the beats *are*; the test is that there is a beat at all,
+        # because a synthesised call whose beat the window could not name
+        # still aired "Mbappé! Over the keeper!" twelve seconds after the
+        # goal on ``runs/rephrased/r6/mbappe``.
+        unshouted = goal_beat is not None or line.scene is Scene.REPLAY
+        if unshouted:
             shouted = opening_shout(proposed.line, names)
             if shouted is not None:
                 retry = await self._reask(blocks, _shout_retry_note(shouted, goal_beat))
@@ -1177,7 +1185,6 @@ class Phraser:
                     repeat_retry = True
                     # The fresh answer has not been through the shout check,
                     # and it is not worth a third call: fixed in code.
-                unshouted = goal_beat in UNSHOUTED_BEATS or line.scene is Scene.REPLAY
                 if unshouted and opening_shout(proposed.line, names):
                     proposed = proposed.model_copy(
                         update={"line": unshout(proposed.line, keep_name=keep_name, names=names)}

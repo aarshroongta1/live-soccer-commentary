@@ -312,7 +312,21 @@ def _roster_of(state: MatchState, pack: KnowledgePack | None) -> _Roster:
         # threshold was four.
         for label in (pack.competition, pack.venue):
             teams.update(token for token in fold(label).split() if len(token) >= 3)
-        for story in (*pack.storylines, *pack.key_matchups):
+        # Every capitalised word the pack itself says, from all three places
+        # it says them. The storylines were here already; the notes were not,
+        # and the notes are the half of the pack that reaches air. "Well,
+        # Tagliafico's come from to this summer." is what a cited clause looks
+        # like with the club name cut out of the middle of it by the check
+        # below, and the club is in the pack, in writing, where a person put
+        # it. A word the pack uses is a word the pack vouches for.
+        written = [
+            *pack.storylines,
+            *pack.key_matchups,
+            *(note.text for note in pack.notes),
+            *(note.clause or "" for note in pack.notes),
+            *pack.form.values(),
+        ]
+        for story in written:
             teams.update(
                 fold(word) for word in re.findall(r"\b[A-Z][\w'’-]+", story) if len(word) >= 3
             )
@@ -1513,6 +1527,49 @@ _SCORED_ELSEWHERE = re.compile(
 _ELSEWHERE_AFTER = re.compile(r"\b(?:in|against)\s+(?:the\s+)?([A-Z][a-zA-Z]+)\b")
 
 
+#: Every way the corpus names a replay as a replay, and the shapes this
+#: system's own lines reached for. Two rules read it: the phraser strips a
+#: marker off the second line of a sequence, and ``replay_as_live`` below
+#: lets the present tense through a line that carries one.
+#:
+#: Sourced from ``docs/research/real-commentary-corpus.md`` section 3.2 —
+#: "As we see …", "Having seen the replay …", "Watch this." — plus the two
+#: the model actually wrote on ``r1-replay``: at 25-38 s it named the replay
+#: in two lines of three, "You see in the replay, …" and "In the replay, …".
+REPLAY_MARKERS: tuple[str, ...] = (
+    "having seen the replay",
+    "as we see it again",
+    "as we see that again",
+    "as we see this again",
+    "as we see it once more",
+    "as we see that once more",
+    "as we look at it again",
+    "looking at it again",
+    "seeing it again",
+    "you see in the replay",
+    "you can see in the replay",
+    "in the replay",
+    "on the replay",
+    "watch the replay",
+    "watch this again",
+    "watch this",
+    "here it is again",
+    "let's see it again",
+    "we see it again",
+)
+
+
+def names_the_replay(text: str) -> str:
+    """The marker this line uses to say it is a replay, or ``""``.
+
+    Anywhere in the line, not only at the front: "the ball actually came off
+    his knee in the replay" has said what it is looking at as plainly as
+    "In the replay, the ball came off his knee."
+    """
+    lowered = text.casefold()
+    return next((marker for marker in REPLAY_MARKERS if marker in lowered), "")
+
+
 def _is_historical_goal_reference(
     text: str, pack: KnowledgePack | None, notes: Sequence[Note] | None
 ) -> bool:
@@ -2035,9 +2092,16 @@ class FactGate:
 
         ``replay_as_live``
             The present-tense shapes that mean the ball is crossing the line
-            now. The rest of the tense question is left to the phraser's
-            prompt: this is the cheap, certain half, and it is the half that
-            embarrasses a broadcast.
+            now — **unless the line has said what it is looking at**. Real
+            replay talk goes into the present once the marker is down:
+            "Watch this. Rakitić into Messi. Brilliant touch … and a fine
+            finish beyond Navas" is the corpus's own, and "Having seen the
+            replay, the keeper sent the wrong way, and Mbappé buries it." was
+            refused for the last two words of it. What the rule is for is a
+            line that sounds like a goal going in *now*, and a line that has
+            already told the listener it is a replay cannot. The score and
+            goal-claim rules below are untouched: those are about what is
+            true, not about what tense it is said in.
 
         A goal claim is allowed on a replay only when the score already
         counts that goal, which is the ``goal_in_state`` flag the runtime and
@@ -2047,7 +2111,7 @@ class FactGate:
         if score_spans(text) or ordinal_score_spans(text) or level_claim_spans(text):
             problems.append("replay_score: a replay line never restates the score")
         said = _first_match(text, _REPLAY_AS_LIVE)
-        if said is not None:
+        if said is not None and not names_the_replay(text):
             problems.append(f"replay_as_live: {said}")
         historical = line.event is not Event.GOAL and _is_historical_goal_reference(
             text, pack, notes
