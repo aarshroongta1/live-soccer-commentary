@@ -5,11 +5,12 @@ evidence.
 
 **HEAD:** `main` in `/Users/Aarsh/Desktop/commentary`. `.env` at the root.
 `clips/` and `runs/` are in the repo and gitignored — the clips are 26 MB each
-and the traces are somebody's API spend. HEAD as of 15 Sep 2026 is `5425fdb`.
-One branch is in flight and not merged: `feat/phraser-quality`, the v4 phraser
-(section 3d). Worktrees live under `.worktrees/` and `.claude/worktrees/`;
-neither is in `.gitignore`, and ruff wants `--exclude .worktrees` or it lints
-another branch's files.
+and the traces are somebody's API spend. As of 15 Sep 2026 the v3 phraser is
+merged (`233b313`) and nothing is in flight; a v4 that handed the phraser the
+score as a field was started and discarded unmerged, for the reason in section
+3d. Worktrees live under `.worktrees/` and `.claude/worktrees/`; neither is in
+`.gitignore`, and ruff wants `--exclude .worktrees` or it lints another
+branch's files.
 
 **Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
 `uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`
@@ -284,7 +285,7 @@ two were the prompt's and got prompt fixes, with "compress, never add" and the
 event field binding. On the v2 rerun all four are gone and the gate refused
 nothing.
 
-**v3, in flight on `feat/phraser-quality` and not merged.** Three faults read
+**v3, merged as `233b313`.** Three faults read
 off v2's 27 lines by hand: detail thrown away (7 of 27), the wrong subject (2
 of 27), and flat repetitive build-up (9 of 27). v3 keeps one concrete detail,
 makes the subject whoever the caller's line is about, spells a goal as name,
@@ -300,12 +301,24 @@ volley" — and then the score check refused two goal lines:
 | 176.7 | Mbappé! Off the ground! Two-two. | passed, on the anticipatory latitude |
 | 180.5 | Mbappé! The volley! Three-two. | `scoreline_mismatch: said 3-2, board 2-1` |
 
-Both refusals are the phraser guessing a number nobody handed it, and the
-guesses were wrong. The fix in flight is to give it the score after the goal as
-data instead of letting it infer one, then rerun as v4. It was also judged in
-the session that the offline `rephrase` cover path does not reproduce the
-anticipatory latitude as faithfully as the runtime does; check that against v4
-before reading a rejection as a phraser fault.
+Both refusals are celebration lines after a goal, and both are the phraser
+guessing a number nobody handed it: told the state score, it added one again.
+The gate caught both, which is the gate doing its job, but a refused line is
+dropped, so "The volley!" never reached the replay. `233b313` also fixed a
+runtime bug found on the way: the gate's `goal_in_state` cover was answering
+the wider ten-second window, so the runtime told the gate the score already
+counted a goal it had not, and correct anticipatory scores were struck. The
+offline `rephrase` path was never the less faithful one.
+
+A v4 was started that handed the phraser the score as words to copy. It was
+discarded unmerged on the user's decision, because copying is still a thing
+the model can get wrong. The agreed shape, not yet built: **the model never
+writes a number.** The phraser writes name and how; code computes the third
+beat (state score, plus one to the scoring side while the goal is uncounted,
+spelled as a commentator says it) and appends it to a goal-calling line, never
+to a celebration line; a check strips any score the model writes anyway. The
+same rule for minutes remaining and incident counts: code writes numbers, the
+model writes words.
 
 **Pack notes, and how little reached air.** `clips/pack-argfra-2022.json`
 carries 13 hand-checked notes — 8 storylines, 4 stats, 1 habit — about seven
@@ -370,10 +383,9 @@ register the phraser was built to fix. Rebuilding it is step 3 of section 5.
   guesses; `scripts/voice_sweep.py` exists to replace them with numbers somebody
   has listened to and has not been run, because the default grid is about 1,074
   credits. Trim the grid before running it.
-- **v4 is not merged.** `feat/phraser-quality` carries the detail, subject,
-  goal-shape and build-up variety fixes and the cached prefix. Its open fault is
-  the two `scoreline_mismatch` refusals in section 3d: the phraser is guessing a
-  score because nothing hands it one.
+- **Celebration lines guess a score.** v3's two `scoreline_mismatch` refusals
+  in section 3d. The gate catches them and drops the line, so the goal's second
+  beat is lost. Fix is the append-in-code shape described there; not started.
 - **Numbers barely reach air.** Two lines in 27 carried one, and only one of
   those came from a note. The rule says the phraser *may* use a note, the pack
   holds 13 of them and nothing about half the players on the pitch, and the seat
@@ -448,13 +460,12 @@ anything on voice or on a match.
 
 **Text. The standing instruction is no voice until the commentary reads well.**
 
-1. **Merge v4 with the score fix.** Hand the phraser the score after the goal as
-   a field instead of letting it infer one, rerun the Mbappé rephrase, and check
-   that the two `scoreline_mismatch` refusals are gone, that no new invention
-   arrived, and that the cached prefix still reads. About $0.03.
-2. **Numbers as data.** The score after the line, the minutes remaining, and
-   incident counts off the state — "third foul on Mbappé" — handed to the
-   phraser as fields and checked by the gate the way `note_claim` checks a note.
+1. **Numbers written by code, never by the model.** The score after a goal
+   appended to the goal-calling line in code (section 3d); then the minutes
+   remaining and incident counts off the state — "third foul on Mbappé" — the
+   same way, as text the runtime composes around the model's words, with the
+   gate as backstop. Rerun the Mbappé rephrase and check the two
+   `scoreline_mismatch` refusals are gone with no new invention. About $0.03.
    Note use becomes expected rather than permitted: roughly one clause every 40
    seconds of build-up.
 3. **The colour seat.** Section 3e is the design. This is the largest piece of
