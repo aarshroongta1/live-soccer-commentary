@@ -1,0 +1,30 @@
+src/commentary/goalfollow.py
+  s_b9d647e85fe0bb::t_de3dd33a0b9d36 73
+src/commentary/prompts/phraser.py
+  s_b9d647e85fe0bb::t_da40ca80a89e9f 820-831
+src/commentary/config.py
+  s_b9d647e85fe0bb::t_c5066b482ee564 264
+  s_b9d647e85fe0bb::t_b39e4c9c7e2f0d 630-635
+tests/test_dead_ball.py
+  s_b9d647e85fe0bb::t_648795c3af6ee6 183-190,194
+tests/test_scoreline.py
+  s_b9d647e85fe0bb::t_9c68b741fe1093 437-441
+src/commentary/agents/phraser.py
+  s_b9d647e85fe0bb::t_60d133b313c6ba 998-1005
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1c653823c8c8871f04a6c43b1dd58c4bab7ae444",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
