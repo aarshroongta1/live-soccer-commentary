@@ -50,10 +50,14 @@ from commentary.agents.colour import (
     is_filler,
     judge_utterance,
     may_speak,
+    mentions,
     repeats_itself,
+    says_a_number,
+    says_meta,
     says_nothing,
     says_only_a_name,
     says_the_scores_are_level,
+    spelled_out,
     verdict_intensifier,
 )
 from commentary.config import CallerConfig, ColourConfig, PredictorConfig
@@ -64,6 +68,8 @@ from commentary.llm.fake import ScriptedBackend
 from commentary.predictor import SpeakPredictor
 from commentary.prompts.colour import COLOUR_EXAMPLES, COLOUR_RULES
 from commentary.schemas import (
+    Angle,
+    ColourTurn,
     Event,
     KnowledgePack,
     MatchState,
@@ -1347,3 +1353,132 @@ def test_a_note_that_is_not_a_standing_survives_a_goal() -> None:
     seat.saw_lead_line(10.0, "Mbappé has it on the left.")
     seat.tallies.credit_goal("Kylian Mbappé", 20.0)
     assert seat.notes()
+
+
+# -- 11. round six: the working out, the pronoun, the spelling, the elision --
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Yeah, Mbappé did exactly what the note said he would do there.",
+        "As noted, he takes them down that side.",
+        "Well, the team sheet had him on the left.",
+        "Well, my colleague is right about that.",
+    ],
+)
+def test_the_seat_does_not_name_its_own_briefing(text: str) -> None:
+    """The first went out at 191.7 s on ``runs/rephrased/r5b/mbappe``.
+
+    The notes are things the second voice knows, the way it knows the team
+    sheets. A broadcast in which one of them says "the note" is a broadcast
+    with the working out left in, and there is nobody in the gantry this seat
+    may refer to either: it has never been told the lead's name.
+    """
+    assert says_meta(text), text
+    verdict = judge_utterance(
+        text, MatchState(home="Argentina", away="France"), the_2022_pack(), FactGate()
+    )
+    assert not verdict.passed
+    assert verdict.reasons[0].startswith("meta:")
+
+
+def test_an_opinion_about_the_same_fact_is_not_meta() -> None:
+    assert says_meta("Well, Mbappé took that without looking up.") == ""
+    assert says_meta("The referee got that one right.") == ""
+
+
+def _a_turn(*utterances: str) -> ColourTurn:
+    return ColourTurn(
+        angle=Angle.PLAYER, cites=["the note"], speak=True, utterances=list(utterances)
+    )
+
+
+@pytest.mark.asyncio
+async def test_the_seat_is_asked_once_more_when_it_names_its_briefing() -> None:
+    """The one fault a rewrite fixes: the right subject in the wrong frame.
+
+    Everything else this seat refuses is refused outright — a line with no
+    material behind it does not become one when asked twice — and a second
+    call doubles what a turn costs.
+    """
+    backend = ScriptedBackend()
+    backend.queue(
+        "colour",
+        [
+            _a_turn("Yeah, Mbappé did what the note said he would."),
+            _a_turn("Yeah, Mbappé took that without looking up."),
+        ],
+    )
+    seat = ColourSeat(backend, config=ColourConfig(), pack=the_2022_pack())
+    seat.saw_lead_line(1.0, "Mbappé has it.")
+    seat.saw_lead_line(2.0, "Mbappé again.")
+    turn = await seat.turn(Offer(True, AT_A_DEAD_BALL, "the ball is dead"), "2-1", now=10.0)
+    assert turn is not None
+    assert turn.utterances == ["Yeah, Mbappé took that without looking up."]
+    assert len(backend.calls_tagged("colour")) == 2, "one re-ask, and only one"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Well, Messi got the better of that one.",
+        "He had the crucial one against the Netherlands.",
+        "The referee got that one absolutely right.",
+        "One of those nights.",
+    ],
+)
+def test_one_standing_in_for_a_thing_is_not_a_number(text: str) -> None:
+    """Both of the first two died as ``number_claim`` and neither counts
+    anything. "One" is the only number word English also uses as a pronoun."""
+    assert not says_a_number(text), text
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "France are one behind.",
+        "It is one-nil.",
+        "There is one in it.",
+        "Mbappé has one more to get.",
+        "He has scored one tonight.",
+    ],
+)
+def test_one_counting_something_is_still_a_number(text: str) -> None:
+    assert says_a_number(text), text
+
+
+def test_a_name_spaced_differently_is_the_same_name() -> None:
+    """ "Yeah, Mac Allister gave that away in the box." was refused for naming
+    nobody: the pack spells him "Alexis MacAllister".
+
+    :func:`~commentary.gate.is_the_same_name` is the gate's own matcher and
+    already knew both this and the initial form. One matcher for both seats,
+    so a name the gate will accept is a name this seat can see.
+    """
+    pack = the_2022_pack()
+    pack.home.starters.append(Player(name="Alexis MacAllister", number=20))
+    pack.away.starters.append(Player(name="Théo Hernández", number=22))
+    assert mentions("Yeah, Mac Allister gave that away in the box.", "Alexis MacAllister")
+    assert mentions("Yeah, T. Hernández again down that side.", "Théo Hernández")
+    assert not mentions("Well, Otamendi went through him.", "Alexis MacAllister")
+    assert not is_filler("Yeah, Mac Allister gave that away in the box.", pack)
+
+
+@pytest.mark.parametrize(
+    ("text", "phrase"),
+    [
+        ("That's what he does in these moments.", "that is what he"),
+        ("It's what it has all been building to.", "been building to"),
+    ],
+)
+def test_a_contraction_is_the_same_stock_phrase(text: str, phrase: str) -> None:
+    """ "That's what he does in these moments." passed at 115.6 s while both
+    the rules and the pattern carried "that is what he"."""
+    assert says_nothing(text) == phrase
+
+
+def test_the_contraction_folding_is_for_matching_only() -> None:
+    """Nothing expanded ever reaches air: a good contraction still passes."""
+    assert says_nothing("He's the man here.") == ""
+    assert spelled_out("That's it.") == "that is it.", "case is not kept; nothing here airs"

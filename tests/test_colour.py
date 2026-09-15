@@ -1511,14 +1511,14 @@ def test_a_continuation_may_say_he_when_the_line_before_it_named_one_man() -> No
     which is why every turn in it was one utterance long.
     """
     first = "Well, Otamendi went through the back of him there."
-    carries_on = "That's what he does — he never lets a runner past."
+    carries_on = "He never lets a runner past him, that lad."
     assert not is_filler(carries_on, a_pack(), after=first)
     assert not is_filler("And here he is in a World Cup final.", a_pack(), after=first)
 
 
 def test_the_utterance_that_opens_a_turn_still_has_to_name_somebody() -> None:
     """A listener coming to the turn cold has nobody to call "he"."""
-    assert is_filler("That's what he does — he never lets a runner past.", a_pack())
+    assert is_filler("He never lets a runner past him, that lad.", a_pack())
     assert is_filler("And here he is in a World Cup final.", a_pack())
 
 

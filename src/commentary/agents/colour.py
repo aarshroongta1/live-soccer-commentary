@@ -59,9 +59,9 @@ from commentary.agents.analyst import restates_score
 from commentary.agents.caller import clean_line, trim_words
 from commentary.bus import Topic
 from commentary.config import SETTINGS, ColourConfig, Settings
-from commentary.gate import FactGate, fold, noun_for
+from commentary.gate import FactGate, fold, is_the_same_name, noun_for
 from commentary.ledger import Fact, Ledger
-from commentary.llm.base import LLMBackend, LLMError, Usage
+from commentary.llm.base import Block, LLMBackend, LLMError, Parsed, Usage, text_block
 from commentary.prompts.colour import (
     OPENERS,
     colour_blocks,
@@ -633,13 +633,31 @@ def _clear_of(ts: float, blocked: Sequence[tuple[float, float]], clear: float) -
 #: and the spelled-out decades are here because a commentator says "eighty
 #: six" and "the first", not "86" and "1st".
 _NUMBER_WORDS = (
-    "one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|"
+    "two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|"
     "fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|"
     "eighty|ninety|hundred|thousand|dozen|"
     "first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"
     "once|twice|double|treble|hat-trick"
 )
 _A_NUMBER = re.compile(rf"\b(?:\d+|{_NUMBER_WORDS})\b", re.IGNORECASE)
+
+#: "One" is the only number word English also uses as a pronoun, and it is
+#: not here with the rest for that reason. Two good lines died on it: "Well,
+#: Messi got the better of that one." and "He had the crucial one against the
+#: Netherlands." Neither counts anything.
+#:
+#: So "one" is checked separately: a determiner or an adjective in front of
+#: it, or "of" after it, makes it a pronoun; anything else makes it a count.
+#: "One-nil", "one in it", "one more" and "one behind" are all still numbers,
+#: and the first of those is a scoreline.
+_ONE = re.compile(r"\bones?\b", re.IGNORECASE)
+_ONE_AS_A_PRONOUN = re.compile(
+    r"\b(?:that|this|these|those|the|each|every|which|no|any|another|only|either|neither|"
+    r"big|crucial|good|better|best|important|decisive|key|late|early|last|only|real|"
+    r"first|second|hard|easy|clever|poor|great|bad|lucky|cheap|soft|silly)\s+ones?\b"
+    r"|\bones?\s+of\b",
+    re.IGNORECASE,
+)
 
 
 def says_a_number(text: str) -> bool:
@@ -659,8 +677,19 @@ def says_a_number(text: str) -> bool:
     are forty minutes from their first" with ten minutes left on the clock.
     Neither is a claim the fact gate can check, and both are the failure the
     invention score exists to catch.
+
+    "One" is the exception and :data:`_ONE_AS_A_PRONOUN` is why: every other
+    number word only ever counts something, and that one is also English's
+    word for "the thing we were just talking about".
     """
-    return bool(_A_NUMBER.search(text))
+    if _A_NUMBER.search(text):
+        return True
+    counted = {found.span() for found in _ONE.finditer(text)}
+    pronouns = {found.span() for found in _ONE_AS_A_PRONOUN.finditer(text)}
+    return any(
+        not any(start >= low and end <= high for low, high in pronouns)
+        for start, end in counted
+    )
 
 
 #: How long a run of words has to be before saying it twice is repeating
@@ -1040,6 +1069,13 @@ def judge_utterance(
         return GateVerdict(
             passed=False,
             reasons=["number_claim: numbers are the lead's job, not this seat's"],
+            line=text,
+        )
+    meta = says_meta(text)
+    if meta:
+        return GateVerdict(
+            passed=False,
+            reasons=[f'meta: "{meta}" is your own briefing, and the listener cannot see it'],
             line=text,
         )
     stock = says_nothing(text)
@@ -1525,13 +1561,29 @@ def mentions(text: str, name: str) -> bool:
     A selection heuristic, not a fact check — the gate's own roster matching
     does that afterwards. Folded on both sides because the caller reads a
     name off a graphic and the pack has it off a team sheet.
+
+    Every run of one to three words in the line is offered to
+    :func:`~commentary.gate.is_the_same_name`, which is the gate's own
+    matcher and knows the two things a plain comparison does not: a name
+    spaced differently — the pack says "Alexis MacAllister" and the line says
+    "Mac Allister", which cost the seat a whole turn on
+    ``runs/rephrased/r5b`` — and the initial form, "T. Hernández". One matcher
+    for both seats, so a name the gate will accept is a name this seat can
+    see.
     """
-    haystack = f" {fold(text)} "
     folded = fold(name)
     if not folded:
         return False
+    haystack = f" {fold(text)} "
     surname = folded.rsplit(" ", 1)[-1]
-    return f" {folded} " in haystack or f" {surname} " in haystack
+    if f" {folded} " in haystack or f" {surname} " in haystack:
+        return True
+    words = _NOT_A_WORD.sub(" ", fold(text)).split()
+    return any(
+        is_the_same_name(" ".join(words[start : start + length]), folded)
+        for length in (2, 3)
+        for start in range(max(0, len(words) - length + 1))
+    )
 
 
 def one_name_each(names: Sequence[str]) -> list[str]:
@@ -1605,8 +1657,37 @@ _POINTING_AT_ITSELF = re.compile(r"\bright (?:there|here|now)\b[.!?]*\s*$", re.I
 _CARRIES_ON = re.compile(r"\b(?:he|him|his|she|her|they|them|their|he's|they've)\b", re.IGNORECASE)
 
 
+#: The contractions a commentator actually says, and their long forms. Folded
+#: before the stock-phrase check because "That's what he does in these
+#: moments." went out while the rules and the pattern both had "that is what
+#: he" in them. Only for matching: nothing here ever reaches air.
+_CONTRACTIONS = tuple(
+    (re.compile(rf"\b{short}\b", re.IGNORECASE), long)
+    for short, long in (
+        (r"that['\u2019]s", "that is"),
+        (r"it['\u2019]s", "it is"),
+        (r"he['\u2019]s", "he is"),
+        (r"she['\u2019]s", "she is"),
+        (r"here['\u2019]s", "here is"),
+        (r"there['\u2019]s", "there is"),
+        (r"they['\u2019]re", "they are"),
+        (r"we['\u2019]re", "we are"),
+        (r"what['\u2019]s", "what is"),
+        (r"who['\u2019]s", "who is"),
+    )
+)
+
+
+def spelled_out(text: str) -> str:
+    """The same line with its contractions opened, for matching only."""
+    for pattern, long in _CONTRACTIONS:
+        text = pattern.sub(long, text)
+    return text
+
+
 def says_nothing(text: str) -> str:
     """The stock phrase this utterance is built on, or ``""``."""
+    text = spelled_out(text)
     folded = " ".join(fold(text).split())
     for phrase in ABOUT_NOTHING:
         if phrase in folded:
@@ -1633,6 +1714,51 @@ _A_PHRASE_NOT_A_PREDICATE = frozenset(
 #: predicate's work. Four words is "from the spot" and "on the ball" and "in
 #: the box"; five is "off the ground and buried it", which has a verb in it.
 _PHRASE_WORDS = 5
+
+
+#: The seat talking about its own briefing rather than about the match.
+#: "Yeah, Mbappé did exactly what the note said he would do there" went out
+#: on ``runs/rephrased/r5b/mbappe``. The notes are things the second voice
+#: knows, the way it knows the team sheets; a broadcast in which one of them
+#: says "the note" is a broadcast with the working out left in. "My
+#: colleague" is here for a different reason and the rules give it: this seat
+#: has never been told the lead's name and must not invent one.
+_META = re.compile(
+    r"\bthe\s+(?:note|notes|brief|briefing|pack|sheet|team\s+sheet|form\s+guide|research)\b"
+    r"|\bwhat\s+the\s+note\b"
+    r"|\bas\s+noted\b"
+    r"|\bon\s+paper\s+(?:it\s+)?says\b"
+    r"|\bmy\s+(?:colleague|co-commentator|notes)\b"
+    r"|\bthe\s+material\b",
+    re.IGNORECASE,
+)
+
+
+def says_meta(text: str) -> str:
+    """The words in which this utterance names its own briefing, or ``""``."""
+    found = _META.search(spelled_out(text))
+    return found.group(0) if found else ""
+
+
+def _meta_retry_note(named: str) -> str:
+    """Name the leak and ask again. One note, one extra call, once a turn."""
+    return (
+        f'YOU SAID "{named}". The notes are things you know, the way you know the team\n'
+        "sheets. They are not things to cite, and the listener has never heard of them.\n"
+        "Say the fact itself, as your own opinion, with the man's name on it — and if\n"
+        "there is nothing to say without pointing at your own briefing, speak false."
+    )
+
+
+def _with_note(blocks: Sequence[Block], note: str) -> list[Block]:
+    """The same call's body with a note on the end of its last text block."""
+    again = [dict(block) for block in blocks]
+    for block in reversed(again):
+        if block.get("type") == "text":
+            block["text"] = f"{block['text']}\n\n{note}"
+            return again
+    again.append(text_block(note))
+    return again
 
 
 def says_only_a_name(text: str, pack: KnowledgePack | None) -> str:
@@ -2351,8 +2477,29 @@ class ColourSeat:
             last_angle=self._last_angle,
             most=most,
         )
+        parsed = await self._ask(blocks)
+        if parsed is None:
+            return None
+        self.last_usage = parsed.usage
+        # One re-ask, and only for the fault a rewrite actually fixes. A turn
+        # that names its own briefing — "Mbappé did exactly what the note said
+        # he would do" — has the right subject and the wrong frame, and the
+        # model that wrote it can write it again without the frame. Everything
+        # else this seat refuses is refused outright: a line with no material
+        # behind it does not become one when asked twice, and a second call
+        # doubles what the turn costs.
+        named = next((says_meta(text) for text in parsed.value.utterances if says_meta(text)), "")
+        if named:
+            again = await self._ask(_with_note(blocks, _meta_retry_note(named)))
+            if again is not None:
+                self.last_usage = self.last_usage + again.usage
+                parsed = again
+        return self._settle(parsed.value, most)
+
+    async def _ask(self, blocks: list[Block]) -> Parsed[ColourTurn] | None:
+        """The call itself. ``None`` is the model failing, not silence."""
         try:
-            parsed = await self.backend.parse(
+            return await self.backend.parse(
                 model=self.model,
                 system=self.system,
                 blocks=blocks,
@@ -2365,8 +2512,6 @@ class ColourSeat:
         except LLMError as exc:
             self.last_reason = f"model call failed: {exc}"
             return None
-        self.last_usage = parsed.usage
-        return self._settle(parsed.value, most)
 
     def _how_many(self, offer: Offer, material: Material, *, stretch: float = 0.0) -> int:
         """How many utterances this turn is allowed to be.
