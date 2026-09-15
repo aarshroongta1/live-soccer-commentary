@@ -3,14 +3,16 @@
 Start here, then read `docs/CLIPS.md`. This file is the state; that one is the
 evidence.
 
-**HEAD:** `main` in `/Users/Aarsh/Desktop/commentary`. `.env` at the root.
-`clips/` and `runs/` are in the repo and gitignored — the clips are 26 MB each
-and the traces are somebody's API spend. As of 15 Sep 2026 the v3 phraser is
-merged (`233b313`) and nothing is in flight; a v4 that handed the phraser the
-score as a field was started and discarded unmerged, for the reason in section
-3d. Worktrees live under `.worktrees/` and `.claude/worktrees/`; neither is in
-`.gitignore`, and ruff wants `--exclude .worktrees` or it lints another
-branch's files.
+**HEAD:** branch `corpus-british` in
+`/Users/Aarsh/Desktop/commentary/.claude/worktrees/corpus`, pushed to origin,
+seventeen commits ahead of `main` and not merged. Everything from 15-16
+September (section 3f) is on it. `.env` at the root. `clips/` and `runs/` are
+in the repo and gitignored — the clips are 26 MB each and the traces are
+somebody's API spend; in the worktree they are symlinks to the main
+checkout's, and `.gitignore`'s `clips/` does not match a symlink, so never
+`git add -A` at the root. Worktrees live under `.worktrees/` and
+`.claude/worktrees/`; neither is in `.gitignore`, and ruff wants
+`--exclude .worktrees` or it lints another branch's files.
 
 **Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
 `uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`
@@ -376,34 +378,111 @@ the traces it spoke zero times on the 45-second clips and about every 70 seconds
 on the 210-second one, at the 30-word cap, in the same feature-description
 register the phraser was built to fix. Rebuilding it is step 3 of section 5.
 
+## 3f. What changed on 15-16 September
+
+The instruction was: gather the real commentary of a few full matches, study
+it, and iterate until the commentary is comparable to a human's across a whole
+match, every kind of play. Text only, no voice, no new video runs. Everything
+below was measured with `commentary rephrase` over traces already on disk and
+`commentary register`, the judge built that night. **About $6.30 of Anthropic
+spend** for the day against a $5 cap I had set myself: $0.94 of it the pooled
+run over 39 traces, about $2 the researcher (two failed Opus calls the old
+accounting did not record; it records them now), the rest Haiku rephrases at
+three to eight cents each and eleven Opus judge calls at four to fifteen
+cents.
+
+| commit | |
+|---|---|
+| `acd94c4` | Six full matches of captions join the 2022 final: Liverpool v Man Utd and Spurs v Chelsea 2024-25 (NBC, British commentators), Leicester v Man Utd and Leicester v Villa 2015-16, the 2017 Clásico and Barça v Mallorca 2019 (Barcelona's English feed). Packs for all six; the example builder takes several caption files each with its own pack. |
+| `f901494` | `docs/research/real-commentary-corpus.md`: 7,878 utterances over 12.4 hours. The 2022 final is the outlier: club football runs 115 words a minute, bare surnames are 4% not 19%, the median gap between utterances is 4.3 s with 53% over four seconds (the 2.4 s in section 6 was caption segments, not speech), there is no silence after a goal, one line in six carries a number and the lead says it, the colour seat enters on a dead ball not a timer, and every match carries three to five threads with callbacks. Ranked gap analysis in section 9 of that file. |
+| `90bdac9` | `commentary register <trace>`: free counts (words, bare names, openers, gaps, numbers, refusals) against club-football references in `register_reference.py`, and an Opus rubric scoring register, economy, variety, event fit, goal call, build-up, colour, invention and overall 0-10 with the three worst lines. `--no-model` is free. |
+| `d26655c` | Phraser: club-football examples across 21 kinds (corner, throw, goal kick, cross, switch, card, offside, substitution, kickoff, stoppage, restatement, numbers…), the radio file excluded, the final held to a sixth; `max_words` 28; club shapes beside the participle; a note about a named player is used, not permitted, on a quiet form; the phraser may return silence and both paths honour it. Colour seat: text-only, phase-gated, cue-led, every line through the gate. |
+| `be84496` | `CROSS` and `SWITCH` are events, through the caller, the grader and StatsBomb's flags. The rate cap is three caps by phase (2.5 s attacking, 4.5 s build-up, 5.0 s dead ball). `commentary.llm.grading_backend()`: ten-minute timeout, zero retries, for anything that reads a whole passage. |
+| `d1a69b0` | The model writes name and how; **code writes the score** once on the goal-calling line and strips any score the model wrote (`scoreline.py`). A thirty-second `goal_followup` window hands the phraser beats two to four and fills a caller silence with up to two synthesised calls (`goalfollow.py`). Score-and-clock restatement by code on a timer. Opener repeat re-asked once (35% → 26%). Chosen silence computed in code and restated in the body: once in 35 calls became two or three in 27. |
+| `b6a5694` | `tallies.py`: a note marked `counts=goals` advances in code by the goals credited to that player, so the tally reads six then seven after each goal and the gate checks the advanced figure. `threads.py`: a note said once and not in the last 300 s is offered as a callback ahead of an unused one. |
+| `813defc` | Past-tense history ("the man who scored in Russia") is not a goal claim. The register judge is shown the pack, tally-adjusted. |
+| `466748a` | The prompt's worked examples had quoted this very match and the model copied them: a penalty called as a volley, a rebuild describing the goal ninety seconds ahead. Examples are placeholders or names on no pack, with a test that scans the static prompt against the roster. Restatement never fires inside a goal window. |
+| `8e9bcd5` | **The ledger** (`ledger.py`): in-match counts computed from the caller's forms — shots, saves, corners, fouls, cards, crosses per side and player, firsts and streaks — each with the sentence a commentator says and a number-free clause; both seats cite it, the gate's count check covers notes and ledger in one pass, `Ledger.override` is the hook for a wire feed. **The researcher** asks for forty to sixty notes per match, every starter, figure and clause forms, source and confidence, written beside the hand-checked pack and skipped on air until `checked` or `--trust-unchecked`; the 2022 pack went from 13 notes to 64 (`clips/pack-argfra-2022-researched.json`, one note found wrong and marked down by hand, the rest unticked). **The governor**: club football's lead:colour share is 69:31 measured three ways off the captions; when colour is short and has material, the offer rate loosens, the lead's build-up cap stretches toward 6 s and a turn may run to four. Colour prompt decontaminated; a four-gram repeat refused; the pooled judge scores five distinct clips one at a time. |
+
+**What the numbers say.** Pooled over the 39 Opus traces on disk (505 lead
+lines, `runs/rephrased/night1/POOLED.md`, before the ledger and researcher
+landed): median 6 words against club football's 8, 21% of lines nine words
+or more against 47%, bare names 3% against 4%, names on 48% against 45%,
+opener repeats 22% against 12%, median gap 4.5 s against 4.3, gaps over four
+seconds 79% against 53%, numbers off the scoreline 9% against 16%, gate
+refusals 1%, colour share 14% against a 31% target. On the Mbappé trace alone,
+where every change was read by eye, the Opus judge moved from 5.0 to 5.5
+overall and invention from 5.0 to 7.0; after the ledger, numbers off the
+scoreline reach 20% of lines. **Treat a single 27-line trace as ±8 points of
+noise on any length measure**: identical prompt, identical trace, "nine words
+or more" ranged 16-38%. `scripts/rephrase_all.py --tag <t>` is the honest
+measurement, about $0.94 for the set.
+
+**What it reads like now.** The Mbappé clip with everything on and the
+researched pack, lead and colour:
+
+```
+  12.9  LEAD    Otamendi gets across, and the referee waves it away.
+  17.3  LEAD    Protests waved away.
+  20.2  COLOUR  Well, Otamendi getting across there at his age.
+  59.2  LEAD    Mbappé steps up. France's first penalty.
+  78.5  LEAD    Martínez on his line, daring the kick to come.
+  82.5  LEAD    Mbappé! Buried. Two-one to Argentina.
+  90.8  LEAD    Mbappé! Six in the tournament already.
+  94.8  LEAD    Mbappé drove it past Martínez. The whole move took seconds.
+ 133.2  LEAD    Upamecano out from the back, and he's missed the semi-final ill but he's back in the side tonight.
+ 143.2  COLOUR  Yeah, Upamecano back from that illness.
+ 176.7  LEAD    Mbappé! Off the ground! Two-two.
+ 184.5  LEAD    Mbappé. Seven in the tournament already.
+ 188.5  LEAD    France drove into the box. Mbappé came off the ground and buried the volley.
+ 199.3  COLOUR  That volley, the technique at his age.
+```
+
+The score is code's, the tally is code's, the Upamecano thread is the pack's
+and both seats carry it. What is still not a broadcast: the colour seat spoke
+three times in 210 seconds where a human would have had three or four turns of
+several lines, and the reason is material, not rate — 96 offers were refused
+for nothing specific to say against 80 for the rate; the thirty seconds after
+a goal hold five utterances and about 40 words against a real seven and 60;
+and the lead's build-up is team-subject where the caller could not read a
+shirt, which no phrasing fixes.
+
+**The judge on the pooled set is per trace now, and the first pooled judge
+was invalid**: it was handed 39 traces as one passage, a dozen of them the
+same tuned clip, and scored a stuck loop at 1.5. Ignore that number in
+`night1/POOLED.md`.
+
 ## 4. Known gaps
 
+Six bullets that stood here on 15 September are closed by section 3f: the
+celebration score, numbers on air, the missing colour seat, the missing
+instrument, the phraser's inability to choose silence, and threads. What
+remains, and what tonight opened:
+
+- **The colour seat is empty rather than wrong.** Material is the hard gate
+  and the 2022 pack, even at 64 notes, plus the ledger, gave it three turns in
+  210 s. Share 9-14% against the 31% target. The governor's stretched lead cap
+  is runtime-only and has never run live. The seat has no colleague's name, so
+  the corpus's handover question is impossible.
+- **The 51 new notes are unchecked.** They reach air only with
+  `--trust-unchecked`. One was wrong (Otamendi "oldest outfielder"; Messi is
+  older) and is marked down; the assist tallies want the official sheet.
+- **After a goal the lead is still short.** Five beats and about 40 words
+  against seven and 60. Beat three loses the scorer's name about half the
+  time; it is re-asked once now.
+- **Openers still repeat about twice the real rate** (22-26% against 12%)
+  after seven prompt variants and one code retry.
+- **The lead never reaches the attacking rate offline.** Rephrase replays the
+  recorded beat times, so the three-cap predictor and the governor's stretch
+  are covered by tests only. The first live run will be the first measurement.
+- **Ledger counts are what the caller saw**, and the side of a count is the
+  side the line was about. Saves, clearances and tackles count per player
+  only. Nothing calls `Ledger.override` yet.
 - **Nobody has heard any of this.** The phraser's lines have been read, never
   spoken. The voice curve's defaults in `config.py` are guesses, written down as
   guesses; `scripts/voice_sweep.py` exists to replace them with numbers somebody
   has listened to and has not been run, because the default grid is about 1,074
   credits. Trim the grid before running it.
-- **Celebration lines guess a score.** v3's two `scoreline_mismatch` refusals
-  in section 3d. The gate catches them and drops the line, so the goal's second
-  beat is lost. Fix is the append-in-code shape described there; not started.
-- **Numbers barely reach air.** Two lines in 27 carried one, and only one of
-  those came from a note. The rule says the phraser *may* use a note, the pack
-  holds 13 of them and nothing about half the players on the pitch, and the seat
-  that should be saying them does not exist.
-- **There is no colour seat.** Section 3e says what it should be. What is there
-  is the silence-timer analyst, which on the traces spoke zero times on a 45 s
-  clip and about every 70 s on the 210 s one, at the 30-word cap, in the register
-  the phraser was built to replace.
-- **There is no number on phrasing quality.** Every judgement in section 3d is
-  somebody reading 27 lines and counting faults by hand. An Opus judge against a
-  written rubric would make one rephrase iteration comparable to the last; until
-  then "it reads better" is the whole instrument.
-- **The phraser cannot choose silence.** It returns a line for every call it is
-  given, so cadence is still the predictor's alone. Real commentary's median gap
-  is 2.4 s but 22% of gaps are over four seconds, and build-up is where those
-  gaps live.
-- **No story runs across lines.** Each call sees the last five lines and nothing
-  else, so nothing is ever picked back up. A thread in the state is step 5.
 - **Open-play naming, and what it actually is.** Across 208 live-play caller
   lines on Opus, 57% had no sighting at all — nothing legible in the frame —
   10% had sightings that bound to nobody, and 33% had a bound name. Of those
@@ -459,24 +538,25 @@ on disk, cost cents, need no clip and make no sound. Do them before spending
 anything on voice or on a match.
 
 **Text. The standing instruction is no voice until the commentary reads well.**
+Steps 1-6 that stood here are done (section 3f). What is left in text:
 
-1. **Numbers written by code, never by the model.** The score after a goal
-   appended to the goal-calling line in code (section 3d); then the minutes
-   remaining and incident counts off the state — "third foul on Mbappé" — the
-   same way, as text the runtime composes around the model's words, with the
-   gate as backstop. Rerun the Mbappé rephrase and check the two
-   `scoreline_mismatch` refusals are gone with no new invention. About $0.03.
-   Note use becomes expected rather than permitted: roughly one clause every 40
-   seconds of build-up.
-3. **The colour seat.** Section 3e is the design. This is the largest piece of
-   work left and the one the notes are waiting on.
-4. **Cadence.** Let the phraser return empty, and let the predictor tolerate a
-   longer silence in build-up. Both are needed before a sparse lead sounds like
-   restraint rather than a dropped call.
-5. **Threads.** A running story line in the state, so a line can pick something
-   back up instead of starting from the last five lines every time.
-6. **An Opus-judge rubric**, so a rephrase iteration gets a number. Everything in
-   section 3d is a hand count; nothing here is repeatable without this.
+1. **Merge `corpus-british` into `main`** once the user has read section 3f.
+   Seventeen commits, 1,029 tests, no conflicts expected: `main` has not moved.
+2. **Hand-check the 51 unchecked notes** in
+   `clips/pack-argfra-2022-researched.json` (`checked: true` on each), then
+   drop `--trust-unchecked`. Ten minutes with the hand-check list.
+3. **One live 60-90 s run with everything on** (`--source file` over
+   `clips/mbappe.mp4`, about $1.10 on Opus) — the first time the three-cap
+   predictor, the governor's stretch and the goal window's synthesised calls
+   run against a live clock rather than a replayed one. Measure with
+   `register`. Ask first.
+4. **The goal window's words.** Five beats and 40 words against seven and 60;
+   the lever that worked was naming a length in the beat instruction.
+5. **Openers.** 22-26% against 12%. The retry moved it eight points; the next
+   idea is a code-side opener bank per kind, offered in the body.
+6. **The pooled judge**, once, `scripts/rephrase_all.py --tag <t> --judge`
+   (five distinct clips, about $0.75), so the per-trace 5.5 has a pooled
+   companion.
 
 **Then voice. Credits only, no model called. Ask first.**
 
@@ -562,6 +642,24 @@ step 2.
   the repetition veto were each answered from `runs/` for nothing before any
   code moved. `runs/readtrace.py` prints a trace; the trigger, sighting, gate,
   phrased and spoken rows carry everything needed.
+- **Never put a name from a match the system might call into a prompt's
+  worked examples.** The phraser called a penalty a volley and rebuilt a goal
+  that had not happened yet, both copied verbatim from its own rules; the
+  colour seat said "has been here before" seventeen times in eighty lines for
+  the same reason. Placeholders or names on no pack, and the tests that scan
+  the static prompt against the roster stay.
+- **Do not judge a pooled set as one passage.** Thirty-nine traces of eighteen
+  clips read to Opus as the same goal forty times; it scored 1.5 and it was
+  right about what it was shown. Per trace, distinct clips.
+- **A failed model call still costs money.** Two Opus researcher calls died on
+  tool-calling shape and on thinking eating the output budget and were never
+  recorded; about $1.40 vanished from the day's accounting. Probe a new call
+  shape on Haiku first. The backend records usage before parsing now.
+- **Agents in a shared worktree: no bare `git stash`, no `git add -A` at the
+  root.** One agent stashed everybody's in-flight edits; the symlinked `clips`
+  and `runs` are not ignored. Files by name, always.
+- **One trace is not a measurement.** ±8 points on the length measures between
+  identical runs. Pool before concluding.
 
 ## 7. What was removed, and why it stays removed
 
