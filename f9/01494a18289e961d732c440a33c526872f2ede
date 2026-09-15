@@ -1,0 +1,22 @@
+docs/research/real-commentary-corpus.md
+  s_1eec300a49e1ff::t_f88fc108e4d180 1202,1210,1218
+  s_1eec300a49e1ff::t_5a1f64f40daab2 3-4,18-19,304,1650,1716,1909
+  s_1eec300a49e1ff::t_706932dada2908 80-101,1340-1342,1405-1406
+  s_1eec300a49e1ff::t_9aa95c65921c18 1-2,5-17,20-79,102-303,305-1201,1203-1209,1211-1217,1219-1339,1343-1404,1407-1649,1651-1715,1717-1908,1910-2011
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f901494a18289e961d732c440a33c526872f2ede",
+  "prompts": {},
+  "sessions": {
+    "s_1eec300a49e1ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7feafbb1-43b3-4ee3-afb0-bb66484d3043",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
