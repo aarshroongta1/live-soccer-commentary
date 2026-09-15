@@ -261,7 +261,7 @@ class SilenceConfig:
     #: Real commentary is silent on a quarter of touches and names the rest
     #: (study section 3.1a), so a nameless line has to earn its place: the
     #: gap has to be open and the eyes have to have picked something out.
-    nameless_gap_s: float = 12.0
+    nameless_gap_s: float = 5.0
     #: And how recently. Without this the rule would hold through a long
     #: silence: the last thing said might be forty seconds old, and a system
     #: that answers a quiet passage with more quiet goes mute. Fifteen
@@ -627,7 +627,12 @@ class VoiceConfig:
     #: has to go from naming a throw-in to calling a goal.
     caller: SeatVoice = field(
         default_factory=lambda: _seat(
-            "CALLER", stability=(0.55, 0.20), style=(0.15, 0.60), speed=(1.0, 1.15)
+            # The top of the curve was heard once, on the Mbappé clip through
+            # the designed voices, and the verdict was "no excitement around
+            # the goals": a shouted line read as a sentence. So the excited
+            # end is pushed harder — less stability, more style, faster —
+            # still a guess, still untuned by a sweep, still overridable.
+            "CALLER", stability=(0.55, 0.10), style=(0.15, 0.85), speed=(1.0, 1.25)
         )
     )
     #: Colour. Never shouts: the analyst speaking at a caller's pitch is the

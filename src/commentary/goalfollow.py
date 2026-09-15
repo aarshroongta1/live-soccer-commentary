@@ -70,7 +70,7 @@ SYNTH_GAP_S = 4.0
 
 #: At most this many, per goal. Two extra calls is at most $0.002 of Haiku and
 #: it is the difference between a two-line goal and a five-line one.
-MAX_SYNTH = 2
+MAX_SYNTH = 4
 
 #: The last beat the model is asked to write. Beat 1 is the call itself.
 LAST_BEAT = max(GOAL_BEATS)

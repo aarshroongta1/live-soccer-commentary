@@ -180,13 +180,18 @@ def test_a_nameless_line_inside_the_gap_is_the_silence() -> None:
     assert "2s since the last line" in reason
 
 
-def test_a_nameless_line_with_nothing_the_eyes_picked_out_is_the_silence() -> None:
+def test_a_nameless_line_with_nothing_the_eyes_picked_out_still_airs_once_the_gap_is_open() -> None:
+    """The detail requirement was dropped after the first listen.
+
+    "Too much silence": gaps over four seconds sat at 83% against a real 53%,
+    because the caller's open-play forms mostly carry no name and no detail.
+    Real commentary passes over a quarter of touches, not half. The gap is
+    the whole of the rate rule now.
+    """
     phraser = a_phraser()
     phraser.accept("Molina drives forward.", Event.CARRY, ts=10.0, nameless=False)
 
-    reason = phraser.passes_over(a_form(), ts=40.0)
-
-    assert reason == "silence: nobody on the form and nothing the eyes picked out"
+    assert phraser.passes_over(a_form(), ts=40.0) is None
 
 
 def test_a_name_on_this_form_is_enough_to_be_worth_a_line() -> None:

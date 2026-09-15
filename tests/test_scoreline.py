@@ -434,8 +434,11 @@ def test_a_gap_the_caller_is_about_to_fill_is_left_alone() -> None:
     follow = GoalFollowup()
     follow.arm(10.0, a_form(), "Mbappé!")
     assert follow.synth_times(10.0, until=14.0) == []
-    assert follow.synth_times(10.0, until=None) == [14.0, 18.0]
-    assert len(follow.synth_times(10.0, until=None)) <= MAX_SYNTH
+    times = follow.synth_times(10.0, until=None)
+    assert times[:2] == [14.0, 18.0]
+    # Two was the cap until the first listen came back "no excitement around
+    # the goals"; the corpus's after-goal window is seven utterances.
+    assert 2 < len(times) <= MAX_SYNTH
 
 
 def test_nothing_is_synthesised_past_the_end_of_the_window() -> None:

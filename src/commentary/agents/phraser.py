@@ -995,19 +995,14 @@ class Phraser:
             return "silence: nameless build-up after nameless build-up"
         last = self._recent[-1] if self._recent else None
         gap = float("inf") if last is None or last.ts is None else ts - last.ts
-        if gap < self.silence.nameless_gap_s or not (line.detail or "").strip():
-            # A line with nobody on it has to earn its place twice over: the
-            # gap has to have opened, and the eyes have to have picked out
-            # something a listener could not guess. Real commentary passes
-            # over a quarter of all touches and names most of the rest.
-            return (
-                "silence: nobody on the form and "
-                + (
-                    f"only {gap:.0f}s since the last line"
-                    if gap < self.silence.nameless_gap_s
-                    else "nothing the eyes picked out"
-                )
-            )
+        if gap < self.silence.nameless_gap_s:
+            # A line with nobody on it has to wait for the gap to open. It
+            # used to have to carry a detail as well, and the first listen
+            # came back "too much silence": gaps over four seconds sat at 83%
+            # against a real 53%, because the caller's forms in open play
+            # mostly have no detail and no name. Real commentary passes over a
+            # quarter of touches, not half of them.
+            return f"silence: nobody on the form and only {gap:.0f}s since the last line"
         return None
 
     def _after_a_nameless_line(self, line: CallerLine, ts: float) -> bool:

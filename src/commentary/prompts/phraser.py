@@ -817,6 +817,18 @@ GOAL_BEATS: dict[int, str] = {
 eight to fourteen words: where he has run, what the keeper did, what the bench
 is doing, how long he has known.
 
+AND IT IS STILL SHOUTED. The first listen of this system came back "no
+excitement around the goals": the call roared and this beat read like a
+sentence from a report. The corpus shouts for a quarter of a minute after a
+goal — "OH MY! OH MY! SUÁREZ HAS MADE IT 4-1. It's not It's the way he did
+it.", "LISTEN TO THE NOISE.", "What a beauty." — so this beat is two or three
+fragments with exclamation marks on them, about the celebration and the
+finish, not one calm clause. "What a finish! Straight to the corner flag,
+and the whole bench is on the pitch!" is this beat. "And look at him go,
+straight to the corner flag." is the same beat said flat, and flat is wrong
+here. The one shape that stays banned is the name with the shout straight
+after it, below.
+
 DO NOT OPEN ON A NAME AND AN EXCLAMATION MARK. "<Scorer>!" is beat 1. It has
 already gone out, with the score written on the end of it by the broadcast,
 and a listener who hears that shape a second time hears a second goal. Three
