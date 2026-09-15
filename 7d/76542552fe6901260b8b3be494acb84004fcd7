@@ -1,0 +1,70 @@
+src/commentary/rephrase.py
+  s_b9d647e85fe0bb::t_6ac4198a5be92a 75,84,138-140,164-165
+  s_b9d647e85fe0bb::t_f0ff8e430cd167 476-491,497-505
+  s_b9d647e85fe0bb::t_3f46bdd2565225 506,628-789,796-797
+src/commentary/config.py
+  s_b9d647e85fe0bb::t_c54a102b661252 620-646,652-653,674
+  s_b9d647e85fe0bb::t_797d9798cff748 647-651
+  s_b9d647e85fe0bb::t_7f9f0ecaf21e73 619
+src/commentary/gate.py
+  s_b9d647e85fe0bb::t_8a40bdb87fbc2b 12-19,683-735
+  s_b9d647e85fe0bb::t_d8090c2cb7d401 1817-1821
+  s_b9d647e85fe0bb::t_d760aed12429a2 1721-1722,1729-1738,1742,1759-1816,1822
+  s_b9d647e85fe0bb::t_80ed0ae4fd779e 736-737,1823
+src/commentary/grading/baselines.py
+  s_b9d647e85fe0bb::t_b9e52399873e8b 142,151-153
+tests/test_caller.py
+  s_b9d647e85fe0bb::t_c8b61857edd384 102-111,116-128,131
+src/commentary/prompts/commentary_examples.py
+  s_b9d647e85fe0bb::t_608f306fe1b53d 33,36,41,67-68,70-71,74,77,287,291,295-297,301-303,305-306,308,422,424,426,613-623
+  s_b9d647e85fe0bb::t_5227d495a6d998 6,40,44,47,50,63,66
+  s_b9d647e85fe0bb::t_eccba18c4b9ee2 624
+scripts/build_commentary_examples.py
+  s_b9d647e85fe0bb::t_5227d495a6d998 167-173
+  s_b9d647e85fe0bb::t_e7ccd6b70f15be 153-166,174-180,530,564-569
+  s_b9d647e85fe0bb::t_785f0b5934659c 152
+src/commentary/prompts/phraser.py
+  s_b9d647e85fe0bb::t_0ed9cceed556c5 70,102-106,628-632,634,650,669-673,689,819-879
+  s_b9d647e85fe0bb::t_71e959618b001a 880-882,901-905,933,940-946,974-978
+tests/test_gate.py
+  s_b9d647e85fe0bb::t_7fa386ab1437ec 50-62,64-65,243-268,271,274-335,339-356
+src/commentary/prompts/caller.py
+  s_b9d647e85fe0bb::t_12aeb6268f1053 144-160,179-181,237-240
+tests/test_runtime.py
+  s_b9d647e85fe0bb::t_03ea39a5c01a67 127-159,161-162,164-227,230-264
+  s_b9d647e85fe0bb::t_99d281f3fae4e0 228-229
+tests/test_phraser.py
+  s_b9d647e85fe0bb::t_15202814bb4234 1165-1169
+  s_b9d647e85fe0bb::t_9121544d9c72dc 1023-1164,1170-1171
+  s_b9d647e85fe0bb::t_ede04fc4412a81 37,40,239-303
+  s_b9d647e85fe0bb::t_7f9f397f4b81d0 304-305
+src/commentary/runtime.py
+  s_b9d647e85fe0bb::t_7f27445282be80 321-323,639,1043-1052,1058-1059,1119-1124,1135,1144-1149,1159,1170-1174,1233,1375-1377,1386-1392,1396
+  s_b9d647e85fe0bb::t_05bae5592311e7 51,111-159
+  s_b9d647e85fe0bb::t_dffe9733275df2 324-326,1053-1056,1063-1074,1138-1139
+  s_b9d647e85fe0bb::t_11a1dc7a37fd85 160
+src/commentary/predictor.py
+  s_b9d647e85fe0bb::t_123ba9a69e1e32 87,92-98,100-101,138-144,165,177-178,185,200,206-208,233-235
+tests/test_predictor.py
+  s_b9d647e85fe0bb::t_7c4877e1d3709a 232-250
+src/commentary/agents/caller.py
+  s_b9d647e85fe0bb::t_7bd522791265ad 5-19,44
+src/commentary/agents/phraser.py
+  s_b9d647e85fe0bb::t_0dc589c7ba3e10 219,261-266,283
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7d76542552fe6901260b8b3be494acb84004fcd7",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
