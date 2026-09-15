@@ -75,6 +75,10 @@ MAX_SYNTH = 2
 #: The last beat the model is asked to write. Beat 1 is the call itself.
 LAST_BEAT = max(GOAL_BEATS)
 
+#: The beat that is one number about the scorer. Skipped where no clause
+#: gives him one: see :meth:`GoalFollowup._skipped`.
+SCORER_BEAT = 3
+
 #: The beat that goes back over the move in the past tense, and the one a
 #: replay line replaces. ``GOAL_BEATS[4]`` and
 #: :func:`~commentary.prompts.phraser.replay_block` ask for the same line —
@@ -144,6 +148,9 @@ class GoalFollowup:
     #: 21.2 s, on beat 2 at 25.2 and on the rebuild at 32.5, which is one
     #: piece of information said three times in eleven seconds.
     _spoken: list[str] = field(default_factory=list)
+    #: The pack this goal was armed with, so that :meth:`beat` can ask
+    #: whether beat 3 has anything to say without being handed one.
+    _pack: KnowledgePack | None = None
     _moves: list[str] = field(default_factory=list)
     _names: list[str] = field(default_factory=list)
     _sightings: list[Sighting] = field(default_factory=list)
@@ -173,14 +180,47 @@ class GoalFollowup:
         once it has gone out. Beats run to :data:`LAST_BEAT` and then stop,
         because four short lines plus the call plus the colour seat's two is
         already the corpus's seven.
+
+        Two of them can be skipped rather than asked for, and both are the
+        same judgement: a beat with nothing to put in it is a beat that writes
+        filler. See :meth:`_skipped`.
         """
         if not self.active(ts):
             return None
-        due = self.beats_said + 1
-        if due == REBUILD_BEAT and self.rebuilt_by_replay:
-            # The replay said it. There is no beat 5, so the window is spent.
-            return None
-        return due if due in GOAL_BEATS else None
+        return self._next_after(self.beats_said)
+
+    def _next_after(self, said: int) -> int | None:
+        """The next beat worth asking for after ``said``, or ``None``."""
+        for number in sorted(GOAL_BEATS):
+            if number > said and not self._skipped(number):
+                return number
+        return None
+
+    def _skipped(self, number: int) -> bool:
+        """Is this beat one there is nothing to write?
+
+        The rebuild, when a replay line has already been the rebuild: one
+        move, one past-tense account of it.
+
+        And the tally, when nothing anybody researched gives the scorer a
+        number. Beat 3 is one number about the man who just scored, and asked
+        for it with no clause behind it this stage wrote "He knew exactly
+        where that was going." four seconds after "He knew it from the moment
+        it left his boot." (``runs/rephrased/r4-shape/freekick``). That is not
+        a beat, it is the same thought twice, and the corpus's own third beat
+        is a figure every time.
+        """
+        if number == REBUILD_BEAT and self.rebuilt_by_replay:
+            return True
+        if number != SCORER_BEAT:
+            return False
+        if self.threads is None and self._pack is None:
+            # Nothing to ask. A caller that hands this object no source of
+            # notes at all is one that never had beat 3's material anywhere,
+            # and it kept the beat before this rule existed: skipping it here
+            # would be deciding on no evidence.
+            return False
+        return not self.tally_notes()
 
     def due(self, ts: float) -> bool:
         """Has enough quiet passed since the last line for the next beat?"""
@@ -227,6 +267,7 @@ class GoalFollowup:
         self.synthesised = 0
         self.rebuilt_by_replay = False
         self._spoken = [spoken.strip()] if spoken.strip() else []
+        self._pack = pack
         self._last_said = ts
         self._moves = []
         self._names = []
@@ -241,10 +282,16 @@ class GoalFollowup:
         ``text`` is what actually reached air, and it is kept for the same
         reason the call's own words are: the next beat is shown all of it and
         told not to say any of it again.
+
+        The counter moves to the beat that was actually due rather than by
+        one, because a skipped beat is spent without being said: without
+        that, a window with no tally clause in it would offer beat 3 again on
+        every line for thirty seconds.
         """
         if not self.active(ts):
             return
-        self.beats_said += 1
+        due = self._next_after(self.beats_said)
+        self.beats_said = due if due is not None else self.beats_said + 1
         self._last_said = ts
         self.remember(text)
 
@@ -290,7 +337,13 @@ class GoalFollowup:
         beat = self.beat(ts)
         if beat is None or self.armed_at is None:
             return ""
+        # Beat 3 sees the tally and nothing else, where there is one. The
+        # fallback is for the one case :meth:`_skipped` cannot judge — a
+        # window armed with no pack behind it, where showing the man's other
+        # clauses beats showing him none.
         notes = self.scorer_notes(ts, pack)
+        if beat == SCORER_BEAT:
+            notes = self.tally_notes(ts, pack) or notes
         return goal_followup_block(
             beat,
             since_s=ts - self.armed_at,
@@ -300,6 +353,28 @@ class GoalFollowup:
             names=self._names,
             said=self._spoken,
         )
+
+    def tally_notes(self, ts: float | None = None, pack: KnowledgePack | None = None) -> list[Note]:
+        """The clauses beat 3 may use: a number about the scorer, and nothing else.
+
+        A note the researcher marked as counting something, and nothing else,
+        because :class:`commentary.tallies.Tallies` has already moved its
+        figure for the goal that has just gone in — "five goals in this
+        tournament" is seven by the time the seventh is scored, and no other
+        clause in the pack is true of the match as it stands.
+
+        An ordinal inside a storyline is not a tally, which is the whole of
+        the fault: offered "chasing a second World Cup" the line came back
+        "That's his second World Cup goal, and he's chasing a second title",
+        a count nobody ever made out of a number that was about something
+        else. ``clips/pack-argfra-2022-researched.json`` marks six notes this
+        way and ``clips/pack-7576.json`` marks none, which is why Ronaldo's
+        goal has no third beat and Mbappé's has one.
+        """
+        notes = self.scorer_notes(
+            self._last_said if ts is None else ts, self._pack if pack is None else pack
+        )
+        return [note for note in notes if note.counts]
 
     def scorer_notes(self, ts: float, pack: KnowledgePack | None = None) -> list[Note]:
         """The researched clauses about the man who has just scored.
@@ -335,10 +410,12 @@ class GoalFollowup:
         times: list[float] = []
         at = after + SYNTH_GAP_S
         room = MAX_SYNTH - self.synthesised
+        due = self.beats_said
         while len(times) < room and at <= ends - BEAT_GAP_S:
-            due = self.beats_said + 1 + len(times)
-            if due not in GOAL_BEATS or (due == REBUILD_BEAT and self.rebuilt_by_replay):
+            nxt = self._next_after(due)
+            if nxt is None:
                 break
+            due = nxt
             times.append(round(at, 3))
             at += SYNTH_GAP_S
         return times

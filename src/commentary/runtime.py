@@ -934,6 +934,7 @@ class Runtime:
             goal_in_state=self._score_counts_the_goal(cursor),
             at=cursor,
             notes=self.threads.notes(),
+            described=form.line,
         )
         self._publish(Topic.GATE, cursor, verdict, event=Event.GOAL.value, where="followup")
         if not verdict.passed:
@@ -1158,6 +1159,9 @@ class Runtime:
             # phraser was shown: the check is whether the number is one the
             # match holds, and the match holds all of them.
             ledger=self._counts_for(judged, cursor),
+            # The caller's own account, for the one rule that asks whose the
+            # thing was rather than whether the name is real.
+            described=line.line,
         )
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:

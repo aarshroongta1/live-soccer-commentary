@@ -497,6 +497,103 @@ def ordinal_score_spans(text: str) -> list[tuple[int, int]]:
     return sorted(found)
 
 
+#: "<Name>'s <noun>" — the shape that says whose the thing was. One or two
+#: capitalised words, because a surname and a first name are both names and
+#: "Kolo Muani" is two words of one.
+_OWNS = re.compile(r"\b([A-Z][\w'\u2019-]*(?:\s+[A-Z][\w'\u2019-]*)?)['\u2019]s\s+([a-z][\w-]*)")
+
+#: "<noun> from <Name>", which says the same thing the other way round: "the
+#: leg from Otamendi", "a cross from Molina".
+_OWNS_FROM = re.compile(
+    r"\b([a-z][\w-]*)\s+from\s+([A-Z][\w'\u2019-]*(?:\s+[A-Z][\w'\u2019-]*)?)"
+)
+
+
+def _owners(text: str) -> dict[str, set[str]]:
+    """Who the line says each thing belonged to, by noun."""
+    found: dict[str, set[str]] = {}
+    for name, noun in _OWNS.findall(text):
+        found.setdefault(noun.casefold(), set()).add(name.strip())
+    for noun, name in _OWNS_FROM.findall(text):
+        found.setdefault(noun.casefold(), set()).add(name.strip())
+    return found
+
+
+def possessive_swap(text: str, described: str, roster: Sequence[str]) -> str:
+    """The noun this line hangs on the wrong man, or ``""``.
+
+    The fault, measured on ``runs/rephrased/r4-shape/mbappe``. The caller
+    wrote "The replay: Kolo Muani driving across, Otamendi's leg in behind
+    him, and down he goes." The line that went out was "In the replay, Kolo
+    Muani's leg catches Otamendi's challenge." Both men are on the roster,
+    both are on the form, and every name check in this file passes — and the
+    fouler and the fouled have been swapped, which is the whole of what the
+    replay was showing.
+
+    So the check is not whether a name is real but whether the *same noun*
+    has changed hands. For every thing the description gives somebody —
+    "Otamendi's leg", "a cross from Molina" — a line that gives that same
+    thing to a different man on the team sheets is refused whole. Nouns the
+    description never attached to anybody are not this rule's business, and
+    neither is a line that names the same man the description did.
+
+    Whole-line refusal rather than a trim, because there is nothing to cut:
+    the line is a true sentence about the wrong player.
+    """
+    if not text.strip() or not described.strip():
+        return ""
+    theirs = _owners(described)
+    if not theirs:
+        return ""
+    on_the_sheet = [name for name in roster if name and name.strip()]
+    for noun, names in _owners(text).items():
+        owners = theirs.get(noun)
+        if not owners:
+            continue
+        for name in names:
+            if not any(_is_on(name, other) for other in owners) and _known(name, on_the_sheet):
+                said = sorted(owners)[0]
+                return f"{name}'s {noun} — the description says it was {said}'s"
+    return ""
+
+
+def _is_on(name: str, other: str) -> bool:
+    """Two ways of writing one man: "Mbappé" and "Kylian Mbappé"."""
+    return is_the_same_name(name, other) or is_the_same_name(other, name)
+
+
+def _known(name: str, roster: Sequence[str]) -> bool:
+    """Is this somebody on a team sheet, rather than a word starting a sentence?"""
+    return any(_is_on(name, player) for player in roster)
+
+
+#: What a sentence that has lost its subject to a trim opens on. Deliberately
+#: short: "Into the box." and "And the place erupts." are whole lines a
+#: commentator says, and only a stranded tail begins with one of these.
+_STRANDED = frozenset({"of", "for", "than", "as", "which", "who", "that"})
+
+
+def is_a_hole(text: str) -> bool:
+    """Is this fragment what a trim left behind rather than a line?
+
+    "Free kick for Portugal, and Ronaldo eyes the wall. Of the night." went
+    out on ``runs/rephrased/r4-shape/freekick``. The second sentence is the
+    tail of "Portugal's first of the night" with the count taken out of it by
+    :func:`commentary.scoreline.strip_score`, and nobody says it.
+
+    Only ever asked of a sentence something was cut out of, which is why it
+    can be this blunt: a short fragment opening on a preposition or a relative
+    pronoun, with no name in it, is a hole. A fragment that survived intact is
+    a fragment the person writing meant.
+    """
+    words = _WORD.findall(text)
+    if not words:
+        return True
+    if len(words) > 6:
+        return False
+    return words[0].casefold() in _STRANDED
+
+
 def level_claim_spans(text: str, teams: Sequence[str] = ()) -> list[tuple[int, int]]:
     """Where the line says the scores are equal without saying a number.
 
@@ -1571,6 +1668,74 @@ def _has_content_after_trim(kept: str, roster: _Roster, threshold: float) -> boo
     return any(fold(word) in _EVENT_WORDS for word in kept.split())
 
 
+#: What separates one clause from the next, for a trim that has to take a
+#: whole researched fact out rather than a word from inside it.
+_CLAUSE_EDGE = re.compile(r",\s+|\s+and\s+|\s+—\s+|\s+-\s+|[.;!?]\s*")
+
+
+def _clause_texts(
+    notes: Sequence[Note] | None, ledger: Sequence[CountFact] = ()
+) -> list[str]:
+    """Every clause this line was offered, researched or counted."""
+    said = [note.text for note in (notes or []) if note.text.strip()]
+    # A ledger fact is a protocol here, and ``text`` is not on it — the gate
+    # only ever needed the count. Read it where it is there and skip it where
+    # it is not, rather than widening the protocol for one rule.
+    said += [
+        text for fact in ledger if (text := str(getattr(fact, "text", "")).strip())
+    ]
+    return said
+
+
+def _cited_clause_span(
+    text: str, start: int, end: int, clauses: Sequence[str]
+) -> tuple[int, int] | None:
+    """The span of the clause holding ``start:end``, if it is a cited one.
+
+    ``None`` everywhere else, and that is the point: an ordinary line that
+    names somebody unverifiable loses the name, as it always has. Only a
+    clause that came off the notes or the ledger — recognised by three words
+    it shares with one of them — is removed whole.
+    """
+    if not clauses:
+        return None
+    breaks = list(_CLAUSE_EDGE.finditer(text))
+    edges = [0] + [match.end() for match in breaks] + [len(text)]
+    #: Where the separator in front of each clause begins, so that the cut
+    #: takes the comma with the clause and does not leave "their own goal,".
+    opens = [0] + [match.start() for match in breaks]
+    for index, (left, right) in enumerate(zip(edges, edges[1:], strict=False)):
+        if left <= start and end <= right:
+            if _shares_three(text[left:right], clauses):
+                return opens[index], right
+            return None
+    return None
+
+
+def _shares_three(fragment: str, clauses: Sequence[str]) -> bool:
+    """Does this fragment carry three words running from one of the clauses?"""
+    mine = [word.casefold() for word in _WORD.findall(fragment)]
+    if len(mine) < 3:
+        return False
+    runs = {tuple(mine[index : index + 3]) for index in range(len(mine) - 2)}
+    for clause in clauses:
+        words = [word.casefold() for word in _WORD.findall(clause)]
+        if any(tuple(words[index : index + 3]) in runs for index in range(len(words) - 2)):
+            return True
+    return False
+
+
+def _without_holes(text: str) -> str:
+    """Drop the sentences a trim has left with nothing in them."""
+    kept = [part for part in _SENTENCE_SPLIT_KEEP.findall(text) if not is_a_hole(part)]
+    return " ".join(part.strip() for part in kept if part.strip()).strip()
+
+
+#: Sentences with their punctuation kept, for a check that has to put the
+#: line back together afterwards.
+_SENTENCE_SPLIT_KEEP = re.compile(r"[^.!?]+[.!?]*")
+
+
 def _tidy(text: str) -> str:
     """Repair a line that has had a name cut out of the middle of it."""
     out = re.sub(rf"\b(?:{_DANGLERS})\s+(?=(?:[,.;!?]|and\b|as\b|but\b|who\b|then\b|$))", "", text)
@@ -1641,6 +1806,7 @@ class FactGate:
         at: float | None = None,
         notes: Sequence[Note] | None = None,
         ledger: Sequence[CountFact] = (),
+        described: str = "",
     ) -> GateVerdict:
         """Pass, trim, or reject — and always say why.
 
@@ -1684,6 +1850,12 @@ class FactGate:
         are two sources for the same sentence. Left out, no line may put a
         number on anything the pack does not already say, which is every
         caller of this before the ledger existed.
+
+        ``described`` is the caller's own account of the moment, before the
+        phraser rewrote it, and it backs one rule: ``possessive_swap``. Every
+        other check here asks whether a name is real; that one asks whether
+        the thing it is attached to was that man's. Left out, the rule does
+        not run, which is every caller of this before it existed.
         """
         verdict = self._judge(
             line,
@@ -1696,6 +1868,7 @@ class FactGate:
             at=at,
             notes=notes,
             ledger=ledger,
+            described=described,
         )
         self.stats.record(verdict)
         return verdict
@@ -1713,6 +1886,7 @@ class FactGate:
         at: float | None = None,
         notes: Sequence[Note] | None = None,
         ledger: Sequence[CountFact] = (),
+        described: str = "",
     ) -> GateVerdict:
         text = line.line.strip()
         if not line.speak:
@@ -1778,10 +1952,13 @@ class FactGate:
             )
         ):
             fatal.append("unconfirmed_goal: no board change, no wire")
+        swapped = possessive_swap(text, described, sorted(roster.people))
+        if swapped:
+            fatal.append(f"possessive_swap: {swapped}")
         if fatal:
             return GateVerdict(passed=False, reasons=fatal)
 
-        verdict = self._trim_unverified(text, roster)
+        verdict = self._trim_unverified(text, roster, _clause_texts(notes, ledger))
         verdict.reasons = decoration_reasons + verdict.reasons
         withheld = _name_withheld(line, verdict.line)
         if withheld:
@@ -2135,21 +2312,44 @@ class FactGate:
                 return True
         return False
 
-    def _trim_unverified(self, text: str, roster: _Roster) -> GateVerdict:
-        """Cut the names that cannot be verified and keep whatever still stands up."""
+    def _trim_unverified(
+        self, text: str, roster: _Roster, clauses: Sequence[str] = ()
+    ) -> GateVerdict:
+        """Cut the names that cannot be verified and keep whatever still stands up.
+
+        ``clauses`` are the researched and counted clauses this line was
+        offered. Inside one of them the cut is not a word but the whole
+        clause, and the reason is on ``runs/rephrased/r4-shape/offside``:
+        "Back towards their own goal, and Tagliafico left for in the summer."
+        The note said which club he left for, the club is on nobody's team
+        sheet, and taking the name out of the middle of a researched fact
+        leaves a sentence that is not English and not true either. A fact with
+        a hole in it is not a fact, so it goes back to the comma.
+        """
         reasons: list[str] = []
         kept = text
         for candidate in sorted(_candidates(text), key=lambda c: c.start, reverse=True):
             if _matches_roster(candidate.text, roster, self.cfg.name_match_threshold):
                 continue
             reasons.append(f"name_not_on_roster: {candidate.text}")
-            reasons.append(f"trimmed_name: {candidate.text}")
-            kept = kept[: candidate.start] + kept[candidate.end :]
+            span = _cited_clause_span(kept, candidate.start, candidate.end, clauses)
+            if span is None:
+                reasons.append(f"trimmed_name: {candidate.text}")
+                kept = kept[: candidate.start] + kept[candidate.end :]
+            else:
+                start, end = span
+                reasons.append(f"trimmed_clause: {kept[start:end].strip()}")
+                kept = kept[:start] + kept[end:]
         if reasons:
             # Only a line that lost a name is measured. A line the caller
             # wrote short is a line — "Modrić, Perišić." is how the build-up
             # is called — and it goes out as written.
-            kept = _tidy(kept)
+            kept = _without_holes(_tidy(kept))
+            if kept and text.rstrip().endswith((".", "!", "?")) and not kept.endswith(
+                (".", "!", "?")
+            ):
+                # A clause cut from the end takes the full stop with it.
+                kept += "."
             words = _word_count(kept)
             if words < self.cfg.min_words_after_trim:
                 reasons.append(f"too_short_after_trim: {words} words left")

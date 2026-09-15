@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from commentary.agents.caller import clean_line, trim_words
 from commentary.agents.colour import mentions, says_a_number
 from commentary.config import PHRASER_MODEL, DeadBallConfig, PhraserConfig, SilenceConfig
+from commentary.gate import possessive_swap
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import Block, LLMBackend, LLMError, Parsed, Usage, text_block
 from commentary.prompts.phraser import (
@@ -87,6 +88,11 @@ _OPENER_LOOKBACK = 5
 #: one word and no two of them opening on one, so the opener check waved
 #: every one of them through.
 _CLOSER_LOOKBACK = 5
+
+#: How far back the "now" tail is looked for. Three: the four lines it went
+#: out on were consecutive, and a word a commentator used two minutes ago is
+#: not a tic.
+_NOW_LOOKBACK = 3
 
 _LEADING_TRAILING_PUNCT = re.compile(r"^[^\w]+|[^\w]+$")
 _POSSESSIVE = re.compile(r"['’]s$", re.IGNORECASE)
@@ -186,6 +192,86 @@ def _shout_retry_note(name: str, beat: int) -> str:
     )
 
 
+#: Every way a number reaches a line, and what each one is worth. Digits are
+#: read as themselves; the words and the ordinals are the ones a commentator
+#: actually says out loud.
+_FIGURES: dict[str, int] = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+    "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13,
+    "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+    "nineteen": 19, "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+    "first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6,
+    "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10, "hundred": 100,
+}
+
+
+def figures_in(text: str) -> set[int]:
+    """Every number this line says, in figures or in words.
+
+    "a second title" and "his second goal" are the same number here, which is
+    the point: the check this feeds asks whether the figure came off the
+    clause the line was handed, and a model that reuses the ordinal from a
+    clause about something else has still written a number nobody looked up.
+    """
+    found: set[int] = set()
+    for token in _WORD.findall(text):
+        word = token.casefold()
+        if word.isdigit():
+            found.add(int(word))
+        elif word in _FIGURES:
+            found.add(_FIGURES[word])
+    return found
+
+
+def _figure_retry_note(extra: set[int], clauses: Sequence[Note]) -> str:
+    """Say which number is not in the clause, and print the clause again."""
+    said = ", ".join(str(number) for number in sorted(extra))
+    rows = "\n".join(f"  - {note.text.strip()}" for note in clauses) or "  (none)"
+    return (
+        f"THAT LINE SAYS {said}, AND THAT FIGURE IS IN NONE OF THE CLAUSES YOU WERE "
+        "HANDED. A number this stage writes for itself is a number nobody looked up, "
+        "and it is the one mistake here that reaches air sounding right.\n"
+        f"The clauses, in full:\n{rows}\n"
+        "Say one of them, with its own figure, or return an empty line."
+    )
+
+
+def _swap_retry_note(swapped: str) -> str:
+    """Name the thing hung on the wrong man, and say whose it was."""
+    return (
+        f"THAT LINE PUTS {swapped.upper()}. The person watching wrote down whose it "
+        "was and your line has given it to somebody else — which is not a wording "
+        "mistake, it is a different account of what happened.\n"
+        "Write it again with the description's own owners, or return an empty line."
+    )
+
+
+#: The tail this voice tacks onto a line that was finished without it. Caught
+#: where it ends a clause as well as where it ends the line, because that is
+#: how it actually went out: "Through midfield now, halfway line reached." /
+#: "Argentina through the middle now, numbers forward at pace." / "White
+#: shirts streaming towards goal now." — four lines of twenty-one on the
+#: offside clip, and the closer check sees only the last word of the three.
+_NOW_TAIL = re.compile(r"\s+now(?=\s*(?:[,.;:!?]|$))", re.IGNORECASE)
+
+
+def has_the_now_tail(text: str) -> bool:
+    """Does this line end a clause on "now"?"""
+    return _NOW_TAIL.search(text) is not None
+
+
+def strip_now_tail(text: str) -> str:
+    """Take the tail off and close the punctuation up behind it.
+
+    The line is where the ball is and the ball is always now: the word adds
+    nothing to any of the four it went out on. Only ever called when a line
+    already aired has the same tail, because one of them is a commentator and
+    four in a row is a jingle.
+    """
+    out = _NOW_TAIL.sub("", text)
+    return re.sub(r"\s+", " ", out).strip()
+
+
 def _repeat_retry_note(phrase: str) -> str:
     """Name the phrase that is already on air, and ask for the other thing."""
     return (
@@ -261,6 +347,24 @@ def unshout(text: str, *, keep_name: bool = False, names: Sequence[str] = ()) ->
             rest = rest[0].lower() + rest[1:]
         return f"{name}, {rest}"
     return rest
+
+
+def _lead_with(text: str, scorer: str, names: Sequence[str]) -> str:
+    """Put the scorer's name on the front of a line that does not carry it.
+
+    The surname, a comma, and the line lower-cased behind it, which is the
+    shape the corpus uses and the one beat 2 is asked for when the call named
+    nobody. A line that already opens on somebody else's name keeps its
+    capital.
+    """
+    said = text.strip()
+    if not said:
+        return said
+    surname = scorer.rsplit(" ", 1)[-1].strip() or scorer.strip()
+    head = said.split(maxsplit=1)[0].strip(".,!?;:'\u2019\"")
+    if not _is_a_name(head, names):
+        said = said[0].lower() + said[1:]
+    return f"{surname}, {said}"
 
 
 def _is_a_name(word: str, names: Sequence[str]) -> bool:
@@ -688,6 +792,18 @@ class Phraser:
                 opener_retry = opener is not None
                 closer_retry = closer is not None
 
+        # Whose the thing was. The gate refuses this outright — it is a true
+        # sentence about the wrong player and there is nothing to trim — so
+        # the re-ask here is the only chance the line gets.
+        swap_retry = False
+        swapped = possessive_swap(proposed.line, line.line, self._names_here(line, scorer, roster))
+        if swapped:
+            retry = await self._reask(blocks, _swap_retry_note(swapped))
+            if retry is not None:
+                usage = usage + retry.usage
+                proposed = retry.value
+                swap_retry = True
+
         name_retry = False
         if goal_beat == SCORER_BEAT and scorer and self._needs_a_name(proposed, scorer):
             retry = await self._reask(blocks, _name_retry_note(scorer))
@@ -697,6 +813,38 @@ class Phraser:
                 name_retry = True
                 # Asked once. Whatever came back — even nameless again — is
                 # what goes out; the gate is the backstop from here.
+
+        # Beat 3's number, against the clause it was handed. The fault is on
+        # ``runs/rephrased/r4-shape/mbappe``: "That's his second World Cup
+        # goal, and he's chasing a second title." — built out of a clause
+        # about chasing a second World Cup, true of nothing, and the seventh
+        # goal of the tournament it should have said went unsaid.
+        figure_retry = False
+        if goal_beat == SCORER_BEAT and notes:
+            allowed = set().union(*(figures_in(note.text) for note in notes))
+            extra = figures_in(proposed.line) - allowed
+            if extra:
+                retry = await self._reask(blocks, _figure_retry_note(extra, notes))
+                if retry is not None:
+                    usage = usage + retry.usage
+                    proposed = retry.value
+                    figure_retry = True
+                if figures_in(proposed.line) - allowed:
+                    self.last_usage = usage
+                    self.chose_silence = True
+                    self.last_reason = (
+                        "figure_not_in_the_clause: "
+                        + ", ".join(str(number) for number in sorted(extra))
+                    )
+                    return PhrasedLine(
+                        line="",
+                        excitement=0.0,
+                        opener_retry=opener_retry,
+                        closer_retry=closer_retry,
+                        name_retry=name_retry,
+                        swap_retry=swap_retry,
+                        figure_retry=True,
+                    )
 
         # The goal call's own shape, on a line that is not the call. Unlike
         # every other check here this one does not stop at a re-ask: a beat
@@ -765,10 +913,22 @@ class Phraser:
                         opener_retry=opener_retry,
                         closer_retry=closer_retry,
                         name_retry=name_retry,
+                        swap_retry=swap_retry,
+                        figure_retry=figure_retry,
                         shout_retry=shout_retry,
                         shout_rewritten=shout_rewritten,
                         repeat_retry=True,
                     )
+
+        # And the antecedent. A call of "Over the wall, into the top corner!"
+        # names nobody, so "He knew it from the moment it left his boot." is a
+        # line about a man the listener has never been told about. The shout
+        # rule takes "<Scorer>!" off the front; this puts "<Scorer>," on it.
+        if goal_beat == 2 and keep_name and scorer and not mentions(proposed.line, scorer):
+            proposed = proposed.model_copy(
+                update={"line": _lead_with(proposed.line, scorer, names)}
+            )
+            shout_rewritten = True
 
         # The replay is named once a sequence, and this is the line after
         # the one that named it.
@@ -778,12 +938,28 @@ class Phraser:
             if marker:
                 proposed = proposed.model_copy(update={"line": without})
 
+        # The jingle, taken off in code. One line ending a clause on "now" is
+        # a commentator; four in twenty-one is a tic, and the closer check
+        # cannot see it because three of the four end on another word
+        # entirely.
+        now_stripped = False
+        if has_the_now_tail(proposed.line) and any(
+            has_the_now_tail(said.text) for said in list(self._recent)[-_NOW_LOOKBACK:]
+        ):
+            without = strip_now_tail(proposed.line)
+            if without:
+                proposed = proposed.model_copy(update={"line": without})
+                now_stripped = True
+
         self.last_usage = usage
         settled = self._settle(proposed, self._word_cap(line, goal_beat))
         return settled.model_copy(
             update={
                 "opener_retry": opener_retry,
                 "closer_retry": closer_retry,
+                "now_stripped": now_stripped,
+                "swap_retry": swap_retry,
+                "figure_retry": figure_retry,
                 "name_retry": name_retry,
                 "shout_retry": shout_retry,
                 "shout_rewritten": shout_rewritten,

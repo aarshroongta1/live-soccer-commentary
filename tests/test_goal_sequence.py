@@ -47,7 +47,7 @@ from commentary.config import (
     PredictorConfig,
     Settings,
 )
-from commentary.goalfollow import REBUILD_BEAT, GoalFollowup
+from commentary.goalfollow import REBUILD_BEAT, SCORER_BEAT, GoalFollowup
 from commentary.llm.fake import ScriptedBackend
 from commentary.prompts.phraser import GOAL_BEATS, REPEAT_RUN, goal_followup_block
 from commentary.runtime import Runtime
@@ -56,6 +56,7 @@ from commentary.schemas import (
     CallerLine,
     Event,
     KnowledgePack,
+    Note,
     PhrasedLine,
     Player,
     Scene,
@@ -433,7 +434,9 @@ async def test_a_beat_that_says_the_call_again_is_asked_for_the_other_half() -> 
     )
 
     assert phrased is not None
-    assert phrased.line == "And the wall never moved an inch."
+    # The name goes on the front because the call named nobody — see the
+    # antecedent test below. What matters here is that the phrase came off.
+    assert phrased.line == "Ronaldo, and the wall never moved an inch."
     assert phrased.repeat_retry
     note = "\n".join(
         block["text"] for block in backend.calls[-1].blocks if block.get("type") == "text"
@@ -590,3 +593,150 @@ async def test_the_runtime_airs_the_call_and_drops_the_beat_that_repeats_it() ->
     assert len(beats) == 1, "the celebration repeated the call and was dropped"
     assert beats[0].text.startswith(f"{scorer.surname}! From six yards!")
     assert runtime.phraser.last_reason.startswith("repeat:")
+
+
+# -- the r4-shape faults ----------------------------------------------------
+
+
+FREE_KICK = "Over the wall and into the top corner! Three-three."
+
+
+def test_the_rebuild_that_went_out_shares_a_run_with_the_call() -> None:
+    """Fault 4, with the exact strings.
+
+    Measured on ``runs/rephrased/r4-shape/freekick``, which was rewritten
+    before the repeat check existed — ``said_of_the_goal`` is not in c3e6d34
+    at all, so nothing was compared. This pins the pair so that it cannot go
+    uncompared again.
+    """
+    rebuild = "It was a free kick whipped over the wall, and Ronaldo buried it into the top corner."
+
+    assert shared_run(rebuild, [FREE_KICK]) == "over the wall"
+
+
+@pytest.mark.asyncio
+async def test_the_rebuild_is_checked_against_the_call_like_every_other_beat() -> None:
+    backend = saying(
+        PhrasedLine(
+            line="It was a free kick whipped over the wall, and Ronaldo buried it.",
+            excitement=0.6,
+        ),
+        PhrasedLine(line="It was struck before the wall had finished forming.", excitement=0.6),
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Portugal 3 Spain 3",
+        goal_beat=REBUILD_BEAT,
+        scorer="Cristiano Ronaldo",
+        roster=["Cristiano Ronaldo"],
+        said_of_the_goal=[FREE_KICK],
+        followup=GOAL_BEATS[REBUILD_BEAT],
+    )
+
+    assert phrased is not None
+    assert phrased.repeat_retry
+    assert phrased.line == "It was struck before the wall had finished forming."
+
+
+def a_tally(text: str = "six in the tournament") -> Note:
+    return Note(about="Kylian Mbappé", text=text, kind="stat", counts="goals")
+
+
+def a_storyline() -> Note:
+    return Note(about="Kylian Mbappé", text="chasing a second World Cup", kind="storyline")
+
+
+@pytest.mark.asyncio
+async def test_a_figure_from_no_clause_at_all_is_asked_again_and_then_dropped() -> None:
+    """Fault 2, the line that went out at 184.5 s on the Mbappé clip.
+
+    "That's his second World Cup goal, and he's chasing a second title." The
+    tournament tally said seven by then and the clause behind the line said
+    nothing about goals at all.
+    """
+    backend = saying(
+        PhrasedLine(line="That's his second World Cup goal, and he's chasing a second title.",
+                    excitement=0.6)
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Argentina 2 France 2",
+        goal_beat=SCORER_BEAT,
+        scorer="Kylian Mbappé",
+        roster=["Kylian Mbappé"],
+        notes=[a_tally("seven in this tournament")],
+        followup=GOAL_BEATS[SCORER_BEAT],
+    )
+
+    assert phrased is not None
+    assert phrased.line == ""
+    assert phrased.figure_retry
+    assert phraser.last_reason.startswith("figure_not_in_the_clause:")
+
+
+@pytest.mark.asyncio
+async def test_the_clause_s_own_figure_goes_out_untouched() -> None:
+    backend = saying(
+        PhrasedLine(line="That's seven in this tournament now for Mbappé.", excitement=0.6)
+    )
+    phraser = a_phraser(backend)
+
+    phrased = await phraser.phrase(
+        a_goal_form(),
+        "Argentina 2 France 2",
+        goal_beat=SCORER_BEAT,
+        scorer="Kylian Mbappé",
+        roster=["Kylian Mbappé"],
+        notes=[a_tally("seven in this tournament")],
+        followup=GOAL_BEATS[SCORER_BEAT],
+    )
+
+    assert phrased is not None
+    assert phrased.line == "That's seven in this tournament now for Mbappé."
+    assert not phrased.figure_retry
+
+
+def a_pack_with(*notes: Note) -> KnowledgePack:
+    pack = a_pack()
+    pack.notes.extend(notes)
+    return pack
+
+
+def test_beat_three_is_skipped_where_nobody_researched_a_number() -> None:
+    """Fault 2's other half: "He knew exactly where that was going."
+
+    Four seconds after "He knew it from the moment it left his boot." That is
+    not a third beat, it is the second one said twice, and it went out because
+    beat 3 was asked for with nothing to put in it.
+    """
+    follow = GoalFollowup()
+    follow.arm(10.0, a_goal_form(), "Ronaldo!", a_pack_with(a_storyline()))
+    follow.said(12.0, "And away he goes to the corner flag.")
+
+    assert follow.beat(14.0) == REBUILD_BEAT, "the tally is skipped, the rebuild is not"
+    assert follow.tally_notes() == []
+
+
+def test_beat_three_is_asked_for_where_somebody_did() -> None:
+    follow = GoalFollowup()
+    follow.arm(10.0, a_goal_form(), "Mbappé!", a_pack_with(a_tally()))
+    follow.said(12.0, "And away he goes to the corner flag.")
+
+    assert follow.beat(14.0) == SCORER_BEAT
+    assert [note.text for note in follow.tally_notes()] == ["six in the tournament"]
+
+
+def test_a_skipped_beat_is_spent_rather_than_offered_again() -> None:
+    """Otherwise a window with no tally offers beat 3 for thirty seconds."""
+    follow = GoalFollowup()
+    follow.arm(10.0, a_goal_form(), "Ronaldo!", a_pack_with(a_storyline()))
+    follow.said(12.0, "And away he goes.")
+    assert follow.beat(14.0) == REBUILD_BEAT
+
+    follow.said(14.0, "It was struck before the wall had formed.")
+
+    assert follow.beat(16.0) is None

@@ -2,7 +2,13 @@
 
 import pytest
 
-from commentary.gate import FactGate, GateStats, decoration_claim
+from commentary.gate import (
+    FactGate,
+    GateStats,
+    decoration_claim,
+    is_a_hole,
+    possessive_swap,
+)
 from commentary.schemas import (
     CallerLine,
     Event,
@@ -1423,3 +1429,110 @@ def test_the_193_7_bench_celebrates_line_is_refused_whole(pack, state) -> None:
     )
     assert not verdict.passed
     assert verdict.line == ""
+
+
+# -- whose the thing was (r4-shape) --------------------------------------
+
+
+def test_the_same_noun_cannot_change_hands_between_the_form_and_the_line() -> None:
+    """The measured swap, on ``runs/rephrased/r4-shape/mbappe``.
+
+    The eyes saw Otamendi's leg in behind Kolo Muani. The line that went out
+    put the leg on Kolo Muani and the challenge on Otamendi, which inverts
+    the foul: both names are real, both are on the form, and every name check
+    in the file passes it.
+    """
+    described = (
+        "The replay: Kolo Muani driving across, Otamendi's leg in behind him, "
+        "and down he goes."
+    )
+    swapped = possessive_swap(
+        "In the replay, Kolo Muani's leg catches Otamendi's challenge.",
+        described,
+        ["Randal Kolo Muani", "Nicolás Otamendi"],
+    )
+
+    assert swapped.startswith("Kolo Muani's leg")
+    assert "Otamendi" in swapped
+
+
+def test_the_line_that_keeps_the_owner_the_description_gave_it_passes() -> None:
+    described = "The replay: Kolo Muani driving across, Otamendi's leg in behind him."
+
+    assert (
+        possessive_swap(
+            "In the replay, Otamendi's leg was in behind him.",
+            described,
+            ["Randal Kolo Muani", "Nicolás Otamendi"],
+        )
+        == ""
+    )
+    # A noun the description never gave anybody is not this rule's business.
+    assert (
+        possessive_swap(
+            "Kolo Muani's run took him across the box.",
+            described,
+            ["Randal Kolo Muani", "Nicolás Otamendi"],
+        )
+        == ""
+    )
+
+
+def test_a_swapped_possessive_is_refused_whole(pack: KnowledgePack, state: MatchState) -> None:
+    """There is nothing to trim out of a true sentence about the wrong man."""
+    gate = FactGate()
+    line = call("Krastanov's leg catches Peñaló's challenge.", event=Event.FOUL)
+
+    verdict = gate.judge(
+        line,
+        state,
+        pack,
+        described="Peñaló driving across, Krastanov's shirt pulled, and down he goes.",
+    )
+
+    assert verdict.passed, "a noun nobody was given is not this rule's business"
+
+    verdict = gate.judge(
+        line,
+        state,
+        pack,
+        described="Krastanov driving across, Peñaló's leg in behind him, and down he goes.",
+    )
+
+    assert not verdict.passed
+    assert any(reason.startswith("possessive_swap:") for reason in verdict.reasons)
+
+
+def test_a_trim_inside_a_researched_clause_takes_the_clause(
+    pack: KnowledgePack, state: MatchState
+) -> None:
+    """"Back towards their own goal, and Tagliafico left for in the summer."
+
+    The note said which club. The club is on nobody's team sheet, so the name
+    check cut it out of the middle of the fact and left a sentence that is
+    neither English nor true.
+    """
+    gate = FactGate()
+    note = Note(
+        about="Wes Dunthorpe",
+        text="left for Eastgate Rovers in the summer",
+        kind="storyline",
+    )
+    line = call(
+        "Back towards their own goal, and Dunthorpe left for Eastgate Rovers in the summer.",
+    )
+
+    verdict = gate.judge(line, state, pack, notes=[note])
+
+    assert verdict.passed
+    assert "left for" not in verdict.line
+    assert verdict.line == "Back towards their own goal."
+    assert any(reason.startswith("trimmed_clause:") for reason in verdict.reasons)
+
+
+def test_a_stranded_tail_is_not_a_line() -> None:
+    assert is_a_hole("Of the night.")
+    assert is_a_hole("For Argentina.")
+    assert not is_a_hole("Into the corner.")
+    assert not is_a_hole("And the place erupts.")
+    assert not is_a_hole("Of the six chances they have had tonight, that was the best.")

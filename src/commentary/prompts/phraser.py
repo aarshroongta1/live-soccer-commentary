@@ -307,6 +307,16 @@ A name on that list that the description does not use has exactly one use: it
 may be the subject of a `context:` clause in a quiet moment. Never the
 subject of the line.
 
+AND WHAT A SIDE IS DOING IS NOT WHAT A MAN IS DOING. A verb phrase about
+eleven people cannot be handed to one of them, however close his name sits to
+it on the form:
+
+  seen: "France break forward into the Argentina half, navy shirts arriving
+  in numbers — and Okafor is the danger."
+    wrong: Okafor, arriving in numbers.     (one man is not "numbers")
+    right: France arriving in numbers.
+    right: Okafor is the danger.
+
 A GOAL IS THREE BEATS, AND YOU WRITE TWO OF THEM
 
 The name, then how. The how is never yours to reach for — it is whatever

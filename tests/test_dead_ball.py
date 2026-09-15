@@ -436,7 +436,13 @@ async def test_a_line_ending_on_a_word_one_of_the_last_five_ended_on_is_asked_ag
 
 
 @pytest.mark.asyncio
-async def test_the_tail_check_asks_once_and_then_accepts() -> None:
+async def test_the_tail_check_asks_once_and_then_takes_the_tail_off() -> None:
+    """One re-ask, and what comes back with the tail again loses it in code.
+
+    Four of twenty-one lines on the offside clip ended a clause on "now", and
+    three of the four end on another word entirely — "Through midfield now,
+    halfway line reached." — so the closer check never saw them.
+    """
     backend = saying(
         PhrasedLine(line="Wide on the right now.", excitement=0.3),
         PhrasedLine(line="Into the corner now.", excitement=0.3),
@@ -447,7 +453,8 @@ async def test_the_tail_check_asks_once_and_then_accepts() -> None:
     phrased = await phraser.phrase(a_form(), "", on_the_ball="Nahuel Molina")
 
     assert phrased is not None
-    assert phrased.line == "Into the corner now."
+    assert phrased.line == "Into the corner."
+    assert phrased.now_stripped
     assert len(backend.calls) == 2
 
 

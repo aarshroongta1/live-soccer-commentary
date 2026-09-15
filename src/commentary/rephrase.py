@@ -575,6 +575,7 @@ async def rephrase(
             at=at,
             notes=threads.notes(),
             ledger=counts_for(at, scorer_names),
+            described=form.line,
         )
         out.rows.append(
             {
@@ -734,6 +735,7 @@ async def rephrase(
             at=ts,
             notes=threads.notes(),
             ledger=counts_for(ts, names),
+            described=form.line,
         )
         out.rows.append(
             {
@@ -1001,6 +1003,7 @@ async def rephrase(
                 # the phraser was shown: the check is whether the number is
                 # one the match holds, and the match holds all of them.
                 ledger=counts_for(ts, names),
+                described=form.line,
             )
             out.rows.append(
                 {

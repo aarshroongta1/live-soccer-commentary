@@ -51,7 +51,12 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from commentary.gate import level_claim_spans, ordinal_score_spans, score_spans
+from commentary.gate import (
+    is_a_hole,
+    level_claim_spans,
+    ordinal_score_spans,
+    score_spans,
+)
 from commentary.schemas import MatchState, Side
 
 #: How many goals a scoreline is spelled out to. Above this the figures go out
@@ -411,6 +416,12 @@ def strip_score(text: str, teams: Sequence[str] = ()) -> Stripped:
         cleaned = _tidy("".join(out))
         words = [word.strip(".,!?;:'’\"").lower() for word in cleaned.split()]
         if not [word for word in words if word and word not in _FILLER]:
+            continue
+        if is_a_hole(cleaned):
+            # What is left is the tail of the claim rather than a line:
+            # "Portugal's first of the night." lost its count and went out as
+            # "Of the night." Only ever asked of a sentence something was cut
+            # out of, which is why it can be as blunt as it is.
             continue
         if not cleaned.endswith((".", "!", "?")):
             cleaned += "."

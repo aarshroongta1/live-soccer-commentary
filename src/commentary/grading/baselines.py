@@ -103,6 +103,7 @@ class OpenGate(FactGate):
         at: float | None = None,
         notes: Sequence[Note] | None = None,
         ledger: Sequence[CountFact] = (),
+        described: str = "",
     ) -> GateVerdict:
         return GateVerdict(
             passed=True,

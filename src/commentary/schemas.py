@@ -213,6 +213,20 @@ class PhrasedLine(BaseModel):
     #: empty with a ``repeat:`` reason and no beat goes out: a third saying of
     #: one phrase is worse than a hole.
     repeat_retry: bool = Field(default=False)
+    #: True when the line hung a thing on a different man from the one the
+    #: description gave it to — "Kolo Muani's leg" where the eyes saw
+    #: "Otamendi's leg" — and the phraser was re-asked once. The gate refuses
+    #: what comes back if it is still swapped: there is nothing to trim out of
+    #: a true sentence about the wrong player.
+    swap_retry: bool = Field(default=False)
+    #: True when goal beat 3 wrote a figure that was in none of the clauses it
+    #: was handed, and the phraser was re-asked. A second one comes back empty
+    #: with a ``figure_not_in_the_clause`` reason: a number nobody looked up is
+    #: the one mistake here that reaches air sounding right.
+    figure_retry: bool = Field(default=False)
+    #: True when a trailing "now" was taken off in code because a line already
+    #: aired had the same tail.
+    now_stripped: bool = Field(default=False)
     #: The replay marker phrase code removed from this line, or ``""``. The
     #: replay is named once per sequence ("as we see it again") and the model
     #: named it in two lines of three, so later lines have it taken off.
