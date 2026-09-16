@@ -43,15 +43,18 @@ Completed on `main`:
   and prevents rejected sightings from entering durable match facts.
 - `6ef9461` adds LangGraph and the bounded five-node lead workflow.
 - `2d682c2` makes that graph the production lead path. The graph returns a
-  typed beat and `Runtime` owns one commit/submission boundary, avoiding
-  duplicate speech if graph execution is retried.
+  typed beat and `Runtime` owns one commit/submission boundary.
+- A correctness pass freezes the prompt facts inside each turn,
+  stamps process-local time only at delivery, and deduplicates completed
+  commits within the running process.
 
 The implemented graph is intentionally smaller than the original ten-node
 sketch: `call_caller -> observe_form -> phrase_candidate -> verify_candidate ->
 build_beat`. Budgeting and opportunity routing remain deterministic scheduler
 policy outside the graph. Submission and post-emit memory updates remain one
-idempotency boundary immediately after the graph. Persistent checkpointing,
-goal-follow-up/replay consolidation, and colour migration remain open.
+boundary immediately after the graph. Persistent cross-process idempotency and
+checkpointing, goal-follow-up/replay consolidation, and colour migration remain
+open.
 
 ## Decision
 

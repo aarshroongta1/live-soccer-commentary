@@ -39,6 +39,7 @@ class Services:
     )
     passed: bool = True
     fact_version: int = 1
+    observation: ObservationResult = field(default_factory=ObservationResult)
     calls: list[str] = field(default_factory=list)
 
     async def call_caller(self, state: CommentaryTurnState) -> CallerResult:
@@ -49,7 +50,7 @@ class Services:
         self, state: CommentaryTurnState, line: CallerLine
     ) -> ObservationResult:
         self.calls.append("observe")
-        return ObservationResult()
+        return self.observation
 
     async def phrase_candidate(
         self, state: CommentaryTurnState, line: CallerLine
@@ -100,6 +101,7 @@ def turn() -> CommentaryTurnState:
         live_s=18.0,
         triggers=["scheduled"],
         fact_version=1,
+        fact_summary="Home 0-0 Away",
     )
 
 
@@ -125,6 +127,30 @@ async def test_a_caller_silence_still_updates_observations() -> None:
 
     assert result["outcome"] == "silent"
     assert result["beat"] is None
+    assert services.calls == ["caller", "observe"]
+
+
+@pytest.mark.asyncio
+async def test_a_caller_failure_stops_before_observation() -> None:
+    services = Services(caller=CallerResult(None, "provider failed"))
+    result = await build_live_commentary_graph().ainvoke(
+        turn(), context=LeadGraphContext(services)
+    )
+
+    assert result["outcome"] == "failed"
+    assert result["error"] == "provider failed"
+    assert services.calls == ["caller"]
+
+
+@pytest.mark.asyncio
+async def test_an_observation_can_stop_the_turn() -> None:
+    services = Services(observation=ObservationResult(False, "replay spent"))
+    result = await build_live_commentary_graph().ainvoke(
+        turn(), context=LeadGraphContext(services)
+    )
+
+    assert result["outcome"] == "silent"
+    assert result["error"] == "replay spent"
     assert services.calls == ["caller", "observe"]
 
 

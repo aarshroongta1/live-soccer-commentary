@@ -20,9 +20,12 @@ invented offline scenarios pin the semantic event order and model-call count.
 `MatchFactStore` owns versioned snapshots, gate verification reads a fresh
 snapshot after model calls, state summaries are side-effect free, and rejected
 shirt sightings no longer pollute the identity registry. The graph returns a
-typed beat; `Runtime` submits it and applies post-emit memory exactly once.
-Persistent checkpointing, the remaining replay/goal-follow-up consolidation,
-the colour branch, and the research/evaluation graphs are not implemented yet.
+typed beat; `Runtime` submits it through one boundary and deduplicates a
+completed commit within the running process. Each caller prompt uses the exact
+fact snapshot and version captured when its turn began. Persistent
+cross-process checkpointing/idempotency, the remaining replay/goal-follow-up
+consolidation, the colour branch, and the research/evaluation graphs are not
+implemented yet.
 
 **Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
 `uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`

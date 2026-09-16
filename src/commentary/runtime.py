@@ -125,6 +125,7 @@ GOAL_GRAPHIC_LAG_S = 10.0
 #: written. Past it the picture has moved on whatever the caller says.
 GOAL_TALK_CAP_S = 150.0
 
+
 @dataclass
 class ReplaySequence:
     """How many lines this run of replay pictures has had, and when.
@@ -355,6 +356,7 @@ class Runtime:
         self._lead_graph = build_live_commentary_graph()
         self._match_id = self.trace.run_id if self.trace is not None else f"{self.home}:{self.away}"
         self._turn_number = 0
+        self._committed_lead_beats: set[str] = set()
 
         self.cut = CutDetector(self.settings.predictor)
 
@@ -1148,6 +1150,7 @@ class Runtime:
             live_s=self.live_ts,
             triggers=[trigger.value for trigger in triggers],
             fact_version=prompt_facts.version,
+            fact_summary=prompt_facts.summary,
         )
         result = await self._lead_graph.ainvoke(initial, context=LeadGraphContext(self))
         if result["outcome"] != "ready":
@@ -1164,7 +1167,7 @@ class Runtime:
         self.stats.caller_calls += 1
         line = await self.caller.call(
             self.buffer,
-            self.facts.summary(cursor),
+            state["input_fact_summary"],
             triggers,
             lookahead_until=self._next_cut_after(cursor),
         )
@@ -1297,7 +1300,7 @@ class Runtime:
             voice=Voice.CALLER,
             text=verdict.line,
             video_ts=state["cursor_s"],
-            created_ts=time.monotonic(),
+            created_ts=0.0,
             live_ts=state["live_s"],
             event=event,
             excitement=excitement,
@@ -1307,6 +1310,11 @@ class Runtime:
 
     def _commit_lead(self, line: CallerLine, verdict: GateVerdict, beat: Beat) -> None:
         """Apply the one output boundary after a successful graph run."""
+        if beat.id in self._committed_lead_beats:
+            return
+        # Monotonic timestamps are process-local, so never persist one in graph
+        # state. Stamp the beat only when it enters the live director.
+        beat = beat.model_copy(update={"created_ts": time.monotonic()})
         cursor = beat.video_ts
         replay = line.scene is Scene.REPLAY
         event = beat.event
@@ -1369,6 +1377,7 @@ class Runtime:
             self._recent_event = (line.event, cursor)
         self.stats.spoken += 1
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
+        self._committed_lead_beats.add(beat.id)
 
     async def _phrase(self, line: CallerLine, cursor: float) -> tuple[CallerLine, float] | None:
         """Say the caller's form the way a commentator would, or keep its words.

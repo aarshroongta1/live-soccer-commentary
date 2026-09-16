@@ -23,8 +23,18 @@ from commentary.config import (
     Settings,
 )
 from commentary.grading import metrics, report
+from commentary.orchestration import new_turn_state
 from commentary.runtime import Runtime
-from commentary.schemas import CallerLine, Event, Scene, Side, Sighting
+from commentary.schemas import (
+    Beat,
+    CallerLine,
+    Event,
+    GateVerdict,
+    Scene,
+    Side,
+    Sighting,
+    Voice,
+)
 from commentary.sim import MatchSim, SimOracle, SimSource
 from commentary.trace import RunTrace
 from commentary.voice import LogSpeaker
@@ -969,6 +979,72 @@ def _built_runtime() -> Runtime:
     for index in range(96):
         runtime.buffer.append(Frame(ts=index / settings.capture.fps, image=blank))
     return runtime
+
+
+@pytest.mark.asyncio
+async def test_the_caller_uses_the_fact_snapshot_captured_for_its_turn() -> None:
+    runtime = _built_runtime()
+    seen: list[str] = []
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.CARRY,
+        side=Side.HOME,
+        confidence=0.9,
+        speak=True,
+        line="Hale carries through midfield.",
+    )
+
+    async def call(*args: Any, **kwargs: Any) -> CallerLine:
+        seen.append(args[1])
+        return line
+
+    runtime.caller.call = call  # type: ignore[method-assign]
+    state = new_turn_state(
+        match_id="match-1",
+        turn_id="turn-1",
+        cursor_s=5.0,
+        live_s=9.0,
+        triggers=[],
+        fact_version=3,
+        fact_summary="the immutable prompt facts",
+    )
+
+    result = await runtime.call_caller(state)
+
+    assert result.form == line
+    assert seen == ["the immutable prompt facts"]
+
+
+def test_a_completed_lead_beat_is_only_committed_once() -> None:
+    runtime = _built_runtime()
+    runtime.phraser = None
+    submitted = watch_the_director(runtime)
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.CARRY,
+        side=Side.HOME,
+        confidence=0.9,
+        speak=True,
+        line="Hale carries through midfield.",
+    )
+    verdict = GateVerdict(passed=True, line=line.line)
+    beat = Beat(
+        id="lead:match-1:turn-1",
+        voice=Voice.CALLER,
+        text=line.line,
+        video_ts=5.0,
+        created_ts=0.0,
+        live_ts=9.0,
+        event=line.event,
+    )
+    spoken_before = runtime.stats.spoken
+
+    runtime._commit_lead(line, verdict, beat)
+    runtime._commit_lead(line, verdict, beat)
+
+    assert len(submitted) == 1
+    assert submitted[0].created_ts > 0.0
+    assert runtime.stats.spoken == spoken_before + 1
 
 
 @pytest.mark.asyncio

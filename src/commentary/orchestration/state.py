@@ -31,6 +31,7 @@ class CommentaryTurnState(TypedDict):
     live_s: float
     triggers: list[str]
     input_fact_version: int
+    input_fact_summary: str
     verified_fact_version: int | None
     caller_form: dict[str, Any] | None
     candidate: dict[str, Any] | None
@@ -49,6 +50,7 @@ def new_turn_state(
     live_s: float,
     triggers: list[str],
     fact_version: int,
+    fact_summary: str,
 ) -> CommentaryTurnState:
     return CommentaryTurnState(
         match_id=match_id,
@@ -57,6 +59,7 @@ def new_turn_state(
         live_s=live_s,
         triggers=triggers,
         input_fact_version=fact_version,
+        input_fact_summary=fact_summary,
         verified_fact_version=None,
         caller_form=None,
         candidate=None,
