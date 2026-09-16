@@ -190,12 +190,22 @@ class StatelessCaller(Caller):
         state_summary: str,
         triggers: list[Trigger],
         lookahead_until: float | None = None,
+        *,
+        cursor_ts: float | None = None,
+        remember: bool = True,
     ) -> CallerLine | None:
         # The cut guard is withheld too. worldcupvoice has no scene detection,
         # so its lookahead runs straight across a cut into whatever the
         # broadcaster went to next — which is part of what makes it the
         # baseline rather than the system.
-        return await super().call(buffer, "", [], lookahead_until=None)
+        return await super().call(
+            buffer,
+            "",
+            [],
+            lookahead_until=None,
+            cursor_ts=cursor_ts,
+            remember=remember,
+        )
 
 
 class CallerOnlyDirector(Director):
@@ -477,6 +487,16 @@ class BaselineRuntime(Runtime):
             self.director = CallerOnlyDirector(
                 speaker=self.speaker, cfg=self.settings.director, bus=self.bus
             )
+
+    def _dispatch_call(self, triggers: list[Trigger]) -> bool:
+        cadence = self.variant.fixed_cadence_s
+        if (
+            cadence is not None
+            and self._last_lead_dispatch_ts is not None
+            and self.cursor_ts - self._last_lead_dispatch_ts < cadence
+        ):
+            return False
+        return super()._dispatch_call(triggers)
 
 
 def trace_file(out_dir: Path, name: str) -> Path:

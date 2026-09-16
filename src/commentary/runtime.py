@@ -1206,7 +1206,12 @@ class Runtime:
         self._turn_number += 1
         order = self._turn_number
         task = asyncio.create_task(
-            self._call(triggers, order=order),
+            self._call(
+                triggers,
+                order=order,
+                cursor=cursor,
+                live=self.live_ts,
+            ),
             name=f"lead:{order}",
         )
         self._lead_tasks.add(task)
@@ -1244,12 +1249,20 @@ class Runtime:
                 self._next_lead_commit_order += 1
             self._lead_order_changed.notify_all()
 
-    async def _call(self, triggers: list[Trigger], *, order: int | None = None) -> None:
+    async def _call(
+        self,
+        triggers: list[Trigger],
+        *,
+        order: int | None = None,
+        cursor: float | None = None,
+        live: float | None = None,
+    ) -> None:
         """Run one bounded lead opportunity through LangGraph."""
         if order is None:
             self._turn_number += 1
             order = self._turn_number
-        cursor = self.cursor_ts
+        cursor = self.cursor_ts if cursor is None else cursor
+        live = self.live_ts if live is None else live
         turn_id = f"{int(cursor * 1000)}:{order}"
         self._lead_turn_orders[turn_id] = order
         prompt_facts = self.facts.snapshot(cursor)
@@ -1257,7 +1270,7 @@ class Runtime:
             match_id=self._match_id,
             turn_id=turn_id,
             cursor_s=cursor,
-            live_s=self.live_ts,
+            live_s=live,
             triggers=[trigger.value for trigger in triggers],
             fact_version=prompt_facts.version,
             fact_summary=prompt_facts.summary,
@@ -1721,7 +1734,7 @@ class Runtime:
             append=(
                 self.follow.is_the_call(cursor)
                 and claims_goal(text, line.event)
-                and self._score_evidence_near(cursor)
+                and self._may_append_score(cursor)
             ),
             description=line.line,
             penalty=penalty,
@@ -1732,6 +1745,12 @@ class Runtime:
         if self._board_changed_near(cursor) or self._wire_confirms_goal(cursor):
             return True
         return self._last_goal_ts is not None and 0.0 <= cursor - self._last_goal_ts <= 2.0
+
+    def _may_append_score(self, cursor: float) -> bool:
+        """Avoid attaching the previous goal's score to a later finish."""
+        if self.follow.armed_at is None or self.follow.active(cursor):
+            return True
+        return self._score_evidence_near(cursor)
 
     def _publish_threads(self, cursor: float, offered: list[Offered], action: str) -> None:
         """Put a callback on the bus, offered or spoken, so it can be counted.

@@ -105,8 +105,7 @@ async def test_a_due_lead_call_is_not_replaced_by_colour(tmp_path: Path) -> None
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0)
     actions: list[str] = []
 
-    async def call(_triggers: list[Trigger], *, order: int | None = None) -> None:
-        del order
+    async def call(_triggers: list[Trigger], **_kwargs: Any) -> None:
         actions.append("lead")
 
     async def colour() -> bool:
@@ -1187,8 +1186,9 @@ async def test_slow_vision_does_not_block_the_next_observation() -> None:
     release = asyncio.Event()
     started: list[int] = []
 
-    async def call(_triggers: list[Trigger], *, order: int | None = None) -> None:
-        assert order is not None
+    async def call(_triggers: list[Trigger], **kwargs: Any) -> None:
+        order = kwargs.get("order")
+        assert isinstance(order, int)
         started.append(order)
         await release.wait()
 
@@ -1354,6 +1354,7 @@ def test_a_later_goal_never_reuses_an_old_score_without_new_evidence() -> None:
     runtime.state.home_score = 1
     runtime.state.away_score = 1
     runtime._last_goal_ts = 20.0
+    runtime.follow.armed_at = 20.0
     line = CallerLine(
         scene=Scene.LIVE_PLAY,
         event=Event.GOAL,
