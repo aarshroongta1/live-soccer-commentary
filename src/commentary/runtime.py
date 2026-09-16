@@ -1158,6 +1158,8 @@ class Runtime:
             triggers=[trigger.value for trigger in triggers],
             fact_version=prompt_facts.version,
             fact_summary=prompt_facts.summary,
+            match_state=prompt_facts.state,
+            goal_in_state=self._score_counts_the_goal(cursor),
         )
         result = await self._lead_graph.ainvoke(initial, context=LeadGraphContext(self))
         if result["outcome"] != "ready":
@@ -1243,7 +1245,13 @@ class Runtime:
         self, state: CommentaryTurnState, line: CallerLine
     ) -> PhraseResult:
         """Model-facing graph port: turn the observed form into spoken prose."""
-        said = await self._phrase(line, state["cursor_s"])
+        score_state = MatchState.model_validate(state["input_match_state"])
+        said = await self._phrase(
+            line,
+            state["cursor_s"],
+            score_state=score_state,
+            goal_in_state=state["input_goal_in_state"],
+        )
         if said is None:
             return PhraseResult(None, silent=True, error="chosen silence")
         judged, excitement = said
@@ -1255,12 +1263,19 @@ class Runtime:
         line: CallerLine,
         judged: CallerLine,
     ) -> VerificationResult:
-        """Deterministic graph port: judge against a fresh fact snapshot."""
+        """Judge with fresh facts and evidence, but the turn's opening score."""
         cursor = state["cursor_s"]
         snapshot = self.facts.snapshot(cursor)
+        turn_facts = MatchState.model_validate(state["input_match_state"])
+        gate_state = snapshot.state.model_copy(
+            update={
+                "home_score": turn_facts.home_score,
+                "away_score": turn_facts.away_score,
+            }
+        )
         verdict = self.gate.judge(
             judged,
-            snapshot.state,
+            gate_state,
             self.pack,
             board_changed=self._board_supports_goal(cursor),
             wire_confirmed=self._wire_confirms_goal(cursor),
@@ -1268,7 +1283,7 @@ class Runtime:
             # state already holds is a goal the score already counts, and the
             # gate's arithmetic needs to know that the number is settled
             # rather than arriving.
-            goal_in_state=self._score_counts_the_goal(cursor),
+            goal_in_state=state["input_goal_in_state"],
             carried=self._carried_name(line, cursor),
             at=cursor,
             notes=self.threads.notes(),
@@ -1386,7 +1401,14 @@ class Runtime:
         self._publish(Topic.COST, cursor, total_usd=round(self.backend.total.cost_usd, 4))
         self._committed_lead_beats.add(beat.id)
 
-    async def _phrase(self, line: CallerLine, cursor: float) -> tuple[CallerLine, float] | None:
+    async def _phrase(
+        self,
+        line: CallerLine,
+        cursor: float,
+        *,
+        score_state: MatchState | None = None,
+        goal_in_state: bool | None = None,
+    ) -> tuple[CallerLine, float] | None:
         """Say the caller's form the way a commentator would, or keep its words.
 
         Returns the form the gate should judge and the excitement to hang on
@@ -1502,9 +1524,11 @@ class Runtime:
         penalty = line.event is Event.PENALTY or self._recent_event_within(10.0) is Event.PENALTY
         settled = settle_numbers(
             phrased.line,
-            state=self.state,
+            state=score_state or self.state,
             side=line.side,
-            goal_in_state=self._score_counts_the_goal(cursor),
+            goal_in_state=(
+                self._score_counts_the_goal(cursor) if goal_in_state is None else goal_in_state
+            ),
             append=self.follow.is_the_call(cursor) and claims_goal(phrased.line, line.event),
             description=line.line,
             penalty=penalty,

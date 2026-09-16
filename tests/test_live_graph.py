@@ -15,7 +15,7 @@ from commentary.orchestration.context import (
 )
 from commentary.orchestration.live import build_live_commentary_graph
 from commentary.orchestration.state import CommentaryTurnState, new_turn_state
-from commentary.schemas import Beat, CallerLine, Event, GateVerdict, Scene, Side, Voice
+from commentary.schemas import Beat, CallerLine, Event, GateVerdict, MatchState, Scene, Side, Voice
 
 
 def form(*, speak: bool = True) -> CallerLine:
@@ -102,6 +102,8 @@ def turn() -> CommentaryTurnState:
         triggers=["scheduled"],
         fact_version=1,
         fact_summary="Home 0-0 Away",
+        match_state=MatchState(home="Home", away="Away"),
+        goal_in_state=False,
     )
 
 

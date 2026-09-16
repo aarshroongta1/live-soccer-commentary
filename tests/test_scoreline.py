@@ -29,6 +29,7 @@ from commentary.config import (
 )
 from commentary.goalfollow import MAX_SYNTH, GoalFollowup
 from commentary.llm.fake import ScriptedBackend
+from commentary.orchestration.state import new_turn_state
 from commentary.rephrase import restatement_pass
 from commentary.runtime import Runtime
 from commentary.schemas import (
@@ -559,6 +560,20 @@ def phraser_saying(runtime: Runtime, *lines: PhrasedLine) -> None:
     )
 
 
+def a_turn(runtime: Runtime, state: MatchState, *, goal_in_state: bool = False):
+    return new_turn_state(
+        match_id="match-1",
+        turn_id="turn-1",
+        cursor_s=runtime.cursor_ts,
+        live_s=runtime.live_ts,
+        triggers=[],
+        fact_version=runtime.facts.version,
+        fact_summary="snapshot",
+        match_state=state,
+        goal_in_state=goal_in_state,
+    )
+
+
 def caught_beats(runtime: Runtime) -> list[Beat]:
     beats: list[Beat] = []
     original = runtime.director.submit
@@ -607,6 +622,47 @@ async def test_the_runtime_appends_the_score_to_the_goal_line_and_strips_the_mod
 
     assert [beat.text for beat in beats] == [f"{surname}! One-one."]
     assert runtime.follow.active(runtime.cursor_ts), "the window did not open"
+
+
+@pytest.mark.asyncio
+async def test_a_slow_turn_uses_the_score_from_when_it_started() -> None:
+    runtime = a_runtime()
+    runtime.state.home_score, runtime.state.away_score = 1, 0
+    started = runtime.state.model_copy(deep=True)
+    assert runtime.pack is not None
+    scorer = runtime.pack.away.starters[0]
+    form = a_form(
+        line=f"{scorer.name} stabs it past the keeper and into the net.",
+        sightings=[Sighting(number=scorer.number, name=scorer.name, side=Side.AWAY)],
+    )
+    phraser_saying(
+        runtime,
+        PhrasedLine(line=f"{scorer.surname}! Into the net!", excitement=1.0),
+    )
+
+    turn = a_turn(runtime, started)
+    # The board catches up while the model call is in flight.
+    runtime.state.away_score = 1
+    runtime.observe_form(turn, form)
+    result = await runtime.phrase_candidate(turn, form)
+
+    assert result.candidate is not None, runtime.phraser.last_reason
+    assert result.candidate.line == f"{scorer.surname}! Into the net! One-one."
+
+
+def test_verification_does_not_allow_the_goal_to_be_counted_twice() -> None:
+    runtime = a_runtime()
+    runtime.state.home_score, runtime.state.away_score = 1, 0
+    started = runtime.state.model_copy(deep=True)
+    runtime.state.away_score = 1
+    runtime._board_supports_goal = lambda _cursor: True  # type: ignore[method-assign]
+    form = a_form(line="Barcelona stab it past the keeper and into the net.", sightings=[])
+    wrong = form.model_copy(update={"line": "Stabbed in! Two-one to Barcelona."})
+
+    result = runtime.verify_candidate(a_turn(runtime, started), form, wrong)
+
+    assert not result.verdict.passed
+    assert any("scoreline_mismatch" in reason for reason in result.verdict.reasons)
 
 
 @pytest.mark.asyncio

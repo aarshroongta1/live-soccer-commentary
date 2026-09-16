@@ -1047,6 +1047,8 @@ async def test_the_caller_uses_the_fact_snapshot_captured_for_its_turn() -> None
         triggers=[],
         fact_version=3,
         fact_summary="the immutable prompt facts",
+        match_state=runtime.state.model_copy(deep=True),
+        goal_in_state=False,
     )
 
     result = await runtime.call_caller(state)
