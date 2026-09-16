@@ -1,0 +1,23 @@
+docs/HANDOFF.md
+  s_7078a6b7dcd5e9::t_a7a02d1fe3f972 6-9,17-25
+  s_7078a6b7dcd5e9::t_e15ec166aa4fff 26
+docs/LANGGRAPH-ARCHITECTURE.md
+  s_7078a6b7dcd5e9::t_c69abf2faa9bc4 3
+  s_7078a6b7dcd5e9::t_a7a02d1fe3f972 8-13,17-18,32-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "829d8c1a04186a38a85a4a1ccd6c69e1df3b34ce",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
