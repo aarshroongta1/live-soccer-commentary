@@ -1,0 +1,115 @@
+[
+  {
+    "id": "named_action",
+    "caller": {
+      "scene": "live_play",
+      "event": "carry",
+      "side": "home",
+      "sightings": [{"number": 9, "name": "Tomás Peñaló", "side": "home"}],
+      "confidence": 0.9,
+      "speak": true,
+      "line": "Peñaló drives through the middle."
+    },
+    "phraser": {"line": "Peñaló, through the middle.", "excitement": 0.3},
+    "expected_topics": ["caller", "sighting", "phrased", "gate", "beat", "cost"],
+    "expected_backend_tags": ["phraser"],
+    "expected_outcome": "spoken"
+  },
+  {
+    "id": "caller_silence",
+    "caller": {
+      "scene": "live_play",
+      "event": "build_up",
+      "side": "home",
+      "confidence": 0.8,
+      "speak": false,
+      "line": ""
+    },
+    "expected_topics": ["caller"],
+    "expected_backend_tags": [],
+    "expected_outcome": "silent"
+  },
+  {
+    "id": "phraser_silence",
+    "caller": {
+      "scene": "live_play",
+      "event": "carry",
+      "side": "home",
+      "sightings": [{"number": 9, "name": "Tomás Peñaló", "side": "home"}],
+      "confidence": 0.8,
+      "speak": true,
+      "line": "Peñaló carries it across halfway."
+    },
+    "phraser": {"line": "", "excitement": 0.0},
+    "expected_topics": ["caller", "sighting", "phrased"],
+    "expected_backend_tags": ["phraser"],
+    "expected_outcome": "silent"
+  },
+  {
+    "id": "replay",
+    "setup": "foul_in_state",
+    "caller": {
+      "scene": "replay",
+      "event": "foul",
+      "side": "away",
+      "sightings": [{"number": 11, "name": "Ivo Krastanov", "side": "away"}],
+      "confidence": 0.9,
+      "speak": true,
+      "line": "Krastanov catches the ankle as the replay rolls."
+    },
+    "phraser": {"line": "On the replay, Krastanov catches the ankle.", "excitement": 0.2},
+    "expected_topics": ["caller", "sighting", "phrased", "gate", "beat", "cost"],
+    "expected_backend_tags": ["phraser"],
+    "expected_outcome": "spoken"
+  },
+  {
+    "id": "confirmed_goal",
+    "setup": "home_goal_in_state",
+    "caller": {
+      "scene": "live_play",
+      "event": "goal",
+      "side": "home",
+      "sightings": [{"number": 9, "name": "Tomás Peñaló", "side": "home"}],
+      "confidence": 0.99,
+      "speak": true,
+      "line": "Peñaló buries it low into the corner.",
+      "detail": "low into the corner"
+    },
+    "phraser": {"line": "Peñaló! Buried low!", "excitement": 1.0},
+    "expected_topics": ["caller", "sighting", "phrased", "gate", "beat", "cost"],
+    "expected_backend_tags": ["phraser"],
+    "expected_outcome": "spoken"
+  },
+  {
+    "id": "gate_refusal",
+    "caller": {
+      "scene": "live_play",
+      "event": "build_up",
+      "side": "home",
+      "sightings": [{"number": 99, "name": "Zaltimore", "side": "home"}],
+      "confidence": 0.8,
+      "speak": true,
+      "line": "Northvale move it around the back."
+    },
+    "phraser": {"line": "Northvale move it around the back.", "excitement": 0.1},
+    "expected_topics": ["caller", "sighting", "phrased", "gate"],
+    "expected_backend_tags": ["phraser"],
+    "expected_outcome": "refused"
+  },
+  {
+    "id": "phraser_fallback",
+    "caller": {
+      "scene": "live_play",
+      "event": "carry",
+      "side": "home",
+      "sightings": [{"number": 7, "name": "Errol Kimbanda", "side": "home"}],
+      "confidence": 0.9,
+      "speak": true,
+      "line": "Kimbanda carries it towards the area."
+    },
+    "phraser": "error",
+    "expected_topics": ["caller", "sighting", "error", "gate", "beat", "cost"],
+    "expected_backend_tags": ["phraser"],
+    "expected_outcome": "spoken"
+  }
+]
