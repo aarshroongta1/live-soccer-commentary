@@ -92,7 +92,7 @@ from commentary.schemas import (
     Trigger,
     Voice,
 )
-from commentary.scoreline import Restatements, settle_numbers
+from commentary.scoreline import Numbers, Restatements, settle_numbers
 from commentary.state import MatchStateTracker, parse_clock, period_for_clock
 from commentary.threads import Offered, SaidCounts, Threads
 from commentary.tools import MatchTools
@@ -111,6 +111,17 @@ from commentary.wire import Wire, WireSync
 #: [cursor - 2, cursor + 5] closed at 61.5 and missed it, and the caller's
 #: correct goal call was rejected as unconfirmed.
 GOAL_GRAPHIC_LAG_S = 10.0
+
+
+def _raw_excitement(event: Event) -> float:
+    """A small deterministic voice cue when no rewriting model is in the path."""
+    if event is Event.GOAL:
+        return 1.0
+    if event in {Event.SHOT, Event.SAVE, Event.PENALTY}:
+        return 0.8
+    if event in {Event.CROSS, Event.CARRY}:
+        return 0.5
+    return 0.3
 
 #: The backstop on how long a goal stays a thing worth talking about, and
 #: only the backstop: what really ends it is play restarting.
@@ -1219,6 +1230,18 @@ class Runtime:
         )
         if not replay:
             self._note_restart(line, cursor)
+        if (
+            self.phraser is None
+            and not replay
+            and line.event is Event.GOAL
+            and self.follow.active(cursor)
+            and self.follow.scorer
+        ):
+            detail = (line.detail or "").strip().casefold()
+            already_said = " ".join(self.follow.spoken).casefold()
+            if not detail or detail in already_said:
+                self._publish(Topic.STATUS, cursor, reason="repeated_goal_detail")
+                return ObservationResult(False, "repeated_goal_detail")
         if replay and not self.replays.may_speak(cursor):
             # Three angles of the same tackle is where a commentator stops,
             # and two lines four seconds apart is as fast as the corpus's own
@@ -1419,7 +1442,14 @@ class Runtime:
         nothing was said.
         """
         if self.phraser is None:
-            return line, 0.0
+            settled = self._settle_candidate(
+                line,
+                line.line,
+                cursor,
+                score_state=score_state,
+                goal_in_state=goal_in_state,
+            )
+            return line.model_copy(update={"line": settled.line}), _raw_excitement(line.event)
         carried = self._carried_name(line, cursor)
         passed_over = self.phraser.passes_over(line, ts=cursor, on_the_ball=carried)
         if passed_over is not None:
@@ -1502,7 +1532,14 @@ class Runtime:
                 where="phraser",
                 detail=self.phraser.last_reason or "the phraser returned nothing",
             )
-            return line, 0.0
+            settled = self._settle_candidate(
+                line,
+                line.line,
+                cursor,
+                score_state=score_state,
+                goal_in_state=goal_in_state,
+            )
+            return line.model_copy(update={"line": settled.line}), _raw_excitement(line.event)
         # Numbers by code. Whatever score the model wrote comes out, and the
         # one the state supports goes on — once, on the line that calls the
         # goal, and never on the celebration after it. The same call the
@@ -1513,17 +1550,12 @@ class Runtime:
         # event, or the last spoken form's within ten seconds — the gap a
         # penalty's kick and its goal sit apart — is what "82.5 Mbappé! Over
         # the wall!" was missing a check on.
-        penalty = line.event is Event.PENALTY or self._recent_event_within(10.0) is Event.PENALTY
-        settled = settle_numbers(
+        settled = self._settle_candidate(
+            line,
             phrased.line,
-            state=score_state or self.state,
-            side=line.side,
-            goal_in_state=(
-                self._score_counts_the_goal(cursor) if goal_in_state is None else goal_in_state
-            ),
-            append=self.follow.is_the_call(cursor) and claims_goal(phrased.line, line.event),
-            description=line.line,
-            penalty=penalty,
+            cursor,
+            score_state=score_state,
+            goal_in_state=goal_in_state,
         )
         if settled.how_removed:
             self._publish(
@@ -1549,6 +1581,29 @@ class Runtime:
             how_stripped=list(settled.how_removed),
         )
         return line.model_copy(update={"line": settled.line}), phrased.excitement
+
+    def _settle_candidate(
+        self,
+        line: CallerLine,
+        text: str,
+        cursor: float,
+        *,
+        score_state: MatchState | None,
+        goal_in_state: bool | None,
+    ) -> Numbers:
+        """Apply the verified score and goal-detail rules to any wording path."""
+        penalty = line.event is Event.PENALTY or self._recent_event_within(10.0) is Event.PENALTY
+        return settle_numbers(
+            text,
+            state=score_state or self.state,
+            side=line.side,
+            goal_in_state=(
+                self._score_counts_the_goal(cursor) if goal_in_state is None else goal_in_state
+            ),
+            append=self.follow.is_the_call(cursor) and claims_goal(text, line.event),
+            description=line.line,
+            penalty=penalty,
+        )
 
     def _publish_threads(self, cursor: float, offered: list[Offered], action: str) -> None:
         """Put a callback on the bus, offered or spoken, so it can be counted.

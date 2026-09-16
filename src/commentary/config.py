@@ -24,7 +24,7 @@ RESEARCHER_MODEL = os.getenv("RESEARCHER_MODEL", "claude-opus-5")
 #: system prompt, so the per-line cost is a fraction of a cent. Set it to
 #: ``off`` and the stage does not exist — the caller's own line goes to the
 #: gate, exactly as before there was a phraser.
-PHRASER_MODEL = os.getenv("PHRASER_MODEL", "claude-haiku-4-5")
+PHRASER_MODEL = os.getenv("PHRASER_MODEL", "off")
 #: The colour seat. Haiku for the same reason the phraser is: the seat is
 #: given the lead's last lines, the forms since its own last turn and the
 #: pack notes, and asked for three short utterances. The rules and the

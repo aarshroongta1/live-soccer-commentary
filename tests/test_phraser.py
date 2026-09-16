@@ -29,6 +29,7 @@ from commentary.config import (
 )
 from commentary.llm.base import Block
 from commentary.llm.fake import ScriptedBackend
+from commentary.orchestration import new_turn_state
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
 from commentary.prompts.phraser import (
     GOAL_BEATS,
@@ -627,6 +628,10 @@ def a_runtime(settings: Settings | None = None) -> Runtime:
     return runtime
 
 
+def test_the_live_default_keeps_the_callers_full_wording() -> None:
+    assert PhraserConfig().model == "off"
+
+
 def caught_beats(runtime: Runtime) -> list[Beat]:
     """Wrap the director so a test can see what it was handed."""
     beats: list[Beat] = []
@@ -699,7 +704,7 @@ async def test_a_phraser_that_fails_costs_a_rewrite_and_never_a_line() -> None:
     await runtime._call([Trigger.SCHEDULED])
 
     assert [beat.text for beat in beats] == [form.line]
-    assert beats[0].excitement == 0.0
+    assert beats[0].excitement == 0.5
 
 
 def _a_carrying_form(runtime: Runtime) -> CallerLine:
@@ -794,6 +799,65 @@ async def test_the_stage_switched_off_leaves_the_runtime_exactly_as_it_was() -> 
 
     assert arms[0], "nothing was spoken, so nothing was compared"
     assert arms[0] == arms[1]
+
+
+@pytest.mark.asyncio
+async def test_the_unphrased_goal_still_gets_the_verified_score_and_energy() -> None:
+    runtime = a_runtime(fast_settings(phraser=PhraserConfig(model="off")))
+    runtime.state.home = "Real Betis"
+    runtime.state.away = "FC Barcelona"
+    runtime.state.home_score = 1
+    runtime.state.away_score = 1
+    form = a_form(
+        line="Ferran Torres turns it in from close range!",
+        event=Event.GOAL,
+        detail="from close range",
+    ).model_copy(update={"side": Side.AWAY, "team": "FC Barcelona"})
+
+    phrased = await runtime._phrase(
+        form,
+        runtime.cursor_ts,
+        score_state=runtime.state.model_copy(deep=True),
+        goal_in_state=True,
+    )
+
+    assert phrased is not None
+    line, excitement = phrased
+    assert line.line == "Ferran Torres turns it in from close range! One-one."
+    assert excitement == 1.0
+
+
+def test_the_unphrased_path_drops_the_same_goal_detail_twice() -> None:
+    runtime = a_runtime(fast_settings(phraser=PhraserConfig(model="off")))
+    cursor = runtime.cursor_ts
+    first = a_form(
+        line="Molina turns it in from close range!",
+        event=Event.GOAL,
+        detail="from close range",
+    )
+    runtime.follow.arm(cursor - 5.0, first, first.line, runtime.pack)
+    repeat = first.model_copy(
+        update={
+            "scene": Scene.CLOSE_UP,
+            "line": "Molina has turned it in from close range.",
+        }
+    )
+    state = new_turn_state(
+        match_id="match-1",
+        turn_id="turn-2",
+        cursor_s=cursor,
+        live_s=runtime.live_ts,
+        triggers=[],
+        fact_version=runtime.facts.version,
+        fact_summary=runtime.facts.summary(cursor),
+        match_state=runtime.state.model_copy(deep=True),
+        goal_in_state=True,
+    )
+
+    result = runtime.observe_form(state, repeat)
+
+    assert result.continue_turn is False
+    assert result.error == "repeated_goal_detail"
 
 
 def sim_forms(runtime: Runtime) -> list[CallerLine]:
