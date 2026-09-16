@@ -178,12 +178,9 @@ class Caller:
     Holds its own :class:`RecentLines`, the memory of what has been said,
     which feeds the prompt's "last lines spoken".
 
-    One wrinkle worth knowing: a line is recorded as spoken the moment this
-    agent approves it, which is before the fact gate downstream has had its
-    say. A line the fact gate then kills still occupies a slot in the gate's
-    memory. That is the cheap direction to be wrong in — the model is told it
-    said something it did not — but if it starts mattering, hand
-    ``gate.accept`` to the director instead.
+    The runtime records a line only after the fact gate approves it. Direct
+    users of this agent keep the old convenient behaviour through the
+    ``remember`` argument on :meth:`call`.
     """
 
     def __init__(
@@ -224,6 +221,9 @@ class Caller:
         state_summary: str,
         triggers: list[Trigger],
         lookahead_until: float | None = None,
+        *,
+        cursor_ts: float | None = None,
+        remember: bool = True,
     ) -> CallerLine | None:
         """Look at the cursor and the near future, and decide whether to speak.
 
@@ -232,12 +232,20 @@ class Caller:
         the error is swallowed here and left on ``last_reason`` — the director
         will be back in four seconds either way.
         """
-        cursor = buffer.at_cursor(self.config.frames_at_cursor, self.config.cursor_spacing_s)
+        cursor = buffer.at_cursor(
+            self.config.frames_at_cursor,
+            self.config.cursor_spacing_s,
+            cursor_ts,
+        )
         if not cursor:
             self.last_reason = "no frames at the cursor"
             self.suppressed["no_frames"] += 1
             return None
-        lookahead = buffer.lookahead(self.config.frames_lookahead, lookahead_until)
+        lookahead = buffer.lookahead(
+            self.config.frames_lookahead,
+            lookahead_until,
+            cursor_ts,
+        )
         blocks = caller_blocks(
             cursor,
             lookahead,
@@ -263,9 +271,9 @@ class Caller:
             self.suppressed["llm_error"] += 1
             return None
 
-        return self._settle(parsed.value)
+        return self._settle(parsed.value, remember=remember)
 
-    def _settle(self, proposed: CallerLine) -> CallerLine:
+    def _settle(self, proposed: CallerLine, *, remember: bool = True) -> CallerLine:
         """Apply the post-conditions and record why, before anyone sees the line."""
         text = trim_words(clean_line(proposed.line), self.config.max_words)
 
@@ -280,7 +288,8 @@ class Caller:
             return proposed.model_copy(update={"line": text, "speak": False})
 
         self.last_reason = ""
-        self.gate.accept(text)
+        if remember:
+            self.gate.accept(text)
         return proposed.model_copy(update={"line": text, "speak": True})
 
     def _veto(self, proposed: CallerLine, text: str) -> tuple[str, str]:

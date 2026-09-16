@@ -7,6 +7,7 @@ written record of what actually happened to check it against.
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -104,7 +105,8 @@ async def test_a_due_lead_call_is_not_replaced_by_colour(tmp_path: Path) -> None
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0)
     actions: list[str] = []
 
-    async def call(_triggers: list[Trigger]) -> None:
+    async def call(_triggers: list[Trigger], *, order: int | None = None) -> None:
+        del order
         actions.append("lead")
 
     async def colour() -> bool:
@@ -113,6 +115,7 @@ async def test_a_due_lead_call_is_not_replaced_by_colour(tmp_path: Path) -> None
 
     runtime._call = call  # type: ignore[method-assign]
     runtime._maybe_colour = colour  # type: ignore[method-assign]
+    runtime._last_lead_dispatch_ts = None
     await runtime._act_on_decision(
         SpeakDecision(
             should_call=True,
@@ -121,6 +124,8 @@ async def test_a_due_lead_call_is_not_replaced_by_colour(tmp_path: Path) -> None
             reason="scheduled",
         )
     )
+
+    await asyncio.gather(*runtime._lead_tasks)
 
     assert actions == ["lead"]
 
@@ -1176,6 +1181,103 @@ async def test_the_caller_uses_the_fact_snapshot_captured_for_its_turn() -> None
     assert seen == ["the immutable prompt facts"]
 
 
+@pytest.mark.asyncio
+async def test_slow_vision_does_not_block_the_next_observation() -> None:
+    runtime = _built_runtime()
+    release = asyncio.Event()
+    started: list[int] = []
+
+    async def call(_triggers: list[Trigger], *, order: int | None = None) -> None:
+        assert order is not None
+        started.append(order)
+        await release.wait()
+
+    runtime._call = call  # type: ignore[method-assign]
+    runtime._last_lead_dispatch_ts = None
+    decision = SpeakDecision(
+        should_call=True,
+        triggers=[Trigger.SCHEDULED],
+        urgency=0.2,
+        reason="scheduled",
+    )
+
+    await runtime._act_on_decision(decision)
+    latest = runtime.buffer.live_ts
+    assert latest is not None
+    runtime.buffer.append(
+        Frame(ts=latest + 2.5, image=np.zeros((8, 8, 3), dtype=np.uint8))
+    )
+    await runtime._act_on_decision(decision)
+
+    assert started == [1, 2]
+    assert len(runtime._lead_tasks) == 2
+    release.set()
+    await asyncio.gather(*runtime._lead_tasks)
+
+
+@pytest.mark.asyncio
+async def test_overlapping_vision_results_rejoin_in_cursor_order() -> None:
+    runtime = _built_runtime()
+    release_first = asyncio.Event()
+    completed: list[str] = []
+    lines = {
+        "first": CallerLine(
+            scene=Scene.LIVE_PLAY,
+            event=Event.PASS,
+            side=Side.HOME,
+            confidence=0.9,
+            speak=True,
+            line="First pass.",
+        ),
+        "second": CallerLine(
+            scene=Scene.LIVE_PLAY,
+            event=Event.CROSS,
+            side=Side.HOME,
+            confidence=0.9,
+            speak=True,
+            line="Then the cross.",
+        ),
+    }
+
+    async def call(_buffer: Any, summary: str, *_args: Any, **_kwargs: Any) -> CallerLine:
+        if summary == "first":
+            await release_first.wait()
+        return lines[summary]
+
+    runtime.caller.call = call  # type: ignore[method-assign]
+    runtime._lead_turn_orders = {"first": 1, "second": 2}
+
+    def state(turn_id: str, cursor: float) -> Any:
+        return new_turn_state(
+            match_id="match-1",
+            turn_id=turn_id,
+            cursor_s=cursor,
+            live_s=cursor + 4.0,
+            triggers=[],
+            fact_version=0,
+            fact_summary=turn_id,
+            match_state=runtime.state.model_copy(deep=True),
+            goal_in_state=False,
+        )
+
+    async def observe(turn_id: str, cursor: float) -> None:
+        result = await runtime.call_caller(state(turn_id, cursor))
+        assert result.form is not None
+        completed.append(turn_id)
+        await runtime._finish_lead_order(runtime._lead_turn_orders[turn_id])
+
+    first = asyncio.create_task(observe("first", 5.0))
+    second = asyncio.create_task(observe("second", 7.5))
+    await asyncio.sleep(0)
+    await asyncio.sleep(0)
+    assert completed == []
+
+    release_first.set()
+    await asyncio.gather(first, second)
+
+    assert completed == ["first", "second"]
+
+
 def test_a_completed_lead_beat_is_only_committed_once() -> None:
     runtime = _built_runtime()
     runtime.phraser = None
@@ -1206,6 +1308,71 @@ def test_a_completed_lead_beat_is_only_committed_once() -> None:
     assert len(submitted) == 1
     assert submitted[0].created_ts > 0.0
     assert runtime.stats.spoken == spoken_before + 1
+
+
+@pytest.mark.asyncio
+async def test_concurrent_celebration_descriptions_only_air_once() -> None:
+    runtime = _built_runtime()
+    submitted = watch_the_director(runtime)
+    first = CallerLine(
+        scene=Scene.CLOSE_UP,
+        event=Event.GOAL,
+        side=Side.AWAY,
+        confidence=0.9,
+        speak=True,
+        line="Ferran and Rashford celebrate.",
+    )
+    second = first.model_copy(update={"line": "Rashford celebrates with Ferran."})
+
+    def beat(turn: str, text: str) -> Beat:
+        return Beat(
+            id=f"lead:match-1:{turn}",
+            voice=Voice.CALLER,
+            text=text,
+            video_ts=10.0,
+            created_ts=0.0,
+            live_ts=14.0,
+            event=Event.GOAL,
+        )
+
+    runtime._commit_lead(first, GateVerdict(passed=True, line=first.line), beat("1", first.line))
+    runtime._commit_lead(
+        second,
+        GateVerdict(passed=True, line=second.line),
+        beat("2", second.line),
+    )
+
+    assert [item.text for item in submitted] == [first.line]
+    assert runtime._goal_turn is not None
+    runtime._goal_turn.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await runtime._goal_turn
+
+
+def test_a_later_goal_never_reuses_an_old_score_without_new_evidence() -> None:
+    runtime = _built_runtime()
+    runtime.state.home_score = 1
+    runtime.state.away_score = 1
+    runtime._last_goal_ts = 20.0
+    line = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.AWAY,
+        confidence=0.9,
+        speak=True,
+        line="Barcelona finish it at the near post!",
+    )
+
+    settled = runtime._settle_candidate(
+        line,
+        line.line,
+        53.0,
+        score_state=runtime.state.model_copy(deep=True),
+        goal_in_state=True,
+    )
+
+    assert settled.line == line.line
+    assert settled.appended == ""
 
 
 @pytest.mark.asyncio

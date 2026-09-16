@@ -112,6 +112,14 @@ from commentary.wire import Wire, WireSync
 #: correct goal call was rejected as unconfirmed.
 GOAL_GRAPHIC_LAG_S = 10.0
 
+# Looking at the match and speaking about it are separate clocks. Vision
+# requests take several seconds, so running them one at a time made the
+# nominal 0.5 s predictor tick blind for most of the clip. Keep a tiny number
+# in flight, spaced far enough apart to show genuinely newer play.
+LEAD_OBSERVATION_GAP_S = 2.5
+MAX_PENDING_LEADS = 3
+LEAD_DRAIN_TIMEOUT_S = 10.0
+
 
 def _raw_excitement(event: Event) -> float:
     """A small deterministic voice cue when no rewriting model is in the path."""
@@ -122,6 +130,11 @@ def _raw_excitement(event: Event) -> float:
     if event in {Event.CROSS, Event.CARRY}:
         return 0.5
     return 0.3
+
+
+def _is_celebration(text: str) -> bool:
+    """Whether a line is another description of players celebrating."""
+    return "celebrat" in fold(text)
 
 #: The backstop on how long a goal stays a thing worth talking about, and
 #: only the backstop: what really ends it is play restarting.
@@ -370,6 +383,12 @@ class Runtime:
         self._match_id = self.trace.run_id if self.trace is not None else f"{self.home}:{self.away}"
         self._turn_number = 0
         self._committed_lead_beats: set[str] = set()
+        self._lead_tasks: set[asyncio.Task[None]] = set()
+        self._lead_turn_orders: dict[str, int] = {}
+        self._finished_lead_orders: set[int] = set()
+        self._next_lead_commit_order = 1
+        self._lead_order_changed = asyncio.Condition()
+        self._last_lead_dispatch_ts: float | None = None
 
         self.cut = CutDetector(self.settings.predictor)
 
@@ -496,6 +515,22 @@ class Runtime:
             try:
                 await self._stop.wait()
             finally:
+                # Stop admitting new work, then let the already-observed
+                # moments finish in chronological order. Previously the last
+                # caller request was simply cancelled when a clip ended.
+                for task in tasks:
+                    if task.get_name() in {"frames", "board", "tick", "deadline"}:
+                        task.cancel()
+                if self._lead_tasks:
+                    try:
+                        await asyncio.wait_for(
+                            asyncio.gather(*tuple(self._lead_tasks)),
+                            timeout=LEAD_DRAIN_TIMEOUT_S,
+                        )
+                    except TimeoutError:
+                        for task in tuple(self._lead_tasks):
+                            task.cancel()
+                        await asyncio.gather(*tuple(self._lead_tasks), return_exceptions=True)
                 # Let whatever is mid-sentence finish, then close the books
                 # while the recorder is still listening, so the final tallies
                 # land in the trace rather than after it.
@@ -722,7 +757,17 @@ class Runtime:
             return
 
         if decision.should_call:
-            await self._call(decision.triggers)
+            admitted = self._dispatch_call(decision.triggers)
+            if not admitted:
+                # Do not lose a real event merely because all three vision
+                # slots were occupied. Scheduled pressure can be recreated.
+                self._pending.extend(
+                    trigger
+                    for trigger in decision.triggers
+                    if trigger not in {Trigger.SCHEDULED, Trigger.SILENCE_PRESSURE}
+                )
+            # Give the new task one loop turn to snapshot its exact frames.
+            await asyncio.sleep(0)
             return
 
         # A lull belongs to the analyst, and it has to be offered one
@@ -1147,11 +1192,66 @@ class Runtime:
             self._publish(Topic.STATUS, self.cursor_ts, reason="cost_cap", spent_usd=spent)
         return True
 
-    async def _call(self, triggers: list[Trigger]) -> None:
-        """Run one bounded lead opportunity through LangGraph."""
-        self._turn_number += 1
+    def _dispatch_call(self, triggers: list[Trigger]) -> bool:
+        """Start a bounded vision observation without blocking the tick loop."""
         cursor = self.cursor_ts
-        turn_id = f"{int(cursor * 1000)}:{self._turn_number}"
+        if len(self._lead_tasks) >= MAX_PENDING_LEADS:
+            return False
+        if (
+            self._last_lead_dispatch_ts is not None
+            and cursor - self._last_lead_dispatch_ts < LEAD_OBSERVATION_GAP_S
+        ):
+            return False
+
+        self._turn_number += 1
+        order = self._turn_number
+        task = asyncio.create_task(
+            self._call(triggers, order=order),
+            name=f"lead:{order}",
+        )
+        self._lead_tasks.add(task)
+        self._last_lead_dispatch_ts = cursor
+        task.add_done_callback(self._lead_done)
+        return True
+
+    def _lead_done(self, task: asyncio.Task[None]) -> None:
+        """Remove a finished lead task and consume unexpected exceptions."""
+        self._lead_tasks.discard(task)
+        if task.cancelled():
+            return
+        error = task.exception()
+        if error is not None:
+            self._publish(Topic.ERROR, self.cursor_ts, where="lead", detail=str(error))
+
+    async def _wait_for_lead_order(self, turn_id: str) -> None:
+        """Hold completed vision calls until every older turn is committed."""
+        order = self._lead_turn_orders.get(turn_id)
+        if order is None:
+            # Direct port tests and external graph callers do not enter via
+            # ``_call`` and therefore have no sibling turns to order.
+            return
+        async with self._lead_order_changed:
+            await self._lead_order_changed.wait_for(
+                lambda: order == self._next_lead_commit_order
+            )
+
+    async def _finish_lead_order(self, order: int) -> None:
+        """Release this turn and any already-finished turns behind it."""
+        async with self._lead_order_changed:
+            self._finished_lead_orders.add(order)
+            while self._next_lead_commit_order in self._finished_lead_orders:
+                self._finished_lead_orders.remove(self._next_lead_commit_order)
+                self._next_lead_commit_order += 1
+            self._lead_order_changed.notify_all()
+
+    async def _call(self, triggers: list[Trigger], *, order: int | None = None) -> None:
+        """Run one bounded lead opportunity through LangGraph."""
+        if order is None:
+            self._turn_number += 1
+            order = self._turn_number
+        cursor = self.cursor_ts
+        turn_id = f"{int(cursor * 1000)}:{order}"
+        self._lead_turn_orders[turn_id] = order
         prompt_facts = self.facts.snapshot(cursor)
         initial = new_turn_state(
             match_id=self._match_id,
@@ -1164,27 +1264,40 @@ class Runtime:
             match_state=prompt_facts.state,
             goal_in_state=self._score_counts_the_goal(cursor),
         )
-        result = await self._lead_graph.ainvoke(initial, context=LeadGraphContext(self))
-        if result["outcome"] != "ready":
-            return
-        line = CallerLine.model_validate(result["caller_form"])
-        verdict = GateVerdict.model_validate(result["verdict"])
-        beat = Beat.model_validate(result["beat"])
-        self._commit_lead(line, verdict, beat)
+        try:
+            result = await self._lead_graph.ainvoke(initial, context=LeadGraphContext(self))
+            if result["outcome"] != "ready":
+                return
+            line = CallerLine.model_validate(result["caller_form"])
+            verdict = GateVerdict.model_validate(result["verdict"])
+            beat = Beat.model_validate(result["beat"])
+            self._commit_lead(line, verdict, beat)
+        finally:
+            self._lead_turn_orders.pop(turn_id, None)
+            await self._finish_lead_order(order)
 
     async def call_caller(self, state: CommentaryTurnState) -> CallerResult:
         """Model-facing graph port: inspect the buffered pictures."""
         cursor = state["cursor_s"]
         triggers = [Trigger(trigger) for trigger in state["triggers"]]
         self.stats.caller_calls += 1
+        cut = self._next_cut_after(cursor)
+        lookahead_until = state["live_s"] if cut is None else min(state["live_s"], cut)
         line = await self.caller.call(
             self.buffer,
             state["input_fact_summary"],
             triggers,
-            lookahead_until=self._next_cut_after(cursor),
+            lookahead_until=lookahead_until,
+            cursor_ts=cursor,
+            remember=False,
         )
+        # Only the expensive, read-only vision inference overlaps. Everything
+        # that mutates facts, gates, ledgers, threads or replay state remains
+        # on the existing graph path in cursor order.
+        reason = self.caller.last_reason
+        await self._wait_for_lead_order(state["turn_id"])
         if line is None:
-            reason = self.caller.last_reason or "the caller returned nothing"
+            reason = reason or "the caller returned nothing"
             self._publish(Topic.ERROR, cursor, where="caller", detail=reason)
             return CallerResult(None, reason)
         self._publish(Topic.CALLER, cursor, line)
@@ -1348,6 +1461,11 @@ class Runtime:
     def _commit_lead(self, line: CallerLine, verdict: GateVerdict, beat: Beat) -> None:
         """Apply the one output boundary after a successful graph run."""
         if beat.id in self._committed_lead_beats:
+            return
+        if _is_celebration(verdict.line) and any(
+            _is_celebration(previous) for previous in self.caller.gate.recent
+        ):
+            self._publish(Topic.STATUS, beat.video_ts, reason="repeated_celebration")
             return
         # Monotonic timestamps are process-local, so never persist one in graph
         # state. Stamp the beat only when it enters the live director.
@@ -1600,10 +1718,20 @@ class Runtime:
             goal_in_state=(
                 self._score_counts_the_goal(cursor) if goal_in_state is None else goal_in_state
             ),
-            append=self.follow.is_the_call(cursor) and claims_goal(text, line.event),
+            append=(
+                self.follow.is_the_call(cursor)
+                and claims_goal(text, line.event)
+                and self._score_evidence_near(cursor)
+            ),
             description=line.line,
             penalty=penalty,
         )
+
+    def _score_evidence_near(self, cursor: float) -> bool:
+        """Whether a score change belongs to this exact goal call."""
+        if self._board_changed_near(cursor) or self._wire_confirms_goal(cursor):
+            return True
+        return self._last_goal_ts is not None and 0.0 <= cursor - self._last_goal_ts <= 2.0
 
     def _publish_threads(self, cursor: float, offered: list[Offered], action: str) -> None:
         """Put a callback on the bus, offered or spoken, so it can be counted.

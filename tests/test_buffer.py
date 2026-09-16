@@ -36,6 +36,21 @@ def test_at_cursor_returns_oldest_first_ending_at_the_cursor():
     assert frames[0].ts == pytest.approx(buf.cursor_ts - 3.0, abs=1 / 15)
 
 
+def test_an_explicit_cursor_freezes_the_sample_while_live_frames_advance():
+    buf = DelayBuffer(fps=15, delay_s=4.0)
+    fill(buf, 15, 10)
+    frozen = buf.cursor_ts
+    assert frozen is not None
+
+    fill(buf, 15, 2, start=10.0)
+    frames = buf.at_cursor(count=4, spacing_s=1.0, cursor_ts=frozen)
+    ahead = buf.lookahead(count=2, until_ts=frozen + 4.0, cursor_ts=frozen)
+
+    assert frames[-1].ts == pytest.approx(frozen, abs=1 / 15)
+    assert all(frame.ts > frozen for frame in ahead)
+    assert ahead[-1].ts == pytest.approx(frozen + 4.0, abs=1 / 15)
+
+
 def test_lookahead_is_strictly_after_the_cursor():
     buf = DelayBuffer(fps=15, delay_s=4.0)
     fill(buf, 15, 10)

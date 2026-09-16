@@ -89,14 +89,24 @@ class DelayBuffer:
                 picked.append(frame)
         return picked
 
-    def at_cursor(self, count: int = 4, spacing_s: float = 1.0) -> list[Frame]:
+    def at_cursor(
+        self,
+        count: int = 4,
+        spacing_s: float = 1.0,
+        cursor_ts: float | None = None,
+    ) -> list[Frame]:
         """Frames leading up to the cursor, oldest first. What is being called."""
-        cursor = self.cursor_ts
+        cursor = self.cursor_ts if cursor_ts is None else cursor_ts
         if cursor is None:
             return []
         return self._sample(cursor, count, spacing_s)
 
-    def lookahead(self, count: int = 2, until_ts: float | None = None) -> list[Frame]:
+    def lookahead(
+        self,
+        count: int = 2,
+        until_ts: float | None = None,
+        cursor_ts: float | None = None,
+    ) -> list[Frame]:
         """Frames between the cursor and the live edge, oldest first.
 
         This is the future the caller gets to see before it commits to a line:
@@ -111,7 +121,8 @@ class DelayBuffer:
         the lookahead was added to prevent. When the window closes to nothing
         the caller simply gets none, which it is told how to handle.
         """
-        cursor, live = self.cursor_ts, self.live_ts
+        cursor = self.cursor_ts if cursor_ts is None else cursor_ts
+        live = self.live_ts
         if cursor is None or live is None or self.delay_s <= 0 or count <= 0:
             return []
         end = live if until_ts is None else min(live, until_ts)
