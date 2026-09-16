@@ -1,0 +1,22 @@
+tests/test_runtime.py
+  s_7078a6b7dcd5e9::t_2c24facb6f292a 129-153
+  s_7078a6b7dcd5e9::t_555f6cbd697cc6 128
+tests/test_colour.py
+  s_7078a6b7dcd5e9::t_2c24facb6f292a 1322,1325,1373-1374
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f00f76c0e6cf8a2468a7f198aa683723aa17a909",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
