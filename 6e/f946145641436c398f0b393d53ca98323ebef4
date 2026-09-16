@@ -1,0 +1,42 @@
+tests/test_live_graph.py
+  s_7078a6b7dcd5e9::t_ffedadf4c65e36 1-159
+src/commentary/orchestration/context.py
+  s_7078a6b7dcd5e9::t_ffedadf4c65e36 1-62
+pyproject.toml
+  s_2ef73334604975::t_12e69582fac77c 15
+src/commentary/orchestration/nodes.py
+  s_7078a6b7dcd5e9::t_ffedadf4c65e36 1-98
+src/commentary/orchestration/state.py
+  s_7078a6b7dcd5e9::t_ffedadf4c65e36 5-6,22-68
+  s_7078a6b7dcd5e9::t_a4b53f510949c6 69-70
+src/commentary/orchestration/live.py
+  s_7078a6b7dcd5e9::t_ffedadf4c65e36 1-47
+src/commentary/orchestration/__init__.py
+  s_7078a6b7dcd5e9::t_ffedadf4c65e36 3-8,10
+uv.lock
+  s_7078a6b7dcd5e9::t_5d561fc4ee1459 400,442,522-530,854-874,902-934,955-1038,1550-1640,2009-2020,2249-2257,2353-2418,2577-2649,2726-2928
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6ef946145641436c398f0b393d53ca98323ebef4",
+  "prompts": {},
+  "sessions": {
+    "s_2ef73334604975": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
