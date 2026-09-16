@@ -34,6 +34,8 @@ from commentary.schemas import (
     Scene,
     Side,
     Sighting,
+    SpeakDecision,
+    Trigger,
     Voice,
 )
 from commentary.sim import MatchSim, SimOracle, SimSource
@@ -95,6 +97,32 @@ async def test_a_match_runs_and_produces_commentary(tmp_path: Path) -> None:
     assert runtime.stats.caller_calls > 0, "the caller was never asked"
     run = metrics.load_run(path)
     assert run.lines, "nothing was ever spoken"
+
+
+@pytest.mark.asyncio
+async def test_a_due_lead_call_is_not_replaced_by_colour(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0)
+    actions: list[str] = []
+
+    async def call(_triggers: list[Trigger]) -> None:
+        actions.append("lead")
+
+    async def colour() -> bool:
+        actions.append("colour")
+        return True
+
+    runtime._call = call  # type: ignore[method-assign]
+    runtime._maybe_colour = colour  # type: ignore[method-assign]
+    await runtime._act_on_decision(
+        SpeakDecision(
+            should_call=True,
+            triggers=[Trigger.SCHEDULED],
+            urgency=0.2,
+            reason="scheduled",
+        )
+    )
+
+    assert actions == ["lead"]
 
 
 @pytest.mark.asyncio

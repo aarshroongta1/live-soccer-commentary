@@ -80,6 +80,12 @@ def test_system_prompt_carries_the_rules_that_matter():
     assert "silence is a real answer" in lowered
 
 
+def test_caller_is_told_to_follow_meaningful_attacking_progression():
+    system = caller_system(None)
+    assert "The listener should be able to follow the ball through the move" in system
+    assert "wakes up only for the goal is not\nplay-by-play" in system
+
+
 def test_system_prompt_without_a_pack_has_no_team_sheets():
     assert "TEAM SHEETS" not in caller_system(None)
 

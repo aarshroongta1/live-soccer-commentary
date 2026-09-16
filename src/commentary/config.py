@@ -99,8 +99,11 @@ class BoardConfig:
 class CallerConfig:
     """The play-by-play voice."""
 
-    frames_at_cursor: int = 4
-    cursor_spacing_s: float = 1.0
+    # Eight half-second steps show the movement of one passage rather than
+    # four isolated snapshots.  The span is still only 3.5 seconds, so this
+    # adds temporal detail without asking the model to reconstruct old play.
+    frames_at_cursor: int = 8
+    cursor_spacing_s: float = 0.5
     frames_lookahead: int = 2
     #: The longest the voice ever waits between two lines on the rate cap
     #: alone. A full sentence takes about this long to say, so after one the

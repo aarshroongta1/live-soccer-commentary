@@ -698,27 +698,38 @@ class Runtime:
                 colour_stretch=self.colour.share.stretch(self.cursor_ts),
             )
             self._publish(Topic.TRIGGER, self.cursor_ts, decision)
-            if self._over_budget():
-                continue
+            await self._act_on_decision(decision)
 
-            # A lull belongs to the analyst, and it has to be offered one
-            # first. The predictor's job is to never let the broadcast go
-            # mute, so left alone it will always send the caller to fill a
-            # silence — and the analyst, which by design only speaks into
-            # silences, would never once get a turn.
-            if self.settings.colour.enabled:
-                if await self._maybe_colour():
-                    continue
-            elif self._is_a_lull(decision) and await self._maybe_analyst():
-                continue
-            # And a period of the clock may be owed to whoever has just
-            # joined. It is the flattest thing anybody says in a match and it
-            # costs nothing, so it is offered a moment that is already clear
-            # rather than one the caller wants.
-            if self._maybe_restate():
-                continue
-            if decision.should_call:
-                await self._call(decision.triggers)
+    async def _act_on_decision(self, decision: SpeakDecision) -> None:
+        """Give a due play-by-play look priority over optional colour.
+
+        The old ordering offered colour first even after the predictor had
+        decided the caller was due.  On both Betis runs that consumed the
+        only observation immediately before the cross.
+        """
+        if self._over_budget():
+            return
+
+        if decision.should_call:
+            await self._call(decision.triggers)
+            return
+
+        # A lull belongs to the analyst, and it has to be offered one
+        # first. The predictor's job is to never let the broadcast go
+        # mute, so left alone it will always send the caller to fill a
+        # silence — and the analyst, which by design only speaks into
+        # silences, would never once get a turn.
+        if self.settings.colour.enabled:
+            if await self._maybe_colour():
+                return
+        elif self._is_a_lull(decision) and await self._maybe_analyst():
+            return
+        # And a period of the clock may be owed to whoever has just
+        # joined. It is the flattest thing anybody says in a match and it
+        # costs nothing, so it is offered a moment that is already clear
+        # rather than one the caller wants.
+        if self._maybe_restate():
+            return
 
     def _is_a_lull(self, decision: SpeakDecision) -> bool:
         """Nothing has happened; the only reason to speak is that nobody has."""
