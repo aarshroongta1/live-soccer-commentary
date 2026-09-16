@@ -5,7 +5,7 @@ evidence.
 
 **HEAD:** branch `corpus-british` in
 `/Users/Aarsh/Desktop/commentary/.claude/worktrees/corpus`, pushed to origin,
-forty-three commits ahead of `main` and not merged. Everything from 15-16
+forty-five commits ahead of `main` and not merged. Everything from 15-16
 September (section 3f) and the evening of 15 September (section 3g) is on
 it. `.env` at the root. `clips/` and `runs/` are
 in the repo and gitignored — the clips are 26 MB each and the traces are
@@ -660,6 +660,35 @@ H.264, and `clips/mbappe.mp4` is AV1, so `clips/mbappe-h264.mp4` was
 transcoded (`h264_videotoolbox`, 8 Mbps, 213 MB, gitignored with the rest);
 point `--path` at it. The Next.js page in `web/` still uses the JPEG stream
 and has not been touched.
+
+**Three more from reading the output**, `5f6b02f` and the commit after it:
+"That's not a penalty" after the referee had pointed to the spot is refused
+(`contradicts_decision`, against the EVENT lines; soft or harsh is still
+allowed); an utterance is placed where it can finish before the lead's next
+line, not just start (`space_out` takes each utterance's length), so the
+two voices stop cutting each other mid-sentence; and nobody says which way
+the keeper went — on the first penalty anybody watched, he dived the right
+way and could not reach it, the caller's form said he was sent the wrong
+way, and both seats repeated it for a minute. The caller is told not to
+claim it, the phraser strips the clause in code, the colour seat refuses
+it (`keeper_direction`).
+
+**The seats are on Opus now.** The user asked for it: `.env` sets
+`PHRASER_MODEL=claude-opus-5` and `COLOUR_MODEL=claude-opus-5` (the
+defaults in `config.py` are still Haiku). Two passes on the Mbappé trace,
+`runs/rephrased/r13-opus` and `r14-opus`, **$0.81 to $0.84 each** against
+$0.11 to $0.14 on Haiku. What it buys: the lead's lines are written by a
+commentator — "Straight into the net for the ball! No celebration, back to
+the centre circle!", "It was France driving at the box in numbers, and
+Mbappé got himself airborne to meet it, the volley gone past Martínez before
+anyone could set" — the notes are woven in as relative clauses rather than
+bolted on, and the sixteen-plus tail finally exists. What it costs beyond
+money: Opus writes long, so the holes for the colour seat shrink and eight
+to nine colour utterances a pass are `pushed_out` even at `turn_span_s` 15;
+colour aired 9 to 10 lines against 26 to 29 lead, about 28%. Per match this
+is roughly **$20 of phrasing and colour on top of the caller's $27**, which
+is over `MAX_USD_PER_MATCH` (35): raise it or put the phraser back on Haiku
+for the live run and keep Opus on the colour seat only.
 
 **What the listen still needs, in order.** (1) The voice curve tuned by ear:
 `scripts/voice_sweep.py` on a trimmed grid, and the two designed voices

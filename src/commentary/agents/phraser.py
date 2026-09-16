@@ -541,6 +541,49 @@ def _lead_with(text: str, scorer: str, names: Sequence[str]) -> str:
     return f"{surname}, {said}"
 
 
+#: Which way the keeper went, in any of the shapes the phraser writes it. On
+#: the first penalty anybody watched with this system the keeper dived the
+#: right way and could not reach it, the caller's form said he was sent the
+#: wrong way, and the line went out saying so — and the colour seat repeated
+#: it for a minute. The form may still say it; the aired line does not.
+_KEEPER_DIRECTION = re.compile(
+    r"(?:,\s*(?:and\s+)?|\s+and\s+|\s*[—-]\s*)?"
+    r"(?:the\s+keeper\s+|the\s+goalkeeper\s+|[A-ZÀ-Ý][\w'’-]+\s+)?"
+    r"(?:was\s+|is\s+|being\s+)?"
+    r"(?:sent|sends|went|goes|going|dived|dives|diving|guessed|guesses|guessing|committed)"
+    r"\s+(?:him\s+|the\s+keeper\s+|the\s+goalkeeper\s+)?(?:the\s+)?(?:wrong|other|right)\s+way\b"
+    r"[^.!?,]*",
+    re.IGNORECASE,
+)
+
+
+def without_keeper_direction(text: str) -> str:
+    """The line with any claim about which way the keeper went taken out.
+
+    The clause goes, back to the comma or the "and" that joined it; a
+    sentence that was nothing but the claim goes whole. What is left is
+    re-tidied so no stray comma or double space reaches the synthesiser.
+    """
+    if not _KEEPER_DIRECTION.search(text):
+        return text
+    cut = _KEEPER_DIRECTION.sub("", text)
+    cut = re.sub(r"\s+([,.!?])", r"\1", cut)
+    cut = re.sub(r"([.!?])\s*[.!?]", r"\1", cut)
+    cut = re.sub(r",\s*([.!?])", r"\1", cut)
+    cut = re.sub(r"\s{2,}", " ", cut).strip(" ,")
+    # A sentence left as a bare conjunction, a stop, or a replay marker with
+    # nothing after its colon — "Watch this again:." went out on the first
+    # Opus pass — is not a sentence.
+    sentences = [s.strip(" ,") for s in re.split(r"(?<=[.!?])\s+", cut)]
+    kept = [
+        s
+        for s in sentences
+        if (len(s.split()) > 1 or (s and s[0].isalpha() and len(s) > 3))
+        and not re.search(r":\s*[.!?]?$", s)
+    ]
+    return " ".join(kept).strip()
+
+
 def _ends_on_a_stop(text: str) -> str:
     """The line with a full stop on it, if it had no end of its own."""
     said = text.strip()
@@ -1581,7 +1624,9 @@ class Phraser:
         strip had taken the end of the sentence with the thing it removed,
         and a synthesiser reads an unpunctuated line straight into the next.
         """
-        text = _ends_on_a_stop(trim_words(clean_line(proposed.line), max_words))
+        text = _ends_on_a_stop(
+            without_keeper_direction(trim_words(clean_line(proposed.line), max_words))
+        )
         if not text:
             # An empty answer is a choice; an answer that was only a label
             # or a pair of quotation marks is a failed one. The difference

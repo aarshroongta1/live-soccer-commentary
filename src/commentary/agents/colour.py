@@ -985,6 +985,19 @@ _DECISIONS: tuple[tuple[str, re.Pattern[str], re.Pattern[str]], ...] = (
 )
 
 
+#: Which way the keeper went. On the first penalty anybody watched with this
+#: system the keeper dived the right way and could not reach it, the caller
+#: said he was sent the wrong way, and both seats repeated it for a minute.
+#: It is the commonest wrong detail on a penalty and worth nothing when it
+#: is right, so neither voice says it.
+_KEEPER_DIRECTION = re.compile(
+    r"\b(?:sent|sends|went|goes|going|dived|dives|diving|guessed|guesses|guessing|committed)"
+    r"\s+(?:him\s+|the\s+keeper\s+|the\s+goalkeeper\s+|[\w'’-]+\s+)?(?:the\s+)?"
+    r"(?:wrong|other|right)\s+way\b",
+    re.IGNORECASE,
+)
+
+
 def contradicts_decision(text: str, sources: Sequence[str]) -> str:
     """A given decision the utterance denies outright, or ``""``.
 
@@ -1270,6 +1283,15 @@ def judge_utterance(
         return GateVerdict(
             passed=False,
             reasons=[f"how_not_in_material: nothing you were given said {how} in this passage"],
+            line=text,
+        )
+    if _KEEPER_DIRECTION.search(text):
+        # "Martínez went the other way, no blame there." The seat cannot see
+        # the dive, the lead's own line about it was wrong, and the corpus's
+        # second voice does not adjudicate a keeper's guess either way.
+        return GateVerdict(
+            passed=False,
+            reasons=["keeper_direction: which way the keeper went is nobody's to say here"],
             line=text,
         )
     denied = contradicts_decision(text, sources)

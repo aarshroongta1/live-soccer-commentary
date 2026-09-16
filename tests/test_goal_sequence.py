@@ -180,8 +180,8 @@ def test_the_rewrite_keeps_the_name_when_what_follows_is_a_clause() -> None:
 
 
 def test_the_rewrite_drops_the_shout_when_what_follows_is_a_sentence() -> None:
-    assert unshout("Mbappé! The keeper sent the wrong way.") == (
-        "The keeper sent the wrong way."
+    assert unshout("Mbappé! The keeper could not reach it.") == (
+        "The keeper could not reach it."
     )
 
 
@@ -224,7 +224,7 @@ async def test_a_follow_up_beat_that_shouts_the_name_is_asked_again() -> None:
 @pytest.mark.asyncio
 async def test_a_beat_that_shouts_again_is_rewritten_rather_than_dropped() -> None:
     """The re-ask is asked once. What comes back shouting is fixed in code."""
-    backend = saying(PhrasedLine(line="Mbappé! The keeper sent the wrong way.", excitement=0.9))
+    backend = saying(PhrasedLine(line="Mbappé! The keeper could not reach it.", excitement=0.9))
     phraser = a_phraser(backend)
 
     phrased = await phraser.phrase(
@@ -237,7 +237,7 @@ async def test_a_beat_that_shouts_again_is_rewritten_rather_than_dropped() -> No
     )
 
     assert phrased is not None
-    assert phrased.line == "The keeper sent the wrong way."
+    assert phrased.line == "The keeper could not reach it."
     assert phrased.shout_retry and phrased.shout_rewritten
 
 

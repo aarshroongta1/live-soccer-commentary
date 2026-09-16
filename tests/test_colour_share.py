@@ -1617,3 +1617,27 @@ def test_a_decision_the_referee_has_given_is_not_denied_outright() -> None:
     assert contradicts_decision("That is harsh on Otamendi.", given) == ""
     nothing_given = ("REPLAY, what the pictures showed again: Otamendi leaning in",)
     assert contradicts_decision("That's not a penalty.", nothing_given) == ""
+
+
+def test_which_way_the_keeper_went_is_nobodys_to_say() -> None:
+    """"Martínez went the other way, no blame there." The seat cannot see the
+    dive, the lead's own line about it was wrong, and it is worth nothing when
+    it is right."""
+    pack = the_2022_pack()
+    for text in (
+        "Martínez went the other way, no blame there.",
+        "Yeah, Mbappé sent him the wrong way.",
+        "The keeper guessed the right way and still could not reach it.",
+    ):
+        verdict = judge_utterance(
+            text, MatchState(home="Argentina", away="France"), pack, FactGate()
+        )
+        assert not verdict.passed, text
+        assert verdict.reasons[0].startswith("keeper_direction"), verdict.reasons
+    fine = judge_utterance(
+        "Well, Mbappé never looked like missing that.",
+        MatchState(home="Argentina", away="France"),
+        pack,
+        FactGate(),
+    )
+    assert fine.passed, fine.reasons

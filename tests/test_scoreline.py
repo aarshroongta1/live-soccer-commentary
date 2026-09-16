@@ -625,7 +625,7 @@ async def test_a_celebration_after_the_same_goal_loses_its_number_and_gains_none
     phraser_saying(
         runtime,
         PhrasedLine(line=f"{surname}! Off the ground!", excitement=1.0),
-        PhrasedLine(line="The keeper sent the wrong way. Two-one!", excitement=0.9),
+        PhrasedLine(line="The keeper could not reach it. Two-one!", excitement=0.9),
     )
     beats = caught_beats(runtime)
 
@@ -634,7 +634,7 @@ async def test_a_celebration_after_the_same_goal_loses_its_number_and_gains_none
 
     assert [beat.text for beat in beats] == [
         f"{surname}! Off the ground! One-one.",
-        "The keeper sent the wrong way.",
+        "The keeper could not reach it.",
     ]
 
 

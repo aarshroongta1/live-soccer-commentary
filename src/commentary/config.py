@@ -397,7 +397,7 @@ class ColourConfig:
     #: turn any more. Anything past this is dropped, which is section 4.6's
     #: hand-back: the colour voice stops mid-thought when the ball moves and
     #: there is no verbal hand-back anywhere in the corpus.
-    turn_span_s: float = 10.0
+    turn_span_s: float = 15.0
     #: The lead's last lines the seat observes off. Eight rather than the
     #: phraser's four: this seat is looking for what has been true for a
     #: while, not for what it just said.

@@ -1565,3 +1565,17 @@ def test_a_second_build_up_line_in_a_row_is_told_to_consider_silence() -> None:
         )
     )
     assert "THE LAST LINE WAS THIS SAME KIND OF MOMENT" not in loud
+
+
+def test_which_way_the_keeper_went_never_reaches_the_line() -> None:
+    """The keeper dived the right way and could not reach it; the form said
+    he was sent the wrong way; the line went out saying so."""
+    from commentary.agents.phraser import without_keeper_direction as cut
+
+    assert cut("Mbappé! Buried! The keeper sent the wrong way.") == "Mbappé! Buried!"
+    assert (
+        cut("Watch this again: Mbappé's penalty, and the keeper was sent the wrong way.")
+        == "Watch this again: Mbappé's penalty."
+    )
+    assert cut("Martínez went the other way, no blame there.") == "no blame there."
+    assert cut("Mbappé! Off the ground! Two-two.") == "Mbappé! Off the ground! Two-two."
