@@ -5,7 +5,7 @@ evidence.
 
 **HEAD:** branch `corpus-british` in
 `/Users/Aarsh/Desktop/commentary/.claude/worktrees/corpus`, pushed to origin,
-forty-two commits ahead of `main` and not merged. Everything from 15-16
+forty-three commits ahead of `main` and not merged. Everything from 15-16
 September (section 3f) and the evening of 15 September (section 3g) is on
 it. `.env` at the root. `clips/` and `runs/` are
 in the repo and gitignored — the clips are 26 MB each and the traces are
@@ -645,6 +645,21 @@ onto the second — refused as `how_not_in_material` against the material
 lines. Two turns at 141-161 s narrate the lead's own quiet passage
 ("Argentina feeling it now… This is where they need to hold… That is the
 response") and would be the next thing to read for.
+
+**"The video quality and fps was very poor in the interface."** The clip is
+1280x720 at 30 fps; the capture decodes it at 15 fps into the delay buffer;
+the page was then served a JPEG stream ticking at 12 against that 15,
+downscaled to 960 wide at quality 72. Two fixes. The MJPEG stream now runs
+on the buffer's own tick, polled twice as fast so the two rates never beat,
+at the decoded size and quality 88 — that is what a live screen run gets.
+And a replay has the clip on disk, so `Replay.clip_path` is served at
+`/api/clip` (Range requests answered) and the fallback page swaps the
+`<img>` for a `<video>` seeked to `status.clip_ts - present_offset_s` every
+half second: native frames at native rate, no encoding. The browser needs
+H.264, and `clips/mbappe.mp4` is AV1, so `clips/mbappe-h264.mp4` was
+transcoded (`h264_videotoolbox`, 8 Mbps, 213 MB, gitignored with the rest);
+point `--path` at it. The Next.js page in `web/` still uses the JPEG stream
+and has not been touched.
 
 **What the listen still needs, in order.** (1) The voice curve tuned by ear:
 `scripts/voice_sweep.py` on a trimmed grid, and the two designed voices

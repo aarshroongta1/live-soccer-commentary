@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -199,3 +200,30 @@ def test_the_snapshot_says_how_far_behind_the_cursor_the_picture_is() -> None:
     client = TestClient(create_app(FakeRuntime(present_offset_s=3.5)))
 
     assert client.get("/api/state").json()["status"]["present_offset_s"] == pytest.approx(3.5)
+
+
+def test_a_run_with_no_clip_on_disk_has_no_clip_route(client: TestClient) -> None:
+    """A live run serves the delay buffer's stream and nothing else."""
+    assert client.get("/api/clip").status_code == 404
+
+
+def test_a_replay_serves_its_clip_for_the_page_to_play_natively(tmp_path: Path) -> None:
+    """The first person to watch a lap said the picture and the frame rate
+    were poor: 960 wide at quality 72, ticking at 12 against a 15 fps buffer.
+    On a replay the clip is on disk, so the page plays the file itself and
+    keeps it seeked to the cursor; the route answers Range requests so it
+    can seek.
+    """
+    clip = tmp_path / "clip.mp4"
+    clip.write_bytes(b"\x00" * 4096)
+    runtime = FakeRuntime()
+    runtime.clip_path = clip  # type: ignore[attr-defined]
+    api = TestClient(create_app(runtime))
+    whole = api.get("/api/clip")
+    assert whole.status_code == 200
+    assert whole.headers["content-type"].startswith("video/mp4")
+    part = api.get("/api/clip", headers={"Range": "bytes=0-99"})
+    assert part.status_code == 206
+    assert len(part.content) == 100
+    page = api.get("/").text
+    assert "/api/clip" in page and "<video" in page

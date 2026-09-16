@@ -182,6 +182,12 @@ class Replay:
     speaker: Speaker | None = None
 
     bus: Bus = field(default_factory=Bus)
+    #: The clip on disk, so the watch page can play it natively — the real
+    #: frames at the real rate through a ``<video>`` element seeked to the
+    #: cursor — instead of the delay buffer's re-encoded JPEG stream at the
+    #: capture's 15 fps. The first person to watch a lap said the picture and
+    #: the frame rate were poor, and on a replay every frame is on disk.
+    clip_path: Path | None = None
 
     def __post_init__(self) -> None:
         cap = self.settings.capture
@@ -241,6 +247,11 @@ class Replay:
             "buffered_frames": len(self.buffer),
             "cursor_ts": self.buffer.cursor_ts,
             "live_ts": self.buffer.live_ts,
+            # Where the cursor is in the clip's own seconds, and whether the
+            # clip itself is on offer, so the page can play the file natively
+            # and keep it seeked to the narration.
+            "clip_ts": self.clip_ts,
+            "clip": self.clip_path is not None,
             # Said out loud so that a page showing lines nobody can hear, and
             # a page showing lines coming out of the speakers right now, are
             # not the same page.
@@ -435,4 +446,5 @@ def from_files(
         label=f"{trace_path.name} over {clip.name}",
         loop=loop,
         speaker=speaker,
+        clip_path=clip,
     )

@@ -22,8 +22,8 @@ import asyncio
 from collections.abc import AsyncIterator
 from typing import Any, Protocol
 
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
 from commentary.bus import Bus
 from commentary.capture.buffer import DelayBuffer, Frame
@@ -70,24 +70,30 @@ def present_frame(buffer: DelayBuffer, present_offset_s: float) -> Frame | None:
 async def mjpeg(
     buffer: DelayBuffer,
     present_offset_s: float = 0.0,
-    fps: int = 12,
-    quality: int = 72,
+    fps: int | None = None,
+    quality: int = 88,
+    max_width: int = 1920,
 ) -> AsyncIterator[bytes]:
     """The delayed video, as a multipart JPEG stream.
 
     Deliberately re-encodes on a fixed wall-clock tick instead of following the
     buffer: if the browser falls behind, it should see the present late, not
-    the past in order.
+    the past in order. The tick is the buffer's own frame rate, polled twice
+    as often so a frame is never skipped by the two rates beating; it used to
+    be a flat 12 against a 15 fps buffer, downscaled to 960 wide at quality
+    72, and the first person to watch a lap said the picture and the frame
+    rate were poor. The frames are served at the size the capture decoded
+    them, which is the clip's own.
     """
     from commentary.llm.base import encode_frame
 
-    interval = 1.0 / fps
+    interval = 1.0 / (2 * (fps or buffer.fps))
     last_ts = -1.0
     while True:
         frame = present_frame(buffer, present_offset_s)
         if frame is not None and frame.ts != last_ts:
             last_ts = frame.ts
-            jpeg = encode_frame(frame.image, quality=quality, max_width=960)
+            jpeg = encode_frame(frame.image, quality=quality, max_width=max_width)
             yield (
                 f"--{BOUNDARY}\r\nContent-Type: image/jpeg\r\n"
                 f"Content-Length: {len(jpeg)}\r\n\r\n"
@@ -139,6 +145,20 @@ def create_app(runtime: RuntimeHandle) -> FastAPI:
             headers={"Cache-Control": "no-cache"},
         )
 
+    @app.get("/api/clip")
+    async def clip() -> FileResponse:
+        """The clip itself, for a replay: the page plays it natively and
+        keeps it seeked to ``status.clip_ts - present_offset_s``.
+
+        Only a replay has one (``Replay.clip_path``); a live run serves the
+        delay buffer's JPEG stream and nothing else. Starlette's FileResponse
+        answers Range requests, which is what lets the browser seek.
+        """
+        path = getattr(runtime, "clip_path", None)
+        if path is None:
+            raise HTTPException(status_code=404, detail="this run has no clip on disk")
+        return FileResponse(path, media_type="video/mp4")
+
     @app.get("/", response_class=HTMLResponse)
     async def index() -> HTMLResponse:
         return HTMLResponse(FALLBACK_PAGE)
@@ -153,7 +173,7 @@ FALLBACK_PAGE = """<!doctype html>
 <style>
  body{margin:0;background:#0b0f0c;color:#e8efe9;font:15px/1.5 ui-sans-serif,system-ui}
  main{max-width:1100px;margin:0 auto;padding:24px;display:grid;gap:16px}
- img{width:100%;border-radius:10px;background:#000}
+ img,video{width:100%;border-radius:10px;background:#000}
  #feed{display:flex;flex-direction:column-reverse;gap:8px;max-height:46vh;overflow:auto}
  .line{padding:8px 12px;border-radius:8px;background:#16201a}
  .line.analyst{background:#1b1a26}
@@ -165,12 +185,38 @@ FALLBACK_PAGE = """<!doctype html>
 <main>
   <header><h1>Live Soccer Commentary <span id="score"></span></h1></header>
   <img id="video" src="/api/video" alt="delayed broadcast">
+  <video id="clip" hidden muted playsinline preload="auto"></video>
   <div id="feed"></div>
 </main>
 <script>
 const feed = document.getElementById('feed');
 const score = document.getElementById('score');
 const es = new EventSource('/api/stream');
+// A replay has the clip on disk, so play it natively — the real frames at
+// the real rate — seeked to where the narration cursor is, less the
+// presentation offset, and nudged back into line whenever it drifts. A live
+// run has no clip and keeps the JPEG stream from the delay buffer.
+const img = document.getElementById('video');
+const clip = document.getElementById('clip');
+let clipOn = false;
+async function syncClip() {
+  let body;
+  try { body = await (await fetch('/api/state')).json(); } catch (e) { return; }
+  const st = body.status || {};
+  if (!st.clip || st.clip_ts == null) return;
+  if (!clipOn) {
+    clipOn = true;
+    clip.src = '/api/clip';
+    clip.hidden = false;
+    img.hidden = true;
+    img.removeAttribute('src');
+  }
+  const want = Math.max(0, st.clip_ts - (st.present_offset_s || 0));
+  if (Math.abs(clip.currentTime - want) > 0.35) clip.currentTime = want;
+  if (clip.paused) clip.play().catch(() => {});
+}
+setInterval(syncClip, 500);
+syncClip();
 function add(cls, who, text) {
   const el = document.createElement('div');
   el.className = 'line ' + cls;
