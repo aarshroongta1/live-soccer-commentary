@@ -1319,16 +1319,10 @@ async def test_the_pass_does_nothing_at_all_when_the_seat_is_off() -> None:
 
 
 @pytest.mark.asyncio
-async def test_the_runtime_speaks_the_colour_seat_and_skips_the_old_analyst(
+async def test_the_runtime_prioritises_lead_and_skips_the_old_analyst(
     tmp_path: Any,
 ) -> None:
-    """End to end on the simulator: the turn reaches the channel as beats.
-
-    The old analyst is not asked at all when the seat is on — that is the
-    whole of what ``settings.colour.enabled`` does — and the utterances go
-    out as separate preemptable beats with ``voice=analyst``, so the
-    director drops the rest of a turn the instant a goal arrives.
-    """
+    """A due play-by-play look is never replaced by either analyst path."""
     from commentary.config import CallerConfig, CaptureConfig, DirectorConfig
     from commentary.runtime import Runtime
     from commentary.sim import MatchSim, SimOracle, SimSource
@@ -1376,10 +1370,8 @@ async def test_the_runtime_speaks_the_colour_seat_and_skips_the_old_analyst(
         await runtime.run(seconds=6.0)
 
     rows = [__import__("json").loads(line) for line in path.read_text().splitlines() if line]
-    assert [r for r in rows if r.get("topic") == "colour"], "the seat was never asked"
-    beats = [r for r in rows if r.get("topic") == "beat" and r.get("voice") == "analyst"]
-    assert beats, "the turn never reached the channel"
-    assert all(r["preemptable"] for r in beats)
+    beats = [r for r in rows if r.get("topic") == "beat" and r.get("voice") == "caller"]
+    assert beats, "play-by-play never reached the channel"
     assert not [r for r in rows if r.get("topic") == "analyst"], "the old analyst was asked"
 
 
