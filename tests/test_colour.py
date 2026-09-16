@@ -190,8 +190,8 @@ def test_the_seat_does_not_open_before_the_lead_has_said_anything() -> None:
 
 
 @pytest.mark.parametrize("event", [Event.GOAL, Event.SHOT, Event.SAVE, Event.PENALTY])
-@pytest.mark.parametrize("delay", [0.0, 1.0, 3.9, 9.0, 11.9])
-def test_the_first_twelve_seconds_after_a_big_event_belong_to_the_lead(
+@pytest.mark.parametrize("delay", [0.0, 1.0, 3.9, 7.9])
+def test_the_first_eight_seconds_after_a_big_event_belong_to_the_lead(
     event: Event, delay: float
 ) -> None:
     """Section 4.3: median delay 21.4 s, and only 7% of colour entries inside 6 s.
@@ -296,24 +296,24 @@ def test_live_build_up_is_allowed_twenty_seconds_after_the_last_big_event() -> N
     # ones the corpus recorded after a chance.
     assert offer.situation == AFTER_A_CHANCE
     assert may_speak(a_moment(200.0, last_big=(Event.SAVE, 100.0))).situation == IN_BUILD_UP
-    assert not may_speak(a_moment(115.0, last_big=(Event.SAVE, 100.0))).allowed
+    assert not may_speak(a_moment(110.0, last_big=(Event.SAVE, 100.0))).allowed
 
 
-def test_a_turn_every_twenty_five_seconds_in_build_up() -> None:
+def test_a_turn_every_fifteen_seconds_in_build_up() -> None:
     """Section 4.2 translated was one turn per 45 s; the first listen said
     "barely any comments from the second commentator", and a third of the
-    words in turns of four is a turn every 25 s or so."""
+    words in turns of four, offered on a tick, is a turn every 15 s or so."""
     cfg = ColourConfig()
-    assert not may_speak(a_moment(120.0, last_turn_ts=100.0, last_big=None), cfg).allowed
-    assert may_speak(a_moment(126.0, last_turn_ts=100.0, last_big=None), cfg).allowed
+    assert not may_speak(a_moment(110.0, last_turn_ts=100.0, last_big=None), cfg).allowed
+    assert may_speak(a_moment(116.0, last_turn_ts=100.0, last_big=None), cfg).allowed
 
 
 def test_one_turn_per_big_event() -> None:
     moment = a_moment(
-        118.0,
-        forms=(a_form(116.0, event=Event.CORNER), a_form(117.0, event=Event.CORNER)),
+        112.0,
+        forms=(a_form(110.0, event=Event.CORNER), a_form(111.0, event=Event.CORNER)),
         last_big=(Event.SAVE, 100.0),
-        last_turn_ts=113.0,
+        last_turn_ts=109.0,
         turns_since_big=1,
     )
     offer = may_speak(moment)
@@ -763,7 +763,7 @@ def test_the_prompt_shows_the_material_and_says_there_is_nothing_else() -> None:
     assert "WHAT THIS TURN IS ABOUT" in body
     assert "3 fouls on Nicolás Otamendi" in body
     assert "card, Nicolás Otamendi" in body
-    assert "NO MORE THAN 4 SHORT UTTERANCES" in body
+    assert "TWO TO 4 SHORT UTTERANCES" in body
 
 
 def test_a_turn_with_room_for_one_utterance_is_asked_for_one() -> None:

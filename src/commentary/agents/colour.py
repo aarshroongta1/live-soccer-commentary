@@ -922,6 +922,35 @@ def unsourced_names(text: str, sources: Sequence[str], pack: KnowledgePack | Non
     return ""
 
 
+#: How a thing was done, in words the seat may only use if its material did.
+#: After the volley on the Mbappé trace the seat said "Mbappé buried that
+#: from the spot": the first goal had been a penalty, and the seat carried
+#: its how onto the second. The man was right and the check on names passed.
+_HOW_WORDS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("a penalty", re.compile(r"\b(?:penalty|penalties|from the spot|spot[- ]kick)\b", re.I)),
+    ("a header", re.compile(r"\b(?:header|headed|with his head)\b", re.I)),
+    ("a free kick", re.compile(r"\bfree[- ]kick\b", re.I)),
+    ("a volley", re.compile(r"\bvolley(?:ed)?\b", re.I)),
+    ("an own goal", re.compile(r"\bown goal\b", re.I)),
+)
+
+
+def unsourced_how(text: str, sources: Sequence[str]) -> str:
+    """A how the utterance claims that none of the material carries, or ``""``.
+
+    Only the hows that name a distinct kind of goal or kick; "buried" and
+    "finished" are anybody's. With no sources at all there is nothing to
+    check against and the utterance passes, like the name check.
+    """
+    if not sources:
+        return ""
+    pooled = " ".join(sources)
+    for label, pattern in _HOW_WORDS:
+        if pattern.search(text) and not pattern.search(pooled):
+            return label
+    return ""
+
+
 def _same_man(one: str, other: str) -> bool:
     """One person under two spellings: the surname, folded.
 
@@ -1167,6 +1196,13 @@ def judge_utterance(
             reasons=[
                 f"name_not_in_material: nothing you were given named {stranger} in this passage"
             ],
+            line=text,
+        )
+    how = unsourced_how(text, sources)
+    if how:
+        return GateVerdict(
+            passed=False,
+            reasons=[f"how_not_in_material: nothing you were given said {how} in this passage"],
             line=text,
         )
     # The verdict's "every time" is taken out of what the gate is shown and
@@ -1684,12 +1720,16 @@ def roster_names(pack: KnowledgePack | None) -> list[str]:
     """Everybody who exists, both squads, starters before bench."""
     if pack is None:
         return []
-    return [
+    names = [
         player.name
         for team in (pack.home, pack.away)
         for player in [*team.starters, *team.bench]
         if player.name
     ]
+    # The managers exist too: "Scaloni got exactly what he demanded there"
+    # was refused for naming nobody on a night the lead had just named him.
+    names += [team.manager for team in (pack.home, pack.away) if team.manager]
+    return names
 
 
 def team_words(pack: KnowledgePack | None) -> list[str]:

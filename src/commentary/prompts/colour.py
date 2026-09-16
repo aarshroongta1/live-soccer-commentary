@@ -686,8 +686,12 @@ def _how_long(material: Sequence[str], most: int) -> str:
             "same thing again in other words. Or speak false. Fill in the form."
         )
     return (
-        f"NO MORE THAN {most} SHORT UTTERANCES, or speak false. Anything past that is "
-        "scheduled into your colleague's lines and thrown away. Fill in the form."
+        f"TWO TO {most} SHORT UTTERANCES — a run, not a line. The first is the opinion, "
+        "the ones after it are the short reactions that carry it: the why, the feeling, "
+        "the agreement. One utterance is the exception, not the shape; the measured turns "
+        f"of this seat were one line each and it read as a voice that never settles. "
+        f"Nothing past {most}: it is scheduled into your colleague's lines and thrown "
+        "away. Fill in the form."
     )
 
 

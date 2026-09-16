@@ -347,7 +347,7 @@ class ColourConfig:
     #: colour entry is 21.4 s and only 7% land within six seconds. Those
     #: seconds belong to the lead, who is rebuilding the move and giving the
     #: tally.
-    quiet_after_big_s: float = 12.0
+    quiet_after_big_s: float = 8.0
     #: The one exception, also 4.3: at a goal 31% of colour entries do arrive
     #: inside six seconds, and what arrives is a reaction fragment — "WELL,
     #: it's the first goal of the game", "Well, well, well." So a goal, and
@@ -357,20 +357,20 @@ class ColourConfig:
     #: How long after a big event the phase still counts as its aftermath. At
     #: or past this the seat is offered a turn on the clock alone, because by
     #: then the corpus is back to ordinary build-up rates.
-    settled_after_big_s: float = 20.0
+    settled_after_big_s: float = 15.0
     #: One turn per this long in build-up. Section 4.2's 5.9 entries per 100
     #: utterances in build-up, against a system that says a line every four
     #: to six seconds, is about one turn a minute; 45 s was that, rounded
     #: towards speaking, and the first listen came back "barely any comments
     #: from the second commentator". A third of the words in turns of four
     #: is a turn every 25 s or so.
-    min_gap_s: float = 25.0
+    min_gap_s: float = 15.0
     #: How many caller forms back the phase is read off. Two, because a
     #: single close-up inside a live move is a cutaway and not a stoppage.
     phase_forms: int = 2
     #: A turn is this many utterances. Section 4.4: median run 4, mean 4.4,
     #: 51% run four or more, 20% a single utterance.
-    min_utterances: int = 2
+    min_utterances: int = 1
     max_utterances: int = 4
     #: Words in one utterance. The corpus's colour entries are 3 to 12 words
     #: each and simply come in sequence; ``AnalystConfig.max_words = 30`` is
@@ -381,7 +381,7 @@ class ColourConfig:
     #: are gaps between *speakers*; inside one held microphone the run is
     #: faster, and the director will cut the tail the moment the lead has
     #: something.
-    utterance_gap_s: float = 2.5
+    utterance_gap_s: float = 2.0
     #: No colour utterance sits closer than this to a caller beat — before
     #: it, or after the lead has finished saying it. Two voices on one
     #: channel, and the lead has the ball.
@@ -390,7 +390,7 @@ class ColourConfig:
     #: this seat put a colour line 2.0 s after a nine-word lead line, which
     #: at ``WORDS_PER_SECOND`` is 2.8 s before the lead stops talking. The
     #: beat's timestamp is when the line starts.
-    clear_of_caller_s: float = 2.0
+    clear_of_caller_s: float = 1.0
     #: How long one turn may take from its first utterance to its last.
     #: Pushing utterances clear of the lead stretches a turn, and a thought
     #: that arrives fifteen seconds after the one before it is not the same
@@ -454,7 +454,7 @@ class ColourConfig:
     #: :meth:`ColourSeat.answered`) and a gate that says yes on every tick
     #: would spend the budget on silence. At twelve seconds a dead ball is
     #: offered the seat within one restart rather than within one minute.
-    min_gap_behind_s: float = 12.0
+    min_gap_behind_s: float = 8.0
 
 
 @dataclass(frozen=True)

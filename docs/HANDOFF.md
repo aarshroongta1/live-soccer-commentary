@@ -5,7 +5,7 @@ evidence.
 
 **HEAD:** branch `corpus-british` in
 `/Users/Aarsh/Desktop/commentary/.claude/worktrees/corpus`, pushed to origin,
-forty-one commits ahead of `main` and not merged. Everything from 15-16
+forty-two commits ahead of `main` and not merged. Everything from 15-16
 September (section 3f) and the evening of 15 September (section 3g) is on
 it. `.env` at the root. `clips/` and `runs/` are
 in the repo and gitignored — the clips are 26 MB each and the traces are
@@ -625,13 +625,34 @@ replaced with a curve. Its cadence is the one thing the user's complaint
 points at, and that is a knob here (`SilenceConfig`, the three rate caps),
 not a design.
 
+**"How is it still 17%? It's probably still quite strict."** It was: seven
+offers in 210 s, each turn one or two lines, four of eleven refused. Three
+knobs and one prompt line (`runs/rephrased/r12/mbappe`): `min_gap_s` 25 → 15
+and `min_gap_behind_s` 12 → 8; `quiet_after_big_s` 12 → 8 and
+`settled_after_big_s` 20 → 15; `min_utterances` 2 → 1 with
+`utterance_gap_s` 2.0 and `clear_of_caller_s` 1.0, so the scheduler no longer
+needs a two-utterance hole in the lead's cadence; the length instruction
+says TWO TO FOUR, a run not a line; the managers are roster names for the
+filler check. Round twelve: **18 colour lines against 27 lead, a 40% share**,
+median two utterances a turn, 78% opening on a cue, four refused (a repeat,
+a name not in the material, an echo of the lead, a stock phrase). Reads like
+a second voice through the incident ("I think Otamendi got his leg across
+him there. / That's not a penalty.") and the penalty wait ("Martínez has
+been here before, though. / Saved penalties at this stage of a tournament
+when it mattered."). One slip it let through and now catches: "Mbappé buried
+that from the spot" after the volley — the how of the first goal carried
+onto the second — refused as `how_not_in_material` against the material
+lines. Two turns at 141-161 s narrate the lead's own quiet passage
+("Argentina feeling it now… This is where they need to hold… That is the
+response") and would be the next thing to read for.
+
 **What the listen still needs, in order.** (1) The voice curve tuned by ear:
 `scripts/voice_sweep.py` on a trimmed grid, and the two designed voices
-heard at excitement 1.0 — text cannot fix a flat delivery. (2) Colour share
-is 17% against 31%; the seat now has material every turn, so the next lever
-is `min_gap_s` and letting the second utterance through more often. (3) The
-after-goal window: the tally and the rebuild are there; the corpus's seven
-utterances need the colour reaction fragment inside the window every time.
+heard at excitement 1.0 — text cannot fix a flat delivery. (2) One more
+listen of round twelve, about 900 credits at its new volume, to hear the
+share and the two-utterance turns against the picture. (3) The after-goal
+window: the tally and the rebuild are there; the corpus's seven utterances
+need the colour reaction fragment inside the window every time.
 
 ## 4. Known gaps
 

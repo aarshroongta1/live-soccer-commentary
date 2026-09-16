@@ -284,14 +284,14 @@ def _a_dead_ball_moment(now: float, *, last_turn_ts: float, stretch: float) -> M
 
 def test_a_seat_at_its_share_still_waits_the_full_build_up_gap() -> None:
     """The governor is a corrective, not a new default."""
-    offer = may_speak(_a_dead_ball_moment(120.0, last_turn_ts=100.0, stretch=0.0))
+    offer = may_speak(_a_dead_ball_moment(120.0, last_turn_ts=110.0, stretch=0.0))
     assert not offer.allowed
-    assert "25 s" in offer.reason
+    assert "15 s" in offer.reason
 
 
 def test_a_seat_behind_its_share_is_offered_the_next_dead_ball() -> None:
-    """Twenty seconds after its last turn, which the 25 s rate refuses."""
-    offer = may_speak(_a_dead_ball_moment(120.0, last_turn_ts=100.0, stretch=1.0))
+    """Ten seconds after its last turn, which the 15 s rate refuses."""
+    offer = may_speak(_a_dead_ball_moment(120.0, last_turn_ts=110.0, stretch=1.0))
     assert offer.allowed
     assert offer.situation == AT_A_DEAD_BALL
 
@@ -320,11 +320,11 @@ def test_the_twelve_seconds_after_a_goal_belong_to_the_lead_at_any_share() -> No
 
 def test_one_turn_per_big_event_survives_the_governor() -> None:
     moment = Moment(
-        now=118.0,
-        forms=(FormAt(ts=117.0, scene=Scene.REPLAY, event=Event.SHOT, team="France"),),
+        now=112.0,
+        forms=(FormAt(ts=111.0, scene=Scene.REPLAY, event=Event.SHOT, team="France"),),
         last_big=(Event.SHOT, 100.0),
         lead_lines=8,
-        last_turn_ts=113.0,
+        last_turn_ts=109.0,
         turns_since_big=1,
         stretch=1.0,
     )
@@ -1575,3 +1575,25 @@ def test_contact_and_a_challenge_are_events() -> None:
     assert not is_filler("Every time you see it, there is contact in the box.", pack)
     assert not is_filler("That was a poor challenge and he knew it.", pack)
     assert not is_filler("It was blocked and nobody appealed.", pack)
+
+
+# -- the how of a goal comes from the material too ----------------------------
+
+
+def test_a_how_the_material_never_gave_is_refused() -> None:
+    """After the volley the seat said "Mbappé buried that from the spot".
+
+    The first goal had been a penalty and the seat carried its how onto the
+    second; the name check passed because the man was right. Only the hows
+    that name a kind of goal are checked, and only against what the seat was
+    actually handed.
+    """
+    from commentary.agents.colour import unsourced_how
+
+    volley = ("EVENT, finished: goal, Mbappé — off the ground, the volley buried",)
+    assert unsourced_how("Well, Mbappé buried that from the spot.", volley) == "a penalty"
+    assert unsourced_how("Well, Mbappé buried that volley.", volley) == ""
+    assert unsourced_how("He's the man when it matters most.", volley) == ""
+    assert unsourced_how("Mbappé buried that from the spot.", ()) == ""
+    penalty = ("LEAD, what your colleague has just said: Mbappé has it from the spot.",)
+    assert unsourced_how("Mbappé made that look easy from the spot.", penalty) == ""
