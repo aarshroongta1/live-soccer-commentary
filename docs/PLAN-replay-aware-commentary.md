@@ -1,17 +1,18 @@
-# Replay-aware commentary plan
+# Action-dense, replay-aware commentary plan
 
 ## Goal
 
-Make the system follow a football incident the way the real Barça–Betis
-broadcast did:
+Make the system explain the football in front of it. On the Barça–Betis clip
+that means:
 
-1. call the decisive moment briefly and immediately;
-2. name the scorer and give the verified score once;
-3. recognize that the following pictures are celebrations and replays of the
-   same incident;
-4. use those replays to reconstruct the move, discuss offside, and explain the
-   finish;
-5. resume live-play commentary only when the match has actually restarted.
+1. identify players whenever the pictures support a name;
+2. distinguish new actions—carry, pass, receiver, cross, shot, finish—instead
+   of repeatedly saying that Barcelona are advancing;
+3. connect those actions into one move with continuity;
+4. describe how the goal happened, not merely that it happened;
+5. call the decisive moment briefly and give the verified score once;
+6. use later replay pictures to confirm or enrich the move without announcing
+   it as a second goal.
 
 The target is not the largest possible number of lines. It is the largest
 amount of new, correctly ordered information that can physically reach air.
@@ -56,9 +57,14 @@ observations from 8 to 18 and complete aired lines from 6 to 13.
 
 That exposed the next layer of problems:
 
-- overlapping observations produce several generic versions of the same
-  build-up;
-- the pass and cross are observed but do not reach air before the goal;
+- five opening lines say little beyond “Barcelona advance,” with no player
+  chain and almost no new football information;
+- the model does not reliably extract the ball carrier, receiver, passer, or
+  crosser even when several frames show the progression;
+- overlapping observations produce generic versions of the same build-up;
+- the pass and cross are sometimes present in forms but do not reach air;
+- the goal call names Ferran but does not describe the cross, movement, touch,
+  placement, or finish;
 - close-ups and replays retain `event=goal`, so the director treats every one
   as another urgent goal;
 - three celebration descriptions say the same thing;
@@ -67,53 +73,49 @@ That exposed the next layer of problems:
 - the old 1–1 score is attached to that false second announcement;
 - replay frames are not used to improve the explanation of the move.
 
-The failure is now incident continuity, not observation frequency.
+The primary failure is semantic extraction and move continuity. Replay
+handling is a real correctness issue, but it is secondary.
 
 ## Design
 
-### 1. Give each goal one lifecycle
+### 1. Make the observation action-shaped
 
-Represent the current goal as one small runtime object rather than inferring
-its identity independently on every caller turn.
+The vision model should first report structured football, not immediately
+write a sentence. Each meaningful beat needs:
 
-It needs only:
+- frame or cursor anchor;
+- acting player, with shirt number and side when visible;
+- action: carry, pass, receive, layoff, cross, shot, save, or finish;
+- target player when supported;
+- origin and destination zones;
+- direction, delivery, body part, and outcome when visible;
+- confidence for the action and each identity.
 
-- a stable incident ID;
-- the cursor time of the live goal;
-- scoring side and scorer when known;
-- phase: `live`, `celebration`, `replay`, or `finished`;
-- whether the live call has aired;
-- whether the score has aired;
-- whether a celebration line has aired;
-- whether the move has been reconstructed;
-- the useful observations from the build-up.
+One observation window may return several chronological beats. “Barcelona
+advance down the right” is not an acceptable substitute when the frames show
+Koundé receiving, playing inside, and delivering across goal.
 
-Reuse the existing goal-follow-up and replay machinery where possible. Do not
-introduce a service, database, or durable queue for this local demo.
+Unknown identities must remain unknown. The model may say “the right-back” or
+omit the name, but it may not replace a missing player observation with a team
+name and pretend that the line gained detail.
 
-### 2. Separate an incident from the picture currently on screen
+### 2. Ground and carry player identity
 
-`event=goal` means the ball has crossed the line in the moment being shown. It
-must not also mean “these players are celebrating a goal from thirty seconds
-ago.”
+Use the pack, shirt sightings, side, field position, and adjacent observations
+to resolve names. Carry an identity across a short continuous possession only
+when there is no cut, turnover, or contradictory sighting.
 
-The caller form should distinguish:
+The prompt should show the likely on-pitch candidates relevant to the visible
+side and position before showing the full squad. The output must keep the
+evidence that justified the name so the gate can reject only the identity,
+without discarding an otherwise useful action.
 
-- a live goal;
-- a celebration or close-up related to the current goal;
-- a replay of the current goal;
-- resumed live play.
+The desired fallback order is:
 
-Only the first is an urgent `Event.GOAL` beat. Celebration and replay output is
-aftermath: lower priority, preemptable, and tied to the existing incident ID.
-
-Runtime evidence should help this classification:
-
-- a goal was just called;
-- the score bug disappeared or the broadcast entered a replay sequence;
-- the pictures show the same finish from another angle;
-- the score has not changed again;
-- no credible restart has been observed.
+1. verified player name;
+2. verified number or role;
+3. pronoun only when its referent is unambiguous;
+4. team name as a last resort, not the default subject of every line.
 
 ### 3. Keep a short move buffer
 
@@ -130,11 +132,40 @@ buffer should contain structured facts, not finished prose:
 Adjacent forms that describe the same action should merge rather than append.
 Pass → receiver → cross → finish must remain separate.
 
-When the goal arrives, freeze that buffer onto the goal incident. Replay turns
-then receive both the replay frames and this move summary, allowing them to
-confirm names and describe the sequence retrospectively.
+The buffer is the continuity layer. It should answer “what changed since the
+last line?” and “how did this chance develop?” without relying on several
+in-flight prompts having seen one another's prose.
 
-### 4. Use different language for live play and replay analysis
+When a goal arrives, freeze the buffer onto the incident. The goal description
+can then cite the final ball, Ferran's movement, and the placement rather than
+producing an isolated “buries it.”
+
+### 4. Plan commentary from deltas, not snapshots
+
+Before a line reaches the director, compare its structured beats with the move
+buffer and recently aired facts.
+
+A line is eligible only when it adds at least one of:
+
+- a newly identified player;
+- a new action or receiver;
+- a meaningful change of zone or direction;
+- a chance outcome;
+- a goal detail;
+- a tactical or factual explanation appropriate to a stoppage.
+
+This should remove sequences such as:
+
+> Barcelona carry it forward down the right.
+
+> Barcelona work it down the right.
+
+> Barcelona probe around the edge of the box.
+
+without using a broad similarity threshold that would also erase genuine
+pass → cross → shot progression.
+
+### 5. Describe the goal from the move
 
 The live call should be short enough to beat the director queue:
 
@@ -142,7 +173,25 @@ The live call should be short enough to beat the director queue:
 
 The next verified line may add scorer and score:
 
-> Ferran Torres again. Betis one, Barça one.
+> Ferran Torres, across his man at the near post. Betis one, Barça one.
+
+The live goal call and its first follow-up should draw from the frozen move:
+
+- who supplied the final ball;
+- delivery type and direction;
+- scorer's movement;
+- touch or body part;
+- placement and distance;
+- goalkeeper or defender involvement when clear.
+
+Do not require every detail to fit in the shout. The first follow-up is where
+the system can explain what the shout could not.
+
+### 6. Treat replay as enrichment, not the main solution
+
+Replay matters after action extraction works. It may confirm a player, offside
+line, touch, or finish detail that was unclear live. It must not be the only
+place the system can understand the move.
 
 Replay analysis may be longer because the ball is dead:
 
@@ -153,7 +202,11 @@ Replay analysis may be longer because the ball is dead:
 Do not ask every overlapping observation to produce another sentence. The
 model may choose silence when it adds no new action, name, decision, or detail.
 
-### 5. Make director priority incident-aware
+Give each goal a small lifecycle—`live`, `celebration`, `replay`, `finished`—so
+the same incident is not announced twice. Reuse the current goal-follow-up and
+replay machinery rather than building another service.
+
+### 7. Make director priority action-aware
 
 Only the initial goal call may preempt speech as an urgent goal.
 
@@ -170,7 +223,7 @@ If the pass or cross cannot finish before the live goal call, do not speak it
 late as though play is still unfolding. Preserve it in the move buffer and use
 it in the replay reconstruction.
 
-### 6. Tie score language to the incident
+### 8. Tie score language to the incident
 
 The score may be spoken once per goal incident. It requires evidence associated
 with that goal, not merely the fact that some earlier goal is present in match
@@ -190,6 +243,10 @@ Rules:
 
 - Save the aligned reference transcript as a test fixture.
 - Add a fixture representing the current 18 caller observations.
+- Add the expected action chain for the goal: identified buildup participants,
+  final-ball action, Ferran's movement, and near-post finish.
+- Assert that five generic Barcelona-progress lines do not count as five
+  meaningful beats.
 - Assert that timestamps 31–65 seconds belong to the first goal's aftermath
   and replay, not a second goal.
 - Add an output-level regression that fails on repeated celebrations, repeated
@@ -197,35 +254,57 @@ Rules:
 
 No model calls are required for this stage.
 
-### Stage 2: implement the goal lifecycle
+### Stage 2: introduce action beats
+
+- Add the minimal structured action-beat schema.
+- Let one frame window return multiple chronological beats.
+- Keep identity evidence separate from action evidence so an uncertain name
+  does not erase a clear pass or cross.
+- Map frame anchors to exact cursor timestamps.
+
+### Stage 3: resolve player continuity
+
+- Rank likely players from the pack, number, side, role, and position.
+- Carry verified identities only across continuous possession.
+- Test cuts, turnovers, and contradictory shirt sightings.
+- Prefer a role or unnamed action over repetitive team-only prose.
+
+### Stage 4: build and freeze the move buffer
+
+- Collect meaningful live forms before the goal.
+- Merge overlapping descriptions of the same action while preserving distinct
+  passes, receptions, crosses, shots, and finishes.
+- Freeze the sequence when the goal is called.
+- Make the frozen move available to the goal call and follow-up.
+
+### Stage 5: generate from new information
+
+- Select only beats that add a player, action, transition, or outcome.
+- Write short live fragments from selected beats.
+- Build the goal follow-up from the final-ball and finish beats.
+- Ensure important pass/cross information is spoken before the goal when there
+  is channel time, and retained for the follow-up when there is not.
+
+### Stage 6: add the goal lifecycle and replay enrichment
 
 - Add the small goal-incident state.
 - Transition it from live goal to celebration/replay and finally to finished.
 - Reclassify close-up and replay forms before beat construction.
 - Ensure only the initial live goal becomes an urgent director beat.
-
-### Stage 3: build and freeze the move buffer
-
-- Collect meaningful live forms before the goal.
-- Merge overlapping duplicates.
-- Freeze the sequence when the goal is called.
-- Feed the sequence to replay commentary.
-
-### Stage 4: make replay output analytical
-
 - Update the caller prompt with the current incident phase and move summary.
-- Ask replay turns for one new fact: sequence, offside, technique, or finish.
+- Ask replay turns for one missing fact: identity, sequence, offside, technique,
+  or finish.
 - Allow only one line for each fact category.
 - Keep replay wording in retrospective tense.
 
-### Stage 5: adjust director sequencing
+### Stage 7: adjust director sequencing
 
 - Preserve the urgent live goal call.
 - Do not let aftermath forms masquerade as urgent goals.
 - Prevent generic queued lines from airing after the moment has passed.
 - Confirm that replay analysis yields immediately to resumed live play.
 
-### Stage 6: evaluate cheaply
+### Stage 8: evaluate cheaply
 
 Run deterministic tests first. Then run the 65-second clip once with Luna.
 
@@ -236,17 +315,24 @@ spend API credits tuning prompts around a broken incident lifecycle.
 
 The clip passes when all of these are true:
 
+- at least three distinct actions from the scoring move are represented;
+- at least two buildup participants are correctly identified when visible;
+- Koundé's involvement or the final-ball provider is described if supported by
+  the observation evidence;
+- the commentary distinguishes progression, final ball, and finish rather than
+  repeating Barcelona's field position;
+- the goal description includes at least one concrete finish detail such as
+  movement across the defender or near-post placement;
+- no two consecutive aired lines merely paraphrase the same action or field
+  position;
 - exactly one live goal incident is created;
 - exactly one urgent goal beat is submitted;
 - Ferran Torres is identified as the scorer;
 - 1–1 is spoken no more than once;
 - the replay sequence is never described as a new live attack or second goal;
 - no more than one celebration line airs;
-- replay analysis mentions at least two verified participants from the move;
-- replay analysis describes at least one meaningful detail such as the
-  first-touch passing, offside decision, movement across the defender, or
-  near-post finish;
-- no two consecutive aired lines merely paraphrase the same field position;
+- replay analysis adds information rather than being required to rescue an
+  empty live description;
 - every line arrives in chronological incident order;
 - all existing unit and integration tests pass;
 - the run stays below $0.05 with Luna.
@@ -265,13 +351,16 @@ Line count is reported but is not itself a pass condition.
 
 The system should sound closer to this shape:
 
-> Barça threaten—Ferran turns it in!
+> Koundé receives on the right.
 
-> Ferran Torres again. Betis one, Barça one.
+> Driven across the six-yard box—Ferran turns it in!
 
-> A simple first-touch move down the right, Koundé involved in the final ball.
+> Ferran Torres gets across his man at the near post. Betis one, Barça one.
 
-> Ferran gets across his defender and finishes at the near post.
+> A simple first-touch move down the right, worked through Eric García and
+> Koundé.
+
+> The replay confirms Ferran's movement and the tight onside decision.
 
 That is fewer lines than the noisy 13-line run, but substantially more actual
 commentary.
