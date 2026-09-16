@@ -390,7 +390,7 @@ class ColourConfig:
     #: this seat put a colour line 2.0 s after a nine-word lead line, which
     #: at ``WORDS_PER_SECOND`` is 2.8 s before the lead stops talking. The
     #: beat's timestamp is when the line starts.
-    clear_of_caller_s: float = 1.0
+    clear_of_caller_s: float = 1.5
     #: How long one turn may take from its first utterance to its last.
     #: Pushing utterances clear of the lead stretches a turn, and a thought
     #: that arrives fifteen seconds after the one before it is not the same

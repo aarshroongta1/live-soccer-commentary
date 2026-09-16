@@ -1475,13 +1475,18 @@ async def test_the_offline_pass_refuses_the_turn_that_blamed_the_wrong_man() -> 
     the wiring: the second utterance is judged knowing who the first one
     named, because the second one says "he" and means him.
     """
+    # Short enough to fit the hole the lead leaves: the scheduler now places
+    # an utterance where it can finish before his next line, not just start.
     backend = speaking(
         a_turn(
-            "Well, Upamecano was the man ruled out for the semi.",
+            "Well, Upamecano missed the semi.",
             "Back in and he's just conceded the penalty.",
         )
     )
-    out = await colour_pass(_penalty_trace(), backend, pack=a_wider_pack(), settings=_settings())
+    # The fixture's lead beats are two seconds apart on purpose; the turn is
+    # given room to finish so that what is being tested is the attribution.
+    roomy = Settings(colour=ColourConfig(turn_span_s=20.0), predictor=PredictorConfig(tick_s=0.5))
+    out = await colour_pass(_penalty_trace(), backend, pack=a_wider_pack(), settings=roomy)
     assert out.spoke, "the incident is offered a turn at all, which is the other half"
     assert any(
         "NOTE about Dayotchanculle Upamecano" in line for line in out.spoke[0].material
@@ -1633,3 +1638,16 @@ async def test_the_seat_swaps_the_cue_rather_than_paying_for_a_second_call() -> 
     assert first.utterances[0].startswith("Well,")
     assert not second.utterances[0].startswith("Well,")
     assert "Messi has dropped in again" in second.utterances[0]
+
+
+def test_an_utterance_is_placed_where_it_can_finish_before_the_lead_speaks_again() -> None:
+    """"They are interrupting each other's sentences." A colour line that
+    starts clear of the lead and is still being said when his next line
+    lands is cut mid-word by the director. So the utterance's own length is
+    part of the window: three words fit in the two-second hole, eight do not
+    and move past the lead's line."""
+    lead = [(10.0, 2.0), (16.0, 2.0)]
+    short = space_out(13.0, 1, gap=2.0, avoid=lead, clear=1.0, lengths=[0.8])
+    long = space_out(13.0, 1, gap=2.0, avoid=lead, clear=1.0, lengths=[3.0])
+    assert short == [13.0]
+    assert long == [19.0], "moved past the lead's 16 s line, not cut by it"

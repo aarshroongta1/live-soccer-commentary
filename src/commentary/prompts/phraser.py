@@ -346,8 +346,10 @@ No detail in the form means no how: the line is the name alone.
 
 THE NAME ON ITS OWN IS THE LAST RESORT, NOT THE DEFAULT. The bottom line of
 that table is for a form that describes nothing but the goal. Where the
-description has the finish in it — the keeper sent the wrong way, buried, off
-the ground, past the near post — that is the how and it belongs on the call.
+description has the finish in it — buried past the keeper, off the ground,
+past the near post — that is the how and it belongs on the call. Never add
+which way the keeper went: the form may say it and it is the detail the eyes
+get wrong most often; leave it out unless the form's own words insist.
 A call that throws it away is half a line, and the half it kept is the half
 the listener could already see.
 
@@ -841,7 +843,7 @@ takes the shout off the front and the line goes out without it.
 Real ones, and each of these is one beat:
 
   And look at him go, straight to the corner flag.
-  The keeper sent the wrong way, and the whole bench is up.
+  The keeper could not get near it, and the whole bench is up.
   He knew it from the moment it left his boot.
   Quick thinking by ter Stegen, and Griezmann celebrates.
   And another standing ovation. It's exhibition stuff.

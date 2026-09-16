@@ -587,8 +587,12 @@ def space_out(
     avoid: Sequence[tuple[float, float]] = (),
     clear: float = 0.0,
     span: float | None = None,
+    lengths: Sequence[float] = (),
 ) -> list[float]:
     """When each utterance of one turn goes out, and where the turn stops.
+
+    ``lengths`` is how long each utterance takes to say, so that it is placed
+    where it can finish before the lead's next line, not just start.
 
     ``gap`` apart, never over one of the lead's lines, never out of order.
     ``avoid`` is his beats as ``(when it starts, how long it takes to say)``:
@@ -606,10 +610,17 @@ def space_out(
     blocked = sorted(avoid)
     out: list[float] = []
     at = start
-    for _ in range(max(0, count)):
+    for index in range(max(0, count)):
         if out:
             at = max(at, out[-1] + gap)
-        at = _clear_of(at, blocked, clear)
+        # The utterance's own length is part of the window it needs: an
+        # utterance that starts clear of the lead and is still being said when
+        # his next line lands is cut off mid-sentence by the director, and the
+        # first listen heard exactly that — "they are interrupting each
+        # other's sentences". So it has to end, plus the clearance, before he
+        # starts, or it moves past him.
+        length = lengths[index] if index < len(lengths) else 0.0
+        at = _clear_of(at, blocked, clear, length=length)
         if span is not None and at > start + span:
             break
         out.append(at)
@@ -617,7 +628,9 @@ def space_out(
     return out
 
 
-def _clear_of(ts: float, blocked: Sequence[tuple[float, float]], clear: float) -> float:
+def _clear_of(
+    ts: float, blocked: Sequence[tuple[float, float]], clear: float, *, length: float = 0.0
+) -> float:
     """Push ``ts`` past every lead line it would talk over.
 
     One pass forward is not enough — stepping past one line can land on the
@@ -629,7 +642,10 @@ def _clear_of(ts: float, blocked: Sequence[tuple[float, float]], clear: float) -
         return ts
     at = ts
     for beat, seconds in blocked:
-        if beat - clear < at < beat + seconds + clear:
+        # ``length`` is how long the utterance itself takes: it overlaps a
+        # beat if any of [at, at + length] falls inside the window, not only
+        # its first word.
+        if beat - clear < at + length and at < beat + seconds + clear:
             at = beat + seconds + clear
     return at
 
@@ -935,6 +951,57 @@ _HOW_WORDS: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 
+#: A decision the referee has given, as it appears in the material, and the
+#: denial of it. "That's not a penalty" went out at 56.7 s on the Mbappé
+#: trace with the referee pointing to the spot; the listener heard the
+#: second voice overrule the referee. A pundit may call a given decision
+#: soft or harsh; the flat denial is not a verdict, it is a different match.
+_DECISIONS: tuple[tuple[str, re.Pattern[str], re.Pattern[str]], ...] = (
+    (
+        "a penalty",
+        re.compile(r"\bpenalt(?:y|ies)\b|\bfrom the spot\b|\bspot[- ]kick\b", re.I),
+        re.compile(
+            r"\b(?:not|never|no|isn't|is not|wasn't|was not)\s+(?:a\s+)?penalty\b"
+            r"|\bno penalty\b|\bnot a spot[- ]kick\b",
+            re.I,
+        ),
+    ),
+    (
+        "a foul",
+        re.compile(r"\bfoul\b|\bfree[- ]kick\b", re.I),
+        re.compile(
+            r"\b(?:not|never|no|isn't|is not|wasn't|was not)\s+(?:a\s+)?foul\b|\bno foul\b", re.I
+        ),
+    ),
+    (
+        "a card",
+        re.compile(r"\b(?:yellow|red|booked|booking|sent off)\b", re.I),
+        re.compile(
+            r"\b(?:not|never|no|isn't|is not|wasn't|was not)\s+(?:a\s+)?"
+            r"(?:yellow|red|card|booking)\b",
+            re.I,
+        ),
+    ),
+)
+
+
+def contradicts_decision(text: str, sources: Sequence[str]) -> str:
+    """A given decision the utterance denies outright, or ``""``.
+
+    Only against the EVENT lines of the material — a decision the match has
+    actually recorded — so a verdict on an incident the referee waved away
+    is still free to say it was nothing.
+    """
+    events = [line for line in sources if line.startswith("EVENT")]
+    if not events:
+        return ""
+    pooled = " ".join(events)
+    for label, given, denial in _DECISIONS:
+        if given.search(pooled) and denial.search(text):
+            return label
+    return ""
+
+
 def unsourced_how(text: str, sources: Sequence[str]) -> str:
     """A how the utterance claims that none of the material carries, or ``""``.
 
@@ -1203,6 +1270,16 @@ def judge_utterance(
         return GateVerdict(
             passed=False,
             reasons=[f"how_not_in_material: nothing you were given said {how} in this passage"],
+            line=text,
+        )
+    denied = contradicts_decision(text, sources)
+    if denied:
+        return GateVerdict(
+            passed=False,
+            reasons=[
+                f"contradicts_decision: the referee gave {denied}; call it soft or harsh, "
+                "never say it was not one"
+            ],
             line=text,
         )
     # The verdict's "every time" is taken out of what the gate is shown and
@@ -3306,6 +3383,7 @@ def _schedule(
         avoid=beat_ts,
         clear=cfg.clear_of_caller_s,
         span=cfg.turn_span_s,
+        lengths=[speaking_for(text) for text in turn.utterances],
     )
     for text in turn.utterances[len(when) :]:
         # The lead kept talking and the turn ran out of room. Recorded rather

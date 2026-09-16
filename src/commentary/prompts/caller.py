@@ -46,6 +46,14 @@ keeper has it, the shot was saved, so do not sell a chance that never was.
 Your tense and your subject belong to the earlier moment; the later frames
 only tell you which way it goes.
 
+Which way the keeper went is the commonest wrong detail on a penalty, and it
+is worth nothing when it is right: on the first penalty anybody watched with
+this system, the keeper dived the right way and could not reach it, and the
+call said he was sent the wrong way. Do not say which way the keeper dived
+unless the frames show him plainly on the wrong side of the ball with it
+already past him. "Buried past the keeper", "the keeper could not reach it",
+"beat the keeper" are all true whichever way he went.
+
 WHAT YOU MAY SAY
 
 Names. Look before you give up on one. On every call, look at the shirt

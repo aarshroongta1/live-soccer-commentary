@@ -1597,3 +1597,23 @@ def test_a_how_the_material_never_gave_is_refused() -> None:
     assert unsourced_how("Mbappé buried that from the spot.", ()) == ""
     penalty = ("LEAD, what your colleague has just said: Mbappé has it from the spot.",)
     assert unsourced_how("Mbappé made that look easy from the spot.", penalty) == ""
+
+
+# -- a given decision is not denied -----------------------------------------
+
+
+def test_a_decision_the_referee_has_given_is_not_denied_outright() -> None:
+    """"That's not a penalty" went out with the referee pointing to the spot.
+
+    A pundit may call a given decision soft or harsh; the flat denial is the
+    second voice overruling the referee. Before the whistle the seat is free
+    to say it was nothing."""
+    from commentary.agents.colour import contradicts_decision
+
+    given = ("EVENT, finished: penalty, Mbappé — the referee has pointed to the spot",)
+    assert contradicts_decision("That's not a penalty.", given) == "a penalty"
+    assert contradicts_decision("Never a penalty, for me.", given) == "a penalty"
+    assert contradicts_decision("Soft, but Otamendi gave the referee the decision.", given) == ""
+    assert contradicts_decision("That is harsh on Otamendi.", given) == ""
+    nothing_given = ("REPLAY, what the pictures showed again: Otamendi leaning in",)
+    assert contradicts_decision("That's not a penalty.", nothing_given) == ""
