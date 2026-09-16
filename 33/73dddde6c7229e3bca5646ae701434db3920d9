@@ -1,0 +1,46 @@
+src/commentary/__main__.py
+  s_7078a6b7dcd5e9::t_434292aa30e7b6 148,162
+  s_7078a6b7dcd5e9::t_6c616cb5e3f8ea 973
+src/commentary/llm/__init__.py
+  s_7078a6b7dcd5e9::t_c2eb005714060a 1
+  s_7078a6b7dcd5e9::t_4bce50eb9cf769 34,60,64
+  s_7078a6b7dcd5e9::t_918816dcf2c6e5 40-41,44-46,50-59,61-63,65-72,74,77,79-83
+src/commentary/llm/openai_backend.py
+  s_7078a6b7dcd5e9::t_8ba762d4bc13f0 137-139,143-145,159-160
+  s_7078a6b7dcd5e9::t_901e1729a21c1e 1-72,81-136,140-142,146-150,152-158,161-171,188-204
+  s_7078a6b7dcd5e9::t_7f597bf5b97649 73-80
+  s_7078a6b7dcd5e9::t_7667bfeb740332 151,172-187
+scripts/first_real_run.md
+  s_7078a6b7dcd5e9::t_0f97dd1967edde 31
+  s_7078a6b7dcd5e9::t_69060d5aea5e9d 21-30,32-34,36-46,48
+  s_7078a6b7dcd5e9::t_c2eb005714060a 47
+  s_7078a6b7dcd5e9::t_a7d496f99d42ab 35
+tests/test_openai_backend.py
+  s_7078a6b7dcd5e9::t_48bf6305fe7c75 44-46,128-131
+  s_7078a6b7dcd5e9::t_5c05991f2dc7ef 12,149
+  s_7078a6b7dcd5e9::t_8a8142d922e741 1-11,13-43,47-127,132-148,150-151
+.env.example
+  s_7078a6b7dcd5e9::t_6ed63e29bea7af 4-7
+pyproject.toml
+  s_7078a6b7dcd5e9::t_c2eb005714060a 16
+src/commentary/llm/pricing.py
+  s_7078a6b7dcd5e9::t_d5cb385610b906 12-13
+uv.lock
+  s_7078a6b7dcd5e9::t_41235e22d34b2b 402,447,1452-1468
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3373dddde6c7229e3bca5646ae701434db3920d9",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
