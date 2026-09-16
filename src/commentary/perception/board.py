@@ -2,8 +2,8 @@
 
 A commentator does not receive the score over a wire. They look at the corner
 of the screen. So does this: a crop of the score bug goes to a cheap vision
-model every couple of seconds, and three agreeing reads are required before
-anything is believed. One hallucinated digit should never invent a goal.
+model every couple of seconds. A complete, confident read is enough to update
+the score; the only score sanity check is that it never goes backwards.
 
 The absence of the bug is information too. Broadcasters pull the score bug
 during replays, and that is how the system knows not to call a replay as live
@@ -119,31 +119,8 @@ class BoardReader:
 
 
 @dataclass(frozen=True)
-class BoardPending:
-    """Evidence being accumulated for a board state that is not believed yet."""
-
-    home_score: int
-    away_score: int
-    period: int
-    clock: str | None
-    count: int
-    first_ts: float
-
-    @property
-    def key(self) -> tuple[int, int, int]:
-        return (self.home_score, self.away_score, self.period)
-
-
-@dataclass(frozen=True)
 class BoardChange:
-    """The board settled on something new.
-
-    ``ts`` is the video time of the *first* of the agreeing reads, not the last.
-    The goal happened when the board first showed it; confirmation is our
-    caution, not the match's. Report the third read's time instead and every
-    goal trigger fires late and the eval's lag numbers are wrong by a whole
-    confirmation window.
-    """
+    """The board showed something new at ``ts``."""
 
     ts: float
     home_score: int
@@ -162,9 +139,8 @@ class BoardChange:
     def scoring_side(self) -> Side | None:
         """Whose goal it was, when the board can say.
 
-        Both numbers moving between two reads is a board we cannot reason
-        about — two goals in one confirmation window, or a misread — and
-        naming a side for it would be inventing one.
+        Both numbers moving between two reads is a board we cannot attribute
+        to one side, so naming a side would be inventing one.
         """
         if self.previous is None:
             return None
@@ -177,12 +153,12 @@ class BoardChange:
 
 
 class BoardTracker:
-    """Turns a stream of single reads into something worth believing.
+    """Keep the latest complete, non-decreasing board read.
 
-    Scores and periods move only on ``confirmations`` consecutive agreeing
-    reads. The clock is different: it changes between every read by
-    construction, so it can never be confirmed that way and is instead taken
-    from the most recent read the model was confident about.
+    The tracker runs at the live edge, while :class:`Runtime` queues returned
+    changes until the viewer cursor reaches their timestamps. That separation
+    gives the demo prompt score updates without showing the viewer a future
+    score.
     """
 
     def __init__(self, config: BoardConfig = SETTINGS.board, *, replay_reads: int = 2) -> None:
@@ -191,7 +167,6 @@ class BoardTracker:
         #: dropped or mid-transition read cannot make the flag flap.
         self.replay_reads = replay_reads
         self._confirmed: tuple[int, int, int] | None = None
-        self._pending: BoardPending | None = None
         self._clock: str | None = None
         self._absent_run = 0
         self._absent_since: float | None = None
@@ -230,34 +205,12 @@ class BoardTracker:
             return False
         return self._last_ts - self._absent_since >= BUG_GONE_S
 
-    @property
-    def pending(self) -> BoardPending | None:
-        """What the tracker is gathering evidence for right now, if anything."""
-        return self._pending
-
-    @property
-    def pending_goal(self) -> BoardPending | None:
-        """The half-believed board, if believing it would mean a goal.
-
-        A score higher than the settled one on either side. The first board
-        ever settled on is not a goal, and neither is a new period at the
-        same score, so both answer None here.
-        """
-        pending = self._pending
-        if pending is None or self._confirmed is None:
-            return None
-        home, away, _period = self._confirmed
-        if pending.home_score <= home and pending.away_score <= away:
-            return None
-        return pending
-
     def update(self, read: BoardRead, ts: float) -> BoardChange | None:
         """Feed one read taken from the frame at video time ``ts``.
 
-        Returns the change if this read is the one that confirmed it, otherwise
-        None. A read the model was unsure about is discarded rather than
-        counted against the run: an uncertain look is no evidence, in either
-        direction.
+        Returns a change when this complete read differs from the last good
+        board. A read the model was unsure about or missing either score is
+        discarded rather than treated as evidence.
 
         An absent read is no evidence either, and in particular it does not
         destroy the evidence already gathered. The sequence after every goal
@@ -265,9 +218,9 @@ class BoardTracker:
         replay with the bug pulled. Clearing the half-formed score there threw
         away the reads that had seen the goal, so the change had to start
         again from nothing when the bug came back a minute later — and the
-        state said the old score right through the celebration. Only a
-        *visible* read of a different board resets the evidence, because only
-        that is a reason to think the board says something else.
+        state said the old score right through the celebration. A visible read
+        with a lower score is treated as a bad read and never moves the score
+        backwards.
         """
         if read.confidence < self.config.min_confidence:
             return None
@@ -291,43 +244,25 @@ class BoardTracker:
             period = self.period if self.period is not None else 1
         key = (read.home_score, read.away_score, period)
 
-        if key == self._confirmed:
-            self._pending = None
+        if read.home_score < 0 or read.away_score < 0:
             return None
 
-        if self._pending is not None and self._pending.key == key:
-            pending = BoardPending(
-                home_score=read.home_score,
-                away_score=read.away_score,
-                period=period,
-                clock=read.clock or self._pending.clock,
-                count=self._pending.count + 1,
-                first_ts=self._pending.first_ts,
-            )
-        else:
-            pending = BoardPending(
-                home_score=read.home_score,
-                away_score=read.away_score,
-                period=period,
-                clock=read.clock,
-                count=1,
-                first_ts=ts,
-            )
-        self._pending = pending
-
-        if pending.count < self.config.confirmations:
-            return None
+        if self._confirmed is not None:
+            old_home, old_away, _old_period = self._confirmed
+            if read.home_score < old_home or read.away_score < old_away:
+                return None
+            if key == self._confirmed:
+                return None
 
         previous = None if self._confirmed is None else (self._confirmed[0], self._confirmed[1])
         change = BoardChange(
-            ts=pending.first_ts,
-            home_score=pending.home_score,
-            away_score=pending.away_score,
-            clock=pending.clock,
-            period=pending.period,
+            ts=ts,
+            home_score=read.home_score,
+            away_score=read.away_score,
+            clock=read.clock,
+            period=period,
             previous=previous,
         )
         self._confirmed = key
-        self._pending = None
         self.last_change = change
         return change

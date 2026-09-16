@@ -118,6 +118,23 @@ class MatchFactStore:
         self._tracker.apply_board(board)
         self._note_change(before)
 
+    def apply_score(
+        self,
+        home_score: int,
+        away_score: int,
+        *,
+        clock: str | None,
+        period: int,
+    ) -> None:
+        before = self.state.model_copy(deep=True)
+        self._tracker.apply_score(
+            home_score,
+            away_score,
+            clock=clock,
+            period=period,
+        )
+        self._note_change(before)
+
     def apply_caller(self, line: CallerLine, cursor_s: float) -> None:
         before = self.state.model_copy(deep=True)
         self._tracker.apply_caller(line, cursor_s)

@@ -92,9 +92,6 @@ class BoardConfig:
     #: (x0, y0, x1, y1) as fractions of width and height.
     crop: tuple[float, float, float, float] = (0.0, 0.0, 0.42, 0.16)
     interval_s: float = 2.0
-    #: A score only changes after this many agreeing reads. Stops one bad read
-    #: from inventing a goal.
-    confirmations: int = 3
     min_confidence: float = 0.6
 
 

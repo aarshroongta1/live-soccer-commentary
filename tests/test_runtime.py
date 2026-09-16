@@ -27,6 +27,7 @@ from commentary.orchestration import new_turn_state
 from commentary.runtime import Runtime
 from commentary.schemas import (
     Beat,
+    BoardRead,
     CallerLine,
     Event,
     GateVerdict,
@@ -308,7 +309,7 @@ async def test_the_goal_confirmation_window_does_not_widen_with_the_buffer(
 
 
 @pytest.mark.asyncio
-async def test_a_goal_is_never_announced_before_the_board_confirms_it(tmp_path: Path) -> None:
+async def test_a_goal_is_never_announced_without_board_support(tmp_path: Path) -> None:
     """No goal line without a goal behind it, within the window the gate allows.
 
     The tolerance is the gate's own forward window and not a tighter number,
@@ -337,20 +338,94 @@ async def test_a_goal_is_never_announced_before_the_board_confirms_it(tmp_path: 
 #
 # Argentina v France 2022, video 36:00-39:00, delay 8 s. The ball crossed the
 # line at video 58 (StatsBomb 35:22); the FIFA bug went 1-0 to 2-0 at video
-# 63.7; the tracker, needing three reads landing every ~3.5 s, confirmed it at
-# 70.0. The caller called the goal correctly at cursor 56.5 with the finish in
-# the lookahead and the gate rejected it, then rejected three more lines about
-# the same goal over the next eighty seconds.
+# 63.7; the board tracker accepts that complete read immediately, while the
+# runtime still waits to apply it until the delayed cursor reaches 63.7.
 
 
-def _board_at(runtime: Runtime, home: int, away: int, ts: float, *, count: int = 1) -> None:
-    """Put the tracker part-way through agreeing that the score moved."""
-    from commentary.perception.board import BoardPending
+def _board_at(runtime: Runtime, home: int, away: int, ts: float) -> None:
+    """Feed a complete board read at a live-edge timestamp."""
+    from commentary.schemas import BoardRead
 
     runtime.board_tracker._confirmed = (1, 0, 1)
-    runtime.board_tracker._pending = BoardPending(
-        home_score=home, away_score=away, period=1, clock=None, count=count, first_ts=ts
+    runtime._take_board_read(
+        BoardRead(
+            bug_visible=True,
+            home_score=home,
+            away_score=away,
+            clock="37:12",
+            confidence=0.95,
+        ),
+        ts,
     )
+
+
+@pytest.mark.asyncio
+async def test_a_live_edge_score_read_waits_for_the_delayed_cursor(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=2.0)
+    cursor = runtime.cursor_ts
+    assert cursor is not None
+    runtime.board_tracker._confirmed = (0, 0, 1)
+    runtime.state.home_score, runtime.state.away_score = 0, 0
+
+    read_ts = cursor + 1.0
+    runtime._take_board_read(
+        BoardRead(
+            bug_visible=True,
+            home_score=1,
+            away_score=0,
+            clock="12:30",
+            confidence=0.95,
+        ),
+        read_ts,
+    )
+    assert runtime.board_tracker.home_score == 1
+    assert runtime.state.home_score == 0
+
+    runtime.buffer.append(
+        Frame(ts=read_ts + runtime.settings.capture.delay_s + 0.1, image=np.zeros((4, 4, 3)))
+    )
+    runtime._apply_due_board_changes()
+    assert runtime.state.home_score == 1
+
+
+@pytest.mark.asyncio
+async def test_applying_one_queued_score_does_not_leak_a_later_one(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=2.0)
+    cursor = runtime.cursor_ts
+    assert cursor is not None
+    runtime.board_tracker._confirmed = (0, 0, 1)
+    runtime.state.home_score, runtime.state.away_score = 0, 0
+
+    def board(home: int) -> BoardRead:
+        return BoardRead(
+            bug_visible=True,
+            home_score=home,
+            away_score=0,
+            clock="12:30",
+            confidence=0.95,
+        )
+
+    first_ts, second_ts = cursor + 1.0, cursor + 3.0
+    runtime._take_board_read(board(1), first_ts)
+    runtime._take_board_read(board(2), second_ts)
+
+    runtime.buffer.append(
+        Frame(
+            ts=first_ts + runtime.settings.capture.delay_s + 0.1,
+            image=np.zeros((4, 4, 3)),
+        )
+    )
+    runtime._apply_due_board_changes()
+    assert runtime.state.home_score == 1
+
+    runtime.buffer.append(
+        Frame(
+            ts=second_ts + runtime.settings.capture.delay_s + 0.1,
+            image=np.zeros((4, 4, 3)),
+        )
+    )
+    runtime._apply_due_board_changes()
+    assert runtime.state.home_score == 2
 
 
 @pytest.mark.asyncio
@@ -363,19 +438,15 @@ async def test_a_board_still_agreeing_with_itself_corroborates_a_goal(
     _board_at(runtime, 2, 0, 63.7)
     assert runtime._board_supports_goal(56.5) is True
 
-    # One read agreeing with the caller is two sources; it is still not three
-    # reads, so nothing has moved the score.
-    assert runtime.board_tracker.home_score == 1
+    assert runtime.board_tracker.home_score == 2
 
 
 @pytest.mark.asyncio
-async def test_the_first_read_that_shows_a_goal_prompts_the_caller(tmp_path: Path) -> None:
-    """The trigger fires on the first differing read, once, and again on confirmation.
+async def test_a_board_change_prompts_the_caller_once(tmp_path: Path) -> None:
+    """A complete score read triggers immediately and repeated reads are quiet.
 
-    On the Mbappé penalty the bug flipped at live 86.1 and the caller was not
-    prompted until the third agreeing read, at cursor 87.9 — seven seconds
-    after the kick. The first read lands at the cursor as the ball is struck,
-    with the finish in the lookahead, so that is when to ask.
+    The read lands at the cursor as the ball is struck, with the finish in the
+    lookahead, so that is when to ask.
     """
     from commentary.schemas import BoardRead, Trigger
 
@@ -386,14 +457,13 @@ async def test_the_first_read_that_shows_a_goal_prompts_the_caller(tmp_path: Pat
 
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
     runtime.board_tracker._confirmed = (2, 0, 1)
-    runtime.board_tracker._pending = None
     runtime._drain_triggers()
 
     runtime._take_board_read(board(2, 1), 86.1)
     assert runtime._drain_triggers() == [Trigger.BOARD_CHANGE]
-    assert runtime.board_tracker.away_score == 0  # evidence, not belief
+    assert runtime.board_tracker.away_score == 1
 
-    # The second agreeing read is more evidence and no news.
+    # The same score is no news.
     runtime._take_board_read(board(2, 1), 89.5)
     assert runtime._drain_triggers() == []
 
@@ -401,9 +471,9 @@ async def test_the_first_read_that_shows_a_goal_prompts_the_caller(tmp_path: Pat
     runtime._take_board_read(board(2, 1, visible=False), 91.0)
     assert runtime._drain_triggers() == []
 
-    # The third confirms, moves the score, and fires as it always has.
+    # A later same-score read remains quiet.
     runtime._take_board_read(board(2, 1), 93.2)
-    assert runtime._drain_triggers() == [Trigger.BOARD_CHANGE]
+    assert runtime._drain_triggers() == []
     assert runtime.board_tracker.away_score == 1
 
     # A read that is not a score increase prompts nobody.
@@ -412,7 +482,7 @@ async def test_the_first_read_that_shows_a_goal_prompts_the_caller(tmp_path: Pat
 
 
 @pytest.mark.asyncio
-async def test_a_pending_board_that_is_not_a_score_increase_is_not_a_goal(
+async def test_a_board_read_that_is_not_a_score_increase_is_not_a_goal(
     tmp_path: Path,
 ) -> None:
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
@@ -486,7 +556,6 @@ async def test_a_goal_claim_long_after_the_last_one_still_fails(tmp_path: Path) 
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
 
     runtime._last_goal_ts = 100.0
-    runtime.board_tracker._pending = None
     runtime._board_changes = []
     assert runtime._board_supports_goal(300.0) is False
 
@@ -520,7 +589,6 @@ async def test_applying_a_board_goal_starts_the_clock_on_talking_about_it(
     # A line about the goal, well over the cap past the board first showing
     # it and seconds after the state caught up, is a line about a goal we
     # hold: the cap runs from when the viewer's scoreline changed.
-    runtime.board_tracker._pending = None
     assert runtime._board_supports_goal(cursor + 5.0) is True
     assert runtime._board_supports_goal(cursor + GOAL_TALK_CAP_S + 1.0) is False
 
@@ -598,7 +666,6 @@ async def test_the_celebration_is_still_about_the_goal_until_play_restarts(
     tmp_path: Path,
 ) -> None:
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
-    runtime.board_tracker._pending = None
     runtime._board_changes = []
     runtime._last_goal_ts = 66.8
 
@@ -619,7 +686,6 @@ async def test_a_restart_nobody_saw_is_what_the_cap_is_for(tmp_path: Path) -> No
     from commentary.runtime import GOAL_TALK_CAP_S
 
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
-    runtime.board_tracker._pending = None
     runtime._board_changes = []
     runtime._last_goal_ts = 66.8
 
@@ -633,7 +699,6 @@ async def test_the_next_goal_starts_the_talking_over(tmp_path: Path) -> None:
     from commentary.perception.board import BoardChange
 
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
-    runtime.board_tracker._pending = None
     runtime._last_goal_ts = 66.8
     runtime._note_restart(_goal_line(event=Event.KICKOFF), 153.5)
     assert runtime._board_supports_goal(200.0) is False

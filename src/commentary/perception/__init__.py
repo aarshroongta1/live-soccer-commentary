@@ -3,7 +3,6 @@
 from commentary.perception.board import (
     BOARD_SYSTEM,
     BoardChange,
-    BoardPending,
     BoardReader,
     BoardTracker,
     crop_score_bug,
@@ -12,7 +11,6 @@ from commentary.perception.board import (
 __all__ = [
     "BOARD_SYSTEM",
     "BoardChange",
-    "BoardPending",
     "BoardReader",
     "BoardTracker",
     "crop_score_bug",

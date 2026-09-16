@@ -386,11 +386,7 @@ class MatchStateTracker:
         return cls(pack.home.name, pack.away.name, registry=registry, pack=pack)
 
     def apply_board(self, source: ConfirmedBoard) -> None:
-        """Take the score, clock and replay flag from the board. Only from the board.
-
-        Takes the confirmed tracker rather than a single :class:`BoardRead`,
-        so three reads have had to agree before anything here moves.
-        """
+        """Take the score, clock and replay flag from the board tracker."""
         home_score, away_score = source.home_score, source.away_score
         clock, in_replay = source.clock, source.in_replay
 
@@ -406,6 +402,22 @@ class MatchStateTracker:
                 self.state.period = period
         self.state.in_replay = in_replay
         self.state.bug_visible = not source.bug_missing
+
+    def apply_score(
+        self,
+        home_score: int,
+        away_score: int,
+        *,
+        clock: str | None,
+        period: int,
+    ) -> None:
+        """Apply the exact score read whose timestamp the cursor reached."""
+        self.state.home_score = home_score
+        self.state.away_score = away_score
+        if clock is not None:
+            self.state.clock = clock
+            self.state.clock_s = parse_clock(clock)
+        self.state.period = period
 
     def apply_caller(self, line: CallerLine, ts: float | None = None) -> None:
         """Take possession, events and name sightings from the caller.

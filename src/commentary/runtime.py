@@ -21,14 +21,9 @@ the buffer made the gate more permissive the longer we chose to wait, which
 is a strange thing for a safety check to do and undid most of what the delay
 was for.
 
-The glance is not only at the settled board. Confirmation takes three
-agreeing reads and lands well after the goal, so the gate also accepts a
-board change the tracker is still gathering evidence for, and accepts a goal
-the state has already taken in as cover for the lines that follow one. The
-first read that disagrees with the settled score in a goal's direction is
-also enough to *prompt* the caller, which is how the kick gets called as it
-happens rather than seven seconds on. What the score itself is allowed to
-move on does not change: three reads.
+The glance is at the live-edge board. A complete confident read can prompt the
+caller immediately, while the score itself remains queued until the cursor
+reaches the read timestamp.
 """
 
 from __future__ import annotations
@@ -565,39 +560,17 @@ class Runtime:
     def _take_board_read(self, read: BoardRead, ts: float) -> None:
         """One glance at the bug, and what the rest of the system makes of it.
 
-        A confirmed change fires the trigger, as it always did. So does the
-        *first* read that disagrees with the settled score in a goal's
-        direction. The board reader runs a buffer's length ahead of the
-        cursor and a broadcaster's graphic runs six seconds behind the ball,
-        so that first read lands at the cursor about when the ball is
-        crossing the line, with the finish inside the caller's lookahead.
-        Waiting for the third agreeing read fired it seven seconds after the
-        kick instead — on the Mbappé penalty, that was a line about the
-        run-up at 76.6, a lull handed to the analyst at 80.8, and the goal
-        called at 87.9. Only the trigger moves early; the score still waits
-        for three reads, and the gate already treated one agreeing read as
-        corroboration.
+        A board change fires the trigger immediately. The board reader runs a
+        buffer's length ahead of the cursor, but the state does not apply the
+        change until the cursor reaches the read timestamp.
         """
         self._observe_clock(read, ts)
         change = self.board_tracker.update(read, ts)
-        # Pending board evidence can change a gate decision while the caller
-        # is in flight even before the settled score moves.
         self.facts.mark_evidence()
         if change is not None:
             self._board_changes.append(change)
             self._fire(Trigger.BOARD_CHANGE)
-        elif self._first_sight_of_a_goal(ts):
-            self._fire(Trigger.BOARD_CHANGE)
         self._note_screen()
-
-    def _first_sight_of_a_goal(self, ts: float) -> bool:
-        """Did the read just taken open a goal-shaped disagreement with the board?
-
-        Once per pending change: the second and third agreeing reads add
-        evidence, not news, and the confirmation fires on its own.
-        """
-        pending = self.board_tracker.pending_goal
-        return pending is not None and pending.count == 1 and pending.first_ts == ts
 
     def _observe_clock(self, read: BoardRead, ts: float) -> None:
         """Tell the sync where the match clock and the video clock meet.
@@ -625,7 +598,10 @@ class Runtime:
         tracker = self.board_tracker
         seen = (tracker.in_replay, not tracker.bug_missing)
         if seen != (self.state.in_replay, self.state.bug_visible):
-            self.facts.apply_board(tracker)
+            # Score changes are queued separately and must not jump ahead of
+            # the delayed viewer cursor just because the bug disappeared.
+            self.state.in_replay, self.state.bug_visible = seen
+            self.facts.mark_evidence()
             self._publish(Topic.STATE, self.cursor_ts, self.state)
 
     def _apply_due_board_changes(self) -> None:
@@ -644,10 +620,9 @@ class Runtime:
         # Stamped with the cursor, not with the change's own ts. "The score
         # moved recently" is a fact about the viewer's scoreboard, and the
         # viewer's scoreboard moves when the state takes the change in. The
-        # two are the same moment when confirmation is prompt and a long way
-        # apart when it is not: a change first seen at 62.7 and confirmed
-        # only when the bug came back after the replay at 136 is news at 136,
-        # and the lines about the goal come after that, not after 62.7.
+        # two are the same moment when the viewer's delayed cursor reaches the
+        # read timestamp, even though the tracker saw the change at the live
+        # edge earlier.
         if any(c.is_goal for c in due):
             self._last_goal_ts = cursor
             self._restart_ts = None
@@ -662,7 +637,13 @@ class Runtime:
                         source="board",
                     )
                 )
-        self.facts.apply_board(self.board_tracker)
+        latest = max(due, key=lambda change: change.ts)
+        self.facts.apply_score(
+            latest.home_score,
+            latest.away_score,
+            clock=latest.clock,
+            period=latest.period,
+        )
         self._publish(Topic.STATE, cursor, self.state)
 
     def _apply_due_wire(self) -> None:
@@ -1673,35 +1654,10 @@ class Runtime:
     def _board_supports_goal(self, cursor: float) -> bool:
         """Is there anything on the scoreboard behind a goal claimed here?
 
-        Three things count, and they answer three different questions the
-        first real run asked in its first three minutes.
+        A queued board change is evidence before the delayed state applies it;
+        an already-applied goal remains evidence for its follow-up lines.
         """
-        return (
-            self._board_changed_near(cursor)
-            or self._board_pending_near(cursor)
-            or self._goal_already_in_the_state(cursor)
-        )
-
-    def _board_pending_near(self, cursor: float) -> bool:
-        """Is the board *in the middle of* agreeing with this claim?
-
-        The tracker needs three agreeing reads and they land every three and
-        a half seconds, so on the real run a goal the bug showed at 63.7 was
-        not confirmed until 70.0 — thirteen seconds after the ball crossed
-        the line, which no delay we would run at covers.
-
-        One board read agreeing with a caller that has independently claimed
-        a goal is two sources, and that is what the gate wants. It is not
-        enough to move the score: the state still waits for three reads. The
-        difference matters because a single misread digit that corroborates
-        nothing decays away, while one that happens to line up with a real
-        claim was probably not a misread.
-        """
-        pending = self.board_tracker.pending_goal
-        if pending is None:
-            return False
-        window = min(GOAL_GRAPHIC_LAG_S, self.settings.capture.delay_s)
-        return cursor - 2.0 <= pending.first_ts <= cursor + window
+        return self._board_changed_near(cursor) or self._goal_already_in_the_state(cursor)
 
     def _bind_sightings(self, line: CallerLine, cursor: float) -> list[Sighting]:
         """Put the numbers and names the caller read into the registry.
