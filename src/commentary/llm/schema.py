@@ -56,6 +56,15 @@ def _tighten(node: Any) -> None:
     if not isinstance(node, dict):
         return
 
+    # OpenAI's structured-output subset requires a reference to stand alone.
+    # Pydantic decorates enum references with defaults and descriptions, which
+    # makes an otherwise valid schema fail before the model is called.
+    if "$ref" in node:
+        reference = node["$ref"]
+        node.clear()
+        node["$ref"] = reference
+        return
+
     for key in _UNSUPPORTED & node.keys():
         del node[key]
 

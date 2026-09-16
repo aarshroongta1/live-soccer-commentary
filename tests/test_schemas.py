@@ -41,6 +41,24 @@ def test_the_two_events_the_corpus_always_names_are_in_the_vocabulary():
     assert Event.SWITCH == "switch"
 
 
+def test_schema_references_have_no_sibling_keywords():
+    schema = strict_schema(CallerLine)
+
+    def walk(node):
+        if isinstance(node, list):
+            for item in node:
+                walk(item)
+            return
+        if not isinstance(node, dict):
+            return
+        if "$ref" in node:
+            assert list(node) == ["$ref"]
+        for value in node.values():
+            walk(value)
+
+    walk(schema)
+
+
 @pytest.mark.parametrize("model", [CallerLine, BoardRead, AnalystLine])
 def test_schema_drops_constraints_the_api_rejects(model):
     """Structured outputs 400 on minimum/maxLength and friends; Pydantic emits them."""
