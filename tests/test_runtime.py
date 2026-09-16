@@ -715,6 +715,46 @@ async def test_a_sighting_names_the_track_and_is_believed(tmp_path: Path) -> Non
 
 
 @pytest.mark.asyncio
+async def test_a_first_name_binds_when_side_and_number_settle_the_player(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    number, name = _home_number(runtime)
+    first_name = name.split()[0]
+
+    runtime, binder = await _with_sightings(
+        tmp_path,
+        Sighting(number=number, name=first_name, side=Side.HOME),
+    )
+
+    assert binder.bound == [(Side.HOME, number, name)]
+
+
+@pytest.mark.asyncio
+async def test_a_first_name_without_a_side_is_not_bound(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    number, name = _home_number(runtime)
+
+    _runtime, binder = await _with_sightings(
+        tmp_path,
+        Sighting(number=number, name=name.split()[0]),
+    )
+
+    assert binder.bound == []
+
+
+@pytest.mark.asyncio
+async def test_a_first_name_without_a_number_is_not_bound(tmp_path: Path) -> None:
+    runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)
+    _number, name = _home_number(runtime)
+
+    _runtime, binder = await _with_sightings(
+        tmp_path,
+        Sighting(name=name.split()[0], side=Side.HOME),
+    )
+
+    assert binder.bound == []
+
+
+@pytest.mark.asyncio
 async def test_a_number_alone_names_somebody_only_if_one_squad_wears_it(
     tmp_path: Path,
 ) -> None:

@@ -57,7 +57,14 @@ from commentary.capture.audio import CutDetector
 from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.config import SETTINGS, ReplayTalkConfig, Settings
 from commentary.director import Director, next_beat_id
-from commentary.gate import FactGate, claims_goal, facts_used, fold, is_the_same_name
+from commentary.gate import (
+    FactGate,
+    claims_goal,
+    facts_used,
+    fold,
+    is_numbered_first_name,
+    is_the_same_name,
+)
 from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
 from commentary.ledger import CONTEXT_FACTS, Ledger
 from commentary.ledger import Fact as LedgerFact
@@ -1733,6 +1740,14 @@ class Runtime:
             return None
         if sighting.name:
             found = _player_named(self.pack, sighting.name)
+            if (
+                found is None
+                and sighting.number is not None
+                and sighting.side is not Side.UNKNOWN
+            ):
+                wearer = _player_numbered(self.pack, sighting.side, sighting.number)
+                if wearer is not None and is_numbered_first_name(sighting.name, wearer.name):
+                    found = sighting.side, wearer
             if found is None:
                 return None
             side, player = found

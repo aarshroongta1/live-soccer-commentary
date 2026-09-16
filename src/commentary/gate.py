@@ -216,6 +216,13 @@ def is_the_same_name(said: str, full_name: str) -> bool:
     return len(head) == 1 and bool(rest) and full.startswith(head) and _is_tail_of(rest, full)
 
 
+def is_numbered_first_name(said: str, full_name: str) -> bool:
+    """Allow a first-name read only when number and side settle the player."""
+    wanted = fold(said)
+    full = fold(full_name)
+    return bool(wanted and full) and " " not in wanted and wanted == full.split()[0]
+
+
 def _is_tail_of(said: str, full: str) -> bool:
     """Is this the whole name or any run of words ending it, spacing aside?
 
@@ -228,13 +235,28 @@ def _is_tail_of(said: str, full: str) -> bool:
     return said in tails or said.replace(" ", "") in {t.replace(" ", "") for t in tails}
 
 
-def _is_that_player(pack: KnowledgePack, number: int, name: str) -> bool:
+def _is_that_player(pack: KnowledgePack, number: int, name: str, side: Side) -> bool:
     """Do the number and the name on one sighting describe the same person?"""
-    return any(
-        is_the_same_name(name, player.name)
-        for sheet in (pack.home, pack.away)
-        for player in sheet.squad
-        if player.number == number
+    sheets = [pack.home, pack.away]
+    if side is not Side.UNKNOWN:
+        sheet = pack.team(side)
+        sheets = [sheet] if sheet is not None else []
+    for sheet in sheets:
+        for player in sheet.squad:
+            if player.number != number:
+                continue
+            if is_the_same_name(name, player.name):
+                return True
+            if side is not Side.UNKNOWN and is_numbered_first_name(name, player.name):
+                return True
+    return False
+
+
+def _is_first_name_only(pack: KnowledgePack, name: str) -> bool:
+    """Is this a first name that is not also a normal roster-name match?"""
+    players = [player for sheet in (pack.home, pack.away) for player in sheet.squad]
+    return any(is_numbered_first_name(name, player.name) for player in players) and not any(
+        is_the_same_name(name, player.name) for player in players
     )
 
 
@@ -2193,12 +2215,20 @@ class FactGate:
             name = (sighting.name or "").strip()
             if not name:
                 continue
+            if pack is not None and _is_first_name_only(pack, name):
+                if sighting.number is None or sighting.side is Side.UNKNOWN:
+                    problems.append(f"first_name_unconfirmed: {name}")
+                elif not _is_that_player(pack, sighting.number, name, sighting.side):
+                    problems.append(
+                        f"sighting_disagrees: {name} is not number {sighting.number}"
+                    )
+                continue
             if not _matches_roster(name, roster, self.cfg.name_match_threshold):
                 problems.append(f"name_read_not_on_roster: {name}")
             elif (
                 sighting.number is not None
                 and pack is not None
-                and not _is_that_player(pack, sighting.number, name)
+                and not _is_that_player(pack, sighting.number, name, sighting.side)
             ):
                 problems.append(f"sighting_disagrees: {name} is not number {sighting.number}")
         return problems

@@ -447,11 +447,12 @@ def sighting_verdict(
     number: int | None = None,
     name: str | None = None,
     mark: str | None = None,
+    side: Side = Side.UNKNOWN,
 ):
     line = CallerLine(
         scene=Scene.LIVE_PLAY,
         event=Event.BUILD_UP,
-        sightings=[Sighting(mark=mark, number=number, name=name)],
+        sightings=[Sighting(mark=mark, number=number, name=name, side=side)],
         confidence=0.8,
         speak=True,
         line="He drives forward down the left.",
@@ -490,6 +491,29 @@ def test_a_sighting_whose_halves_disagree_is_rejected():
     verdict = sighting_verdict(FactGate(), state, pack, number=7, name="Di María")
     assert not verdict.passed
     assert any("sighting_disagrees" in r for r in verdict.reasons)
+
+
+def test_a_first_name_passes_when_side_and_number_settle_the_player():
+    state, pack = argentina()
+    verdict = sighting_verdict(
+        FactGate(), state, pack, number=11, name="Ángel", side=Side.HOME
+    )
+    assert verdict.passed, verdict.reasons
+
+
+@pytest.mark.parametrize(
+    "number, side",
+    [(7, Side.HOME), (11, Side.UNKNOWN), (None, Side.HOME), (None, Side.UNKNOWN)],
+)
+def test_a_first_name_needs_the_right_number_and_side(number: int | None, side: Side):
+    state, pack = argentina()
+    verdict = sighting_verdict(FactGate(), state, pack, number=number, name="Ángel", side=side)
+    assert not verdict.passed
+    assert any(
+        tag in reason
+        for reason in verdict.reasons
+        for tag in ("sighting_disagrees", "first_name_unconfirmed")
+    )
 
 
 def test_the_tag_is_never_held_to_the_roster():
