@@ -1,0 +1,19 @@
+docs/LANGGRAPH-ARCHITECTURE.md
+  s_61b4aeaa0b76a4::t_181837f8d9faac 1-583
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fb063d326326324039f93ed9409bff61a3e69214",
+  "prompts": {},
+  "sessions": {
+    "s_61b4aeaa0b76a4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0aaab-a3dd-7bf2-bc20-3fd96ebf42ab",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
