@@ -3,17 +3,26 @@
 Start here, then read `docs/CLIPS.md`. This file is the state; that one is the
 evidence.
 
-**HEAD:** branch `corpus-british` in
-`/Users/Aarsh/Desktop/commentary/.claude/worktrees/corpus`, pushed to origin,
-forty-five commits ahead of `main` and not merged. Everything from 15-16
-September (section 3f) and the evening of 15 September (section 3g) is on
-it. `.env` at the root. `clips/` and `runs/` are
+**HEAD:** `main` in `/Users/Aarsh/Desktop/commentary`. The full
+`corpus-british` work was fast-forwarded onto it, followed by the first three
+LangGraph migration stages described in `docs/LANGGRAPH-ARCHITECTURE.md`.
+`.env` is at the root. `clips/` and `runs/` are
 in the repo and gitignored — the clips are 26 MB each and the traces are
 somebody's API spend; in the worktree they are symlinks to the main
 checkout's, and `.gitignore`'s `clips/` does not match a symlink, so never
 `git add -A` at the root. Worktrees live under `.worktrees/` and
 `.claude/worktrees/`; neither is in `.gitignore`, and ruff wants
 `--exclude .worktrees` or it lints another branch's files.
+
+**LangGraph migration, current state.** The lead caller path now runs through
+a five-node LangGraph by default; there is no legacy feature switch. Seven
+invented offline scenarios pin the semantic event order and model-call count.
+`MatchFactStore` owns versioned snapshots, gate verification reads a fresh
+snapshot after model calls, state summaries are side-effect free, and rejected
+shirt sightings no longer pollute the identity registry. The graph returns a
+typed beat; `Runtime` submits it and applies post-emit memory exactly once.
+Persistent checkpointing, the remaining replay/goal-follow-up consolidation,
+the colour branch, and the research/evaluation graphs are not implemented yet.
 
 **Gates, green at every commit:** `uv run pytest -q` · `uv run ruff check .` ·
 `uv run mypy`. Run `uv sync --all-extras --dev` first: without the `tools`

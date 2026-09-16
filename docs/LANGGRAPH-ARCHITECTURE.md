@@ -1,20 +1,21 @@
 # LangGraph Architecture
 
-Status: approved implementation plan  
+Status: implementation in progress
 Date: 2026-09-16
 
 ## Builder handoff
 
-Implement this plan on branch `langgraph-migration` in the primary checkout at
-`/Users/Aarsh/Desktop/commentary`. The branch starts from `corpus-british`, the
-latest project state. Read `docs/HANDOFF.md` and `docs/CLIPS.md` before changing
-code. The current output is the baseline; this migration changes orchestration
-before it changes commentary behavior.
+Implement this plan directly on `main` in the primary checkout at
+`/Users/Aarsh/Desktop/commentary`. Read `docs/HANDOFF.md` and `docs/CLIPS.md`
+before changing code. Keep changes simple, measured, and independently
+committable. Behavioral improvements are welcome when they make the project
+safer or clearer and have a focused regression test; legacy behavior is not a
+goal in itself.
 
 Standing constraints:
 
-- Do not change prompts, models, cadence, gate rules, voice behavior, or output
-  schemas while establishing LangGraph parity.
+- Keep prompt, model, cadence, gate, voice, and schema changes separate from
+  orchestration changes so their effects remain measurable.
 - Do not replace the fact gate, scoreline logic, ledger, tallies, threads,
   goal-follow-up policy, replay policy, or director with model decisions.
 - Do not send frames, speakers, model clients, locks, or open connections into
@@ -28,8 +29,29 @@ Standing constraints:
   `uv run pytest -q`, `uv run ruff check . --exclude .worktrees`, and
   `uv run mypy`.
 
-The first implementation objective is offline parity for the lead path. Do not
-attempt all three graphs in one change.
+The first implementation objective is the lead path. Do not attempt all three
+graphs in one change.
+
+## Implementation progress
+
+Completed on `main`:
+
+- `8355664` freezes seven small offline lead-turn contracts covering normal
+  speech, caller and phraser silence, replay, a confirmed goal, gate refusal,
+  and phraser fallback.
+- `9214a67` adds the versioned `MatchFactStore`, makes state summaries pure,
+  and prevents rejected sightings from entering durable match facts.
+- `6ef9461` adds LangGraph and the bounded five-node lead workflow.
+- `2d682c2` makes that graph the production lead path. The graph returns a
+  typed beat and `Runtime` owns one commit/submission boundary, avoiding
+  duplicate speech if graph execution is retried.
+
+The implemented graph is intentionally smaller than the original ten-node
+sketch: `call_caller -> observe_form -> phrase_candidate -> verify_candidate ->
+build_beat`. Budgeting and opportunity routing remain deterministic scheduler
+policy outside the graph. Submission and post-emit memory updates remain one
+idempotency boundary immediately after the graph. Persistent checkpointing,
+goal-follow-up/replay consolidation, and colour migration remain open.
 
 ## Decision
 
