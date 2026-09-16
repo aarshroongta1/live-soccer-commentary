@@ -1,0 +1,32 @@
+src/commentary/replay.py
+  s_b9d647e85fe0bb::t_d8b1adbc38cf66 185-190
+  s_b9d647e85fe0bb::t_6a1ffd2d0e859f 250-254
+  s_b9d647e85fe0bb::t_8ad2f52361a2d9 449
+src/commentary/server/app.py
+  s_b9d647e85fe0bb::t_f6401da55d413d 176
+  s_b9d647e85fe0bb::t_3307dcfa2f829f 148-161
+  s_b9d647e85fe0bb::t_30a988ae18a0cb 25-26
+  s_b9d647e85fe0bb::t_fc321244a0a96b 188,195-219
+  s_b9d647e85fe0bb::t_457f2a0fd3c262 73-75,81-86,90,96
+tests/test_server.py
+  s_b9d647e85fe0bb::t_45b705da8dbb0b 203-229
+  s_b9d647e85fe0bb::t_2aff1141a9bc08 6
+docs/HANDOFF.md
+  s_b9d647e85fe0bb::t_f28f6fa82a0297 8,649-663
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c700b7a10829a76a1e2fe865a6f6c195b4190917",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
