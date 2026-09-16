@@ -1,0 +1,36 @@
+src/commentary/orchestration/state.py
+  s_7078a6b7dcd5e9::t_3cc0f8255f0c65 36,68
+  s_7078a6b7dcd5e9::t_c71dc337e10db5 35,56-57,67
+src/commentary/runtime.py
+  s_7078a6b7dcd5e9::t_c71dc337e10db5 1248,1266,1269-1275
+  s_7078a6b7dcd5e9::t_3cc0f8255f0c65 1161-1162,1249-1254,1404-1411,1527,1529,1531
+  s_7078a6b7dcd5e9::t_e10e1abec1bb65 1278,1286
+  s_7078a6b7dcd5e9::t_6d3a08305cd4da 1530
+tests/test_scoreline.py
+  s_7078a6b7dcd5e9::t_3cc0f8255f0c65 32,563-576,627-631,642,644-645,648,651-665
+  s_7078a6b7dcd5e9::t_34336a7a60d9ac 632-637
+  s_7078a6b7dcd5e9::t_a5f2617024503a 638-641,650
+  s_7078a6b7dcd5e9::t_07840f4dc08f9d 649
+  s_7078a6b7dcd5e9::t_e10e1abec1bb65 643,646-647
+  s_7078a6b7dcd5e9::t_9d32f119d1b9d9 666-667
+tests/test_runtime.py
+  s_7078a6b7dcd5e9::t_c71dc337e10db5 1050-1051
+tests/test_live_graph.py
+  s_7078a6b7dcd5e9::t_c71dc337e10db5 18,105-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bde22be55da05c67185d80c9ef58c6f207b30fd8",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
