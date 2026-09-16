@@ -18,6 +18,34 @@ crop, the clock and the roster, not to hear good commentary. Move the caller
 to `claude-opus-5` once the run completes without the gate rejecting
 everything.
 
+### OpenAI fair run
+
+For a directly comparable run, use one Terra seat for the caller and Luna for
+the visual and short-form seats. Keep the cap hard in the environment; the
+runtime stops making calls once its accumulated usage reaches it:
+
+```
+OPENAI_API_KEY=sk-...
+OPENAI_BASE_URL=                 # optional; omit for api.openai.com
+CALLER_MODEL=gpt-5.6-terra
+ANALYST_MODEL=gpt-5.6-terra
+BOARD_MODEL=gpt-5.6-luna
+PHRASER_MODEL=gpt-5.6-luna
+COLOUR_MODEL=gpt-5.6-luna
+MAX_USD_PER_MATCH=0.80
+```
+
+Run it with:
+
+```
+uv run python -m commentary run --source file --path cut.mp4 \
+       --backend openai --pack packs/argentina-france.json \
+       --crop 0,0,0.42,0.16 --seconds 600 --delay 8
+```
+
+The OpenAI backend is selected explicitly and never falls back to Anthropic.
+Research remains Anthropic-only because its web-search tool is provider-specific.
+
 ## 2. The video and the captions, in one command
 
 Downloading is your call; the repo has no downloader.

@@ -145,7 +145,7 @@ def _settings(args: argparse.Namespace) -> Settings:
 
 
 def _backend(args: argparse.Namespace, sim: MatchSim | None) -> LLMBackend:
-    """Anthropic when a key is around, the simulator's oracle when not.
+    """The explicitly selected live backend, or the simulator's oracle.
 
     The oracle is not a mock standing in for a missing feature. It is how the
     pipeline is exercised without spending money on every run, and how the
@@ -159,7 +159,7 @@ def _backend(args: argparse.Namespace, sim: MatchSim | None) -> LLMBackend:
         return SimOracle(sim=sim, error_rate=args.error_rate)
     from commentary.llm import default_backend
 
-    return default_backend()
+    return default_backend(args.backend)
 
 
 def _wire(
@@ -970,7 +970,7 @@ def build_parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run", help="call a match")
     run.add_argument("--source", choices=["sim", "screen", "file"], default="sim")
     run.add_argument("--path", help="video file, with --source file")
-    run.add_argument("--backend", choices=["oracle", "anthropic"], default="oracle")
+    run.add_argument("--backend", choices=["oracle", "anthropic", "openai"], default="oracle")
     run.add_argument("--voice", choices=["log", "say", "elevenlabs"], default="log")
     run.add_argument("--pack", help="knowledge pack JSON written by the researcher")
     run.add_argument(

@@ -13,6 +13,7 @@ dependencies = [
     "uvicorn[standard]>=0.32",
     "python-dotenv>=1.0",
     "langgraph>=1,<2",
+    "openai>=2,<4",
 ]
 
 [project.optional-dependencies]

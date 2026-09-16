@@ -1,4 +1,4 @@
-"""The model layer: one protocol, two backends, and a price list.
+"""The model layer: one protocol, live backends, and a price list.
 
 Every agent talks to :class:`LLMBackend`. In production that is Anthropic; in
 tests and offline runs it is a scripted or oracle backend, so the whole
@@ -31,27 +31,56 @@ __all__ = [
     "encode_frame",
     "grading_backend",
     "image_block",
+    "openai_factory",
     "strict_schema",
     "text_block",
 ]
 
 
-def default_backend() -> LLMBackend:
-    """The real backend if a key is around, otherwise a loud failure.
+def default_backend(backend: str = "anthropic") -> LLMBackend:
+    """Construct the explicitly selected live backend.
 
     Imported lazily so that tests, the simulator, and CI never need the
-    ``anthropic`` client constructed or a key present.
+    client constructed or a key present. There is intentionally no credential
+    based fallback: selecting OpenAI must never silently run an Anthropic
+    match (or vice versa).
     """
     import os
 
-    if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
+    if backend == "anthropic":
+        if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
+            raise LLMError(
+                "no Anthropic credentials: set ANTHROPIC_API_KEY in .env, "
+                "or run against the simulator with --backend oracle"
+            )
+        from commentary.llm.anthropic_backend import AnthropicBackend
+
+        return AnthropicBackend()
+    if backend == "openai":
+        return openai_factory()
+    raise LLMError(f"unknown backend {backend!r}; choose anthropic or openai")
+
+
+def openai_factory(
+    timeout_s: float = 8.0,
+    *,
+    max_retries: int = 1,
+) -> LLMBackend:
+    """Construct the OpenAI Responses backend using explicit credentials."""
+    import os
+
+    if not os.getenv("OPENAI_API_KEY"):
         raise LLMError(
-            "no Anthropic credentials: set ANTHROPIC_API_KEY in .env, "
+            "no OpenAI credentials: set OPENAI_API_KEY in .env, "
             "or run against the simulator with --backend oracle"
         )
-    from commentary.llm.anthropic_backend import AnthropicBackend
+    from commentary.llm.openai_backend import OpenAIBackend
 
-    return AnthropicBackend()
+    return OpenAIBackend(
+        timeout_s=timeout_s,
+        max_retries=max_retries,
+        base_url=os.getenv("OPENAI_BASE_URL"),
+    )
 
 
 def grading_backend(
