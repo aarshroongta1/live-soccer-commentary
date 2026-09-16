@@ -62,7 +62,15 @@ from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
 from commentary.ledger import CONTEXT_FACTS, Ledger
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import LLMBackend, Usage
-from commentary.orchestration import MatchFactStore
+from commentary.orchestration import CommentaryTurnState, MatchFactStore, new_turn_state
+from commentary.orchestration.context import (
+    CallerResult,
+    LeadGraphContext,
+    ObservationResult,
+    PhraseResult,
+    VerificationResult,
+)
+from commentary.orchestration.live import build_live_commentary_graph
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.predictor import SpeakPredictor
 from commentary.schemas import (
@@ -70,6 +78,7 @@ from commentary.schemas import (
     BoardRead,
     CallerLine,
     Event,
+    GateVerdict,
     Incident,
     KnowledgePack,
     MatchState,
@@ -343,6 +352,9 @@ class Runtime:
         self.gate = FactGate(self.settings.gate)
         self.predictor = SpeakPredictor(self.settings.predictor, self.settings.caller)
         self.director = Director(speaker=self.speaker, cfg=self.settings.director, bus=self.bus)
+        self._lead_graph = build_live_commentary_graph()
+        self._match_id = self.trace.run_id if self.trace is not None else f"{self.home}:{self.away}"
+        self._turn_number = 0
 
         self.cut = CutDetector(self.settings.predictor)
 
@@ -1124,7 +1136,31 @@ class Runtime:
         return True
 
     async def _call(self, triggers: list[Trigger]) -> None:
+        """Run one bounded lead opportunity through LangGraph."""
+        self._turn_number += 1
         cursor = self.cursor_ts
+        turn_id = f"{int(cursor * 1000)}:{self._turn_number}"
+        prompt_facts = self.facts.snapshot(cursor)
+        initial = new_turn_state(
+            match_id=self._match_id,
+            turn_id=turn_id,
+            cursor_s=cursor,
+            live_s=self.live_ts,
+            triggers=[trigger.value for trigger in triggers],
+            fact_version=prompt_facts.version,
+        )
+        result = await self._lead_graph.ainvoke(initial, context=LeadGraphContext(self))
+        if result["outcome"] != "ready":
+            return
+        line = CallerLine.model_validate(result["caller_form"])
+        verdict = GateVerdict.model_validate(result["verdict"])
+        beat = Beat.model_validate(result["beat"])
+        self._commit_lead(line, verdict, beat)
+
+    async def call_caller(self, state: CommentaryTurnState) -> CallerResult:
+        """Model-facing graph port: inspect the buffered pictures."""
+        cursor = state["cursor_s"]
+        triggers = [Trigger(trigger) for trigger in state["triggers"]]
         self.stats.caller_calls += 1
         line = await self.caller.call(
             self.buffer,
@@ -1133,10 +1169,17 @@ class Runtime:
             lookahead_until=self._next_cut_after(cursor),
         )
         if line is None:
-            self._publish(Topic.ERROR, cursor, where="caller", detail=self.caller.last_reason)
-            return
-
+            reason = self.caller.last_reason or "the caller returned nothing"
+            self._publish(Topic.ERROR, cursor, where="caller", detail=reason)
+            return CallerResult(None, reason)
         self._publish(Topic.CALLER, cursor, line)
+        return CallerResult(line)
+
+    def observe_form(
+        self, state: CommentaryTurnState, line: CallerLine
+    ) -> ObservationResult:
+        """Apply every observation, including forms that choose silence."""
+        cursor = state["cursor_s"]
         # The colour seat reads the phase off the forms, spoken or not: a
         # form the caller filled in and chose not to say is still the best
         # evidence there is about what the picture was.
@@ -1172,8 +1215,6 @@ class Runtime:
         )
         if not replay:
             self._note_restart(line, cursor)
-        if not line.speak or not line.line.strip():
-            return
         if replay and not self.replays.may_speak(cursor):
             # Three angles of the same tackle is where a commentator stops,
             # and two lines four seconds apart is as fast as the corpus's own
@@ -1185,23 +1226,31 @@ class Runtime:
                 reason="replay_spent",
                 said=self.replays.said,
             )
-            return
+            return ObservationResult(False, "replay_spent")
+        return ObservationResult()
 
-        # Seeing is done; speaking is a separate call. What the gate judges
-        # is whatever is actually going to the speaker, so the phrased line
-        # is checked against the roster and the scoreline exactly as the
-        # caller's would have been. Nothing the phraser writes gets past a
-        # check the caller's line had to pass.
-        said = await self._phrase(line, cursor)
+    async def phrase_candidate(
+        self, state: CommentaryTurnState, line: CallerLine
+    ) -> PhraseResult:
+        """Model-facing graph port: turn the observed form into spoken prose."""
+        said = await self._phrase(line, state["cursor_s"])
         if said is None:
-            # The phraser chose silence. No beat, no gate row, and the
-            # `phrased` row it published is the record that it was a choice.
-            return
+            return PhraseResult(None, silent=True, error="chosen silence")
         judged, excitement = said
+        return PhraseResult(judged, excitement)
 
+    def verify_candidate(
+        self,
+        state: CommentaryTurnState,
+        line: CallerLine,
+        judged: CallerLine,
+    ) -> VerificationResult:
+        """Deterministic graph port: judge against a fresh fact snapshot."""
+        cursor = state["cursor_s"]
+        snapshot = self.facts.snapshot(cursor)
         verdict = self.gate.judge(
             judged,
-            self.state,
+            snapshot.state,
             self.pack,
             board_changed=self._board_supports_goal(cursor),
             wire_confirmed=self._wire_confirms_goal(cursor),
@@ -1224,33 +1273,47 @@ class Runtime:
         self._publish(Topic.GATE, cursor, verdict, event=line.event.value)
         if not verdict.passed:
             self.stats.gated_out += 1
-            return
+        return VerificationResult(snapshot.version, verdict)
 
-        self.caller.gate.accept(verdict.line)
+    def build_beat(
+        self,
+        state: CommentaryTurnState,
+        line: CallerLine,
+        judged: CallerLine,
+        verdict: GateVerdict,
+        excitement: float,
+    ) -> Beat:
+        """Build a restart-safe output value; submission happens after the graph."""
+        del judged
+        replay = line.scene is Scene.REPLAY
         # What the line says outranks what the caller filed it under. Ronaldo's
         # free kick was called correctly — "curls it over the wall and into the
         # top corner" — tagged `free_kick`, and dropped by the director on the
         # camera cut that every broadcaster makes the instant a goal goes in.
         # A goal is a goal whatever put the ball there.
         event = Event.GOAL if claims_goal(verdict.line, line.event) else line.event
-        # A replay is not an event happening. It does not open the four
-        # seconds after a goal that the rate cap is told never to hold, and
-        # it never holds the channel against live football: the whole of what
-        # makes a replay line safe to say is that the moment the game is back
-        # on the screen, the line about the last one can be dropped.
-        self._said_a_goal = event is Event.GOAL and not replay
-        beat = Beat(
-            id=next_beat_id(),
+        return Beat(
+            id=f"lead:{state['match_id']}:{state['turn_id']}",
             voice=Voice.CALLER,
             text=verdict.line,
-            video_ts=cursor,
+            video_ts=state["cursor_s"],
             created_ts=time.monotonic(),
-            live_ts=self.live_ts,
+            live_ts=state["live_s"],
             event=event,
             excitement=excitement,
-            triggers=triggers,
+            triggers=[Trigger(trigger) for trigger in state["triggers"]],
             preemptable=replay or event not in (Event.GOAL, Event.PENALTY),
         )
+
+    def _commit_lead(self, line: CallerLine, verdict: GateVerdict, beat: Beat) -> None:
+        """Apply the one output boundary after a successful graph run."""
+        cursor = beat.video_ts
+        replay = line.scene is Scene.REPLAY
+        event = beat.event
+        self.caller.gate.accept(verdict.line)
+        # A replay is not an event happening and never holds the channel
+        # against live football.
+        self._said_a_goal = event is Event.GOAL and not replay
         self.director.submit(beat)
         if replay:
             self.replays.spoke(cursor, verdict.line)

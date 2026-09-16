@@ -9,6 +9,7 @@ import pytest
 from commentary.orchestration.context import (
     CallerResult,
     LeadGraphContext,
+    ObservationResult,
     PhraseResult,
     VerificationResult,
 )
@@ -44,8 +45,11 @@ class Services:
         self.calls.append("caller")
         return self.caller
 
-    def observe_form(self, state: CommentaryTurnState, line: CallerLine) -> None:
+    def observe_form(
+        self, state: CommentaryTurnState, line: CallerLine
+    ) -> ObservationResult:
         self.calls.append("observe")
+        return ObservationResult()
 
     async def phrase_candidate(
         self, state: CommentaryTurnState, line: CallerLine

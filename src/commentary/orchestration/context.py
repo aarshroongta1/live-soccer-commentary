@@ -24,6 +24,12 @@ class PhraseResult:
 
 
 @dataclass(frozen=True)
+class ObservationResult:
+    continue_turn: bool = True
+    error: str = ""
+
+
+@dataclass(frozen=True)
 class VerificationResult:
     fact_version: int
     verdict: GateVerdict
@@ -34,7 +40,9 @@ class LeadTurnServices(Protocol):
 
     async def call_caller(self, state: CommentaryTurnState) -> CallerResult: ...
 
-    def observe_form(self, state: CommentaryTurnState, form: CallerLine) -> None: ...
+    def observe_form(
+        self, state: CommentaryTurnState, form: CallerLine
+    ) -> ObservationResult: ...
 
     async def phrase_candidate(
         self, state: CommentaryTurnState, form: CallerLine

@@ -30,9 +30,9 @@ def observe_form(
     runtime: GraphRuntime[LeadGraphContext],
 ) -> dict[str, Any]:
     form = CallerLine.model_validate(state["caller_form"])
-    runtime.context.services.observe_form(state, form)
-    if not form.speak or not form.line.strip():
-        return {"outcome": "silent"}
+    result = runtime.context.services.observe_form(state, form)
+    if not result.continue_turn or not form.speak or not form.line.strip():
+        return {"outcome": "silent", "error": result.error}
     return {}
 
 
