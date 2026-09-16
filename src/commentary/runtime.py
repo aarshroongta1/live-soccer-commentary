@@ -62,6 +62,7 @@ from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
 from commentary.ledger import CONTEXT_FACTS, Ledger
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import LLMBackend, Usage
+from commentary.orchestration import MatchFactStore
 from commentary.perception.board import BoardChange, BoardReader, BoardTracker
 from commentary.predictor import SpeakPredictor
 from commentary.schemas import (
@@ -285,11 +286,15 @@ class Runtime:
 
         self.board_reader = BoardReader(self.backend, config=self.settings.board)
         self.board_tracker = BoardTracker(self.settings.board)
-        self.state_tracker = (
+        tracker = (
             MatchStateTracker.from_pack(self.pack)
             if self.pack is not None
             else MatchStateTracker(home=self.home, away=self.away)
         )
+        self.facts = MatchFactStore(tracker)
+        # Temporary compatibility alias while callers move to the fact-store
+        # boundary. New orchestration code must use ``facts``.
+        self.state_tracker = tracker
         self.caller = Caller(
             self.backend,
             config=self.settings.caller,
@@ -409,7 +414,7 @@ class Runtime:
 
     @property
     def state(self) -> MatchState:
-        return self.state_tracker.state
+        return self.facts.state
 
     @property
     def usage(self) -> Usage:
@@ -428,6 +433,7 @@ class Runtime:
             "buffered_frames": len(self.buffer),
             "cursor_ts": self.buffer.cursor_ts,
             "live_ts": self.buffer.live_ts,
+            "fact_version": self.facts.version,
             # The ratio governor's own number: what share of the last five
             # minutes of utterances was the second voice, against club
             # football's 31%. ``None`` means too few lines to say.
@@ -553,6 +559,9 @@ class Runtime:
         """
         self._observe_clock(read, ts)
         change = self.board_tracker.update(read, ts)
+        # Pending board evidence can change a gate decision while the caller
+        # is in flight even before the settled score moves.
+        self.facts.mark_evidence()
         if change is not None:
             self._board_changes.append(change)
             self._fire(Trigger.BOARD_CHANGE)
@@ -595,7 +604,7 @@ class Runtime:
         tracker = self.board_tracker
         seen = (tracker.in_replay, not tracker.bug_missing)
         if seen != (self.state.in_replay, self.state.bug_visible):
-            self.state_tracker.apply_board(tracker)
+            self.facts.apply_board(tracker)
             self._publish(Topic.STATE, self.cursor_ts, self.state)
 
     def _apply_due_board_changes(self) -> None:
@@ -632,7 +641,7 @@ class Runtime:
                         source="board",
                     )
                 )
-        self.state_tracker.apply_board(self.board_tracker)
+        self.facts.apply_board(self.board_tracker)
         self._publish(Topic.STATE, cursor, self.state)
 
     def _apply_due_wire(self) -> None:
@@ -651,7 +660,7 @@ class Runtime:
         # tying release to that sampling made a goal's arrival depend on when
         # the score bug was last glanced at, which is nothing to do with it.
         self._sync.poll(self.live_ts)
-        for correction in self._sync.apply_due(cursor, self.state_tracker):
+        for correction in self._sync.apply_due(cursor, self.facts):
             self._publish(
                 Topic.CORRECTION,
                 correction.video_ts,
@@ -734,7 +743,7 @@ class Runtime:
         if not offer.allowed:
             return False
 
-        turn = await self.colour.turn(offer, self.state_tracker.summary(cursor))
+        turn = await self.colour.turn(offer, self.facts.summary(cursor))
         self.colour.answered(cursor)
         if turn is None:
             self._publish(Topic.ERROR, cursor, where="colour", detail=self.colour.last_reason)
@@ -918,7 +927,7 @@ class Runtime:
         self._publish_threads(cursor, offered, "offered")
         phrased = await self.phraser.phrase(
             form,
-            self.state_tracker.summary(cursor),
+            self.facts.summary(cursor),
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
             followup=self.follow.block(cursor, self.pack),
@@ -1074,7 +1083,7 @@ class Runtime:
         if not allowed:
             return False
 
-        line = await self.analyst.call(self.buffer, self.state_tracker.summary(cursor), reason)
+        line = await self.analyst.call(self.buffer, self.facts.summary(cursor), reason)
         if line is None:
             self._publish(Topic.ERROR, cursor, where="analyst", detail=self.analyst.last_reason)
             return False
@@ -1119,7 +1128,7 @@ class Runtime:
         self.stats.caller_calls += 1
         line = await self.caller.call(
             self.buffer,
-            self.state_tracker.summary(cursor),
+            self.facts.summary(cursor),
             triggers,
             lookahead_until=self._next_cut_after(cursor),
         )
@@ -1156,10 +1165,13 @@ class Runtime:
             self.replays.look(
                 cursor, self.phraser.said_lines if self.phraser is not None else ()
             )
-        self.state_tracker.apply_caller(line, cursor)
+        accepted_sightings = self._bind_sightings(line, cursor)
+        self.facts.apply_caller(
+            line.model_copy(update={"sightings": accepted_sightings}),
+            cursor,
+        )
         if not replay:
             self._note_restart(line, cursor)
-        self._bind_sightings(line, cursor)
         if not line.speak or not line.line.strip():
             return
         if replay and not self.replays.may_speak(cursor):
@@ -1357,7 +1369,7 @@ class Runtime:
         self._publish_ledger(cursor, counts, "offered")
         phrased = await self.phraser.phrase(
             line,
-            self.state_tracker.summary(cursor),
+            self.facts.summary(cursor),
             on_the_ball=carried,
             notes=[item.note for item in offered],
             callbacks=[item.callback for item in offered],
@@ -1588,7 +1600,7 @@ class Runtime:
         window = min(GOAL_GRAPHIC_LAG_S, self.settings.capture.delay_s)
         return cursor - 2.0 <= pending.first_ts <= cursor + window
 
-    def _bind_sightings(self, line: CallerLine, cursor: float) -> None:
+    def _bind_sightings(self, line: CallerLine, cursor: float) -> list[Sighting]:
         """Put the numbers and names the caller read into the registry.
 
         The team sheets are the check: a number has to be in that side's
@@ -1598,8 +1610,9 @@ class Runtime:
         line reads a name back out of.
         """
         if not line.sightings:
-            return
+            return []
         seen: list[dict[str, Any]] = []
+        accepted: list[Sighting] = []
         for sighting in line.sightings:
             found = self._roster_check(sighting, cursor)
             row: dict[str, Any] = {
@@ -1613,10 +1626,18 @@ class Runtime:
                 self.state_tracker.registry.believe(number, name, cursor, side=side)
                 row["as"] = f"{number} {name}"
                 self.stats.sightings += 1
+                accepted.append(
+                    sighting.model_copy(update={"number": number, "name": name, "side": side})
+                )
             else:
                 self.stats.sightings_dropped += 1
             seen.append(row)
+        if accepted:
+            # The registry is verification-relevant evidence even when a
+            # replay leaves the public MatchState unchanged.
+            self.facts.mark_evidence()
         self._publish(Topic.SIGHTING, cursor, sightings=seen)
+        return accepted
 
     def _roster_check(self, sighting: Sighting, cursor: float) -> tuple[Side, int, str] | None:
         """The player this sighting is about, or None if it does not stand up.

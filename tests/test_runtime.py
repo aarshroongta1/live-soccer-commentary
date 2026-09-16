@@ -813,6 +813,31 @@ async def test_a_name_on_no_roster_is_dropped(tmp_path: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_a_rejected_sighting_never_pollutes_match_state() -> None:
+    """Validation happens before caller observations enter durable facts."""
+    runtime = _built_runtime()
+    runtime.phraser = None
+    submitted = watch_the_director(runtime)
+
+    await one_caller_form(
+        runtime,
+        CallerLine(
+            scene=Scene.LIVE_PLAY,
+            event=Event.CARRY,
+            side=Side.HOME,
+            sightings=[Sighting(number=99, name="Zaltimore", side=Side.HOME)],
+            confidence=0.9,
+            speak=True,
+            line="The runner carries it towards the area.",
+        ),
+    )
+
+    assert runtime.facts.registry.name_for(99, Side.HOME) is None
+    assert "99" not in runtime.state.on_pitch
+    assert submitted == []
+
+
+@pytest.mark.asyncio
 async def test_a_sighting_whose_number_and_name_disagree_is_dropped(tmp_path: Path) -> None:
     """Two readings of one shirt that cannot both be right is neither."""
     runtime, _sim, _path = await run_sim(tmp_path, seconds=1.0, delay_s=8.0)

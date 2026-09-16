@@ -568,14 +568,25 @@ class MatchStateTracker:
         self.state.last_events.append(event)
         del self.state.last_events[: -self.max_events]
 
-    def _settle_ball(self, ts: float) -> None:
+    def advance_to(self, ts: float) -> bool:
+        """Apply time-based state transitions up to ``ts``.
+
+        Reads such as :meth:`summary` stay side-effect free. Orchestration can
+        now advance facts explicitly, version that mutation, and then take a
+        stable snapshot for a model call or gate decision.
+        """
+        return self._settle_ball(ts)
+
+    def _settle_ball(self, ts: float) -> bool:
         """Let a pass reach its recipient, once the cursor has reached them."""
         if self._handover is None:
-            return
+            return False
         when, possession = self._handover
         if ts >= when:
             self.state.ball = possession
             self._handover = None
+            return True
+        return False
 
     def pack_notes_for(
         self,
@@ -608,7 +619,6 @@ class MatchStateTracker:
         read twenty minutes ago is worth less than one read twenty seconds
         ago, and the registry needs to know when "now" is to say so.
         """
-        self._settle_ball(ts)
         state = self.state
         lines = [state.scoreline]
         if holder := self._ball_line(ts):

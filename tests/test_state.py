@@ -316,6 +316,7 @@ def test_possession_reaches_the_recipient_when_the_ball_does():
         100.0,
     )
     assert "on the ball: Nicolás Otamendi (ARG)" in tracker.summary(100.5)
+    tracker.advance_to(101.5)
     later = tracker.summary(101.5)
     assert "on the ball: Alexis Mac Allister (ARG), from Nicolás Otamendi" in later
 
