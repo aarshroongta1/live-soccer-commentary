@@ -1,0 +1,44 @@
+src/commentary/orchestration/state.py
+  s_7078a6b7dcd5e9::t_7154c6f7c4fc1e 34,53,62
+docs/LANGGRAPH-ARCHITECTURE.md
+  s_7078a6b7dcd5e9::t_5bccc29c43aef2 47
+  s_7078a6b7dcd5e9::t_964b444a241a2a 46,48-49,55-57
+src/commentary/runtime.py
+  s_2ef73334604975::t_988f1b2df6e005 128
+  s_7078a6b7dcd5e9::t_7154c6f7c4fc1e 359,1153,1170,1303,1313-1317,1380
+docs/HANDOFF.md
+  s_7078a6b7dcd5e9::t_964b444a241a2a 23-28
+tests/test_runtime.py
+  s_7078a6b7dcd5e9::t_0ba8ee106ec21b 26,984-1013,1015-1047
+  s_7078a6b7dcd5e9::t_7fee1b50728518 28-37
+  s_7078a6b7dcd5e9::t_bb2a40595bb7d7 1014
+  s_7078a6b7dcd5e9::t_6d2478de857a4a 1048-1049
+tests/test_live_graph.py
+  s_7078a6b7dcd5e9::t_7154c6f7c4fc1e 104
+  s_7078a6b7dcd5e9::t_1cd9c50311c6f9 42,53,133-153
+  s_7078a6b7dcd5e9::t_f21ebdb088d42c 154-156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cc6c8a762ad5309d151935aaa4b94c7b3f708eaf",
+  "prompts": {},
+  "sessions": {
+    "s_2ef73334604975": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
