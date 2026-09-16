@@ -1,5 +1,10 @@
 """Typed boundaries for commentary workflow orchestration."""
 
-from commentary.orchestration.state import FactSnapshot, MatchFactStore
+from commentary.orchestration.state import (
+    CommentaryTurnState,
+    FactSnapshot,
+    MatchFactStore,
+    new_turn_state,
+)
 
-__all__ = ["FactSnapshot", "MatchFactStore"]
+__all__ = ["CommentaryTurnState", "FactSnapshot", "MatchFactStore", "new_turn_state"]

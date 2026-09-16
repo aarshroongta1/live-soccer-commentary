@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, Literal, TypedDict
+
 from pydantic import BaseModel
 
 from commentary.schemas import CallerLine, KnowledgePack, MatchState, WireEvent
@@ -15,6 +17,55 @@ class FactSnapshot(BaseModel):
     cursor_s: float
     summary: str
     state: MatchState
+
+
+TurnOutcome = Literal["pending", "ready", "silent", "refused", "failed"]
+
+
+class CommentaryTurnState(TypedDict):
+    """JSON-native state for one bounded lead-commentary opportunity."""
+
+    match_id: str
+    turn_id: str
+    cursor_s: float
+    live_s: float
+    triggers: list[str]
+    input_fact_version: int
+    verified_fact_version: int | None
+    caller_form: dict[str, Any] | None
+    candidate: dict[str, Any] | None
+    excitement: float
+    verdict: dict[str, Any] | None
+    beat: dict[str, Any] | None
+    outcome: TurnOutcome
+    error: str
+
+
+def new_turn_state(
+    *,
+    match_id: str,
+    turn_id: str,
+    cursor_s: float,
+    live_s: float,
+    triggers: list[str],
+    fact_version: int,
+) -> CommentaryTurnState:
+    return CommentaryTurnState(
+        match_id=match_id,
+        turn_id=turn_id,
+        cursor_s=cursor_s,
+        live_s=live_s,
+        triggers=triggers,
+        input_fact_version=fact_version,
+        verified_fact_version=None,
+        caller_form=None,
+        candidate=None,
+        excitement=0.0,
+        verdict=None,
+        beat=None,
+        outcome="pending",
+        error="",
+    )
 
 
 class MatchFactStore:
