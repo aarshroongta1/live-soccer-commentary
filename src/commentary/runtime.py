@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import inspect
 import time
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
@@ -60,7 +61,7 @@ from commentary.gate import (
     is_numbered_first_name,
     is_the_same_name,
 )
-from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
+from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup, GoalIncident
 from commentary.identity import IdentityContinuity
 from commentary.ledger import CONTEXT_FACTS, Ledger
 from commentary.ledger import Fact as LedgerFact
@@ -94,7 +95,7 @@ from commentary.schemas import (
     Trigger,
     Voice,
 )
-from commentary.scoreline import Numbers, Restatements, settle_numbers
+from commentary.scoreline import Numbers, Restatements, settle_numbers, strip_score
 from commentary.state import MatchStateTracker, parse_clock, period_for_clock
 from commentary.threads import Offered, SaidCounts, Threads
 from commentary.tools import MatchTools
@@ -425,6 +426,12 @@ class Runtime:
         #: The run of replay pictures the broadcast is on, and how much of it
         #: has been talked over.
         self.replays = ReplaySequence(cfg=self.settings.replay_talk)
+        #: The incident lifecycle is deliberately separate from the score and
+        #: from the follow-up beat counter.  A close-up or a mislabeled replay
+        #: can therefore remain about the same goal without becoming urgent.
+        self.goal_incident = GoalIncident()
+        # Short alias for callers/tests that use the domain term directly.
+        self.incident = self.goal_incident
         #: When the phraser last chose to say nothing. It holds the rate cap
         #: off so the next tick does not send the caller straight back out,
         #: and it deliberately does not touch the silence pressure: a chosen
@@ -1306,13 +1313,25 @@ class Runtime:
         self.stats.caller_calls += 1
         cut = self._next_cut_after(cursor)
         lookahead_until = state["live_s"] if cut is None else min(state["live_s"], cut)
+        caller_kwargs: dict[str, Any] = {
+            "lookahead_until": lookahead_until,
+            "cursor_ts": cursor,
+            "remember": False,
+        }
+        params = inspect.signature(self.caller.call).parameters
+        accepts_context = "incident_phase" in params or any(
+            parameter.kind is inspect.Parameter.VAR_KEYWORD for parameter in params.values()
+        )
+        if accepts_context:
+            caller_kwargs.update(
+                incident_phase=self.goal_incident.phase.value,
+                move_summary=self._move_summary(),
+            )
         line = await self.caller.call(
             self.buffer,
             state["input_fact_summary"],
             triggers,
-            lookahead_until=lookahead_until,
-            cursor_ts=cursor,
-            remember=False,
+            **caller_kwargs,
         )
         # Only the expensive, read-only vision inference overlaps. Everything
         # that mutates facts, gates, ledgers, threads or replay state remains
@@ -1332,11 +1351,115 @@ class Runtime:
         self._publish(Topic.CALLER, cursor, line)
         return CallerResult(line)
 
+    def _move_summary(self) -> str:
+        """Compact structured context for caller turns during an incident."""
+        snapshot = self.moves.frozen if self.goal_incident.active else self.moves.current
+        if snapshot is None:
+            return ""
+        facts: list[str] = []
+        for beat in snapshot.beats:
+            actor = getattr(beat.actor, "name", None) or getattr(beat.actor, "role", None)
+            target = getattr(beat.target, "name", None) or getattr(beat.target, "role", None)
+            text = " ".join(
+                part
+                for part in (
+                    actor,
+                    beat.action.value,
+                    f"to {target}" if target else None,
+                    beat.delivery,
+                    f"at {beat.destination_zone}" if beat.destination_zone else None,
+                    beat.outcome,
+                )
+                if part
+            )
+            if text:
+                facts.append(text)
+        return "; ".join(facts[-8:])
+
+    def _new_goal_evidence(self, cursor: float) -> bool:
+        """Whether a goal claim has score evidence newer than this incident."""
+        incident_ts = self.goal_incident.goal_ts
+        if incident_ts is None:
+            return self._board_changed_near(cursor) or self._wire_confirms_goal(cursor)
+        if self._last_goal_ts is not None and self._last_goal_ts > incident_ts + 0.25:
+            return True
+        for change in self._board_changes:
+            if change.is_goal and change.ts > incident_ts + 0.25 and cursor - 2.0 <= change.ts:
+                return True
+        if self._sync is not None:
+            return any(
+                event.event is Event.GOAL
+                and event.video_ts is not None
+                and event.video_ts > incident_ts + 0.25
+                and incident_ts <= event.video_ts <= cursor + GOAL_GRAPHIC_LAG_S
+                for event in self._sync.known
+            )
+        return False
+
+    def _initial_live_goal(self, line: CallerLine, cursor: float) -> bool:
+        """Only a verified live goal can produce the urgent director beat."""
+        if line.scene is not Scene.LIVE_PLAY or line.event is not Event.GOAL:
+            return False
+        if not self.goal_incident.active:
+            # Before the first incident, the gate's board check is the source
+            # of verification. A finished incident needs newer evidence.
+            return self.goal_incident.goal_ts is None or self._new_goal_evidence(cursor)
+        return self._new_goal_evidence(cursor)
+
+    def _normalise_incident_form(self, line: CallerLine, cursor: float) -> CallerLine:
+        """Bind aftermath forms to the current incident before beat creation."""
+        incident = self.goal_incident
+        newer_goal = self._new_goal_evidence(cursor)
+        if incident.active and line.event is Event.GOAL and line.scene is Scene.LIVE_PLAY:
+            if newer_goal:
+                incident.finish()
+            else:
+                # A goal-tagged live_play form during an active incident is a
+                # common replay-label failure. Keep it non-urgent and feed the
+                # replay prompt rather than creating another attack.
+                line = line.model_copy(update={"scene": Scene.REPLAY})
+        if (
+            incident.active
+            and incident.phase is not None
+            and incident.phase.value == "replay"
+            and line.scene is Scene.LIVE_PLAY
+            and line.event is not Event.KICKOFF
+            and not line.actions
+        ):
+            # Once the camera is in the replay sequence, an old trace can
+            # label every subsequent angle ``live_play``. Keep those forms
+            # attached to the incident until positive live action returns.
+            line = line.model_copy(update={"scene": Scene.REPLAY})
+        if incident.active:
+            replayish = line.scene is Scene.REPLAY or (
+                line.scene is Scene.LIVE_PLAY
+                and (self.state.in_replay or not self.state.bug_visible)
+            )
+            if replayish:
+                incident.begin_replay()
+            elif line.scene is Scene.CLOSE_UP:
+                incident.begin_celebration()
+            elif (
+                line.scene is Scene.LIVE_PLAY
+                and line.event is not Event.GOAL
+                and (line.event is Event.KICKOFF or bool(line.actions))
+            ):
+                # Positive live-play evidence ends the aftermath. A replay
+                # cannot win the channel once the game is genuinely running.
+                # Generic, action-less ``build_up`` forms are deliberately
+                # not enough: old traces frequently mislabeled replay shots
+                # as live play. A kickoff or structured action is positive
+                # evidence that the ball is genuinely back in play.
+                incident.finish()
+        return line
+
     def observe_form(
         self, state: CommentaryTurnState, line: CallerLine
     ) -> ObservationResult:
         """Apply every observation, including forms that choose silence."""
         cursor = state["cursor_s"]
+        line = self._normalise_incident_form(line, cursor)
+        replay = line.scene is Scene.REPLAY
         # A goal freezes the move before phrasing, so both the live call and
         # its first follow-up can read the same stable pass/cross/finish facts.
         self.moves.observe(cursor, line)
@@ -1359,7 +1482,6 @@ class Runtime:
         # sightings are the exception and stay: a shirt number legible in a
         # replay is a number that was legible, and the registry is a map from
         # numbers to names rather than a record of what has happened.
-        replay = line.scene is Scene.REPLAY
         if replay:
             # Every look, spoken or not: the sequence is a fact about what
             # the broadcast is showing, not about what this system said. A
@@ -1399,7 +1521,20 @@ class Runtime:
                 said=self.replays.said,
             )
             return ObservationResult(False, "replay_spent")
-        return ObservationResult()
+        if replay and self.goal_incident.active and line.speak and line.line.strip():
+            # Reserve the category only after the observation has updated the
+            # factual state and passed replay pacing. Silent forms still feed
+            # the move/fact stores and cannot consume a speaking opportunity.
+            replay_category = self.goal_incident.claim_replay_fact(line)
+            if replay_category is None:
+                self._publish(
+                    Topic.STATUS,
+                    cursor,
+                    reason="replay_fact_spent",
+                    facts=sorted(self.goal_incident.replay_facts),
+                )
+                return ObservationResult(False, "replay_fact_spent", form=line)
+        return ObservationResult(form=line)
 
     async def phrase_candidate(
         self, state: CommentaryTurnState, line: CallerLine
@@ -1477,6 +1612,17 @@ class Runtime:
         # camera cut that every broadcaster makes the instant a goal goes in.
         # A goal is a goal whatever put the ball there.
         event = Event.GOAL if claims_goal(verdict.line, line.event) else line.event
+        if event is Event.GOAL and (
+            line.scene in {Scene.CLOSE_UP, Scene.REPLAY}
+            or (
+                self.goal_incident.active
+                and not self._initial_live_goal(line, state["cursor_s"])
+            )
+        ):
+            # Director urgency is keyed from the event, not ``preemptable``.
+            # Celebration and replay forms therefore stop being GOAL beats at
+            # this boundary even when the caller retained the original tag.
+            event = Event.NONE
         return Beat(
             id=f"lead:{state['match_id']}:{state['turn_id']}",
             voice=Voice.CALLER,
@@ -1487,12 +1633,34 @@ class Runtime:
             event=event,
             excitement=excitement,
             triggers=[Trigger(trigger) for trigger in state["triggers"]],
-            preemptable=replay or event not in (Event.GOAL, Event.PENALTY),
+            # Only the first verified live goal is urgent. Close-ups,
+            # replays, and goal tags that arrive during the incident yield to
+            # resumed play and must never cut the voice channel.
+            preemptable=(
+                replay
+                or (
+                    event is not Event.PENALTY
+                    and (
+                        event is not Event.GOAL
+                        or not self._initial_live_goal(line, state["cursor_s"])
+                    )
+                )
+            ),
         )
 
     def _commit_lead(self, line: CallerLine, verdict: GateVerdict, beat: Beat) -> None:
         """Apply the one output boundary after a successful graph run."""
         if beat.id in self._committed_lead_beats:
+            return
+        line = self._normalise_incident_form(line, beat.video_ts)
+        live_goal = self._initial_live_goal(line, beat.video_ts)
+        reported_goal = beat.event is Event.GOAL
+        if line.scene is Scene.LIVE_PLAY and line.event is Event.GOAL and not live_goal:
+            # A second unverified live goal is a stale/replay form. The gate
+            # normally catches this first; this boundary keeps direct callers
+            # and old traces from creating a second incident.
+            self._publish(Topic.STATUS, beat.video_ts, reason="goal_incident_unverified")
+            self._committed_lead_beats.add(beat.id)
             return
         if _is_celebration(verdict.line) and any(
             _is_celebration(previous) for previous in self.caller.gate.recent
@@ -1501,14 +1669,32 @@ class Runtime:
             return
         # Monotonic timestamps are process-local, so never persist one in graph
         # state. Stamp the beat only when it enters the live director.
-        beat = beat.model_copy(update={"created_ts": time.monotonic()})
+        beat_updates: dict[str, Any] = {"created_ts": time.monotonic()}
+        if beat.event is Event.GOAL and (
+            line.scene in {Scene.CLOSE_UP, Scene.REPLAY}
+            or (self.goal_incident.active and not live_goal)
+        ):
+            # Keep direct callers and restored graph outputs behind the same
+            # urgency boundary as :meth:`build_beat`.
+            beat_updates["event"] = Event.NONE
+        beat = beat.model_copy(update=beat_updates)
         cursor = beat.video_ts
         replay = line.scene is Scene.REPLAY
         event = beat.event
+        if self.goal_incident.active:
+            if replay:
+                self.goal_incident.begin_replay()
+            elif (
+                (line.scene is Scene.CLOSE_UP or event is Event.GOAL)
+                and not self.goal_incident.claim_celebration()
+            ):
+                self._publish(Topic.STATUS, beat.video_ts, reason="repeated_celebration")
+                self._committed_lead_beats.add(beat.id)
+                return
         self.caller.gate.accept(verdict.line)
         # A replay is not an event happening and never holds the channel
         # against live football.
-        self._said_a_goal = event is Event.GOAL and not replay
+        self._said_a_goal = live_goal
         self.director.submit(beat)
         if replay:
             self.replays.spoke(cursor, verdict.line)
@@ -1538,8 +1724,25 @@ class Runtime:
         # spends one of its beats. Then, if the caller leaves the kind of
         # silence it left after the Mbappé penalty — 24 seconds, because
         # every picture in between was a replay — the gap is filled.
-        if event is Event.GOAL and self.follow.is_the_call(cursor) and not replay:
+        follow_goal = reported_goal and not replay and (
+            live_goal or line.scene is Scene.CLOSE_UP
+        )
+        if follow_goal:
             self.follow.arm(cursor, line, verdict.line, self.pack)
+            if live_goal:
+                self.goal_incident.start(
+                    cursor,
+                    scorer=self.follow.scorer,
+                    side=line.side,
+                )
+                # ``start`` resets the claim flags; the actual text is the
+                # source of truth for whether the score was appended here.
+                self.goal_incident.score_spoken = bool(
+                    strip_score(
+                        verdict.line,
+                        (self.state.home, self.state.away),
+                    ).removed
+                )
             frozen = self.moves.frozen
             if frozen is not None and frozen.goal_ts == cursor:
                 self.follow.saw_actions(frozen.actions)
@@ -1559,7 +1762,9 @@ class Runtime:
         if self.follow.active(cursor) and self._goal_turn is None:
             self._goal_turn = asyncio.create_task(self._fill_the_goal_window())
         # -- end of the goal window --------------------------------------
-        if line.event is not Event.NONE and not replay:
+        if line.event is not Event.NONE and not replay and not (
+            event is Event.GOAL and not live_goal
+        ):
             # "Whatever just happened" is a question about the live picture.
             # A replay of the foul is not a second foul, and the ten seconds
             # in which a penalty's kick and its goal sit apart do not restart
@@ -1773,7 +1978,7 @@ class Runtime:
                 self._score_counts_the_goal(cursor) if goal_in_state is None else goal_in_state
             ),
             append=(
-                self.follow.is_the_call(cursor)
+                self._initial_live_goal(line, cursor)
                 and claims_goal(text, line.event)
                 and self._may_append_score(cursor)
             ),

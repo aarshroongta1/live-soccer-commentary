@@ -224,6 +224,8 @@ class Caller:
         *,
         cursor_ts: float | None = None,
         remember: bool = True,
+        incident_phase: str = "finished",
+        move_summary: str = "",
     ) -> CallerLine | None:
         """Look at the cursor and the near future, and decide whether to speak.
 
@@ -253,6 +255,8 @@ class Caller:
             self.gate.recent,
             triggers,
             frame_width=self.config.frame_width,
+            incident_phase=incident_phase,
+            move_summary=move_summary,
         )
 
         try:

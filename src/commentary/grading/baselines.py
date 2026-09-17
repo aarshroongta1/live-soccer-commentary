@@ -193,6 +193,8 @@ class StatelessCaller(Caller):
         *,
         cursor_ts: float | None = None,
         remember: bool = True,
+        incident_phase: str = "finished",
+        move_summary: str = "",
     ) -> CallerLine | None:
         # The cut guard is withheld too. worldcupvoice has no scene detection,
         # so its lookahead runs straight across a cut into whatever the
@@ -205,6 +207,8 @@ class StatelessCaller(Caller):
             lookahead_until=None,
             cursor_ts=cursor_ts,
             remember=remember,
+            incident_phase=incident_phase,
+            move_summary=move_summary,
         )
 
 

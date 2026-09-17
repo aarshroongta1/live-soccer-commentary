@@ -31,9 +31,12 @@ def observe_form(
 ) -> dict[str, Any]:
     form = CallerLine.model_validate(state["caller_form"])
     result = runtime.context.services.observe_form(state, form)
+    updates: dict[str, Any] = {}
+    if result.form is not None:
+        updates["caller_form"] = result.form.model_dump(mode="json")
     if not result.continue_turn or not form.speak or not form.line.strip():
-        return {"outcome": "silent", "error": result.error}
-    return {}
+        updates.update({"outcome": "silent", "error": result.error})
+    return updates
 
 
 def after_observe(state: CommentaryTurnState) -> Literal["phrase", "done"]:

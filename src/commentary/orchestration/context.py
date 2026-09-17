@@ -27,6 +27,7 @@ class PhraseResult:
 class ObservationResult:
     continue_turn: bool = True
     error: str = ""
+    form: CallerLine | None = None
 
 
 @dataclass(frozen=True)

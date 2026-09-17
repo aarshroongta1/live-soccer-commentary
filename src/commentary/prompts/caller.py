@@ -303,6 +303,8 @@ def caller_blocks(
     triggers: Sequence[Trigger],
     *,
     frame_width: int = 768,
+    incident_phase: str = "finished",
+    move_summary: str = "",
 ) -> list[Block]:
     """One call's content: the moment, the near future, then the volatile tail.
 
@@ -359,7 +361,17 @@ def caller_blocks(
             )
         )
 
-    blocks.append(text_block(_tail(state_summary, recent_lines, triggers)))
+    blocks.append(
+        text_block(
+            _tail(
+                state_summary,
+                recent_lines,
+                triggers,
+                incident_phase=incident_phase,
+                move_summary=move_summary,
+            )
+        )
+    )
     return blocks
 
 
@@ -367,6 +379,9 @@ def _tail(
     state_summary: str,
     recent_lines: Sequence[str],
     triggers: Sequence[Trigger],
+    *,
+    incident_phase: str = "finished",
+    move_summary: str = "",
 ) -> str:
     """The volatile block: state, what was just said, and why we are asking."""
     state = state_summary.strip() or "Not established yet."
@@ -375,11 +390,20 @@ def _tail(
     else:
         said = "  (nothing said yet)"
     why = ", ".join(t.value for t in triggers) if triggers else "routine tick"
+    incident = incident_phase.strip() or "finished"
+    move = move_summary.strip() or "(no frozen goal move)"
     return (
         "MATCH STATE (read off the scoreboard, not by you — do not repeat it back)\n"
         f"{state}\n\n"
         "THE LAST LINES SPOKEN — do not repeat these and do not paraphrase them\n"
         f"{said}\n\n"
+        "CURRENT GOAL INCIDENT\n"
+        f"phase: {incident}\n"
+        f"move summary: {move}\n"
+        "Finished means no goal incident is active, so a newly observed live goal may "
+        "start one. In live, celebration, or replay, treat goal-tagged aftermath as "
+        "the same incident unless the pictures clearly show a genuinely new goal. "
+        "Never call the same goal twice.\n\n"
         f"WHY YOU ARE BEING ASKED NOW\n  {why}\n\n"
         "Call the moment shown in the first set of frames, or stay silent. "
         "Fill in the form."

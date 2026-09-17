@@ -1258,6 +1258,116 @@ def test_replay_observation_cannot_replace_the_runtime_frozen_move() -> None:
     assert [beat.action for beat in frozen.beats] == [Action.FINISH]
 
 
+@pytest.mark.asyncio
+async def test_goal_incident_lifecycle_keeps_aftermath_nonurgent_and_deduplicated() -> None:
+    """A Barça-shaped goal sequence creates one incident and one urgent beat."""
+    runtime = _built_runtime()
+    submitted = watch_the_director(runtime)
+    goal = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.AWAY,
+        confidence=0.99,
+        speak=True,
+        line="Ferran turns it in! One-one.",
+        actions=[ActionBeat(action=Action.FINISH, confidence=0.99)],
+    )
+    runtime._commit_lead(
+        goal,
+        GateVerdict(passed=True, line=goal.line),
+        Beat(
+            id="goal",
+            voice=Voice.CALLER,
+            text=goal.line,
+            video_ts=21.7,
+            created_ts=0.0,
+            live_ts=25.0,
+            event=Event.GOAL,
+            preemptable=False,
+        ),
+    )
+
+    close = goal.model_copy(
+        update={
+            "scene": Scene.CLOSE_UP,
+            "line": "Ferran celebrates with Rashford.",
+            "actions": [],
+        }
+    )
+    close_2 = close.model_copy(update={"line": "Rashford celebrates with Ferran."})
+    replay_mislabeled = goal.model_copy(
+        update={
+            "scene": Scene.LIVE_PLAY,
+            "line": "Barcelona finish it again.",
+            "actions": [ActionBeat(action=Action.FINISH, confidence=0.9)],
+        }
+    )
+    for turn, line, ts in (("close", close, 31.6), ("close2", close_2, 34.2)):
+        runtime.observe_form(_turn_state(runtime, ts), line)
+        runtime._commit_lead(
+            line,
+            GateVerdict(passed=True, line=line.line),
+            Beat(
+                id=turn,
+                voice=Voice.CALLER,
+                text=line.line,
+                video_ts=ts,
+                created_ts=0.0,
+                live_ts=ts + 4.0,
+                event=Event.GOAL,
+            ),
+        )
+    result = runtime.observe_form(_turn_state(runtime, 53.5), replay_mislabeled)
+    assert result.continue_turn
+    duplicate = runtime.observe_form(_turn_state(runtime, 56.2), replay_mislabeled)
+    assert not duplicate.continue_turn
+    assert runtime.goal_incident.phase.value == "replay"
+    assert runtime.goal_incident.score_spoken is True
+    assert runtime.goal_incident.replay_facts == {"finish"}
+    assert [beat.event for beat in submitted] == [Event.GOAL, Event.NONE]
+    assert [beat.preemptable for beat in submitted] == [False, True]
+    assert runtime._goal_turn is not None
+    runtime._goal_turn.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await runtime._goal_turn
+
+
+def test_genuine_structured_live_play_finishes_replay_incident() -> None:
+    runtime = _built_runtime()
+    goal = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.HOME,
+        confidence=0.99,
+        speak=False,
+        actions=[ActionBeat(action=Action.FINISH, confidence=0.99)],
+    )
+    runtime.observe_form(_turn_state(runtime, 20.0), goal)
+    runtime.goal_incident.start(20.0, side=Side.HOME, scorer="Ferran Torres")
+    runtime.goal_incident.begin_replay()
+    live = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.PASS,
+        side=Side.HOME,
+        confidence=0.9,
+        speak=False,
+        actions=[ActionBeat(action=Action.PASS, confidence=0.9)],
+    )
+    runtime.observe_form(_turn_state(runtime, 66.0), live)
+    assert runtime.goal_incident.phase.value == "finished"
+
+    late_replay = goal.model_copy(update={"scene": Scene.REPLAY, "line": "The finish again."})
+    beat = runtime.build_beat(
+        _turn_state(runtime, 70.0),
+        late_replay,
+        late_replay,
+        GateVerdict(passed=True, line=late_replay.line),
+        0.5,
+    )
+    assert beat.event is Event.NONE
+    assert beat.preemptable
+
+
 def test_live_goal_phrasing_receives_the_frozen_move_and_not_an_old_snapshot() -> None:
     runtime = _built_runtime()
     build_up = CallerLine(

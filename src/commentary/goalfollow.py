@@ -45,6 +45,7 @@ that exists in one exists in the other.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import StrEnum
 
 from commentary.prompts.phraser import GOAL_BEATS, goal_followup_block
 from commentary.schemas import (
@@ -60,6 +61,118 @@ from commentary.schemas import (
 )
 from commentary.state import notes_for
 from commentary.threads import Threads
+
+
+class GoalPhase(StrEnum):
+    """The small lifecycle of one verified goal incident."""
+
+    LIVE = "live"
+    CELEBRATION = "celebration"
+    REPLAY = "replay"
+    FINISHED = "finished"
+
+
+REPLAY_FACT_CATEGORIES = frozenset({"identity", "sequence", "offside", "technique", "finish"})
+
+
+@dataclass
+class GoalIncident:
+    """Runtime identity for one goal, separate from the match score.
+
+    ``GoalFollowup`` owns the broadcast beat cadence and ``ReplaySequence``
+    owns camera-angle spacing.  This object answers the different question:
+    whether an incoming form belongs to the same verified goal at all.
+    """
+
+    phase: GoalPhase = GoalPhase.FINISHED
+    scorer: str | None = None
+    side: Side = Side.UNKNOWN
+    goal_ts: float | None = None
+    score_spoken: bool = False
+    celebration_spoken: bool = False
+    replay_facts: set[str] = field(default_factory=set)
+
+    def start(
+        self,
+        ts: float,
+        *,
+        scorer: str | None = None,
+        side: Side = Side.UNKNOWN,
+    ) -> None:
+        self.phase = GoalPhase.LIVE
+        self.goal_ts = ts
+        self.scorer = scorer
+        self.side = side
+        self.score_spoken = False
+        self.celebration_spoken = False
+        self.replay_facts.clear()
+
+    @property
+    def active(self) -> bool:
+        return self.phase is not GoalPhase.FINISHED and self.goal_ts is not None
+
+    def begin_celebration(self) -> None:
+        if self.active and self.phase is GoalPhase.LIVE:
+            self.phase = GoalPhase.CELEBRATION
+
+    def begin_replay(self) -> None:
+        if self.active:
+            self.phase = GoalPhase.REPLAY
+
+    def finish(self) -> None:
+        self.phase = GoalPhase.FINISHED
+
+    def claim_score(self) -> bool:
+        """Claim the one score mention allowed for this incident."""
+        if self.score_spoken:
+            return False
+        self.score_spoken = True
+        return True
+
+    def claim_celebration(self) -> bool:
+        """Allow at most one celebration line."""
+        if self.celebration_spoken:
+            return False
+        self.celebration_spoken = True
+        self.begin_celebration()
+        return True
+
+    def category_for(self, line: CallerLine) -> str:
+        """Choose one concrete replay fact category from a caller form."""
+        text = " ".join((line.line or "", line.detail or "")).casefold()
+        if line.event is Event.OFFSIDE or "offside" in text or "onside" in text:
+            return "offside"
+        actions = list(line.actions)
+        if any(beat.action is Action.FINISH for beat in actions) or any(
+            (beat.outcome or "").casefold() in {"goal", "scored", "finish"}
+            for beat in actions
+        ):
+            return "finish"
+        if any(
+            (beat.body_part or beat.delivery or beat.direction or "").strip()
+            for beat in actions
+        ) or any(word in text for word in ("near post", "first touch", "backheel", "volley")):
+            return "technique"
+        if len(actions) >= 2 or any(
+            beat.action in {Action.PASS, Action.RECEIVE, Action.LAYOFF, Action.CROSS}
+            for beat in actions
+        ):
+            return "sequence"
+        if line.sightings or any(
+            getattr(beat.actor, "name", None) or getattr(beat.target, "name", None)
+            for beat in actions
+        ):
+            return "identity"
+        return "sequence"
+
+    def claim_replay_fact(self, line: CallerLine) -> str | None:
+        """Reserve one not-yet-covered replay fact, or return ``None``."""
+        category = self.category_for(line)
+        if category not in REPLAY_FACT_CATEGORIES or category in self.replay_facts:
+            return None
+        self.replay_facts.add(category)
+        self.begin_replay()
+        return category
 
 #: How long the window lasts. Section 2.4 measures the 30 s after the goal,
 #: and the seven utterances are all inside it.
