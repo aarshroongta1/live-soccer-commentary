@@ -17,7 +17,7 @@ from typing import Any
 import numpy as np
 import pytest
 
-from commentary.agents.phraser import Phraser, phraser_enabled
+from commentary.agents.phraser import Phraser, names_nobody, phraser_enabled
 from commentary.capture.buffer import Frame
 from commentary.config import (
     CallerConfig,
@@ -44,6 +44,8 @@ from commentary.prompts.phraser import (
 from commentary.rephrase import rephrase
 from commentary.runtime import Runtime
 from commentary.schemas import (
+    Action,
+    ActionBeat,
     Beat,
     CallerLine,
     Event,
@@ -53,6 +55,7 @@ from commentary.schemas import (
     Note,
     PhrasedLine,
     Player,
+    PlayerIdentity,
     Scene,
     Side,
     Sighting,
@@ -521,6 +524,64 @@ def test_a_form_without_one_says_nothing_about_a_detail() -> None:
     body = text_of(phraser_blocks(a_form(), "", [], home="Argentina", away="France"))
     assert "detail:" not in body
     assert "keeping one concrete detail" in body
+
+
+def test_structured_actions_reach_the_phraser_with_names_routes_and_detail() -> None:
+    form = a_form("Barcelona advance.", event=Event.GOAL, sightings=[]).model_copy(
+        update={
+            "actions": [
+                ActionBeat(
+                    action=Action.CROSS,
+                    actor=PlayerIdentity(
+                        name="Jules Koundé", side=Side.AWAY, confidence=0.96
+                    ),
+                    target=PlayerIdentity(
+                        name="Ferran Torres", side=Side.AWAY, confidence=0.98
+                    ),
+                    origin_zone="right side",
+                    destination_zone="six-yard box",
+                    delivery="driven across goal",
+                    confidence=0.97,
+                ),
+                ActionBeat(
+                    action=Action.FINISH,
+                    actor=PlayerIdentity(
+                        name="Ferran Torres", side=Side.AWAY, confidence=0.98
+                    ),
+                    destination_zone="near post",
+                    outcome="goal",
+                    confidence=0.99,
+                ),
+            ]
+        }
+    )
+
+    body = text_of(phraser_blocks(form, "", [], home="Betis", away="Barcelona"))
+
+    assert "STRUCTURED ACTIONS" in body
+    assert "cross | actor: Jules Koundé | target: Ferran Torres" in body
+    assert "from: right side | to: six-yard box" in body
+    assert "delivery: driven across goal" in body
+    assert "finish | actor: Ferran Torres | to: near post | outcome: goal" in body
+    assert "players identified: Jules Koundé, Ferran Torres" in body
+
+
+def test_a_role_or_number_on_an_action_is_not_treated_as_nameless_build_up() -> None:
+    role = a_form(sightings=[]).model_copy(
+        update={
+            "actions": [
+                ActionBeat(
+                    action=Action.CROSS,
+                    actor=PlayerIdentity(
+                        role="right-back", side=Side.HOME, confidence=0.6
+                    ),
+                    confidence=0.95,
+                )
+            ]
+        }
+    )
+
+    assert not names_nobody(role)
 
 
 def test_a_goal_is_told_the_score_is_appended_for_it() -> None:

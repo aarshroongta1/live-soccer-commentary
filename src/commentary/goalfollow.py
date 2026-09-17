@@ -47,7 +47,17 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from commentary.prompts.phraser import GOAL_BEATS, goal_followup_block
-from commentary.schemas import CallerLine, Event, KnowledgePack, Note, Scene, Side, Sighting
+from commentary.schemas import (
+    Action,
+    ActionBeat,
+    CallerLine,
+    Event,
+    KnowledgePack,
+    Note,
+    Scene,
+    Side,
+    Sighting,
+)
 from commentary.state import notes_for
 from commentary.threads import Threads
 
@@ -154,6 +164,7 @@ class GoalFollowup:
     _moves: list[str] = field(default_factory=list)
     _names: list[str] = field(default_factory=list)
     _sightings: list[Sighting] = field(default_factory=list)
+    _actions: list[ActionBeat] = field(default_factory=list)
     _scene: Scene = Scene.LIVE_PLAY
 
     # -- what the window knows -------------------------------------------
@@ -256,6 +267,32 @@ class GoalFollowup:
             name = (sighting.name or "").strip()
             if name and name not in self._names:
                 self._names.append(name)
+        self.saw_actions(line.actions)
+
+    def saw_actions(self, actions: tuple[ActionBeat, ...] | list[ActionBeat]) -> None:
+        """Keep structured move facts for the rebuild and synthetic turns."""
+        known = {
+            (beat.video_ts, beat.action, _identity_name(beat.actor), _identity_name(beat.target))
+            for beat in self._actions
+        }
+        for beat in actions:
+            key = (
+                beat.video_ts,
+                beat.action,
+                _identity_name(beat.actor),
+                _identity_name(beat.target),
+            )
+            if key not in known:
+                self._actions.append(beat.model_copy(deep=True))
+                known.add(key)
+            for identity in (beat.actor, beat.target):
+                name = _identity_name(identity)
+                if name and name not in self._names:
+                    self._names.append(name)
+            description = _describe_action(beat)
+            if description and description not in self._moves:
+                self._moves.append(description)
+        self._actions.sort(key=lambda beat: beat.video_ts if beat.video_ts is not None else 0.0)
 
     def arm(
         self, ts: float, line: CallerLine, spoken: str, pack: KnowledgePack | None = None
@@ -272,6 +309,7 @@ class GoalFollowup:
         self._moves = []
         self._names = []
         self._sightings = list(line.sightings)
+        self._actions = []
         self._scene = line.scene
         self.scorer = _scorer(line, spoken, pack)
         self.saw_form(line)
@@ -434,6 +472,7 @@ class GoalFollowup:
             event=Event.GOAL,
             side=self.side,
             sightings=list(self._sightings),
+            actions=[beat.model_copy(deep=True) for beat in self._actions],
             confidence=1.0,
             speak=True,
             line=(self._moves[0] if self._moves else "")[:200],
@@ -459,6 +498,16 @@ def _scorer(line: CallerLine, spoken: str, pack: KnowledgePack | None = None) ->
     and "buried past Martínez" would otherwise credit the man who was beaten.
     """
     said = spoken.lower()
+    finishers = [
+        _identity_name(beat.actor)
+        for beat in line.actions
+        if beat.action is Action.FINISH and _identity_name(beat.actor)
+    ]
+    for name in finishers:
+        if name and name.rsplit(" ", 1)[-1].lower() in said:
+            return name
+    if finishers:
+        return finishers[0]
     names = [(s.name or "").strip() for s in line.sightings]
     for name in names:
         if name and name.rsplit(" ", 1)[-1].lower() in said:
@@ -467,6 +516,26 @@ def _scorer(line: CallerLine, spoken: str, pack: KnowledgePack | None = None) ->
     if named:
         return named
     return _from_the_roster(line, said, pack)
+
+
+def _identity_name(identity: object) -> str:
+    name = getattr(identity, "name", None)
+    return name.strip() if isinstance(name, str) else ""
+
+
+def _describe_action(beat: ActionBeat) -> str:
+    actor = _identity_name(beat.actor)
+    target = _identity_name(beat.target)
+    parts = [actor, beat.action.value]
+    if target:
+        parts.append(f"to {target}")
+    if beat.delivery:
+        parts.append(beat.delivery)
+    if beat.destination_zone:
+        parts.append(f"to the {beat.destination_zone}")
+    if beat.outcome:
+        parts.append(beat.outcome)
+    return " ".join(part for part in parts if part).strip()
 
 
 def _from_the_roster(line: CallerLine, said: str, pack: KnowledgePack | None) -> str | None:

@@ -721,7 +721,13 @@ def names_nobody(line: CallerLine, *, on_the_ball: str | None = None) -> bool:
         return False
     if (on_the_ball or "").strip():
         return False
-    return not any((sighting.name or "").strip() for sighting in line.sightings)
+    if any((sighting.name or "").strip() for sighting in line.sightings):
+        return False
+    return not any(
+        identity is not None and (identity.name or identity.number is not None or identity.role)
+        for beat in line.actions
+        for identity in (beat.actor, beat.target)
+    )
 
 
 def is_a_bare_name(text: str, names: Sequence[str]) -> bool:

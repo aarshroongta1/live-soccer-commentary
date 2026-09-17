@@ -60,6 +60,8 @@ from commentary.prompts.phraser import GOAL_BEATS, REPEAT_RUN, goal_followup_blo
 from commentary.rephrase import rephrase
 from commentary.runtime import Runtime
 from commentary.schemas import (
+    Action,
+    ActionBeat,
     Beat,
     CallerLine,
     Event,
@@ -67,6 +69,7 @@ from commentary.schemas import (
     Note,
     PhrasedLine,
     Player,
+    PlayerIdentity,
     Scene,
     Side,
     Sighting,
@@ -312,6 +315,47 @@ def a_window() -> GoalFollowup:
     follow = GoalFollowup()
     follow.arm(10.0, a_goal_form(), "Mbappé! Off the ground!")
     return follow
+
+
+def test_structured_finish_identifies_the_scorer_and_survives_into_rebuild() -> None:
+    form = a_goal_form(named=False).model_copy(
+        update={
+            "sightings": [],
+            "actions": [
+                ActionBeat(
+                    video_ts=8.0,
+                    action=Action.CROSS,
+                    actor=PlayerIdentity(
+                        name="Jules Koundé", side=Side.AWAY, confidence=0.96
+                    ),
+                    target=PlayerIdentity(
+                        name="Kylian Mbappé", side=Side.AWAY, confidence=0.98
+                    ),
+                    delivery="driven across goal",
+                    confidence=0.96,
+                ),
+                ActionBeat(
+                    video_ts=10.0,
+                    action=Action.FINISH,
+                    actor=PlayerIdentity(
+                        name="Kylian Mbappé", side=Side.AWAY, confidence=0.98
+                    ),
+                    destination_zone="near post",
+                    outcome="goal",
+                    confidence=0.99,
+                ),
+            ],
+        }
+    )
+    follow = GoalFollowup()
+
+    follow.arm(10.0, form, "Turned in at the near post!", a_pack())
+
+    assert follow.scorer == "Kylian Mbappé"
+    synthetic = follow.synthetic()
+    assert [beat.action for beat in synthetic.actions] == [Action.CROSS, Action.FINISH]
+    follow.said(12.0)
+    assert "Jules Koundé cross to Kylian Mbappé" in follow.block(18.0, a_pack())
 
 
 def test_a_replay_inside_the_window_spends_the_rebuild_and_not_the_next_beat() -> None:

@@ -65,6 +65,7 @@ from commentary.identity import IdentityContinuity
 from commentary.ledger import CONTEXT_FACTS, Ledger
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import LLMBackend, Usage
+from commentary.move import MoveBuffer
 from commentary.orchestration import CommentaryTurnState, MatchFactStore, new_turn_state
 from commentary.orchestration.context import (
     CallerResult,
@@ -341,6 +342,10 @@ class Runtime:
         # have been restored to cursor order.  It is deliberately separate
         # from the caller so a late request cannot inherit a future player.
         self.identities = IdentityContinuity(self.pack)
+        # Structured live actions enter here only after identity resolution
+        # and cursor ordering. Silent forms still describe the move; replays
+        # are ignored by MoveBuffer and cannot rewrite its live evidence.
+        self.moves = MoveBuffer()
         #: The speaking half of the play-by-play voice, or ``None`` when
         #: ``PHRASER_MODEL=off``. None is not a degraded mode: it is exactly
         #: the runtime that existed before the split, and a test asserts that
@@ -1332,6 +1337,9 @@ class Runtime:
     ) -> ObservationResult:
         """Apply every observation, including forms that choose silence."""
         cursor = state["cursor_s"]
+        # A goal freezes the move before phrasing, so both the live call and
+        # its first follow-up can read the same stable pass/cross/finish facts.
+        self.moves.observe(cursor, line)
         # The colour seat reads the phase off the forms, spoken or not: a
         # form the caller filled in and chose not to say is still the best
         # evidence there is about what the picture was.
@@ -1532,6 +1540,9 @@ class Runtime:
         # every picture in between was a replay — the gap is filled.
         if event is Event.GOAL and self.follow.is_the_call(cursor) and not replay:
             self.follow.arm(cursor, line, verdict.line, self.pack)
+            frozen = self.moves.frozen
+            if frozen is not None and frozen.goal_ts == cursor:
+                self.follow.saw_actions(frozen.actions)
             # Whose goal it was is the one thing the board never knows, and
             # every running count about him is wrong from this second on.
             self.threads.credit_goal(self.follow.scorer, cursor)
@@ -1583,6 +1594,7 @@ class Runtime:
         so the trace can be counted, and no beat and no gate row, because
         nothing was said.
         """
+        line = self._line_with_frozen_move(line, cursor)
         if self.phraser is None:
             settled = self._settle_candidate(
                 line,
@@ -1723,6 +1735,24 @@ class Runtime:
             how_stripped=list(settled.how_removed),
         )
         return line.model_copy(update={"line": settled.line}), phrased.excitement
+
+    def _line_with_frozen_move(self, line: CallerLine, cursor: float) -> CallerLine:
+        """Give a live goal's phraser the move frozen by this observation.
+
+        The graph observes before it phrases, so a live goal has already
+        frozen the preceding pass/cross/finish facts. Restrict the join to the
+        snapshot created at this exact cursor; an older incident must never
+        leak into a later line.
+        """
+        frozen = self.moves.frozen
+        if (
+            line.scene is not Scene.LIVE_PLAY
+            or line.event is not Event.GOAL
+            or frozen is None
+            or frozen.goal_ts != cursor
+        ):
+            return line
+        return line.model_copy(update={"actions": list(frozen.actions)})
 
     def _settle_candidate(
         self,

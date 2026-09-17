@@ -27,11 +27,15 @@ from commentary.grading import metrics, report
 from commentary.orchestration import new_turn_state
 from commentary.runtime import Runtime
 from commentary.schemas import (
+    Action,
+    ActionBeat,
     Beat,
     BoardRead,
     CallerLine,
     Event,
     GateVerdict,
+    IdentitySource,
+    PlayerIdentity,
     Scene,
     Side,
     Sighting,
@@ -1142,6 +1146,145 @@ def _built_runtime() -> Runtime:
     for index in range(96):
         runtime.buffer.append(Frame(ts=index / settings.capture.fps, image=blank))
     return runtime
+
+
+def _turn_state(runtime: Runtime, cursor: float) -> Any:
+    return new_turn_state(
+        match_id="match-1",
+        turn_id=f"turn-{cursor:g}",
+        cursor_s=cursor,
+        live_s=cursor + 4.0,
+        triggers=[],
+        fact_version=0,
+        fact_summary="",
+        match_state=runtime.state.model_copy(deep=True),
+        goal_in_state=False,
+    )
+
+
+def test_ordered_observations_build_and_freeze_the_runtime_move() -> None:
+    runtime = _built_runtime()
+    kounde = PlayerIdentity(
+        name="Jules Koundé",
+        number=23,
+        side=Side.HOME,
+        confidence=0.96,
+        source=IdentitySource.SHIRT_NUMBER,
+    )
+    ferran = PlayerIdentity(
+        name="Ferran Torres",
+        number=7,
+        side=Side.HOME,
+        confidence=0.98,
+        source=IdentitySource.SHIRT_NUMBER,
+    )
+    cross = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.CROSS,
+        side=Side.HOME,
+        team=runtime.home,
+        actions=[
+            ActionBeat(
+                video_ts=18.9,
+                action=Action.CROSS,
+                actor=kounde,
+                target=ferran,
+                delivery="driven across goal",
+                confidence=0.96,
+            )
+        ],
+        confidence=0.96,
+        speak=False,
+    )
+    goal = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.HOME,
+        team=runtime.home,
+        actions=[
+            ActionBeat(
+                video_ts=21.6,
+                action=Action.FINISH,
+                actor=ferran,
+                destination_zone="near post",
+                outcome="goal",
+                confidence=0.99,
+            )
+        ],
+        confidence=0.99,
+        speak=True,
+        line="Ferran turns it in!",
+    )
+
+    runtime.observe_form(_turn_state(runtime, 19.0), cross)
+    assert runtime.moves.current is not None
+    runtime.observe_form(_turn_state(runtime, 21.7), goal)
+
+    frozen = runtime.moves.frozen
+    assert frozen is not None
+    assert frozen.goal_ts == 21.7
+    assert [beat.action for beat in frozen.beats] == [Action.CROSS, Action.FINISH]
+    assert frozen.beats[0].actor is not None
+    assert frozen.beats[0].actor.name == "Jules Koundé"
+    assert frozen.beats[1].actor is not None
+    assert frozen.beats[1].actor.name == "Ferran Torres"
+    assert frozen.beats[1].destination_zone == "near post"
+    assert runtime.moves.current is None
+
+
+def test_replay_observation_cannot_replace_the_runtime_frozen_move() -> None:
+    runtime = _built_runtime()
+    goal = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.HOME,
+        actions=[ActionBeat(action=Action.FINISH, confidence=0.99)],
+        confidence=0.99,
+        speak=False,
+    )
+    runtime.observe_form(_turn_state(runtime, 21.7), goal)
+    frozen = runtime.moves.frozen
+    replay = goal.model_copy(
+        update={
+            "scene": Scene.REPLAY,
+            "actions": [ActionBeat(action=Action.CROSS, confidence=0.99)],
+        }
+    )
+
+    runtime.observe_form(_turn_state(runtime, 45.0), replay)
+
+    assert runtime.moves.frozen is frozen
+    assert frozen is not None
+    assert [beat.action for beat in frozen.beats] == [Action.FINISH]
+
+
+def test_live_goal_phrasing_receives_the_frozen_move_and_not_an_old_snapshot() -> None:
+    runtime = _built_runtime()
+    build_up = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.CROSS,
+        side=Side.HOME,
+        actions=[ActionBeat(video_ts=18.0, action=Action.CROSS, confidence=0.95)],
+        confidence=0.95,
+        speak=False,
+    )
+    goal = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.HOME,
+        actions=[ActionBeat(video_ts=20.0, action=Action.FINISH, confidence=0.99)],
+        confidence=0.99,
+        speak=True,
+        line="It is in!",
+    )
+    runtime.moves.observe(18.0, build_up)
+    runtime.moves.observe(20.0, goal)
+
+    enriched = runtime._line_with_frozen_move(goal, 20.0)
+    later = runtime._line_with_frozen_move(goal, 24.0)
+
+    assert [beat.action for beat in enriched.actions] == [Action.CROSS, Action.FINISH]
+    assert [beat.action for beat in later.actions] == [Action.FINISH]
 
 
 @pytest.mark.asyncio

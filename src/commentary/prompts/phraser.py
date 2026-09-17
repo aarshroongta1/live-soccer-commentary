@@ -44,7 +44,7 @@ from commentary.gate import REPLAY_MARKERS
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import Block, text_block
 from commentary.prompts.commentary_examples import EXAMPLES, KINDS
-from commentary.schemas import CallerLine, Event, Note, Scene, Side
+from commentary.schemas import ActionBeat, CallerLine, Event, Note, PlayerIdentity, Scene, Side
 
 #: The restart numbers, for a caller that has not been given a settings
 #: object. Every runtime path passes one down from
@@ -1511,6 +1511,12 @@ def _form(line: CallerLine, home: str, away: str, on_the_ball: str | None) -> st
         # and labelled, the thing to keep is not a judgement call any more.
         rows.append(f"  detail: {detail}")
         rows.append("  (the one concrete thing here a listener could not guess. Keep it.)")
+    if line.actions:
+        rows.append("")
+        rows.append("  STRUCTURED ACTIONS — chronological facts, oldest first:")
+        rows.extend(f"    - {_action_fact(beat)}" for beat in line.actions)
+        rows.append("  Use these facts instead of a generic team-only summary.")
+        rows.append("  Never speak confidence, evidence-source, or timestamp labels.")
     rows.append("")
     rows.append("  what was seen, written down as a description. DO NOT say this back.")
     rows.append("  Take the facts out of it and say them the way a commentator would,")
@@ -1527,7 +1533,44 @@ def _names(line: CallerLine) -> list[str]:
         name = (sighting.name or "").strip()
         if name and name not in found:
             found.append(name)
+    for beat in line.actions:
+        for identity in (beat.actor, beat.target):
+            name = (identity.name or "").strip() if identity is not None else ""
+            if name and name not in found:
+                found.append(name)
     return found
+
+
+def _action_fact(beat: ActionBeat) -> str:
+    """A compact fact row for the text-only phrasing stage."""
+    parts = [beat.action.value]
+    if beat.actor is not None:
+        parts.append(f"actor: {_identity_label(beat.actor)}")
+    if beat.target is not None:
+        parts.append(f"target: {_identity_label(beat.target)}")
+    for label, value in (
+        ("from", beat.origin_zone),
+        ("to", beat.destination_zone),
+        ("direction", beat.direction),
+        ("delivery", beat.delivery),
+        ("body part", beat.body_part),
+        ("outcome", beat.outcome),
+        ("visible action", beat.evidence),
+    ):
+        if value:
+            parts.append(f"{label}: {value}")
+    return " | ".join(parts)
+
+
+def _identity_label(identity: PlayerIdentity) -> str:
+    if identity.name:
+        return identity.name
+    side = "" if identity.side is Side.UNKNOWN else f"{identity.side.value} "
+    if identity.number is not None:
+        return f"{side}number {identity.number}".strip()
+    if identity.role:
+        return f"{side}{identity.role}".strip()
+    return f"{side}unidentified player".strip()
 
 
 def _team_of(side: Side, home: str, away: str) -> str:
