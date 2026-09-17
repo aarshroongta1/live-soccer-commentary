@@ -95,7 +95,7 @@ from commentary.schemas import (
     Trigger,
     Voice,
 )
-from commentary.scoreline import Numbers, Restatements, settle_numbers, strip_score
+from commentary.scoreline import Numbers, Restatements, effective_score, settle_numbers, strip_score
 from commentary.state import MatchStateTracker, parse_clock, period_for_clock
 from commentary.threads import Offered, SaidCounts, Threads
 from commentary.tools import MatchTools
@@ -1381,16 +1381,39 @@ class Runtime:
         incident_ts = self.goal_incident.goal_ts
         if incident_ts is None:
             return self._board_changed_near(cursor) or self._wire_confirms_goal(cursor)
-        if self._last_goal_ts is not None and self._last_goal_ts > incident_ts + 0.25:
+
+        incident_score = self.goal_incident.score
+
+        def score_is_new(score: tuple[int, int], evidence_ts: float) -> bool:
+            if incident_score is None:
+                return evidence_ts > incident_ts + GOAL_GRAPHIC_LAG_S
+            return score != incident_score and sum(score) > sum(incident_score)
+
+        if (
+            self._last_goal_ts is not None
+            and self._last_goal_ts > incident_ts + 0.25
+            and score_is_new(
+                (self.state.home_score, self.state.away_score),
+                self._last_goal_ts,
+            )
+        ):
             return True
         for change in self._board_changes:
-            if change.is_goal and change.ts > incident_ts + 0.25 and cursor - 2.0 <= change.ts:
+            if (
+                change.is_goal
+                and change.ts > incident_ts + 0.25
+                and cursor - 2.0 <= change.ts
+                and score_is_new((change.home_score, change.away_score), change.ts)
+            ):
                 return True
         if self._sync is not None:
             return any(
                 event.event is Event.GOAL
                 and event.video_ts is not None
-                and event.video_ts > incident_ts + 0.25
+                # A feed report inside the graphic-lag window is confirmation
+                # of this incident, just like the delayed score change. It has
+                # no score pair with which to distinguish another goal.
+                and event.video_ts > incident_ts + GOAL_GRAPHIC_LAG_S
                 and incident_ts <= event.video_ts <= cursor + GOAL_GRAPHIC_LAG_S
                 for event in self._sync.known
             )
@@ -1734,6 +1757,11 @@ class Runtime:
                     cursor,
                     scorer=self.follow.scorer,
                     side=line.side,
+                    score=effective_score(
+                        self.state,
+                        line.side,
+                        goal_in_state=self._score_counts_the_goal(cursor),
+                    ),
                 )
                 # ``start`` resets the claim flags; the actual text is the
                 # source of truth for whether the score was appended here.

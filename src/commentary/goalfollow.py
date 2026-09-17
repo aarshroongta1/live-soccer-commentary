@@ -88,6 +88,7 @@ class GoalIncident:
     scorer: str | None = None
     side: Side = Side.UNKNOWN
     goal_ts: float | None = None
+    score: tuple[int, int] | None = None
     score_spoken: bool = False
     celebration_spoken: bool = False
     replay_facts: set[str] = field(default_factory=set)
@@ -98,11 +99,13 @@ class GoalIncident:
         *,
         scorer: str | None = None,
         side: Side = Side.UNKNOWN,
+        score: tuple[int, int] | None = None,
     ) -> None:
         self.phase = GoalPhase.LIVE
         self.goal_ts = ts
         self.scorer = scorer
         self.side = side
+        self.score = score
         self.score_spoken = False
         self.celebration_spoken = False
         self.replay_facts.clear()

@@ -62,11 +62,16 @@ def default_backend(backend: str = "anthropic") -> LLMBackend:
 
 
 def openai_factory(
-    timeout_s: float = 8.0,
+    timeout_s: float | None = None,
     *,
     max_retries: int = 1,
 ) -> LLMBackend:
-    """Construct the OpenAI Responses backend using explicit credentials."""
+    """Construct the OpenAI Responses backend using explicit credentials.
+
+    Live commentary keeps its eight-second default. ``OPENAI_TIMEOUT_S`` is
+    an explicit escape hatch for offline structural validation; passing a
+    timeout directly still wins over the environment.
+    """
     import os
 
     if not os.getenv("OPENAI_API_KEY"):
@@ -77,7 +82,9 @@ def openai_factory(
     from commentary.llm.openai_backend import OpenAIBackend
 
     return OpenAIBackend(
-        timeout_s=timeout_s,
+        timeout_s=(
+            float(os.getenv("OPENAI_TIMEOUT_S", "8.0")) if timeout_s is None else timeout_s
+        ),
         max_retries=max_retries,
         base_url=os.getenv("OPENAI_BASE_URL"),
     )

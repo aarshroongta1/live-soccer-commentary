@@ -133,6 +133,7 @@ The settings worth knowing, all in `.env`:
 | `DELAY_S` | How far the narration cursor trails the live edge. 8.0. |
 | `PRESENT_OFFSET_S` | How far the viewer's picture trails the cursor. 3.5, and no deeper than the buffer's history. |
 | `CALLER_FRAME_WIDTH` | Width the caller's frames go out at. 768; 1280 costs 1.75x and did not pay. |
+| `OPENAI_TIMEOUT_S` | OpenAI request deadline. 8 seconds for live commentary; raise only for an explicitly offline structural run. |
 | `MAX_USD_PER_MATCH` | Past this the system stops calling the model. 35. |
 | `AVFOUNDATION_DEVICE` | Capture device, by name. |
 | `ELEVENLABS_API_KEY` and the two voice ids | Only read when `--voice elevenlabs` is on. |

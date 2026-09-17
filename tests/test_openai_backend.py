@@ -149,3 +149,17 @@ def test_openai_factory_requires_its_own_key_and_cli_names_backend(
     assert isinstance(openai_factory(), OpenAIBackend)
     args = build_parser().parse_args(["run", "--backend", "openai"])
     assert args.backend == "openai"
+
+
+def test_openai_factory_reads_structural_validation_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_TIMEOUT_S", "15")
+
+    configured = openai_factory()
+    explicit = openai_factory(6.0)
+
+    assert isinstance(configured, OpenAIBackend)
+    assert configured._client.timeout == pytest.approx(15.0)
+    assert explicit._client.timeout == pytest.approx(6.0)

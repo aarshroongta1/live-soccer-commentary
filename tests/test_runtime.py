@@ -1332,6 +1332,68 @@ async def test_goal_incident_lifecycle_keeps_aftermath_nonurgent_and_deduplicate
         await runtime._goal_turn
 
 
+@pytest.mark.asyncio
+async def test_delayed_score_change_confirms_current_incident_instead_of_starting_another() -> None:
+    runtime = _built_runtime()
+    submitted = watch_the_director(runtime)
+    runtime.facts.apply_score(1, 0, clock="10:36", period=1)
+    first = CallerLine(
+        scene=Scene.LIVE_PLAY,
+        event=Event.GOAL,
+        side=Side.AWAY,
+        confidence=0.99,
+        speak=True,
+        line="Barcelona! One-one.",
+    )
+    runtime._commit_lead(
+        first,
+        GateVerdict(passed=True, line=first.line),
+        Beat(
+            id="first-goal",
+            voice=Voice.CALLER,
+            text=first.line,
+            video_ts=28.5,
+            created_ts=0.0,
+            live_ts=36.5,
+            event=Event.GOAL,
+            preemptable=False,
+        ),
+    )
+    assert runtime.goal_incident.score == (1, 1)
+
+    # The score bug catches up after the call. This is confirmation of the
+    # existing goal, not newer evidence for another one.
+    runtime.facts.apply_score(1, 1, clock="10:37", period=1)
+    runtime._last_goal_ts = 29.0
+    aftermath = first.model_copy(
+        update={"line": "Ferran Torres has finished it.", "sightings": []}
+    )
+    observed = runtime.observe_form(_turn_state(runtime, 35.5), aftermath)
+    assert observed.form is not None
+    assert observed.form.scene is Scene.REPLAY
+    runtime._commit_lead(
+        observed.form,
+        GateVerdict(passed=True, line=aftermath.line),
+        Beat(
+            id="same-goal-replay",
+            voice=Voice.CALLER,
+            text=aftermath.line,
+            video_ts=35.5,
+            created_ts=0.0,
+            live_ts=43.5,
+            event=Event.GOAL,
+        ),
+    )
+
+    assert [beat.event for beat in submitted] == [Event.GOAL, Event.NONE]
+    assert sum("One-one" in beat.text for beat in submitted) == 1
+    assert runtime.goal_incident.goal_ts == 28.5
+    assert runtime._goal_turn is not None
+    runtime._goal_turn.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await runtime._goal_turn
+
+
 def test_genuine_structured_live_play_finishes_replay_incident() -> None:
     runtime = _built_runtime()
     goal = CallerLine(
