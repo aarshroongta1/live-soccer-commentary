@@ -37,11 +37,11 @@ import difflib
 import re
 from collections import Counter, deque
 
-from commentary.capture.buffer import DelayBuffer
+from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.config import CALLER_MODEL, CallerConfig
 from commentary.llm.base import LLMBackend, LLMError
 from commentary.prompts.caller import caller_blocks, caller_system
-from commentary.schemas import CallerLine, KnowledgePack, Trigger
+from commentary.schemas import ActionBeat, CallerLine, KnowledgePack, Trigger
 
 #: Openers a model reaches for when it forgets it is talking, not writing.
 _PREAMBLE = re.compile(
@@ -271,26 +271,40 @@ class Caller:
             self.suppressed["llm_error"] += 1
             return None
 
-        return self._settle(parsed.value, remember=remember)
+        return self._settle(
+            parsed.value,
+            cursor_frames=cursor,
+            cursor_ts=cursor_ts,
+            remember=remember,
+        )
 
-    def _settle(self, proposed: CallerLine, *, remember: bool = True) -> CallerLine:
+    def _settle(
+        self,
+        proposed: CallerLine,
+        *,
+        cursor_frames: list[Frame] | None = None,
+        cursor_ts: float | None = None,
+        remember: bool = True,
+    ) -> CallerLine:
         """Apply the post-conditions and record why, before anyone sees the line."""
         text = trim_words(clean_line(proposed.line), self.config.max_words)
+        actions = _anchor_actions(proposed.actions, cursor_frames or [], cursor_ts)
+        settled = proposed.model_copy(update={"line": text, "actions": actions})
 
         if not proposed.speak:
             self.last_reason = "the model chose silence"
-            return proposed.model_copy(update={"line": text, "speak": False})
+            return settled.model_copy(update={"speak": False})
 
-        code, reason = self._veto(proposed, text)
+        code, reason = self._veto(settled, text)
         if code:
             self.last_reason = reason
             self.suppressed[code] += 1
-            return proposed.model_copy(update={"line": text, "speak": False})
+            return settled.model_copy(update={"speak": False})
 
         self.last_reason = ""
         if remember:
             self.gate.accept(text)
-        return proposed.model_copy(update={"line": text, "speak": True})
+        return settled.model_copy(update={"speak": True})
 
     def _veto(self, proposed: CallerLine, text: str) -> tuple[str, str]:
         """``(code, reason)``; an empty code means the line may go."""
@@ -302,3 +316,32 @@ class Caller:
                 f"confidence {proposed.confidence:.2f} is under {self.config.min_confidence:.2f}",
             )
         return "", ""
+
+
+def _anchor_actions(
+    actions: list[ActionBeat], cursor_frames: list[Frame], cursor_ts: float | None
+) -> list[ActionBeat]:
+    """Map model-facing frame labels onto exact video timestamps.
+
+    The model is good at pointing at "frame 3" and should not be asked to
+    reproduce a floating-point clock it never saw. Invalid or absent labels
+    fall back to the observation cursor, and sorting is stable so two actions
+    on the same frame retain the order in which the model reported them.
+    """
+    if cursor_ts is not None:
+        cursor_anchor = cursor_ts
+    elif cursor_frames:
+        cursor_anchor = cursor_frames[-1].ts
+    else:
+        cursor_anchor = 0.0
+
+    anchored: list[ActionBeat] = []
+    for beat in actions:
+        index = beat.frame_index
+        if index is not None and 1 <= index <= len(cursor_frames):
+            video_ts = cursor_frames[index - 1].ts
+        else:
+            index = None
+            video_ts = cursor_anchor
+        anchored.append(beat.model_copy(update={"frame_index": index, "video_ts": video_ts}))
+    return sorted(anchored, key=lambda beat: beat.video_ts or 0.0)

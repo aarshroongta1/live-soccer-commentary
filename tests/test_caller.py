@@ -6,7 +6,17 @@ from commentary.capture.buffer import DelayBuffer, Frame
 from commentary.config import CALLER_MODEL, CallerConfig
 from commentary.llm.base import Block, LLMError
 from commentary.llm.fake import ScriptedBackend
-from commentary.schemas import CallerLine, Event, Scene, Side, Trigger
+from commentary.schemas import (
+    Action,
+    ActionBeat,
+    CallerLine,
+    Event,
+    IdentitySource,
+    PlayerIdentity,
+    Scene,
+    Side,
+    Trigger,
+)
 
 CONFIG = CallerConfig()
 
@@ -58,6 +68,99 @@ async def test_the_model_is_shown_the_cursor_frames_and_the_lookahead():
     assert "SECONDS AFTER" in calls[0].text
     assert "Arsenal 0-0 Chelsea, 12:04" in calls[0].text
     assert "camera_cut" in calls[0].text
+
+
+async def test_one_window_can_return_multiple_chronological_action_beats():
+    proposed = line("Koundé receives, plays inside, then crosses.")
+    proposed.actions = [
+        ActionBeat(
+            frame_index=7,
+            action=Action.CROSS,
+            actor=PlayerIdentity(
+                name="Jules Koundé",
+                number=23,
+                side=Side.AWAY,
+                confidence=0.94,
+                source=IdentitySource.SHIRT_NUMBER,
+            ),
+            confidence=0.96,
+        ),
+        ActionBeat(frame_index=2, action=Action.RECEIVE, confidence=0.9),
+        ActionBeat(frame_index=4, action=Action.PASS, confidence=0.92),
+    ]
+    buf = buffer_with()
+    cursor_frames = buf.at_cursor(CONFIG.frames_at_cursor, CONFIG.cursor_spacing_s)
+    caller = Caller(backend_saying(proposed), CONFIG)
+
+    result = await caller.call(buf, "0-0", [])
+
+    assert result is not None
+    assert [beat.action for beat in result.actions] == [
+        Action.RECEIVE,
+        Action.PASS,
+        Action.CROSS,
+    ]
+    assert [beat.video_ts for beat in result.actions] == [
+        cursor_frames[1].ts,
+        cursor_frames[3].ts,
+        cursor_frames[6].ts,
+    ]
+
+
+async def test_an_unframed_or_invalid_action_uses_the_exact_call_cursor():
+    proposed = line("A clear pass by an unknown midfielder.")
+    proposed.actions = [
+        ActionBeat(frame_index=None, action=Action.PASS, confidence=0.95),
+        ActionBeat(frame_index=99, action=Action.RECEIVE, confidence=0.8),
+    ]
+    caller = Caller(backend_saying(proposed), CONFIG)
+
+    result = await caller.call(buffer_with(), "0-0", [], cursor_ts=5.25)
+
+    assert result is not None
+    assert [beat.video_ts for beat in result.actions] == [5.25, 5.25]
+    assert [beat.frame_index for beat in result.actions] == [None, None]
+
+
+async def test_low_identity_confidence_does_not_erase_a_clear_action():
+    proposed = line("The right-back crosses low.")
+    proposed.actions = [
+        ActionBeat(
+            frame_index=8,
+            action=Action.CROSS,
+            actor=PlayerIdentity(
+                name=None,
+                role="right-back",
+                side=Side.AWAY,
+                confidence=0.3,
+                source=IdentitySource.VISIBLE_ROLE,
+                evidence="role and away kit are visible; no number is legible",
+            ),
+            delivery="low",
+            confidence=0.95,
+            evidence="the ball travels low across the penalty area",
+        )
+    ]
+    caller = Caller(backend_saying(proposed), CONFIG)
+
+    result = await caller.call(buffer_with(), "0-0", [])
+
+    assert result is not None and result.speak
+    assert len(result.actions) == 1
+    assert result.actions[0].action is Action.CROSS
+    assert result.actions[0].confidence == pytest.approx(0.95)
+    assert result.actions[0].actor is not None
+    assert result.actions[0].actor.name is None
+
+
+def test_the_prompt_asks_for_actions_before_prose_and_keeps_evidence_separate():
+    caller = Caller(ScriptedBackend(), CONFIG)
+    system = " ".join(caller.system.split())
+
+    assert "Fill actions BEFORE writing the line" in system
+    assert "A window may contain several beats" in system
+    assert "their OWN confidence" in system
+    assert "Do not create action beats from THE NEAR FUTURE" in system
 
 
 async def test_the_system_prompt_is_the_same_object_on_every_call():

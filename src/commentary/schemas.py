@@ -119,6 +119,87 @@ class Sighting(BaseModel):
     )
 
 
+class Action(StrEnum):
+    """One touch-sized piece of football visible in an observation window."""
+
+    CARRY = "carry"
+    PASS = "pass"
+    RECEIVE = "receive"
+    LAYOFF = "layoff"
+    CROSS = "cross"
+    SHOT = "shot"
+    SAVE = "save"
+    FINISH = "finish"
+
+
+class IdentitySource(StrEnum):
+    """What in the picture supports a player identity."""
+
+    SHIRT_NUMBER = "shirt_number"
+    SHIRT_NAME = "shirt_name"
+    GRAPHIC = "graphic"
+    MATCH_STATE = "match_state"
+    VISIBLE_ROLE = "visible_role"
+    POSSESSION_CONTINUITY = "possession_continuity"
+    UNKNOWN = "unknown"
+
+
+class PlayerIdentity(BaseModel):
+    """A player reference whose certainty is independent of the action.
+
+    A pass can be clear while its passer is not. Keeping the identity and its
+    evidence in this nested value lets later stages remove a weak name without
+    throwing away the pass itself.
+    """
+
+    name: str | None = Field(default=None, description="Resolved name, only when supported")
+    number: int | None = Field(default=None, description="Legible shirt number, if any")
+    role: str | None = Field(default=None, description="Visible role, such as right-back")
+    side: Side = Side.UNKNOWN
+    confidence: float = Field(ge=0.0, le=1.0)
+    source: IdentitySource = IdentitySource.UNKNOWN
+    evidence: str | None = Field(
+        default=None,
+        max_length=120,
+        description="The visible fact supporting this identity, separate from the action",
+    )
+
+
+class ActionBeat(BaseModel):
+    """One chronological action extracted from a caller frame window.
+
+    ``frame_index`` is the one-based label shown to the vision model. The
+    caller replaces ``video_ts`` with the exact timestamp of that frame before
+    the form leaves the agent. With no specific frame, the beat is anchored to
+    the observation cursor.
+    """
+
+    frame_index: int | None = Field(
+        default=None,
+        ge=1,
+        description="One-based cursor-frame anchor; null means the observation cursor",
+    )
+    video_ts: float | None = Field(
+        default=None,
+        description="Exact frame or cursor timestamp, filled by the caller after inference",
+    )
+    action: Action
+    actor: PlayerIdentity | None = None
+    target: PlayerIdentity | None = None
+    origin_zone: str | None = Field(default=None, max_length=80)
+    destination_zone: str | None = Field(default=None, max_length=80)
+    direction: str | None = Field(default=None, max_length=80)
+    delivery: str | None = Field(default=None, max_length=80)
+    body_part: str | None = Field(default=None, max_length=40)
+    outcome: str | None = Field(default=None, max_length=80)
+    confidence: float = Field(ge=0.0, le=1.0)
+    evidence: str | None = Field(
+        default=None,
+        max_length=120,
+        description="What the ball or players visibly did, independent of identity evidence",
+    )
+
+
 class CallerLine(BaseModel):
     """The caller fills a form, not just a sentence.
 
@@ -132,6 +213,10 @@ class CallerLine(BaseModel):
     sightings: list[Sighting] = Field(
         default_factory=list,
         description="Every shirt number or name you could actually read, one entry per player",
+    )
+    actions: list[ActionBeat] = Field(
+        default_factory=list,
+        description="Meaningful actions in the cursor frames, oldest first",
     )
     confidence: float = Field(ge=0.0, le=1.0)
     speak: bool = Field(description="False is a valid answer; silence is allowed")

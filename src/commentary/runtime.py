@@ -61,6 +61,7 @@ from commentary.gate import (
     is_the_same_name,
 )
 from commentary.goalfollow import MAX_SYNTH, SYNTH_GAP_S, GoalFollowup
+from commentary.identity import IdentityContinuity
 from commentary.ledger import CONTEXT_FACTS, Ledger
 from commentary.ledger import Fact as LedgerFact
 from commentary.llm.base import LLMBackend, Usage
@@ -336,6 +337,10 @@ class Runtime:
             config=self.settings.caller,
             pack=self.pack,
         )
+        # Identity continuity belongs after the concurrent caller requests
+        # have been restored to cursor order.  It is deliberately separate
+        # from the caller so a late request cannot inherit a future player.
+        self.identities = IdentityContinuity(self.pack)
         #: The speaking half of the play-by-play voice, or ``None`` when
         #: ``PHRASER_MODEL=off``. None is not a degraded mode: it is exactly
         #: the runtime that existed before the split, and a test asserts that
@@ -1313,6 +1318,12 @@ class Runtime:
             reason = reason or "the caller returned nothing"
             self._publish(Topic.ERROR, cursor, where="caller", detail=reason)
             return CallerResult(None, reason)
+        line = self.identities.resolve(
+            line,
+            cursor,
+            triggers,
+            cut_timestamps=self._cuts,
+        )
         self._publish(Topic.CALLER, cursor, line)
         return CallerResult(line)
 

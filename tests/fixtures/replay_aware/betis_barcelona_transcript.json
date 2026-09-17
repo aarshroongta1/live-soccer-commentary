@@ -1,0 +1,52 @@
+{
+  "source": "clips/betis-barcelona-1605-1710.mp4",
+  "model": "mlx-community/whisper-large-v3-turbo",
+  "language": "en",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 18.0,
+      "text": "Of a knock, but yeah, you were saying Christensen out to warm up. I'm not sure, but yeah, at the end of the warm-up I remember seeing that Alejandro Balde was talking a little bit with one of the physical trainers. I don't know if it's him or not, but we have to wait."
+    },
+    {
+      "start": 18.0,
+      "end": 24.14,
+      "text": "Watch out here because Barça... in search of the equaliser—yes, it is! Just like that, they're level."
+    },
+    {
+      "start": 24.14,
+      "end": 29.88,
+      "text": "And it's Ferran Torres again who scores. Betis one, Barça one. We're right back in this now."
+    },
+    {
+      "start": 29.88,
+      "end": 36.72,
+      "text": "What a start, Alex. Easy play. That was brilliant. That was such a simple play—just first-touch passing."
+    },
+    {
+      "start": 36.72,
+      "end": 42.08,
+      "text": "I think it was between Eric García and Jules Koundé out on that right side."
+    },
+    {
+      "start": 42.08,
+      "end": 52.98,
+      "text": "Yeah, look at that. Eric García into—who is that? Is that Bardghji? It was Lamine, Bardghji, Koundé."
+    },
+    {
+      "start": 52.98,
+      "end": 56.6,
+      "text": "I think that's on. That's tight for offside, I'll tell you what, but I think it's just on."
+    },
+    {
+      "start": 56.6,
+      "end": 63.36,
+      "text": "A brilliant team goal from Barça, and Ferran, like every good striker should, gets across his man and makes the finish at the near post."
+    },
+    {
+      "start": 63.36,
+      "end": 64.86,
+      "text": "What a start we've had here at La Cartuja."
+    }
+  ]
+}

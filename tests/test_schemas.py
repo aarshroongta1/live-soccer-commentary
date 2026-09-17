@@ -2,7 +2,19 @@ import pytest
 from pydantic import ValidationError
 
 from commentary.llm.schema import _UNSUPPORTED, strict_schema
-from commentary.schemas import AnalystLine, BoardRead, CallerLine, Event, Note, Scene
+from commentary.schemas import (
+    Action,
+    ActionBeat,
+    AnalystLine,
+    BoardRead,
+    CallerLine,
+    Event,
+    IdentitySource,
+    Note,
+    PlayerIdentity,
+    Scene,
+    Side,
+)
 
 
 def test_silence_is_a_valid_caller_answer():
@@ -39,6 +51,43 @@ def test_the_two_events_the_corpus_always_names_are_in_the_vocabulary():
     """Gap 8 item 1: the corpus has no example or form for a cross or a switch."""
     assert Event.CROSS == "cross"
     assert Event.SWITCH == "switch"
+
+
+def test_action_confidence_is_independent_of_identity_confidence():
+    beat = ActionBeat(
+        action=Action.CROSS,
+        actor=PlayerIdentity(
+            number=23,
+            side=Side.AWAY,
+            confidence=0.35,
+            source=IdentitySource.SHIRT_NUMBER,
+            evidence="the away shirt may read 23",
+        ),
+        origin_zone="right side",
+        destination_zone="six-yard box",
+        confidence=0.96,
+        evidence="the ball was driven across the face of goal",
+    )
+
+    assert beat.confidence == pytest.approx(0.96)
+    assert beat.actor is not None
+    assert beat.actor.confidence == pytest.approx(0.35)
+    assert beat.actor.name is None
+    assert beat.action is Action.CROSS
+
+
+def test_old_caller_forms_load_with_no_action_beats():
+    call = CallerLine.model_validate(
+        {
+            "scene": "live_play",
+            "event": "pass",
+            "confidence": 0.8,
+            "speak": True,
+            "line": "Played inside.",
+        }
+    )
+
+    assert call.actions == []
 
 
 def test_schema_references_have_no_sibling_keywords():

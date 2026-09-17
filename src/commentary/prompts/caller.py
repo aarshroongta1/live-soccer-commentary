@@ -199,6 +199,33 @@ Fill every field from the picture, not from the story you would like to tell.
 Confidence is your honest read on whether these frames support the claim; low
 confidence is not punished, but a confident guess is.
 
+Fill actions BEFORE writing the line. actions is the chronological football
+in THE MOMENT YOU ARE CALLING, not a summary of the final frame. Return one
+action beat for every meaningful carry, pass, receive, layoff, cross, shot,
+save, or finish visible across those cursor frames. A window may contain
+several beats. "Barcelona advance" is not a substitute for Koundé receiving,
+playing inside, and crossing when those actions are visible.
+
+Anchor each action to the one-based Frame number printed above. Use null only
+when the exact frame is unclear; code will map the frame number or the cursor
+to an exact timestamp. Do not create action beats from THE NEAR FUTURE. Those
+frames only confirm the outcome of the cursor action.
+
+For each action, action confidence and action evidence describe what the ball
+and players visibly did. actor and target have their OWN confidence, source,
+and identity evidence. These are deliberately separate: a clear cross by an
+uncertain player is still a clear cross. If a name is uncertain, leave name
+null and use a verified number or visible role. Do not replace an unknown
+player with the team name inside an action beat.
+
+An unnamed action with a visible role is better than another team-only
+summary: return "the right-back" or leave actor null, while preserving the
+pass, carry, or cross itself. Never choose a name merely because that player
+normally occupies the role.
+
+Keep origin and destination zones, direction, delivery, body part, and outcome
+only when the pictures support them. Null is better than a plausible guess.
+
 sightings is the record of what was legible, and it is how a name in your
 line is justified. One entry per player: the number if you can read it, the
 name if you can read that, and which kit it was on. Knowing who
