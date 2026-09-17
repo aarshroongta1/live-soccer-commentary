@@ -1,0 +1,77 @@
+src/commentary/agents/caller.py
+  s_334950940021ac::t_b92b4a7bde44ea 40,44,274-279,281-288,291-292,296,298,302,307,319-347
+src/commentary/schemas.py
+  s_334950940021ac::t_8648438da271f2 143
+  s_334950940021ac::t_b92b4a7bde44ea 122-142,144-202,217-220
+tests/fixtures/replay_aware/betis_barcelona_transcript.json
+  s_334950940021ac::t_880a46e7f82395 1-52
+tests/test_replay_aware_fixture.py
+  s_334950940021ac::t_8d22257da8e8c0 51-53,89-92
+  s_334950940021ac::t_babab0171a6582 65
+  s_334950940021ac::t_d9f6cc42f13dca 147-153,163-167
+  s_334950940021ac::t_880a46e7f82395 1-50,54-64,66-88,93-146,154-162,168-206
+tests/test_caller.py
+  s_334950940021ac::t_b92b4a7bde44ea 9-19,73-157,159
+  s_334950940021ac::t_24882b99106cea 158,160-163
+  s_334950940021ac::t_40993ea6a60d41 164-165
+tests/test_move.py
+  s_334950940021ac::t_5cd23cd99f5518 1-159,203-312
+  s_334950940021ac::t_883c45ea8c4736 160-202
+tests/fixtures/replay_aware/current_observations.jsonl
+  s_334950940021ac::t_880a46e7f82395 1-18
+tests/fixtures/replay_aware/current_output.jsonl
+  s_334950940021ac::t_880a46e7f82395 1-13
+tests/fixtures/replay_aware/expected_action_chain.json
+  s_334950940021ac::t_d9f6cc42f13dca 8-14
+  s_334950940021ac::t_880a46e7f82395 1-7,15-73
+src/commentary/runtime.py
+  s_334950940021ac::t_d8bed2b62cf37b 1321-1326
+  s_334950940021ac::t_8aab1089e7028a 64,340-343
+tests/test_identity.py
+  s_334950940021ac::t_92de4b6756b5a4 15,229-403
+  s_334950940021ac::t_54609dbae73f3f 1-14,16-139,143-168,172-182,186-228
+  s_334950940021ac::t_1e218b5a2fe911 140-142,169-171,183-185
+tests/test_schemas.py
+  s_334950940021ac::t_b92b4a7bde44ea 5-17,56-90
+  s_334950940021ac::t_bb455ce9e237e7 91-92
+src/commentary/prompts/caller.py
+  s_334950940021ac::t_b92b4a7bde44ea 202-220,226-228
+  s_334950940021ac::t_8aab1089e7028a 221-225
+src/commentary/identity.py
+  s_334950940021ac::t_41a261eb498d5d 33,45,121-126,135-154,185-186,194,196-199,201-206,215-219,221,224,226,230,232,237,239,244-246,310
+  s_334950940021ac::t_b2be3eec9f2ff6 178,223,342-367,369-373,375-389
+  s_334950940021ac::t_e7cc473b258128 312
+  s_334950940021ac::t_e8712fd72031f2 1-18,20-32,34-44,46-87,89-99,101,103-120,127-134,155-171,175-177,179-184,187-193,195,200,207-214,220,222,225,227-229,231,233-236,238,240-243,247-261,267,279-292,298-309,311,325-341,390-396,406-424,434,437-460
+  s_334950940021ac::t_2715678b27d770 368,374,402-405
+  s_334950940021ac::t_1e218b5a2fe911 19,172-174,262-266,268-278,293-297,397-401,425-433,435-436
+  s_334950940021ac::t_5406c9eac34150 88,100,102,313-324
+src/commentary/move.py
+  s_334950940021ac::t_5cd23cd99f5518 1-252,264,266-311,313-324,326-333,339-364,366-385
+  s_0fcb8f1d5badaf::t_105031632a1285 312,325,365
+  s_334950940021ac::t_883c45ea8c4736 253-263,265
+  s_334950940021ac::t_d55c731dd357be 334-338
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f6fc3896c56b2c3b01cedf023611513b4c0e1eb6",
+  "prompts": {},
+  "sessions": {
+    "s_0fcb8f1d5badaf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a0ac8c-7bcf-7602-819a-ad5eb2da32d2",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_334950940021ac": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ac8c-7bcf-7602-819a-ad5eb2da32d2",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
