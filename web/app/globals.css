@@ -1,20 +1,14 @@
 @import "tailwindcss";
 
-/* A broadcast gallery at night: the picture is the only bright thing in the
-   room, every panel around it is a shade of instrument grey, and colour is
-   spent only on things that carry meaning — who is speaking, what was killed. */
+/* Dark video player with distinct caller and analyst labels. */
 @theme {
   --color-ink: #06080a;
   --color-panel: #0b0e10;
-  --color-raise: #11161a;
   --color-line: #1b2226;
   --color-text: #e9efec;
   --color-dim: #7c8b86;
-  --color-faint: #4a5754;
   --color-caller: #5fe3b0;
   --color-analyst: #e8bd7c;
-  --color-reject: #f0685a;
-  --color-live: #ff4b45;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
@@ -31,12 +25,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.tnum {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Thin scrollbars, so the feed and the panel read as instrument readouts
-   rather than as web pages that happen to be scrollable. */
+/* Keep the player page's scrollbar unobtrusive. */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-line) transparent;
@@ -54,24 +43,4 @@ body {
 
 *::-webkit-scrollbar-track {
   background: transparent;
-}
-
-@keyframes pulse-live {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-.live-dot {
-  animation: pulse-live 1.6s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .live-dot {
-    animation: none;
-  }
 }

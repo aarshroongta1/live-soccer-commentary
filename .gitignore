@@ -9,7 +9,10 @@ __pycache__/
 
 # Env / secrets
 .env
-.env.local
+.env.*
+!.env.example
+*.pem
+*.key
 
 # Captured media and run artifacts — never commit broadcast footage
 recordings/
@@ -19,14 +22,23 @@ out/
 *.mp4
 *.mkv
 *.wav
+*.mp3
+*.m4a
+*.aiff
 *.jpg
 *.png
 !docs/**/*.png
 
-# Node / Next.js (web/ arrives later)
+# Node / Next.js
 node_modules/
 .next/
 
 # macOS
 .DS_Store
 .gstack/
+
+# Local agent sessions, worktrees, and private project notes
+/.claude/
+/.codex/
+/.worktrees/
+/.local-notes/

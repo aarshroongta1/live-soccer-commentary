@@ -1,130 +1,55 @@
+"""Strict structured-output schemas for the retained recorded workflow."""
+
 import pytest
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from commentary.llm.schema import _UNSUPPORTED, strict_schema
-from commentary.schemas import (
-    Action,
-    ActionBeat,
-    AnalystLine,
-    BoardRead,
-    CallerLine,
-    Event,
-    IdentitySource,
-    Note,
-    PlayerIdentity,
-    Scene,
-    Side,
-)
+from commentary.recorded_demo import JointScript, ObservedActor, ObserverResult
+from commentary.recorded_research import ResearchDraft
 
 
-def test_silence_is_a_valid_caller_answer():
-    call = CallerLine(scene=Scene.REPLAY, event=Event.NONE, confidence=0.9, speak=False)
-    assert call.line == ""
-    assert call.sightings == []
-
-
-def test_confidence_is_bounded():
-    with pytest.raises(ValidationError):
-        CallerLine(scene=Scene.LIVE_PLAY, event=Event.SHOT, confidence=1.4, speak=True)
-
-
-def test_line_is_capped_short():
-    with pytest.raises(ValidationError):
-        CallerLine(
-            scene=Scene.LIVE_PLAY, event=Event.SHOT, confidence=0.5, speak=True, line="x" * 201
+def test_observed_actor_requires_its_declared_readable_identity() -> None:
+    with pytest.raises(ValidationError, match="shirt_number source requires shirt_number"):
+        ObservedActor(
+            side="home",
+            identity_source="shirt_number",
+            action_role="passer",
         )
 
 
-def test_a_note_defaults_to_no_clause_and_can_carry_one():
-    """``clause`` is optional, the way a pack written before it existed loads."""
-    bare = Note(about="Kylian Mbappé", text="five goals in this tournament")
-    assert bare.clause == ""
-    with_clause = Note(
-        about="Kylian Mbappé",
-        text="a goal in the 2018 final at nineteen",
-        clause="a goal in a World Cup final, as a teenager",
-    )
-    assert with_clause.clause == "a goal in a World Cup final, as a teenager"
+def test_schema_references_have_no_sibling_keywords() -> None:
+    schema = strict_schema(ObserverResult)
 
-
-def test_the_two_events_the_corpus_always_names_are_in_the_vocabulary():
-    """Gap 8 item 1: the corpus has no example or form for a cross or a switch."""
-    assert Event.CROSS == "cross"
-    assert Event.SWITCH == "switch"
-
-
-def test_action_confidence_is_independent_of_identity_confidence():
-    beat = ActionBeat(
-        action=Action.CROSS,
-        actor=PlayerIdentity(
-            number=23,
-            side=Side.AWAY,
-            confidence=0.35,
-            source=IdentitySource.SHIRT_NUMBER,
-            evidence="the away shirt may read 23",
-        ),
-        origin_zone="right side",
-        destination_zone="six-yard box",
-        confidence=0.96,
-        evidence="the ball was driven across the face of goal",
-    )
-
-    assert beat.confidence == pytest.approx(0.96)
-    assert beat.actor is not None
-    assert beat.actor.confidence == pytest.approx(0.35)
-    assert beat.actor.name is None
-    assert beat.action is Action.CROSS
-
-
-def test_old_caller_forms_load_with_no_action_beats():
-    call = CallerLine.model_validate(
-        {
-            "scene": "live_play",
-            "event": "pass",
-            "confidence": 0.8,
-            "speak": True,
-            "line": "Played inside.",
-        }
-    )
-
-    assert call.actions == []
-
-
-def test_schema_references_have_no_sibling_keywords():
-    schema = strict_schema(CallerLine)
-
-    def walk(node):
+    def walk(node: object) -> None:
         if isinstance(node, list):
             for item in node:
                 walk(item)
-            return
-        if not isinstance(node, dict):
-            return
-        if "$ref" in node:
-            assert list(node) == ["$ref"]
-        for value in node.values():
-            walk(value)
+        elif isinstance(node, dict):
+            if "$ref" in node:
+                assert list(node) == ["$ref"]
+            for value in node.values():
+                walk(value)
 
     walk(schema)
 
 
-@pytest.mark.parametrize("model", [CallerLine, BoardRead, AnalystLine])
-def test_schema_drops_constraints_the_api_rejects(model):
-    """Structured outputs 400 on minimum/maxLength and friends; Pydantic emits them."""
+@pytest.mark.parametrize("model", [ObserverResult, JointScript, ResearchDraft])
+def test_schema_drops_api_unsupported_constraints_and_closes_objects(
+    model: type[BaseModel],
+) -> None:
+    """Pydantic keeps validation constraints; the API schema omits rejected keywords."""
     schema = strict_schema(model)
 
-    def walk(node):
+    def walk(node: object) -> None:
         if isinstance(node, list):
             for item in node:
                 walk(item)
-            return
-        if not isinstance(node, dict):
-            return
-        assert not _UNSUPPORTED & node.keys(), f"unsupported keyword in {node}"
-        if node.get("type") == "object" and "properties" in node:
-            assert node["additionalProperties"] is False
-            assert node["required"] == list(node["properties"])
-        for value in node.values():
-            walk(value)
+        elif isinstance(node, dict):
+            assert not _UNSUPPORTED & node.keys(), f"unsupported keyword in {node}"
+            if node.get("type") == "object" and "properties" in node:
+                assert node["additionalProperties"] is False
+                assert node["required"] == list(node["properties"])
+            for value in node.values():
+                walk(value)
 
     walk(schema)

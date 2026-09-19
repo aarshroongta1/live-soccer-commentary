@@ -1,0 +1,27 @@
+{
+  "fixture": "Real Betis vs FC Barcelona, La Liga, 2025-12-06",
+  "as_of": "2025-12-06",
+  "facts": [
+    {
+      "id": "pre-comebacks",
+      "subject": "FC Barcelona",
+      "text": "Before this fixture, Barcelona had come from behind to win each of their previous two La Liga matches 3-1, against Alaves and Atletico Madrid.",
+      "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414145/-fc-/featured",
+      "source_date": "2025-12-06"
+    },
+    {
+      "id": "pre-form",
+      "subject": "Real Betis",
+      "text": "Before this fixture, Real Betis had lost only one of their previous eleven matches across all competitions.",
+      "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414865/last-session-before-betis",
+      "source_date": "2025-12-05"
+    },
+    {
+      "id": "pre-venue",
+      "subject": "Real Betis",
+      "text": "La Cartuja was Real Betis' temporary home while their usual stadium was being redeveloped.",
+      "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414865/last-session-before-betis",
+      "source_date": "2025-12-05"
+    }
+  ]
+}

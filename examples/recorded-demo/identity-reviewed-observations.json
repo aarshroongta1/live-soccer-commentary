@@ -1,0 +1,235 @@
+{
+  "result": {
+    "observations": [
+      {
+        "id": "w0-1",
+        "at_s": 0,
+        "kind": "play",
+        "description": "Wide midfield view, scoreboard reads BET 1-0 BAR at 10:09. Ball is near the right side of the pitch around a Barcelona player in orange, well outside the penalty area."
+      },
+      {
+        "id": "obs_6_0",
+        "at_s": 6,
+        "kind": "play",
+        "description": "Barcelona carry the ball through the right-centre of the attacking third, outside the Betis penalty area; several Betis defenders are ahead of the carrier."
+      },
+      {
+        "id": "obs_6_2",
+        "at_s": 9,
+        "kind": "play",
+        "description": "A Betis defender challenges the Barcelona ball carrier on the right outside the penalty area. Contact is visible; no foul decision is shown."
+      },
+      {
+        "id": "obs_6_5",
+        "at_s": 11.5,
+        "kind": "play",
+        "description": "Barcelona have the ball wide on the right outside the Betis penalty area; no shot or cross is yet visible."
+      },
+      {
+        "id": "obs-12.0",
+        "at_s": 12,
+        "kind": "play",
+        "description": "Barcelona retain the ball outside the Betis penalty area. Several Betis defenders hold positions in and around the box, with Barcelona players spread across the width."
+      },
+      {
+        "id": "obs-16.5",
+        "at_s": 16.5,
+        "kind": "play",
+        "description": "Two Barcelona players combine on the right outside the penalty area. The orange number 23 is visible running alongside his teammate. This identifies his involvement here, not the later deliverer.",
+        "actor": {
+          "side": "away",
+          "shirt_number": 23,
+          "shirt_name": null,
+          "identity_source": "shirt_number",
+          "action_role": "visible_player"
+        }
+      },
+      {
+        "id": "review-18.5",
+        "at_s": 18.5,
+        "kind": "play",
+        "description": "The Barcelona runner on the right is inside the penalty area with the ball ahead of him and a Betis defender alongside; a teammate is running toward the goalmouth."
+      },
+      {
+        "id": "obs-19.5",
+        "at_s": 19.5,
+        "kind": "play",
+        "description": "A Barcelona player delivers the ball from the right side of the penalty area toward a teammate arriving in front of goal. The delivery travels across the six-yard area; no exact body-part claim."
+      },
+      {
+        "id": "obs-20.5",
+        "at_s": 20.5,
+        "kind": "play",
+        "description": "Ball struck from close range inside the six-yard area, visible just in front of the goalkeeper who is diving/sprawling; bodies of defenders on the ground nearby.",
+        "actor": {
+          "side": "away",
+          "shirt_number": 7,
+          "shirt_name": null,
+          "identity_source": "shirt_number",
+          "action_role": "shooter"
+        }
+      },
+      {
+        "id": "obs-21.0",
+        "at_s": 21,
+        "kind": "goal",
+        "description": "The ball is clearly inside the net behind the beaten goalkeeper. This is the first sampled frame clearly showing a goal."
+      },
+      {
+        "id": "obs-23.5",
+        "at_s": 23.5,
+        "kind": "celebration",
+        "description": "Close-up of a Barcelona player in orange wearing number 7 running and pumping his fist in celebration.",
+        "actor": {
+          "side": "away",
+          "shirt_number": 7,
+          "shirt_name": null,
+          "identity_source": "shirt_number",
+          "action_role": "visible_player"
+        }
+      },
+      {
+        "id": "obs-27-00",
+        "at_s": 27,
+        "kind": "celebration",
+        "description": "Cut to the touchline: a coach in all black gestures in the technical area; the on-screen score now reads 1-1, indicating the goal was given (goal moment itself not shown in this window)."
+      },
+      {
+        "id": "obs-37-50",
+        "at_s": 37.5,
+        "kind": "celebration",
+        "description": "Scorer caption appears showing Barcelona number 7 'FERRAN — GOLES 1'; the player is shown in close-up glancing to his side.",
+        "actor": {
+          "side": "away",
+          "shirt_number": 7,
+          "shirt_name": "FERRAN",
+          "identity_source": "graphic",
+          "action_role": "scorer"
+        }
+      }
+    ]
+  },
+  "usage": {
+    "model": "claude-opus-5",
+    "input_tokens": 101728,
+    "output_tokens": 3352,
+    "cache_read_tokens": 5190,
+    "cache_write_tokens": 865,
+    "cost_usd": 0.60044125,
+    "latency_s": 76.72903596004471,
+    "windows": 7,
+    "reused": true
+  },
+  "review": {
+    "reviewer": "assistant visual frame review",
+    "mode": "review-assisted evidence, not unedited observer output",
+    "raw_source": "runs/demo/story-v5-vision/observe.json",
+    "reason": "Correct repeated midfield/ball-location errors, make the visible right-side delivery explicit, and remove redundant celebration details before the model writes commentary.",
+    "selection": "12 observations selected from the raw output plus one new runner observation. No spoken sentences supplied.",
+    "corrections": [
+      {
+        "id": "obs_6_0",
+        "original": {
+          "id": "obs_6_0",
+          "at_s": 6,
+          "kind": "play",
+          "description": "Barcelona player in orange carries the ball in midfield on the right side, outside the penalty area, with green-striped Betis players shaped in a defensive block ahead."
+        },
+        "reviewed_description": "Barcelona carry the ball through the right-centre of the attacking third, outside the Betis penalty area; several Betis defenders are ahead of the carrier."
+      },
+      {
+        "id": "obs_6_2",
+        "original": {
+          "id": "obs_6_2",
+          "at_s": 9,
+          "kind": "play",
+          "description": "Challenge near the ball on the right as a Betis defender closes down the Barcelona carrier; the ball appears to come loose just beside them, possession unclear from this frame."
+        },
+        "reviewed_description": "A Betis defender challenges the Barcelona ball carrier on the right outside the penalty area. Contact is visible; no foul decision is shown."
+      },
+      {
+        "id": "obs_6_5",
+        "original": {
+          "id": "obs_6_5",
+          "at_s": 11.5,
+          "kind": "play",
+          "description": "An orange-shirted Barcelona player on the right touchline gets to the ball, still well outside the Betis penalty area; no shot or cross yet visible."
+        },
+        "reviewed_description": "Barcelona have the ball wide on the right outside the Betis penalty area; no shot or cross is yet visible."
+      },
+      {
+        "id": "obs-12.0",
+        "original": {
+          "id": "obs-12.0",
+          "at_s": 12,
+          "kind": "play",
+          "description": "Barcelona (orange) circulate the ball in midfield outside the Betis penalty area; ball visible on the right-centre of the pitch with green-shirted defenders dropping into a deep block."
+        },
+        "reviewed_description": "Barcelona retain the ball outside the Betis penalty area. Several Betis defenders hold positions in and around the box, with Barcelona players spread across the width."
+      },
+      {
+        "id": "obs-16.5",
+        "original": {
+          "id": "obs-16.5",
+          "at_s": 16.5,
+          "kind": "play",
+          "description": "Ball worked further to the Barcelona right side near the touchline area, with two orange players close together; several green shirts converging. Exact contact/pass type unclear."
+        },
+        "reviewed_description": "Two Barcelona players are close together on the right outside the penalty area; the ball is worked forward toward the wide runner."
+      },
+      {
+        "id": "obs-19.5",
+        "original": {
+          "id": "obs-19.5",
+          "at_s": 19.5,
+          "kind": "play",
+          "description": "Play shifts toward the left side of the Betis box, ball near the penalty-area edge as an orange attacker closes in and the goalkeeper in white shifts across his line."
+        },
+        "reviewed_description": "A Barcelona player delivers the ball from the right side of the penalty area toward a teammate arriving in front of goal. The delivery travels across the six-yard area; no exact body-part claim."
+      },
+      {
+        "id": "obs-21.0",
+        "original": {
+          "id": "obs-21.0",
+          "at_s": 21,
+          "kind": "goal",
+          "description": "Ball clearly inside the goal, high near the crossbar behind the beaten goalkeeper who is down on the ground — first frame showing ball in the net."
+        },
+        "reviewed_description": "The ball is clearly inside the net behind the beaten goalkeeper. This is the first sampled frame clearly showing a goal."
+      }
+    ],
+    "added": [
+      "review-18.5"
+    ],
+    "frames_reviewed": "Source contact sheets, 18.5/19/19.5/20-second delivery sequence, and original 20.5/21-second goal frames; times remain source-relative."
+  },
+  "identity_review": {
+    "reviewer": "assistant visual frame review",
+    "mode": "Review-assisted actor annotations, not unedited automatic recognition",
+    "base_observations": "examples/recorded-demo/story-reviewed-observations.json",
+    "fresh_observer_audit": "runs/demo/identity-v1-vision/observe.json",
+    "findings": [
+      {
+        "id": "obs-16.5",
+        "evidence": "Orange 23 readable in the upper-right pair at 16.0 and 16.48 seconds. Name resolved using away roster. Do not propagate this identity to the 19.5-second delivery: continuity was not established confidently in independent reviews."
+      },
+      {
+        "id": "obs-20.5",
+        "evidence": "Orange 7 readable on the close-range finisher at 20.0 and 20.5 seconds, before the goal confirmation at 21. Name resolved using away roster, not inferred backward from celebration."
+      },
+      {
+        "id": "obs-23.5",
+        "evidence": "Orange 7 visible during celebration; applies only to this observation."
+      },
+      {
+        "id": "obs-37-50",
+        "evidence": "Broadcast scorer graphic reads FERRAN and 7; scorer role is explicit here."
+      }
+    ],
+    "automatic_limit": "Fresh observer detected mostly celebration identities and missed the actionable shirt reading at the finish. These actor annotations were supplied by frame review. No spoken sentences or script timestamps were supplied.",
+    "unresolved": [
+      "Identity of the player delivering at 19.5 seconds",
+      "Other buildup ball carriers"
+    ]
+  }
+}

@@ -6,6 +6,7 @@ from commentary.llm.base import Usage
 
 #: (input, output) USD per million tokens.
 PRICES: dict[str, tuple[float, float]] = {
+    "gpt-6-astra": (10.00, 50.00),
     "claude-opus-5": (5.00, 25.00),
     "claude-sonnet-5": (2.00, 10.00),
     "claude-haiku-4-5": (1.00, 5.00),

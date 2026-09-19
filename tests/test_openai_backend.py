@@ -3,16 +3,25 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import date
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from pydantic import BaseModel
 
-from commentary.__main__ import build_parser
-from commentary.llm import default_backend, openai_factory
+from commentary.llm import openai_factory
 from commentary.llm.base import LLMError, image_block, text_block
 from commentary.llm.openai_backend import OpenAIBackend, responses_blocks
-from commentary.schemas import BoardRead
+from commentary.recorded_research import ResearchDraft, research_brief
+
+
+class BoardRead(BaseModel):
+    bug_visible: bool
+    home_score: int | None = None
+    away_score: int | None = None
+    clock: str | None = None
+    confidence: float
 
 
 class _Responses:
@@ -116,9 +125,7 @@ def test_failures_still_count_the_response(response: Any, message: str) -> None:
     backend = OpenAIBackend(_Client(response))  # type: ignore[arg-type]
     with pytest.raises(LLMError, match=message):
         asyncio.run(
-            backend.parse(
-                model="gpt-5.6-luna", system="", blocks=[], output_format=BoardRead
-            )
+            backend.parse(model="gpt-5.6-luna", system="", blocks=[], output_format=BoardRead)
         )
     assert backend.total.output_tokens == 20
 
@@ -139,16 +146,32 @@ def test_cached_input_uses_the_existing_discount() -> None:
     assert parsed.usage.cost_usd == pytest.approx((60 * 0.2 + 40 * 0.2 * 0.1) / 1_000_000)
 
 
-def test_openai_factory_requires_its_own_key_and_cli_names_backend(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_research_scopes_required_openai_web_search_to_one_call() -> None:
+    client = _Client(_response('{"facts": []}'))
+    backend = OpenAIBackend(client)  # type: ignore[arg-type]
+    backend.extra_params["metadata"] = {"shared": "value"}
+
+    parsed = asyncio.run(
+        research_brief(
+            backend,
+            fixture="Green v Orange",
+            as_of=date(2026, 1, 1),
+        )
+    )
+
+    assert isinstance(parsed.value, ResearchDraft)
+    assert client.responses.params is not None
+    assert client.responses.params["tools"] == [{"type": "web_search"}]
+    assert client.responses.params["tool_choice"] == "required"
+    assert client.responses.params["max_tool_calls"] == 3
+    assert client.responses.params["max_output_tokens"] == 4096
+    assert backend.extra_params == {"metadata": {"shared": "value"}}
+
+
+def test_openai_factory_requires_its_own_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     with pytest.raises(LLMError, match="OPENAI_API_KEY"):
-        default_backend("openai")
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    assert isinstance(openai_factory(), OpenAIBackend)
-    args = build_parser().parse_args(["run", "--backend", "openai"])
-    assert args.backend == "openai"
+        openai_factory()
 
 
 def test_openai_factory_reads_structural_validation_timeout(
@@ -156,10 +179,13 @@ def test_openai_factory_reads_structural_validation_timeout(
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.setenv("OPENAI_TIMEOUT_S", "15")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://openai.example/v1")
 
     configured = openai_factory()
-    explicit = openai_factory(6.0)
+    explicit = openai_factory(6.0, max_retries=0)
 
     assert isinstance(configured, OpenAIBackend)
     assert configured._client.timeout == pytest.approx(15.0)
     assert explicit._client.timeout == pytest.approx(6.0)
+    assert str(explicit._client.base_url).startswith("https://openai.example/v1")
+    assert explicit._client.max_retries == 0

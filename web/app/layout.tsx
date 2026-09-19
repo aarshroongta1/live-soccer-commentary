@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Live Soccer Commentary",
+  title: "Soccer Commentary Demo",
   description:
-    "A delayed broadcast, two AI voices calling it, and the decisions behind every line they did and did not say.",
+    "A recorded soccer clip with two-voice AI commentary and embedded captions.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

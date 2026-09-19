@@ -43,10 +43,12 @@ def responses_blocks(blocks: list[Block]) -> list[dict[str, Any]]:
             data = source.get("data")
             if not isinstance(media_type, str) or not isinstance(data, str):
                 raise LLMError("OpenAI: malformed base64 image block")
-            converted.append({
-                "type": "input_image",
-                "image_url": f"data:{media_type};base64,{data}",
-            })
+            converted.append(
+                {
+                    "type": "input_image",
+                    "image_url": f"data:{media_type};base64,{data}",
+                }
+            )
             continue
         raise LLMError(f"OpenAI: unsupported content block type {kind!r}")
     return converted
@@ -80,6 +82,9 @@ class OpenAIBackend:
             self._client = openai.AsyncOpenAI(timeout=timeout_s, max_retries=max_retries)
         self._total = Usage()
         self._lock = asyncio.Lock()
+        # Scoped callers such as recorded research may attach Responses-only
+        # parameters (for example, web search) for one request.
+        self.extra_params: dict[str, Any] = {}
 
     @property
     def total(self) -> Usage:
@@ -115,6 +120,7 @@ class OpenAIBackend:
         }
         if effort is not None:
             params["reasoning"] = {"effort": effort}
+        params.update(self.extra_params)
 
         try:
             response = await self._client.responses.create(**params)

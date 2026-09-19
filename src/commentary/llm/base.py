@@ -1,8 +1,7 @@
 """The contract every agent uses to reach a model.
 
 One method, ``parse``: content blocks in, a validated Pydantic object out.
-Structured output is not optional here — the caller fills a form, the board
-reader fills a form, and the fact gate reads those forms. A backend that
+Research, observations and scripts all use structured output. A backend that
 cannot produce the requested type raises rather than guessing.
 """
 
@@ -73,7 +72,7 @@ class LLMBackend(Protocol):
     ) -> Parsed[T]:
         """Run one call and return ``output_format`` filled in.
 
-        ``tag`` names the call site (``"caller"``, ``"board"``, ...) for
+        ``tag`` names the call site (research, observation or writing) for
         tracing, cost attribution, and scripted-backend dispatch.
         """
         ...
@@ -92,11 +91,7 @@ def text_block(text: str, *, cache: bool = False) -> Block:
 
 
 def image_block(jpeg: bytes) -> Block:
-    """A JPEG as an Anthropic image block.
-
-    JPEG rather than PNG: a 720p frame is ~60 KB at quality 70 against ~900 KB
-    lossless, and the caller sees six of them per call.
-    """
+    """A JPEG as an Anthropic-compatible image block."""
     return {
         "type": "image",
         "source": {
@@ -108,11 +103,7 @@ def image_block(jpeg: bytes) -> Block:
 
 
 def encode_frame(image: np.ndarray, *, quality: int = 70, max_width: int = 768) -> bytes:
-    """BGR array to JPEG bytes, downscaled to what the model can actually use.
-
-    768 px wide is the point past which extra pixels cost tokens without
-    adding anything a vision model reads off a wide shot of a pitch.
-    """
+    """BGR array to JPEG bytes, preserving aspect ratio within max_width."""
     import cv2
 
     h, w = image.shape[:2]

@@ -1,7 +1,7 @@
 [project]
 name = "commentary"
 version = "0.1.0"
-description = "Real-time two-voice AI soccer commentary from a screen-captured broadcast"
+description = "Two-voice AI commentary for short recorded soccer clips"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -9,24 +9,15 @@ dependencies = [
     "pydantic>=2.9",
     "numpy>=2.1",
     "opencv-python-headless>=4.10",
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
     "python-dotenv>=1.0",
     "langgraph>=1,<2",
     "openai>=2,<4",
 ]
 
 [project.optional-dependencies]
-eval = ["mlx-whisper>=0.4; sys_platform == 'darwin'", "httpx>=0.27"]
-trace = ["langfuse>=2.53"]
-voice = ["elevenlabs>=1.9"]
-# PortAudio, for playing raw PCM inside this process instead of piping it to
-# ffplay. Separate from `voice` because it is the only wheel here that needs a
-# sound card to be useful, and the mp3 path still works without it.
-audio = ["sounddevice>=0.5"]
-tools = [
-    "mcp>=1.2",
-]
+# A small bundled FFmpeg with libass, for reproducible captioned demo renders.
+demo = ["imageio-ffmpeg==0.6.0"]
+voice = ["httpx>=0.27"]
 
 [dependency-groups]
 dev = [
@@ -47,6 +38,7 @@ packages = ["src/commentary"]
 [tool.ruff]
 line-length = 100
 src = ["src", "tests"]
+extend-exclude = [".claude", ".worktrees", "runs", "clips", ".gstack"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
@@ -59,7 +51,7 @@ strict = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["cv2.*", "mlx_whisper.*", "sounddevice.*"]
+module = ["cv2.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

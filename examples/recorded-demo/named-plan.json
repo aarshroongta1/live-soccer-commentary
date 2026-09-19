@@ -1,0 +1,879 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "betis-barcelona-1605-1710.mp4",
+    "start_s": 0,
+    "duration_s": 40
+  },
+  "observations": [
+    {
+      "id": "w0-1",
+      "at_s": 0,
+      "kind": "play",
+      "description": "Wide midfield view, scoreboard reads BET 1-0 BAR at 10:09. Ball is near the right side of the pitch around a Barcelona player in orange, well outside the penalty area.",
+      "actor": null
+    },
+    {
+      "id": "obs_6_0",
+      "at_s": 6,
+      "kind": "play",
+      "description": "Barcelona carry the ball through the right-centre of the attacking third, outside the Betis penalty area; several Betis defenders are ahead of the carrier.",
+      "actor": null
+    },
+    {
+      "id": "obs_6_2",
+      "at_s": 9,
+      "kind": "play",
+      "description": "A Betis defender challenges the Barcelona ball carrier on the right outside the penalty area. Contact is visible; no foul decision is shown.",
+      "actor": null
+    },
+    {
+      "id": "obs_6_5",
+      "at_s": 11.5,
+      "kind": "play",
+      "description": "Barcelona have the ball wide on the right outside the Betis penalty area; no shot or cross is yet visible.",
+      "actor": null
+    },
+    {
+      "id": "obs-12.0",
+      "at_s": 12,
+      "kind": "play",
+      "description": "Barcelona retain the ball outside the Betis penalty area. Several Betis defenders hold positions in and around the box, with Barcelona players spread across the width.",
+      "actor": null
+    },
+    {
+      "id": "obs-16.5",
+      "at_s": 16.5,
+      "kind": "play",
+      "description": "Two Barcelona players combine on the right outside the penalty area. The orange number 23 is visible running alongside his teammate. This identifies his involvement here, not the later deliverer.",
+      "actor": {
+        "side": "away",
+        "shirt_number": 23,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "visible_player",
+        "resolved_name": "Jules Koundé"
+      }
+    },
+    {
+      "id": "review-18.5",
+      "at_s": 18.5,
+      "kind": "play",
+      "description": "The Barcelona runner on the right is inside the penalty area with the ball ahead of him and a Betis defender alongside; a teammate is running toward the goalmouth.",
+      "actor": null
+    },
+    {
+      "id": "obs-19.5",
+      "at_s": 19.5,
+      "kind": "play",
+      "description": "A Barcelona player delivers the ball from the right side of the penalty area toward a teammate arriving in front of goal. The delivery travels across the six-yard area; no exact body-part claim.",
+      "actor": null
+    },
+    {
+      "id": "obs-20.5",
+      "at_s": 20.5,
+      "kind": "play",
+      "description": "Ball struck from close range inside the six-yard area, visible just in front of the goalkeeper who is diving/sprawling; bodies of defenders on the ground nearby.",
+      "actor": {
+        "side": "away",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": "Ferran Torres"
+      }
+    },
+    {
+      "id": "obs-21.0",
+      "at_s": 21,
+      "kind": "goal",
+      "description": "The ball is clearly inside the net behind the beaten goalkeeper. This is the first sampled frame clearly showing a goal.",
+      "actor": null
+    },
+    {
+      "id": "obs-23.5",
+      "at_s": 23.5,
+      "kind": "celebration",
+      "description": "Close-up of a Barcelona player in orange wearing number 7 running and pumping his fist in celebration.",
+      "actor": {
+        "side": "away",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "visible_player",
+        "resolved_name": "Ferran Torres"
+      }
+    },
+    {
+      "id": "obs-27-00",
+      "at_s": 27,
+      "kind": "celebration",
+      "description": "Cut to the touchline: a coach in all black gestures in the technical area; the on-screen score now reads 1-1, indicating the goal was given (goal moment itself not shown in this window).",
+      "actor": null
+    },
+    {
+      "id": "obs-37-50",
+      "at_s": 37.5,
+      "kind": "celebration",
+      "description": "Scorer caption appears showing Barcelona number 7 'FERRAN — GOLES 1'; the player is shown in close-up glancing to his side.",
+      "actor": {
+        "side": "away",
+        "shirt_number": 7,
+        "shirt_name": "FERRAN",
+        "identity_source": "graphic",
+        "action_role": "scorer",
+        "resolved_name": "Ferran Torres"
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "caller-1",
+      "at_s": 0,
+      "voice": "caller",
+      "text": "Barcelona have the ball on the right, well outside the penalty area.",
+      "evidence_ids": [
+        "w0-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-1",
+      "at_s": 4.5,
+      "voice": "analyst",
+      "text": "Betis had lost only one of their previous eleven, all competitions.",
+      "evidence_ids": [],
+      "research_ids": [
+        "pre-form"
+      ]
+    },
+    {
+      "id": "caller-2",
+      "at_s": 9,
+      "voice": "caller",
+      "text": "A Betis defender challenges the carrier out on the right.",
+      "evidence_ids": [
+        "obs_6_2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-3",
+      "at_s": 16.5,
+      "voice": "caller",
+      "text": "Koundé combines on the right.",
+      "evidence_ids": [
+        "obs-16.5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-4",
+      "at_s": 18.7,
+      "voice": "caller",
+      "text": "Into the area.",
+      "evidence_ids": [
+        "review-18.5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-5",
+      "at_s": 20,
+      "voice": "caller",
+      "text": "Cut across goal.",
+      "evidence_ids": [
+        "obs-19.5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-6",
+      "at_s": 21.3,
+      "voice": "caller",
+      "text": "Goal! Ferran Torres finishes from close range, the ball in the net.",
+      "evidence_ids": [
+        "obs-20.5",
+        "obs-21.0"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-2",
+      "at_s": 25.8,
+      "voice": "analyst",
+      "text": "Struck in front of a sprawling goalkeeper.",
+      "evidence_ids": [
+        "obs-20.5",
+        "obs-21.0"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-3",
+      "at_s": 29.8,
+      "voice": "analyst",
+      "text": "Barcelona came from behind to win their previous two La Liga matches 3-1.",
+      "evidence_ids": [],
+      "research_ids": [
+        "pre-comebacks"
+      ]
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "models": {
+      "research": "reused",
+      "observer": "claude-opus-5",
+      "writer": "claude-opus-5"
+    },
+    "cost": 0.11032225,
+    "prior_observation_cost": 0.60044125,
+    "reused_observations": "examples/recorded-demo/identity-reviewed-observations.json",
+    "research": {
+      "fixture": "Real Betis vs FC Barcelona, La Liga, 2025-12-06",
+      "as_of": "2025-12-06",
+      "facts": [
+        {
+          "id": "pre-comebacks",
+          "subject": "FC Barcelona",
+          "text": "Before this fixture, Barcelona had come from behind to win each of their previous two La Liga matches 3-1, against Alaves and Atletico Madrid.",
+          "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414145/-fc-/featured",
+          "source_date": "2025-12-06"
+        },
+        {
+          "id": "pre-form",
+          "subject": "Real Betis",
+          "text": "Before this fixture, Real Betis had lost only one of their previous eleven matches across all competitions.",
+          "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414865/last-session-before-betis",
+          "source_date": "2025-12-05"
+        },
+        {
+          "id": "pre-venue",
+          "subject": "Real Betis",
+          "text": "La Cartuja was Real Betis' temporary home while their usual stadium was being redeveloped.",
+          "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414865/last-session-before-betis",
+          "source_date": "2025-12-05"
+        }
+      ]
+    },
+    "research_cost_note": "Research cost is token-only; provider web-search charges are not included. Source dates are model-declared and schema-validated, not independently verified.",
+    "trace": "offline: research -> observe -> joint writer",
+    "usage": {
+      "research": {
+        "result": {
+          "fixture": "Real Betis vs FC Barcelona, La Liga, 2025-12-06",
+          "as_of": "2025-12-06",
+          "facts": [
+            {
+              "id": "pre-comebacks",
+              "subject": "FC Barcelona",
+              "text": "Before this fixture, Barcelona had come from behind to win each of their previous two La Liga matches 3-1, against Alaves and Atletico Madrid.",
+              "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414145/-fc-/featured",
+              "source_date": "2025-12-06"
+            },
+            {
+              "id": "pre-form",
+              "subject": "Real Betis",
+              "text": "Before this fixture, Real Betis had lost only one of their previous eleven matches across all competitions.",
+              "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414865/last-session-before-betis",
+              "source_date": "2025-12-05"
+            },
+            {
+              "id": "pre-venue",
+              "subject": "Real Betis",
+              "text": "La Cartuja was Real Betis' temporary home while their usual stadium was being redeveloped.",
+              "source_url": "https://www.fcbarcelona.com/en/football/first-team/news/4414865/last-session-before-betis",
+              "source_date": "2025-12-05"
+            }
+          ]
+        },
+        "usage": {
+          "cost_usd": 0,
+          "reused": true,
+          "source": "examples/recorded-demo/research-context.json"
+        }
+      },
+      "observe": {
+        "raw_result": {
+          "observations": [
+            {
+              "id": "w0-1",
+              "at_s": 0,
+              "kind": "play",
+              "description": "Wide midfield view, scoreboard reads BET 1-0 BAR at 10:09. Ball is near the right side of the pitch around a Barcelona player in orange, well outside the penalty area.",
+              "actor": null
+            },
+            {
+              "id": "obs_6_0",
+              "at_s": 6,
+              "kind": "play",
+              "description": "Barcelona carry the ball through the right-centre of the attacking third, outside the Betis penalty area; several Betis defenders are ahead of the carrier.",
+              "actor": null
+            },
+            {
+              "id": "obs_6_2",
+              "at_s": 9,
+              "kind": "play",
+              "description": "A Betis defender challenges the Barcelona ball carrier on the right outside the penalty area. Contact is visible; no foul decision is shown.",
+              "actor": null
+            },
+            {
+              "id": "obs_6_5",
+              "at_s": 11.5,
+              "kind": "play",
+              "description": "Barcelona have the ball wide on the right outside the Betis penalty area; no shot or cross is yet visible.",
+              "actor": null
+            },
+            {
+              "id": "obs-12.0",
+              "at_s": 12,
+              "kind": "play",
+              "description": "Barcelona retain the ball outside the Betis penalty area. Several Betis defenders hold positions in and around the box, with Barcelona players spread across the width.",
+              "actor": null
+            },
+            {
+              "id": "obs-16.5",
+              "at_s": 16.5,
+              "kind": "play",
+              "description": "Two Barcelona players combine on the right outside the penalty area. The orange number 23 is visible running alongside his teammate. This identifies his involvement here, not the later deliverer.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 23,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "visible_player",
+                "resolved_name": null
+              }
+            },
+            {
+              "id": "review-18.5",
+              "at_s": 18.5,
+              "kind": "play",
+              "description": "The Barcelona runner on the right is inside the penalty area with the ball ahead of him and a Betis defender alongside; a teammate is running toward the goalmouth.",
+              "actor": null
+            },
+            {
+              "id": "obs-19.5",
+              "at_s": 19.5,
+              "kind": "play",
+              "description": "A Barcelona player delivers the ball from the right side of the penalty area toward a teammate arriving in front of goal. The delivery travels across the six-yard area; no exact body-part claim.",
+              "actor": null
+            },
+            {
+              "id": "obs-20.5",
+              "at_s": 20.5,
+              "kind": "play",
+              "description": "Ball struck from close range inside the six-yard area, visible just in front of the goalkeeper who is diving/sprawling; bodies of defenders on the ground nearby.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 7,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "shooter",
+                "resolved_name": null
+              }
+            },
+            {
+              "id": "obs-21.0",
+              "at_s": 21,
+              "kind": "goal",
+              "description": "The ball is clearly inside the net behind the beaten goalkeeper. This is the first sampled frame clearly showing a goal.",
+              "actor": null
+            },
+            {
+              "id": "obs-23.5",
+              "at_s": 23.5,
+              "kind": "celebration",
+              "description": "Close-up of a Barcelona player in orange wearing number 7 running and pumping his fist in celebration.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 7,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "visible_player",
+                "resolved_name": null
+              }
+            },
+            {
+              "id": "obs-27-00",
+              "at_s": 27,
+              "kind": "celebration",
+              "description": "Cut to the touchline: a coach in all black gestures in the technical area; the on-screen score now reads 1-1, indicating the goal was given (goal moment itself not shown in this window).",
+              "actor": null
+            },
+            {
+              "id": "obs-37-50",
+              "at_s": 37.5,
+              "kind": "celebration",
+              "description": "Scorer caption appears showing Barcelona number 7 'FERRAN — GOLES 1'; the player is shown in close-up glancing to his side.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 7,
+                "shirt_name": "FERRAN",
+                "identity_source": "graphic",
+                "action_role": "scorer",
+                "resolved_name": null
+              }
+            }
+          ]
+        },
+        "usage": {
+          "model": "claude-opus-5",
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0,
+          "latency_s": 0,
+          "reused": true,
+          "source": "examples/recorded-demo/identity-reviewed-observations.json"
+        },
+        "result": {
+          "observations": [
+            {
+              "id": "w0-1",
+              "at_s": 0,
+              "kind": "play",
+              "description": "Wide midfield view, scoreboard reads BET 1-0 BAR at 10:09. Ball is near the right side of the pitch around a Barcelona player in orange, well outside the penalty area.",
+              "actor": null
+            },
+            {
+              "id": "obs_6_0",
+              "at_s": 6,
+              "kind": "play",
+              "description": "Barcelona carry the ball through the right-centre of the attacking third, outside the Betis penalty area; several Betis defenders are ahead of the carrier.",
+              "actor": null
+            },
+            {
+              "id": "obs_6_2",
+              "at_s": 9,
+              "kind": "play",
+              "description": "A Betis defender challenges the Barcelona ball carrier on the right outside the penalty area. Contact is visible; no foul decision is shown.",
+              "actor": null
+            },
+            {
+              "id": "obs_6_5",
+              "at_s": 11.5,
+              "kind": "play",
+              "description": "Barcelona have the ball wide on the right outside the Betis penalty area; no shot or cross is yet visible.",
+              "actor": null
+            },
+            {
+              "id": "obs-12.0",
+              "at_s": 12,
+              "kind": "play",
+              "description": "Barcelona retain the ball outside the Betis penalty area. Several Betis defenders hold positions in and around the box, with Barcelona players spread across the width.",
+              "actor": null
+            },
+            {
+              "id": "obs-16.5",
+              "at_s": 16.5,
+              "kind": "play",
+              "description": "Two Barcelona players combine on the right outside the penalty area. The orange number 23 is visible running alongside his teammate. This identifies his involvement here, not the later deliverer.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 23,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "visible_player",
+                "resolved_name": "Jules Koundé"
+              }
+            },
+            {
+              "id": "review-18.5",
+              "at_s": 18.5,
+              "kind": "play",
+              "description": "The Barcelona runner on the right is inside the penalty area with the ball ahead of him and a Betis defender alongside; a teammate is running toward the goalmouth.",
+              "actor": null
+            },
+            {
+              "id": "obs-19.5",
+              "at_s": 19.5,
+              "kind": "play",
+              "description": "A Barcelona player delivers the ball from the right side of the penalty area toward a teammate arriving in front of goal. The delivery travels across the six-yard area; no exact body-part claim.",
+              "actor": null
+            },
+            {
+              "id": "obs-20.5",
+              "at_s": 20.5,
+              "kind": "play",
+              "description": "Ball struck from close range inside the six-yard area, visible just in front of the goalkeeper who is diving/sprawling; bodies of defenders on the ground nearby.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 7,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "shooter",
+                "resolved_name": "Ferran Torres"
+              }
+            },
+            {
+              "id": "obs-21.0",
+              "at_s": 21,
+              "kind": "goal",
+              "description": "The ball is clearly inside the net behind the beaten goalkeeper. This is the first sampled frame clearly showing a goal.",
+              "actor": null
+            },
+            {
+              "id": "obs-23.5",
+              "at_s": 23.5,
+              "kind": "celebration",
+              "description": "Close-up of a Barcelona player in orange wearing number 7 running and pumping his fist in celebration.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 7,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "visible_player",
+                "resolved_name": "Ferran Torres"
+              }
+            },
+            {
+              "id": "obs-27-00",
+              "at_s": 27,
+              "kind": "celebration",
+              "description": "Cut to the touchline: a coach in all black gestures in the technical area; the on-screen score now reads 1-1, indicating the goal was given (goal moment itself not shown in this window).",
+              "actor": null
+            },
+            {
+              "id": "obs-37-50",
+              "at_s": 37.5,
+              "kind": "celebration",
+              "description": "Scorer caption appears showing Barcelona number 7 'FERRAN — GOLES 1'; the player is shown in close-up glancing to his side.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 7,
+                "shirt_name": "FERRAN",
+                "identity_source": "graphic",
+                "action_role": "scorer",
+                "resolved_name": "Ferran Torres"
+              }
+            }
+          ]
+        }
+      },
+      "script": {
+        "initial": {
+          "result": {
+            "lines": [
+              {
+                "at_s": 0,
+                "voice": "caller",
+                "text": "Barcelona work the ball forward on the right, well outside the area.",
+                "evidence_ids": [
+                  "w0-1",
+                  "obs_6_0"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.5,
+                "voice": "analyst",
+                "text": "Betis lost only one of their last eleven, all competitions.",
+                "evidence_ids": [],
+                "research_ids": [
+                  "pre-form"
+                ]
+              },
+              {
+                "at_s": 9,
+                "voice": "caller",
+                "text": "A Betis defender gets across and challenges the carrier.",
+                "evidence_ids": [
+                  "obs_6_2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 16.5,
+                "voice": "caller",
+                "text": "Koundé combines on the right.",
+                "evidence_ids": [
+                  "obs-16.5"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 18.7,
+                "voice": "caller",
+                "text": "Into the area.",
+                "evidence_ids": [
+                  "review-18.5"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 20,
+                "voice": "caller",
+                "text": "Cut across goal.",
+                "evidence_ids": [
+                  "obs-19.5"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 21.3,
+                "voice": "caller",
+                "text": "Goal! Ferran Torres finishes from close range, the ball in the net.",
+                "evidence_ids": [
+                  "obs-20.5",
+                  "obs-21.0"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 25.8,
+                "voice": "analyst",
+                "text": "Struck first time in front of a sprawling goalkeeper.",
+                "evidence_ids": [
+                  "obs-20.5",
+                  "obs-21.0"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 29.8,
+                "voice": "analyst",
+                "text": "Barcelona came from behind to win their previous two La Liga matches 3-1.",
+                "evidence_ids": [],
+                "research_ids": [
+                  "pre-comebacks"
+                ]
+              }
+            ]
+          },
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 1915,
+            "output_tokens": 1716,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 1467,
+            "cost_usd": 0.06164375,
+            "latency_s": 20.707197499927133
+          }
+        },
+        "retry": {
+          "result": {
+            "lines": [
+              {
+                "at_s": 0,
+                "voice": "caller",
+                "text": "Barcelona have the ball on the right, well outside the penalty area.",
+                "evidence_ids": [
+                  "w0-1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.5,
+                "voice": "analyst",
+                "text": "Betis had lost only one of their previous eleven, all competitions.",
+                "evidence_ids": [],
+                "research_ids": [
+                  "pre-form"
+                ]
+              },
+              {
+                "at_s": 9,
+                "voice": "caller",
+                "text": "A Betis defender challenges the carrier out on the right.",
+                "evidence_ids": [
+                  "obs_6_2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 16.5,
+                "voice": "caller",
+                "text": "Koundé combines on the right.",
+                "evidence_ids": [
+                  "obs-16.5"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 18.7,
+                "voice": "caller",
+                "text": "Into the area.",
+                "evidence_ids": [
+                  "review-18.5"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 20,
+                "voice": "caller",
+                "text": "Cut across goal.",
+                "evidence_ids": [
+                  "obs-19.5"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 21.3,
+                "voice": "caller",
+                "text": "Goal! Ferran Torres finishes from close range, the ball in the net.",
+                "evidence_ids": [
+                  "obs-20.5",
+                  "obs-21.0"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 25.8,
+                "voice": "analyst",
+                "text": "Struck first time in front of a sprawling goalkeeper.",
+                "evidence_ids": [
+                  "obs-20.5",
+                  "obs-21.0"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 29.8,
+                "voice": "analyst",
+                "text": "Barcelona came from behind to win their previous two La Liga matches 3-1.",
+                "evidence_ids": [],
+                "research_ids": [
+                  "pre-comebacks"
+                ]
+              }
+            ]
+          },
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 3619,
+            "output_tokens": 1194,
+            "cache_read_tokens": 1467,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.0486785,
+            "latency_s": 13.19157520798035
+          }
+        },
+        "result": {
+          "lines": [
+            {
+              "at_s": 0,
+              "voice": "caller",
+              "text": "Barcelona have the ball on the right, well outside the penalty area.",
+              "evidence_ids": [
+                "w0-1"
+              ],
+              "research_ids": []
+            },
+            {
+              "at_s": 4.5,
+              "voice": "analyst",
+              "text": "Betis had lost only one of their previous eleven, all competitions.",
+              "evidence_ids": [],
+              "research_ids": [
+                "pre-form"
+              ]
+            },
+            {
+              "at_s": 9,
+              "voice": "caller",
+              "text": "A Betis defender challenges the carrier out on the right.",
+              "evidence_ids": [
+                "obs_6_2"
+              ],
+              "research_ids": []
+            },
+            {
+              "at_s": 16.5,
+              "voice": "caller",
+              "text": "Koundé combines on the right.",
+              "evidence_ids": [
+                "obs-16.5"
+              ],
+              "research_ids": []
+            },
+            {
+              "at_s": 18.7,
+              "voice": "caller",
+              "text": "Into the area.",
+              "evidence_ids": [
+                "review-18.5"
+              ],
+              "research_ids": []
+            },
+            {
+              "at_s": 20,
+              "voice": "caller",
+              "text": "Cut across goal.",
+              "evidence_ids": [
+                "obs-19.5"
+              ],
+              "research_ids": []
+            },
+            {
+              "at_s": 21.3,
+              "voice": "caller",
+              "text": "Goal! Ferran Torres finishes from close range, the ball in the net.",
+              "evidence_ids": [
+                "obs-20.5",
+                "obs-21.0"
+              ],
+              "research_ids": []
+            },
+            {
+              "at_s": 25.8,
+              "voice": "analyst",
+              "text": "Struck first time in front of a sprawling goalkeeper.",
+              "evidence_ids": [
+                "obs-20.5",
+                "obs-21.0"
+              ],
+              "research_ids": []
+            },
+            {
+              "at_s": 29.8,
+              "voice": "analyst",
+              "text": "Barcelona came from behind to win their previous two La Liga matches 3-1.",
+              "evidence_ids": [],
+              "research_ids": [
+                "pre-comebacks"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "model": "claude-opus-5",
+          "input_tokens": 5534,
+          "output_tokens": 2910,
+          "cache_read_tokens": 1467,
+          "cache_write_tokens": 1467,
+          "cost_usd": 0.11032225,
+          "latency_s": 33.89877270790748
+        },
+        "repair_reason": "line caller-1 cites future evidence"
+      }
+    },
+    "notes": [],
+    "review": {
+      "mode": "Review-assisted recorded demo with one disclosed wording deletion",
+      "raw_source": "runs/demo/named-v3-plan.json",
+      "evidence_source": "examples/recorded-demo/identity-reviewed-observations.json",
+      "research_source": "examples/recorded-demo/research-context.json",
+      "identity_provenance": "Assistant-reviewed shirt readings linked Koundé to visible involvement at 16.5s and Ferran to the shot at 20.5s. Fresh automatic observer did not reliably link these actions. The later delivery remains unnamed.",
+      "script_edits": [
+        {
+          "line_id": "analyst-2",
+          "original": "Struck first time in front of a sprawling goalkeeper.",
+          "revised": "Struck in front of a sprawling goalkeeper.",
+          "reason": "Sampled evidence establishes close-range shot and sprawling goalkeeper, not whether this was the first touch."
+        }
+      ],
+      "unchanged": "All other generated words, all planned timestamps and all evidence/research citations are unchanged. No lines selected from other runs.",
+      "development": "Third named writer run, with one automated correction. V1 failed chronology; V2 passed code but had scorer-credit filler and two small measured audio delays.",
+      "limitations": [
+        "Not an untouched end-to-end run",
+        "Automatic action-linked player recognition remains unreliable",
+        "Structural evidence checks do not prove semantic truth",
+        "Visual analysis remains basic; no subjective listening review"
+      ]
+    }
+  }
+}
