@@ -1,0 +1,50 @@
+scripts/render_demo.py
+  s_aba8a8d5718a34::t_bb534d31d9a667 431
+tests/test_render_demo.py
+  s_aba8a8d5718a34::t_bb534d31d9a667 483-484
+web/app/demo/demo-experience.tsx
+  s_aba8a8d5718a34::t_bb534d31d9a667 68-71
+docs/DEMO.md
+  s_aba8a8d5718a34::t_b3097bcd3847aa 63-65
+tests/test_showcase_catalog.py
+  s_aba8a8d5718a34::t_b15e880833ff32 1-38
+  s_aba8a8d5718a34::t_a6168e6a7f42b5 39-41
+README.md
+  s_aba8a8d5718a34::t_b3097bcd3847aa 34-38
+web/app/layout.tsx
+  s_aba8a8d5718a34::t_055c7afb1578cb 23,26
+docs/PORTFOLIO.md
+  s_aba8a8d5718a34::t_b3097bcd3847aa 9-10,12-16,18-20,37-41,43-45,65
+web/.env.example
+  s_aba8a8d5718a34::t_27865eb3438e87 5-7
+examples/demo-showcase/README.md
+  s_aba8a8d5718a34::t_b3097bcd3847aa 1-58
+examples/demo-showcase/argentina-france.json
+  s_aba8a8d5718a34::t_da36620292fc28 1-151
+examples/demo-showcase/arsenal-norwich.json
+  s_aba8a8d5718a34::t_59d6a3f00a2136 1-151
+examples/demo-showcase/barcelona-bayern.json
+  s_aba8a8d5718a34::t_8fcc0f35a939f2 1-145
+examples/demo-showcase/betis-barcelona.json
+  s_aba8a8d5718a34::t_86b7b9d1d1efe5 1-140
+examples/demo-showcase/portugal-spain.json
+  s_aba8a8d5718a34::t_14c2a2ebd268cd 1-120
+web/data/demo-clips.json
+  s_aba8a8d5718a34::t_4327de64817968 4-5,7-8,11,13,16,18,21,23,26,28,31-41,43-58,61-101,103,106,108,111,113,116,118,121,123,126,128,131,133,138-143,146,148,151,153-158,161,163,166-181,183,186-191,193,196,198,201,203,206,208,211,213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ee0db4d0a37d9c7824c8b30a1dca7a63f7067fda",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
