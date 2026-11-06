@@ -1,0 +1,86 @@
+docs/DEMO.md
+  s_24e9ee5c9e92dc::t_e25758022f3b36 58-64
+  s_6658308151c726::t_3c95df128a1a33 5,65-67
+web/AGENTS.md
+  s_b12fb8d6e77c97::t_e9814e57091d4b 3
+web/app/demo/demo.css
+  s_b12fb8d6e77c97::t_167f3408b06b55 3-5
+  s_24e9ee5c9e92dc::t_82e87451ff6ba7 2,8-10,139
+  s_24e9ee5c9e92dc::t_b9104e03ee9751 6-7,11-124,126-138
+  s_24e9ee5c9e92dc::t_5f796a7b4171ac 1,125
+web/app/demo/demo-experience.tsx
+  s_b12fb8d6e77c97::t_167f3408b06b55 6-11,14-15,19-28,65,72,101-106,138
+  s_24e9ee5c9e92dc::t_b9104e03ee9751 12-13,29-47,54-64,66-71,73-82,87-100,107-137
+  s_24e9ee5c9e92dc::t_8a740ae9b97f30 17,48-53,83-86
+  s_b12fb8d6e77c97::t_ece3d1e49b428e 1-5,16,18
+web/app/demo/page.tsx
+  s_24e9ee5c9e92dc::t_b9104e03ee9751 11-15
+  s_b12fb8d6e77c97::t_167f3408b06b55 3-4,6-10,16-17
+  s_24e9ee5c9e92dc::t_5d07de800f0f70 1-2
+docs/PORTFOLIO.md
+  s_24e9ee5c9e92dc::t_e25758022f3b36 3-65
+  s_24e9ee5c9e92dc::t_94e40fdd6f978e 1-2
+web/data/recorded-demo.json
+  s_24e9ee5c9e92dc::t_82e87451ff6ba7 12-101
+  s_b12fb8d6e77c97::t_d2fa27683548c7 1-11,102-381
+README.md
+  s_24e9ee5c9e92dc::t_e25758022f3b36 3-4,24,26,34-38
+  s_24e9ee5c9e92dc::t_1e33d6dd333a14 39-52,54-56,58-59
+web/app/layout.tsx
+  s_b12fb8d6e77c97::t_ef0b9eb85913a6 24,27-28
+  s_b12fb8d6e77c97::t_518b47989a60ac 26
+  s_24e9ee5c9e92dc::t_b0b524dbfe5ccd 2,15-19,21,23,25,35
+web/.vercelignore
+  s_b12fb8d6e77c97::t_167f3408b06b55 6
+  s_24e9ee5c9e92dc::t_d35e342b857d16 1-5,7
+.github/workflows/ci.yml
+  s_24e9ee5c9e92dc::t_ae5c303d2d0e4c 22-37
+docs/LIVE.md
+  s_6658308151c726::t_337990c23b2604 9
+web/.env.example
+  s_24e9ee5c9e92dc::t_87dcacbfcd73f5 1-4
+web/.gitignore
+  s_24e9ee5c9e92dc::t_8e2452e2af60d8 35
+web/app/icon.svg
+  s_b12fb8d6e77c97::t_9d015fd7d15cab 1
+web/app/live/page.tsx
+  s_24e9ee5c9e92dc::t_9fd03f815ed440 3,11-13,16,240-249
+web/data/demo-clips.json
+  s_b12fb8d6e77c97::t_58943af3e98f53 1-123
+web/package-lock.json
+  s_24e9ee5c9e92dc::t_5f1ccd6a38e130 11,21,533-535,551,555-557,573,577-579,586,596-598,612-614,628-630,644-646,660-662,676-678,692-694,708-710,724-726,740-742,756-758,774,778-780,796,800-802,818,822-824,840,844-846,862,866-868,884,888-890,906,910-912,928,932-934,948-950,957,967-969,986-988,1005-1007,1096-1098,1102-1104,1145-1147,1161-1163,1177-1179,1193-1195,1209-1211,1225-1227,1241-1243,1257-1259,1559-1624,1736-1738,1743-1746,1759,1765-1767,1775-1777,1781-1784,1800-1802,1806-1807,1822-1824,1828-1829,1840-1842,1857-1859,1863-1865,1882-1884,1896-1898,1902-1905,1934-1936,1963-1965,1976-1978,1983-1985,2000-2002,2006,2660-2662,3348-3350,3354,3360,3362,5227-5229,5232,5246-5254,5951-5953,5968-5992,6001-6003,6113-6115,6561-6563,6567-6570,6825-6827
+web/package.json
+  s_24e9ee5c9e92dc::t_8014d6a848c93d 12,22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "873ccdcf377698dc95fe6cb24e84c636a8851391",
+  "prompts": {},
+  "sessions": {
+    "s_24e9ee5c9e92dc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1afdd-4dcf-7862-aea5-1ab354662141",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_b12fb8d6e77c97": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1afdd-4dcf-7862-aea5-1ab354662141",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
