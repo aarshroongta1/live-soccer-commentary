@@ -1,0 +1,7 @@
+node_modules
+.next
+.git
+.env*
+*.tsbuildinfo
+# Upload only the featured demos; media stays out of Git.
+public/*.mp4

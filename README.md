@@ -1,5 +1,7 @@
 # Soccer Commentary
 
+[Watch the demo](https://www.aarshroongta.com/projects/soccer-commentary)
+
 AI commentary for short soccer clips, with a play-by-play caller and an analyst.
 The recorded workflow turns match footage into a script, then adds two voices and
 captions to the video. A browser experiment also generates commentary text while
@@ -19,29 +21,42 @@ by default, with optional ElevenLabs synthesis.
 Built with **Python, LangGraph, Pydantic, OpenAI, OpenCV, FFmpeg, and
 Next.js/TypeScript**.
 
-## Run locally
+## Explore the demo
 
-Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and Node.js/npm.
-Copy `.env.example` to `.env` and set `OPENAI_API_KEY` to generate commentary.
+Requires Node.js/npm. The saved demo makes no model calls and needs no API key:
 
 ```bash
-uv sync --extra demo --extra voice --dev
 cd web
 npm ci
 npm run dev
 ```
 
-Open [the live page](http://127.0.0.1:3000/live), choose a local video or share a
-match window, and select **Generic match** for your own footage. Model calls begin
-when you confirm the notice and press **Start commentary**.
+Open http://127.0.0.1:3000 to switch between Argentina–France and Betis–Barcelona
+examples and inspect their seekable transcripts. The matching MP4s live in
+`web/public/soccer-commentary/`. Source
+footage and generated media are not committed. Without the videos, the saved
+transcripts still work. See the [portfolio guide](docs/PORTFOLIO.md) for media setup
+and deployment.
 
-The saved player at `/demo` needs a rendered MP4 in `web/public/`. Source footage
-and generated media are not included in the repository. See the
-[recorded demo guide](docs/DEMO.md) for rendering instructions, the
-[screen commentary guide](docs/LIVE.md) for capture details, or the
-[example script](examples/recorded-demo/) to inspect output without an API key.
+## Generate your own commentary
 
-Run the offline tests from the repository root with `uv run pytest -q`.
+Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and FFmpeg. Copy
+`.env.example` to `.env` and set `OPENAI_API_KEY` for paid generation:
+
+```bash
+uv sync --extra demo --extra voice --dev
+```
+
+Follow the [recorded demo guide](docs/DEMO.md) to generate, review, and render a
+script. The [checked-in example](examples/recorded-demo/) includes reviewed output
+for inspection without an API key.
+
+The [screen commentary experiment](docs/LIVE.md) runs at `/live` on localhost.
+Choose a local clip or shared screen, confirm the paid-call notice, and press
+**Start commentary**. Public deployments show local setup instructions.
+
+Run offline tests with `uv run pytest -q`. Check the website with
+`cd web && npm run lint && npm run build`.
 
 ## Current limits
 

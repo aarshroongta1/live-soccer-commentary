@@ -6,7 +6,7 @@ not synthesized.
 
 ## Run
 
-Follow the [setup steps](../README.md#run-locally), including `OPENAI_API_KEY`,
+Follow the [setup steps](../README.md#generate-your-own-commentary), including `OPENAI_API_KEY`,
 then open http://127.0.0.1:3000/live in a desktop browser.
 
 Choose a local video or select **Share match screen** and pick the match tab or

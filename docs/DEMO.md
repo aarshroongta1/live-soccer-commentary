@@ -2,7 +2,7 @@
 
 Generate a script from your own soccer clip, review it, then render speech and
 captions. Run these commands from the repository root after the
-[setup steps](../README.md#run-locally). Rendering needs FFmpeg with subtitle
+[setup steps](../README.md#generate-your-own-commentary). Rendering needs FFmpeg with subtitle
 support and ffprobe; the `demo` extra supplies a compatible FFmpeg binary.
 
 ## Generate a script
@@ -55,10 +55,16 @@ to audio file paths. Existing audio can be reused without new synthesis.
 
 ## View the result
 
-Copy the rendered MP4 to `web/public/argfra-elevenlabs-preview.mp4` to use the
-existing `/demo` player, or change the source and match labels in
-`web/app/demo/page.tsx` for your footage. Media is git-ignored and is not supplied
-with a fresh clone.
+The player at `/demo` uses `web/data/demo-clips.json` to pair each video with
+its own transcript. To add different footage, add a catalog entry and its MP4
+under `web/public/soccer-commentary/`. Transcript timestamps must match the
+rendered audio placement, including any delays reported by the renderer.
+
+The current Argentina–France and Betis–Barcelona clips can also use remote URLs
+via `DEMO_VIDEO_URL` and `DEMO_BETIS_VIDEO_URL` in `web/.env.local`.
+
+Media is git-ignored and is not supplied with a fresh clone. See the
+[portfolio guide](PORTFOLIO.md) for deployment and missing-video behavior.
 
 The [example directory](../examples/recorded-demo/) contains a reviewed script,
 observations, and research for inspection without model calls. Rendering that

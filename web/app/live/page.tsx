@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 type Role = "caller" | "analyst";
 type Line = { voice: Role; text: string };
@@ -8,8 +8,12 @@ type Frame = { at_s: number; jpeg: string };
 type Session = { session_id: string; limits: { duration_s: number; max_batches: number; max_cost_usd: number } };
 
 const MAX_FRAMES = 4;
+const subscribeToHost = () => () => {};
+const isLocalHost = () => ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
+const serverHost = () => false;
 
 export default function LivePage() {
+  const local = useSyncExternalStore(subscribeToHost, isLocalHost, serverHost);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -232,6 +236,16 @@ export default function LivePage() {
       }
     }
   };
+
+  if (!local) return (
+    <main className="mx-auto min-h-screen max-w-2xl px-6 py-16">
+      <a href="/demo" className="text-sm text-caller underline underline-offset-4">Back to the recorded demo</a>
+      <h1 className="mt-10 text-3xl font-semibold tracking-tight">The live experiment runs locally.</h1>
+      <p className="mt-5 text-base leading-7 text-dim">Screen commentary samples a local video or shared screen and generates caller and analyst text. This experimental mode needs a local Python worker and your own API key. No speech is synthesized.</p>
+      <p className="mt-4 text-sm leading-6 text-dim">The recorded demo works here without setup. To try live generation, follow the local setup guide and open the app on localhost.</p>
+      <a href="https://github.com/aarshroongta1/live-soccer-commentary/blob/main/docs/LIVE.md" target="_blank" rel="noreferrer" className="mt-7 inline-block rounded bg-caller px-5 py-3 text-sm font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-caller">Read the local setup guide</a>
+    </main>
+  );
 
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-8">

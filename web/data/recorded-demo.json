@@ -1,0 +1,381 @@
+{
+  "title": "Argentina–France",
+  "competition": "2022 World Cup final",
+  "duration": 40,
+  "provenance": "Transcript and evidence from the saved argfra-openai-claude-v2 plan. Audio timings from the ElevenLabs render report.",
+  "lines": [
+    {
+      "id": "caller-1",
+      "at_s": 0,
+      "voice": "caller",
+      "text": "Argentina work the ball out from their own area.",
+      "evidence_ids": ["obs_1"],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-1",
+      "at_s": 4,
+      "voice": "analyst",
+      "text": "France squeeze high, forcing that ball over the touchline.",
+      "evidence_ids": ["obs_1", "obs_4"],
+      "research_ids": []
+    },
+    {
+      "id": "caller-2",
+      "at_s": 8.5,
+      "voice": "caller",
+      "text": "Theo Hernández takes the throw into the left channel.",
+      "evidence_ids": ["obs_8_5"],
+      "research_ids": []
+    },
+    {
+      "id": "caller-3",
+      "at_s": 12,
+      "voice": "caller",
+      "text": "Argentina crowd it out inside the area.",
+      "evidence_ids": ["obs_12_00"],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-2",
+      "at_s": 14.7,
+      "voice": "analyst",
+      "text": "That intervention flips possession into open midfield.",
+      "evidence_ids": ["obs_14_00"],
+      "research_ids": []
+    },
+    {
+      "id": "caller-4",
+      "at_s": 19.5,
+      "voice": "caller",
+      "text": "Argentina send it diagonally infield.",
+      "evidence_ids": ["obs_19_5"],
+      "research_ids": []
+    },
+    {
+      "id": "caller-5",
+      "at_s": 22.5,
+      "voice": "caller",
+      "text": "Driven forward to the near side.",
+      "evidence_ids": ["obs_22_5"],
+      "research_ids": []
+    },
+    {
+      "id": "caller-6",
+      "at_s": 25,
+      "voice": "caller",
+      "text": "Argentina race into open space.",
+      "evidence_ids": ["obs_24_5"],
+      "research_ids": []
+    },
+    {
+      "id": "caller-7",
+      "at_s": 28,
+      "voice": "caller",
+      "text": "Squared across!",
+      "evidence_ids": ["obs_28_0"],
+      "research_ids": []
+    },
+    {
+      "id": "caller-8",
+      "at_s": 29.5,
+      "voice": "caller",
+      "text": "Goal! Struck in from the left, past the goalkeeper!",
+      "evidence_ids": ["obs_29_5", "obs_29_0"],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-3",
+      "at_s": 32.8,
+      "voice": "analyst",
+      "text": "End to end, finished first time.",
+      "evidence_ids": ["obs_24_5", "obs_29_0"],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-4",
+      "at_s": 36,
+      "voice": "analyst",
+      "text": "France, ranked fourth entering the final, undone on the counter.",
+      "evidence_ids": ["obs_29_5"],
+      "research_ids": ["f2"]
+    }
+  ],
+  "observations": [
+    {
+      "id": "obs_1",
+      "at_s": 0,
+      "kind": "play",
+      "description": "A striped-shirt defender controls the ball inside his own penalty area as navy-shirt opponents press higher up the pitch.",
+      "actor": null
+    },
+    {
+      "id": "obs_2",
+      "at_s": 2,
+      "kind": "play",
+      "description": "The defender passes out of the penalty area toward a teammate near the near-side touchline.",
+      "actor": null
+    },
+    {
+      "id": "obs_3",
+      "at_s": 2.5,
+      "kind": "play",
+      "description": "Number 26 moves onto the bouncing pass outside the penalty area, near the touchline, as a navy-shirt opponent closes him down.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 26,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "ball_carrier",
+        "resolved_name": "Nahuel Molina"
+      }
+    },
+    {
+      "id": "obs_4",
+      "at_s": 4,
+      "kind": "play",
+      "description": "After the striped-shirt player's attempted touch, the ball goes out across the near touchline. The referee signals a direction; the final contact is not clear.",
+      "actor": null
+    },
+    {
+      "id": "obs_7_0",
+      "at_s": 7,
+      "kind": "play",
+      "description": "Navy-shirted number 22 holds the ball at the near touchline, preparing a throw-in.",
+      "actor": {
+        "side": "away",
+        "shirt_number": 22,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "passer",
+        "resolved_name": "Theo Hernández"
+      }
+    },
+    {
+      "id": "obs_8_5",
+      "at_s": 8.5,
+      "kind": "play",
+      "description": "Number 22 completes the throw-in; the following wide view shows the ball dropping toward a navy-shirted teammate outside the left side of the penalty area.",
+      "actor": {
+        "side": "away",
+        "shirt_number": 22,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "passer",
+        "resolved_name": "Theo Hernández"
+      }
+    },
+    {
+      "id": "obs_9_5",
+      "at_s": 9.5,
+      "kind": "play",
+      "description": "The navy-shirted receiver brings the ball near his feet outside the penalty area as two striped defenders close him down.",
+      "actor": null
+    },
+    {
+      "id": "obs_11_0",
+      "at_s": 11,
+      "kind": "play",
+      "description": "The navy-shirted attacker continues toward the left edge of the penalty area among converging striped defenders. The ball is obscured, so the next touch or possession is unclear.",
+      "actor": null
+    },
+    {
+      "id": "obs_12_00",
+      "at_s": 12,
+      "kind": "play",
+      "description": "Inside the left side of the penalty area, a navy-shirted attacker is challenged by a striped defender. The ball travels inward toward another striped defender; the touch that sends it there is unclear.",
+      "actor": null
+    },
+    {
+      "id": "obs_14_00",
+      "at_s": 14,
+      "kind": "play",
+      "description": "Following a striped defender's intervention, the ball is visibly high in the air, travelling away from the penalty area toward the near-side midfield channel.",
+      "actor": null
+    },
+    {
+      "id": "obs_16_50",
+      "at_s": 16.5,
+      "kind": "play",
+      "description": "A navy-shirted player receives the dropping ball near the near touchline, short of halfway, as a striped opponent approaches.",
+      "actor": null
+    },
+    {
+      "id": "obs_17_50",
+      "at_s": 17.5,
+      "kind": "play",
+      "description": "The navy-shirted ball carrier moves along the near touchline with the ball at his feet while the striped opponent closes to challenge.",
+      "actor": null
+    },
+    {
+      "id": "obs_18_0",
+      "at_s": 18,
+      "kind": "play",
+      "description": "The ball travels airborne infield from a near-touchline challenge between a navy-shirted player and a striped player, outside the penalty area; the final touch is unclear.",
+      "actor": null
+    },
+    {
+      "id": "obs_19_5",
+      "at_s": 19.5,
+      "kind": "play",
+      "description": "A striped player outside his own penalty area sends the ball diagonally infield toward teammates as navy-shirted opponents press.",
+      "actor": null
+    },
+    {
+      "id": "obs_21_5",
+      "at_s": 21.5,
+      "kind": "play",
+      "description": "The ball moves forward through central midfield toward a striped teammate short of halfway, with a navy-shirted opponent closing from his right.",
+      "actor": null
+    },
+    {
+      "id": "obs_22_5",
+      "at_s": 22.5,
+      "kind": "play",
+      "description": "Under pressure from two navy-shirted opponents, the striped receiver moves the ball diagonally forward toward a teammate running along the near side.",
+      "actor": null
+    },
+    {
+      "id": "obs_23_5",
+      "at_s": 23.5,
+      "kind": "play",
+      "description": "The near-side striped runner reaches the ball and advances across halfway as navy-shirted defenders retreat; the ball is briefly obscured near his feet.",
+      "actor": null
+    },
+    {
+      "id": "obs_24_0",
+      "at_s": 24,
+      "kind": "play",
+      "description": "Striped No. 9 runs forward during the attack. The close-up does not show the ball.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "visible_player",
+        "resolved_name": "Julián Álvarez"
+      }
+    },
+    {
+      "id": "obs_24_5",
+      "at_s": 24.5,
+      "kind": "play",
+      "description": "A forward ball travels into open space beyond midfield, with a striped attacker sprinting after it and navy defenders retreating.",
+      "actor": null
+    },
+    {
+      "id": "obs_27_0",
+      "at_s": 27,
+      "kind": "play",
+      "description": "The striped runner closes on the ball just outside the right side of the penalty area, with defenders pursuing and the goalkeeper facing him.",
+      "actor": null
+    },
+    {
+      "id": "obs_28_0",
+      "at_s": 28,
+      "kind": "play",
+      "description": "The right-side attacker sends the ball diagonally across the penalty area toward a striped teammate arriving from the left.",
+      "actor": null
+    },
+    {
+      "id": "obs_29_0",
+      "at_s": 29,
+      "kind": "play",
+      "description": "The arriving striped attacker shoots from inside the penalty area as the yellow-clad goalkeeper rushes out and spreads himself.",
+      "actor": null
+    },
+    {
+      "id": "obs_29_5",
+      "at_s": 29.5,
+      "kind": "goal",
+      "description": "The ball is visible inside the right side of the net after passing the goalkeeper, who is down on the turf.",
+      "actor": null
+    },
+    {
+      "id": "obs_30_00",
+      "at_s": 30,
+      "kind": "celebration",
+      "description": "A striped-shirt attacker runs away along the byline as teammates spread their arms. The yellow-clad goalkeeper remains on the ground near the goal.",
+      "actor": null
+    },
+    {
+      "id": "obs_31_50",
+      "at_s": 31.5,
+      "kind": "celebration",
+      "description": "A close-up shows the striped-shirt player with 'DI MARIA' and number 11 readable on his back running in celebration.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 11,
+        "shirt_name": "DI MARIA",
+        "identity_source": "shirt_name",
+        "action_role": "visible_player",
+        "resolved_name": "Ángel Di María"
+      }
+    },
+    {
+      "id": "obs_36_50",
+      "at_s": 36.5,
+      "kind": "celebration",
+      "description": "The home player with shirt number 11 celebrates with arms spread and mouth open as a teammate approaches.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 11,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "visible_player",
+        "resolved_name": "Ángel Di María"
+      }
+    },
+    {
+      "id": "obs_37_00",
+      "at_s": 37,
+      "kind": "celebration",
+      "description": "The camera cuts to supporters in white and sky-blue shirts raising their arms, waving flags and embracing in the stands.",
+      "actor": null
+    }
+  ],
+  "research": [
+    {
+      "id": "f1",
+      "subject": "Argentina vs France",
+      "text": "Pre-final head-to-head between the senior national teams stood at 12 meetings since 1930: Argentina six wins, France three wins, three draws (all competitions).",
+      "source_url": "https://www.aljazeera.com/sports/2022/12/17/match-preview-messis-argentina-vie-to-stop-france-making-it-two",
+      "source_date": "2022-12-17"
+    },
+    {
+      "id": "f2",
+      "subject": "Rankings",
+      "text": "Entering the final, Argentina were ranked 3rd and France 4th in the FIFA world rankings.",
+      "source_url": "https://www.aljazeera.com/sports/2022/12/17/match-preview-messis-argentina-vie-to-stop-france-making-it-two",
+      "source_date": "2022-12-17"
+    },
+    {
+      "id": "f3",
+      "subject": "Venue and kickoff",
+      "text": "The final was scheduled for Sunday 18 December 2022 at Lusail Iconic Stadium, Doha, kicking off at 18:00 local time (15:00 GMT).",
+      "source_url": "https://www.aljazeera.com/sports/2022/12/17/match-preview-messis-argentina-vie-to-stop-france-making-it-two",
+      "source_date": "2022-12-17"
+    },
+    {
+      "id": "f4",
+      "subject": "World Cup head-to-head",
+      "text": "Before the 2022 final the sides had met three times at World Cups, with Argentina winning two; France's only World Cup win over Argentina was the 4-3 round-of-16 tie in 2018.",
+      "source_url": "https://www.dnaindia.com/sports/report-fifa-world-cup-2022-final-argentina-vs-france-head-to-head-record-3011020",
+      "source_date": "2022-12-16"
+    },
+    {
+      "id": "f5",
+      "subject": "Route to the final",
+      "text": "Argentina reached the final by beating Croatia 3-0 in the semi-final on 13 December 2022, after a 2-1 win over Australia (R16) and a penalty-shootout win over the Netherlands (QF).",
+      "source_url": "https://www.olympics.com/en/news/fifa-world-cup-2022-leading-stats-france-argentina",
+      "source_date": "2022-12-17"
+    },
+    {
+      "id": "f6",
+      "subject": "Route to the final",
+      "text": "Defending champions France reached the final via a 2-0 semi-final win over Morocco on 14 December 2022, having beaten England 2-1 in the quarter-final and Poland 3-1 in the round of 16.",
+      "source_url": "https://www.olympics.com/en/news/fifa-world-cup-2022-leading-stats-france-argentina",
+      "source_date": "2022-12-17"
+    }
+  ]
+}

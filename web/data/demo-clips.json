@@ -1,0 +1,123 @@
+[
+  {
+    "id": "argentina-france",
+    "title": "Argentina–France",
+    "videoPath": "/soccer-commentary/argentina-france.mp4",
+    "envKey": "DEMO_VIDEO_URL",
+    "lines": [
+      {
+        "at_s": 0,
+        "voice": "caller",
+        "text": "Argentina work the ball out from their own area."
+      },
+      {
+        "at_s": 4,
+        "voice": "analyst",
+        "text": "France squeeze high, forcing that ball over the touchline."
+      },
+      {
+        "at_s": 8.5,
+        "voice": "caller",
+        "text": "Theo Hernández takes the throw into the left channel."
+      },
+      {
+        "at_s": 12,
+        "voice": "caller",
+        "text": "Argentina crowd it out inside the area."
+      },
+      {
+        "at_s": 14.7,
+        "voice": "analyst",
+        "text": "That intervention flips possession into open midfield."
+      },
+      {
+        "at_s": 19.5,
+        "voice": "caller",
+        "text": "Argentina send it diagonally infield."
+      },
+      {
+        "at_s": 22.5,
+        "voice": "caller",
+        "text": "Driven forward to the near side."
+      },
+      {
+        "at_s": 25,
+        "voice": "caller",
+        "text": "Argentina race into open space."
+      },
+      {
+        "at_s": 28,
+        "voice": "caller",
+        "text": "Squared across!"
+      },
+      {
+        "at_s": 29.5,
+        "voice": "caller",
+        "text": "Goal! Struck in from the left, past the goalkeeper!"
+      },
+      {
+        "at_s": 32.8,
+        "voice": "analyst",
+        "text": "End to end, finished first time."
+      },
+      {
+        "at_s": 36,
+        "voice": "analyst",
+        "text": "France, ranked fourth entering the final, undone on the counter."
+      }
+    ]
+  },
+  {
+    "id": "betis-barcelona",
+    "title": "Betis–Barcelona",
+    "videoPath": "/soccer-commentary/betis-barcelona.mp4",
+    "envKey": "DEMO_BETIS_VIDEO_URL",
+    "lines": [
+      {
+        "at_s": 0,
+        "voice": "caller",
+        "text": "Barcelona have the ball on the right, well outside the penalty area."
+      },
+      {
+        "at_s": 4.5,
+        "voice": "analyst",
+        "text": "Betis had lost only one of their previous eleven, all competitions."
+      },
+      {
+        "at_s": 9,
+        "voice": "caller",
+        "text": "A Betis defender challenges the carrier out on the right."
+      },
+      {
+        "at_s": 16.5,
+        "voice": "caller",
+        "text": "Koundé combines on the right."
+      },
+      {
+        "at_s": 18.7,
+        "voice": "caller",
+        "text": "Into the area."
+      },
+      {
+        "at_s": 20,
+        "voice": "caller",
+        "text": "Cut across goal."
+      },
+      {
+        "at_s": 21.3,
+        "voice": "caller",
+        "text": "Goal! Ferran Torres finishes from close range, the ball in the net."
+      },
+      {
+        "at_s": 25.8,
+        "voice": "analyst",
+        "text": "Struck in front of a sprawling goalkeeper."
+      },
+      {
+        "at_s": 29.8,
+        "voice": "analyst",
+        "text": "Barcelona came from behind to win their previous two La Liga matches 3-1."
+      }
+    ]
+  }
+]
