@@ -151,12 +151,17 @@ def test_spend_sends_exact_text_to_distinct_voices_and_writes_incremental_audit(
     analyst = "custom-analyst" if from_dotenv else synthesize_demo.ANALYST_VOICE
     assert caller in requests[0]["url"]
     assert analyst in requests[1]["url"]
+    # Request-level settings override the user's saved custom-voice performance.
+    # Preserve those settings rather than silently forcing the same speed on both seats.
+    assert all("voice_settings" not in request["json"] for request in requests)
     assert json.loads((output / "manifest.json").read_text()) == {
         "caller-1": str((output / "caller-1.mp3").resolve()),
         "analyst-1": str((output / "analyst-1.mp3").resolve()),
     }
     audit = json.loads((output / "synthesis-audit.json").read_text())
     assert audit["model"] == synthesize_demo.MODEL
+    assert audit["lines"][0]["request"] == requests[0]["json"]
+    assert "no request overrides" in audit["settings_source"]
     assert audit["lines"][1]["credit_headers"] == {"character-cost": "12"}
 
 

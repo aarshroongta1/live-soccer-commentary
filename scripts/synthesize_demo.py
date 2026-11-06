@@ -61,7 +61,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise RenderError("Install httpx to synthesize") from exc
     args.out_dir.mkdir(parents=True)
     manifest: dict[str, str] = {}
-    audit: dict[str, object] = {"model": MODEL, "lines": []}
+    audit: dict[str, object] = {
+        "model": MODEL,
+        "settings_source": "saved ElevenLabs voice settings; no request overrides",
+        "lines": [],
+    }
     manifest_path = args.out_dir / "manifest.json"
     audit_path = args.out_dir / "synthesis-audit.json"
     with httpx.Client(timeout=60) as client:
@@ -69,10 +73,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             if Path(line.id).name != line.id:
                 raise RenderError(f"line ID cannot contain a path: {line.id!r}")
             speaker = analyst if line.voice == "analyst" else caller
+            request = {"text": line.text, "model_id": MODEL}
             response = client.post(
                 f"https://api.elevenlabs.io/v1/text-to-speech/{speaker}?output_format=mp3_44100_128",
                 headers={"xi-api-key": api_key, "accept": "audio/mpeg"},
-                json={"text": line.text, "model_id": MODEL, "voice_settings": {"speed": 1.1}},
+                json=request,
             )
             response.raise_for_status()
             target = args.out_dir / f"{line.id}.mp3"
@@ -90,6 +95,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "voice": line.voice,
                     "voice_id": speaker,
                     "text": line.text,
+                    "request": request,
                     "credit_headers": credit_headers,
                 }
             )
