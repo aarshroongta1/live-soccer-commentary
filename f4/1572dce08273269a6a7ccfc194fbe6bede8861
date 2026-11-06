@@ -1,0 +1,21 @@
+scripts/synthesize_demo.py
+  s_aba8a8d5718a34::t_f4735223d4e67d 64-68,76,80,98
+tests/test_synthesize_demo.py
+  s_aba8a8d5718a34::t_f4735223d4e67d 154-156,163-164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f41572dce08273269a6a7ccfc194fbe6bede8861",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
