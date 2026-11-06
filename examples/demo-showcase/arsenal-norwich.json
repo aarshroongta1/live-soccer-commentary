@@ -52,10 +52,10 @@
   ],
   "lines": [
     {
-      "id": "caller-1",
+      "id": "analyst-1",
       "at_s": 0.1,
-      "voice": "caller",
-      "text": "Arsenal, building down the left.",
+      "voice": "analyst",
+      "text": "Watch how Wilshere keeps moving.",
       "evidence_ids": [
         "obs-1"
       ],
@@ -65,7 +65,7 @@
       "id": "caller-2",
       "at_s": 2.4,
       "voice": "caller",
-      "text": "Cazorla...",
+      "text": "Cazorla into Wilshere... now Giroud.",
       "evidence_ids": [
         "obs-2"
       ],
@@ -73,9 +73,9 @@
     },
     {
       "id": "caller-3",
-      "at_s": 4.3,
+      "at_s": 5.6,
       "voice": "caller",
-      "text": "Wilshere... Giroud...",
+      "text": "And Wilshere is through!",
       "evidence_ids": [
         "obs-3"
       ],
@@ -83,29 +83,29 @@
     },
     {
       "id": "caller-4",
-      "at_s": 6.1,
-      "voice": "caller",
-      "text": "Back to Wilshere!",
-      "evidence_ids": [
-        "obs-4"
-      ],
-      "research_ids": []
-    },
-    {
-      "id": "caller-5",
       "at_s": 8,
       "voice": "caller",
-      "text": "What a move! What a goal!",
+      "text": "Wilshere scores! What a magnificent Arsenal move!",
       "evidence_ids": [
         "obs-5"
       ],
       "research_ids": []
     },
     {
-      "id": "analyst-6",
-      "at_s": 12.5,
+      "id": "analyst-5",
+      "at_s": 12.1,
       "voice": "analyst",
-      "text": "Nobody stops the ball. Every touch takes another defender out of the move.",
+      "text": "That's the difference. He doesn't admire the pass; he keeps going, and Giroud gives it straight back.",
+      "evidence_ids": [
+        "obs-6"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-6",
+      "at_s": 19.6,
+      "voice": "caller",
+      "text": "All those touches, and Norwich cannot get near them.",
       "evidence_ids": [
         "obs-6"
       ],
@@ -113,9 +113,9 @@
     },
     {
       "id": "analyst-7",
-      "at_s": 21.1,
+      "at_s": 23.1,
       "voice": "analyst",
-      "text": "Wilshere never stops running. He passes, then goes again.",
+      "text": "One touch each. It's the movement that makes every pass possible.",
       "evidence_ids": [
         "obs-7"
       ],
@@ -145,7 +145,11 @@
       "limitations": [
         "Showcase script, not untouched automatic pipeline output.",
         "Identities and actions were reviewed against this known match sequence and the footage."
-      ]
+      ],
+      "delivery": {
+        "voice_settings": "Use the stored settings for each configured ElevenLabs voice, without a forced speed.",
+        "writing": "Fuller caller phrases and substantial analyst turns before and after the decisive moment."
+      }
     }
   }
 }

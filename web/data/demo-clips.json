@@ -2,30 +2,30 @@
   {
     "id": "argentina-france",
     "title": "Di María vs France · 2022 World Cup final",
-    "videoPath": "/soccer-commentary/argentina-france-edited.mp4",
+    "videoPath": "/soccer-commentary/argentina-france-dialogue-v2.mp4",
     "envKey": "DEMO_VIDEO_URL",
     "duration_s": 28,
     "planPath": "examples/demo-showcase/argentina-france.json",
     "lines": [
       {
-        "at_s": 1.5,
+        "at_s": 0.1,
         "voice": "caller",
-        "text": "Argentina win it back."
+        "text": "Argentina, under pressure in their own half."
       },
       {
         "at_s": 3,
         "voice": "analyst",
-        "text": "France have pushed up. There is space behind them."
+        "text": "France have pushed up. If Argentina play through them, there is space to attack."
       },
       {
         "at_s": 8.8,
         "voice": "caller",
-        "text": "Messi, round the corner."
+        "text": "Messi turns it round the corner..."
       },
       {
         "at_s": 11.5,
         "voice": "caller",
-        "text": "Álvarez... Mac Allister is away!"
+        "text": "Álvarez releases Mac Allister! Argentina are away now!"
       },
       {
         "at_s": 15.6,
@@ -35,19 +35,19 @@
       {
         "at_s": 17.6,
         "voice": "caller",
-        "text": "Di María! Two-nil!"
+        "text": "Di María scores! Two-nil to Argentina! What a magnificent counterattack!"
       },
       {
-        "at_s": 22,
+        "at_s": 22.5,
         "voice": "analyst",
-        "text": "One-touch football, all the way through. A brilliant team goal."
+        "text": "That's why the forward pass matters. Mac Allister keeps running, and Di María finishes the move."
       }
     ]
   },
   {
     "id": "barcelona-bayern",
     "title": "Messi vs Bayern · 2015 Champions League",
-    "videoPath": "/soccer-commentary/barcelona-bayern-edited.mp4",
+    "videoPath": "/soccer-commentary/barcelona-bayern-dialogue-v2.mp4",
     "envKey": "DEMO_MESSI_BAYERN_VIDEO_URL",
     "duration_s": 34,
     "planPath": "examples/demo-showcase/barcelona-bayern.json",
@@ -55,89 +55,94 @@
       {
         "at_s": 0.2,
         "voice": "caller",
-        "text": "Barcelona, looking for a way through."
+        "text": "Barcelona keep working the ball, looking for a way through."
       },
       {
-        "at_s": 3.4,
+        "at_s": 4,
         "voice": "analyst",
-        "text": "Bayern are narrow. There is room on the right."
+        "text": "Bayern are narrow. Messi has room on this side."
       },
       {
-        "at_s": 6.8,
+        "at_s": 7.2,
         "voice": "caller",
-        "text": "Here is Messi..."
+        "text": "Here is Messi, taking on Boateng..."
       },
       {
         "at_s": 10.2,
         "voice": "caller",
-        "text": "Past Boateng!"
+        "text": "He's gone past Boateng!"
       },
       {
-        "at_s": 11.5,
+        "at_s": 12,
         "voice": "caller",
-        "text": "Over Neuer!"
+        "text": "And over Neuer! Messi, that is absolutely magnificent!"
       },
       {
-        "at_s": 13.5,
-        "voice": "caller",
-        "text": "Brilliant. Absolutely brilliant!"
-      },
-      {
-        "at_s": 20,
+        "at_s": 17,
         "voice": "analyst",
-        "text": "He wrong-foots Boateng, then chips the goalkeeper with his right foot."
+        "text": "He makes Boateng commit, then shifts onto his right foot. Neuer comes out, and Messi just lifts it over him."
+      },
+      {
+        "at_s": 25.4,
+        "voice": "caller",
+        "text": "He makes it look so simple, doesn't he?"
+      },
+      {
+        "at_s": 29,
+        "voice": "analyst",
+        "text": "That's balance and composure. The defender goes down; Messi stays in complete control."
       }
     ]
   },
   {
     "id": "arsenal-norwich",
     "title": "Arsenal vs Norwich · 2013 Premier League",
-    "videoPath": "/soccer-commentary/arsenal-norwich-edited.mp4",
+    "videoPath": "/soccer-commentary/arsenal-norwich-dialogue-v2.mp4",
     "envKey": "DEMO_ARSENAL_NORWICH_VIDEO_URL",
     "duration_s": 28,
     "planPath": "examples/demo-showcase/arsenal-norwich.json",
     "lines": [
       {
         "at_s": 0.1,
-        "voice": "caller",
-        "text": "Arsenal, building down the left."
+        "voice": "analyst",
+        "text": "Watch how Wilshere keeps moving."
       },
       {
         "at_s": 2.4,
         "voice": "caller",
-        "text": "Cazorla..."
+        "text": "Cazorla into Wilshere... now Giroud."
       },
       {
-        "at_s": 4.3,
+        "at_s": 5.6,
         "voice": "caller",
-        "text": "Wilshere... Giroud..."
-      },
-      {
-        "at_s": 6.1,
-        "voice": "caller",
-        "text": "Back to Wilshere!"
+        "text": "And Wilshere is through!"
       },
       {
         "at_s": 8,
         "voice": "caller",
-        "text": "What a move! What a goal!"
+        "text": "Wilshere scores! What a magnificent Arsenal move!"
       },
       {
-        "at_s": 12.5,
+        "at_s": 12.1,
         "voice": "analyst",
-        "text": "Nobody stops the ball. Every touch takes another defender out of the move."
+        "text": "That's the difference. He doesn't admire the pass; he keeps going, and Giroud gives it straight back."
       },
       {
-        "at_s": 21.1,
+        "at_s": 19.6,
+        "voice": "caller",
+        "text": "All those touches, and Norwich cannot get near them."
+      },
+      {
+        "at_s": 23.1,
         "voice": "analyst",
-        "text": "Wilshere never stops running. He passes, then goes again."
+        "text": "One touch each. It's the movement that makes every pass possible."
       }
     ]
   },
   {
     "id": "portugal-spain",
     "title": "Ronaldo vs Spain · 2018 World Cup",
-    "videoPath": "/soccer-commentary/portugal-spain-edited.mp4",
+    "videoPath": "/soccer-commentary/portugal-spain-dialogue-v2.mp4",
     "envKey": "DEMO_RONALDO_SPAIN_VIDEO_URL",
     "duration_s": 32,
     "planPath": "examples/demo-showcase/portugal-spain.json",
@@ -145,34 +150,39 @@
       {
         "at_s": 0.2,
         "voice": "caller",
-        "text": "Ronaldo stands over it. Portugal trail by one."
+        "text": "Ronaldo has the free kick. Portugal need a goal to get back level."
       },
       {
-        "at_s": 5,
+        "at_s": 5.2,
         "voice": "analyst",
-        "text": "The wall has to jump. He has to get this up and down."
+        "text": "He needs height over the wall, but enough dip to bring it back under the bar."
       },
       {
         "at_s": 12.8,
         "voice": "caller",
-        "text": "Ronaldo..."
+        "text": "Cristiano Ronaldo..."
       },
       {
         "at_s": 14.2,
         "voice": "caller",
-        "text": "Oh, what a free kick! Three-three!"
+        "text": "Oh, what a goal! Ronaldo has rescued Portugal! Three-three!"
       },
       {
-        "at_s": 22.3,
+        "at_s": 19,
         "voice": "analyst",
-        "text": "Over the wall and into the corner. De Gea can only watch it go."
+        "text": "Just look at the shape on that. It clears the wall and bends into the corner. De Gea barely moves."
+      },
+      {
+        "at_s": 27,
+        "voice": "caller",
+        "text": "What a way to bring Portugal back into this game."
       }
     ]
   },
   {
     "id": "betis-barcelona",
     "title": "Ferran Torres vs Betis · 2025 La Liga",
-    "videoPath": "/soccer-commentary/betis-barcelona-edited.mp4",
+    "videoPath": "/soccer-commentary/betis-barcelona-dialogue-v2.mp4",
     "envKey": "DEMO_BETIS_VIDEO_URL",
     "duration_s": 32,
     "planPath": "examples/demo-showcase/betis-barcelona.json",
@@ -180,37 +190,37 @@
       {
         "at_s": 0.2,
         "voice": "caller",
-        "text": "Barcelona, working it down the right."
+        "text": "Barcelona are looking for the opening down the right."
       },
       {
         "at_s": 3.5,
         "voice": "analyst",
-        "text": "Betis keep their shape on the edge of the box."
+        "text": "Betis are holding their shape. A run beyond the full-back could open this up."
       },
       {
-        "at_s": 8.6,
+        "at_s": 8.7,
         "voice": "caller",
-        "text": "Koundé, on the right..."
+        "text": "Koundé combines... and there's the overlap!"
       },
       {
         "at_s": 11.5,
         "voice": "caller",
-        "text": "Low across goal..."
+        "text": "Low across the face of goal..."
       },
       {
         "at_s": 14.2,
         "voice": "caller",
-        "text": "Ferran Torres! Barcelona are level!"
+        "text": "Ferran Torres scores! Barcelona are level! They've worked that beautifully down the right."
       },
       {
-        "at_s": 19.5,
+        "at_s": 20,
         "voice": "analyst",
-        "text": "They create the overlap, then Torres attacks the space in front of goal."
+        "text": "That's the run they needed. The extra man on the outside pulls Betis across, and Torres arrives in front of his marker."
       },
       {
-        "at_s": 26,
-        "voice": "analyst",
-        "text": "Torres gets there ahead of his marker."
+        "at_s": 28,
+        "voice": "caller",
+        "text": "An excellent response from Barcelona. They are right back in this."
       }
     ]
   }

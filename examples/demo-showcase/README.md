@@ -20,7 +20,16 @@ action; longer explanation follows the finish or accompanies a replay.
 The source URLs and timestamps identify the footage, rather than claiming
 that player identification was performed automatically.
 
-All five use the same ElevenLabs caller and analyst. Audio durations were
+All five use the same ElevenLabs caller and analyst, preserving each voice's
+saved settings without a forced speed. The caller uses fuller phrases for
+the big moments. The analyst has a turn before the decisive action and a
+substantial response afterward, with additional exchanges during replays.
+
+In the current render, the analyst accounts for 43–53% of audible speech:
+45% for Di María, 53% for Messi, 53% for Arsenal, 46% for Ronaldo, and 43%
+for Betis. These are measured durations, rather than line-count estimates.
+
+Audio durations were
 measured before rendering to check for delayed, overlapping, or truncated
 lines. The browser catalog at `web/data/demo-clips.json` contains these exact
 words and cues. A test checks that the two artifacts stay aligned.

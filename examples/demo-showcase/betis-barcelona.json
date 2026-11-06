@@ -43,7 +43,7 @@
       "id": "caller-1",
       "at_s": 0.2,
       "voice": "caller",
-      "text": "Barcelona, working it down the right.",
+      "text": "Barcelona are looking for the opening down the right.",
       "evidence_ids": [
         "obs-1"
       ],
@@ -53,7 +53,7 @@
       "id": "analyst-2",
       "at_s": 3.5,
       "voice": "analyst",
-      "text": "Betis keep their shape on the edge of the box.",
+      "text": "Betis are holding their shape. A run beyond the full-back could open this up.",
       "evidence_ids": [
         "obs-1"
       ],
@@ -61,9 +61,9 @@
     },
     {
       "id": "caller-3",
-      "at_s": 8.6,
+      "at_s": 8.7,
       "voice": "caller",
-      "text": "Koundé, on the right...",
+      "text": "Koundé combines... and there's the overlap!",
       "evidence_ids": [
         "obs-2"
       ],
@@ -73,7 +73,7 @@
       "id": "caller-4",
       "at_s": 11.5,
       "voice": "caller",
-      "text": "Low across goal...",
+      "text": "Low across the face of goal...",
       "evidence_ids": [
         "obs-3"
       ],
@@ -83,7 +83,7 @@
       "id": "caller-5",
       "at_s": 14.2,
       "voice": "caller",
-      "text": "Ferran Torres! Barcelona are level!",
+      "text": "Ferran Torres scores! Barcelona are level! They've worked that beautifully down the right.",
       "evidence_ids": [
         "obs-4"
       ],
@@ -91,19 +91,19 @@
     },
     {
       "id": "analyst-6",
-      "at_s": 19.5,
+      "at_s": 20,
       "voice": "analyst",
-      "text": "They create the overlap, then Torres attacks the space in front of goal.",
+      "text": "That's the run they needed. The extra man on the outside pulls Betis across, and Torres arrives in front of his marker.",
       "evidence_ids": [
         "obs-5"
       ],
       "research_ids": []
     },
     {
-      "id": "analyst-7",
-      "at_s": 26,
-      "voice": "analyst",
-      "text": "Torres gets there ahead of his marker.",
+      "id": "caller-7",
+      "at_s": 28,
+      "voice": "caller",
+      "text": "An excellent response from Barcelona. They are right back in this.",
       "evidence_ids": [
         "obs-5"
       ],
@@ -134,7 +134,11 @@
       "limitations": [
         "Showcase script, not untouched automatic pipeline output.",
         "Kounde identity references examples/recorded-demo/identity-reviewed-observations.json; the later ball carrier is not independently named."
-      ]
+      ],
+      "delivery": {
+        "voice_settings": "Use the stored settings for each configured ElevenLabs voice, without a forced speed.",
+        "writing": "Fuller caller phrases and substantial analyst turns before and after the decisive moment."
+      }
     }
   }
 }

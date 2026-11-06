@@ -8,6 +8,12 @@
   },
   "observations": [
     {
+      "id": "opening-pressure",
+      "at_s": 0,
+      "kind": "possession",
+      "description": "France attack near the Argentina penalty area; Argentina defend deep in their own half."
+    },
+    {
       "id": "obs-1",
       "at_s": 1.5,
       "kind": "possession",
@@ -53,11 +59,11 @@
   "lines": [
     {
       "id": "caller-1",
-      "at_s": 1.5,
+      "at_s": 0.1,
       "voice": "caller",
-      "text": "Argentina win it back.",
+      "text": "Argentina, under pressure in their own half.",
       "evidence_ids": [
-        "obs-1"
+        "opening-pressure"
       ],
       "research_ids": []
     },
@@ -65,7 +71,7 @@
       "id": "analyst-2",
       "at_s": 3,
       "voice": "analyst",
-      "text": "France have pushed up. There is space behind them.",
+      "text": "France have pushed up. If Argentina play through them, there is space to attack.",
       "evidence_ids": [
         "obs-1"
       ],
@@ -75,7 +81,7 @@
       "id": "caller-3",
       "at_s": 8.8,
       "voice": "caller",
-      "text": "Messi, round the corner.",
+      "text": "Messi turns it round the corner...",
       "evidence_ids": [
         "obs-3"
       ],
@@ -85,7 +91,7 @@
       "id": "caller-4",
       "at_s": 11.5,
       "voice": "caller",
-      "text": "Álvarez... Mac Allister is away!",
+      "text": "Álvarez releases Mac Allister! Argentina are away now!",
       "evidence_ids": [
         "obs-4"
       ],
@@ -105,7 +111,7 @@
       "id": "caller-6",
       "at_s": 17.6,
       "voice": "caller",
-      "text": "Di María! Two-nil!",
+      "text": "Di María scores! Two-nil to Argentina! What a magnificent counterattack!",
       "evidence_ids": [
         "obs-6"
       ],
@@ -113,9 +119,9 @@
     },
     {
       "id": "analyst-7",
-      "at_s": 22,
+      "at_s": 22.5,
       "voice": "analyst",
-      "text": "One-touch football, all the way through. A brilliant team goal.",
+      "text": "That's why the forward pass matters. Mac Allister keeps running, and Di María finishes the move.",
       "evidence_ids": [
         "obs-7"
       ],
@@ -145,7 +151,11 @@
       "limitations": [
         "This edited script is a showcase, not untouched automatic pipeline output.",
         "Player identities were reviewed against this known match sequence and the footage; automated identification is not being demonstrated."
-      ]
+      ],
+      "delivery": {
+        "voice_settings": "Use the stored settings for each configured ElevenLabs voice, without a forced speed.",
+        "writing": "Fuller caller phrases and substantial analyst turns before and after the decisive moment."
+      }
     }
   }
 }

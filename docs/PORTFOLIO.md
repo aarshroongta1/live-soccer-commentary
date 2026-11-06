@@ -18,6 +18,8 @@ and analyst:
 These scripts were manually reviewed and edited for the showcase. They are
 not unedited system output. The [retained plans and review notes](../examples/demo-showcase/README.md)
 record source footage, observations, exact words, and editorial decisions.
+Both voices use their saved ElevenLabs settings. The analyst contributes during
+the buildup and after the finish; fuller caller phrases carry the big moments.
 
 ## Source and media
 
@@ -34,11 +36,11 @@ at the beginning. Playback and transcript inspection make no model calls.
 
 Local video files are deliberately excluded from Git:
 
-- `web/public/soccer-commentary/argentina-france-edited.mp4`
-- `web/public/soccer-commentary/barcelona-bayern-edited.mp4`
-- `web/public/soccer-commentary/arsenal-norwich-edited.mp4`
-- `web/public/soccer-commentary/portugal-spain-edited.mp4`
-- `web/public/soccer-commentary/betis-barcelona-edited.mp4`
+- `web/public/soccer-commentary/argentina-france-dialogue-v2.mp4`
+- `web/public/soccer-commentary/barcelona-bayern-dialogue-v2.mp4`
+- `web/public/soccer-commentary/arsenal-norwich-dialogue-v2.mp4`
+- `web/public/soccer-commentary/portugal-spain-dialogue-v2.mp4`
+- `web/public/soccer-commentary/betis-barcelona-dialogue-v2.mp4`
 
 Alternatively set the matching video URL variables documented in
 `web/.env.example`, in `web/.env.local` or the hosting build environment.

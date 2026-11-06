@@ -49,7 +49,7 @@
       "id": "caller-1",
       "at_s": 0.2,
       "voice": "caller",
-      "text": "Barcelona, looking for a way through.",
+      "text": "Barcelona keep working the ball, looking for a way through.",
       "evidence_ids": [
         "obs-1"
       ],
@@ -57,9 +57,9 @@
     },
     {
       "id": "analyst-2",
-      "at_s": 3.4,
+      "at_s": 4,
       "voice": "analyst",
-      "text": "Bayern are narrow. There is room on the right.",
+      "text": "Bayern are narrow. Messi has room on this side.",
       "evidence_ids": [
         "obs-1"
       ],
@@ -67,9 +67,9 @@
     },
     {
       "id": "caller-3",
-      "at_s": 6.8,
+      "at_s": 7.2,
       "voice": "caller",
-      "text": "Here is Messi...",
+      "text": "Here is Messi, taking on Boateng...",
       "evidence_ids": [
         "obs-2"
       ],
@@ -79,7 +79,7 @@
       "id": "caller-4",
       "at_s": 10.2,
       "voice": "caller",
-      "text": "Past Boateng!",
+      "text": "He's gone past Boateng!",
       "evidence_ids": [
         "obs-3"
       ],
@@ -87,29 +87,42 @@
     },
     {
       "id": "caller-5",
-      "at_s": 11.5,
+      "at_s": 12,
       "voice": "caller",
-      "text": "Over Neuer!",
+      "text": "And over Neuer! Messi, that is absolutely magnificent!",
       "evidence_ids": [
-        "obs-4"
-      ],
-      "research_ids": []
-    },
-    {
-      "id": "caller-6",
-      "at_s": 13.5,
-      "voice": "caller",
-      "text": "Brilliant. Absolutely brilliant!",
-      "evidence_ids": [
+        "obs-4",
         "obs-5"
       ],
       "research_ids": []
     },
     {
-      "id": "analyst-7",
-      "at_s": 20,
+      "id": "analyst-6",
+      "at_s": 17,
       "voice": "analyst",
-      "text": "He wrong-foots Boateng, then chips the goalkeeper with his right foot.",
+      "text": "He makes Boateng commit, then shifts onto his right foot. Neuer comes out, and Messi just lifts it over him.",
+      "evidence_ids": [
+        "obs-3",
+        "obs-4",
+        "obs-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-7",
+      "at_s": 25.4,
+      "voice": "caller",
+      "text": "He makes it look so simple, doesn't he?",
+      "evidence_ids": [
+        "obs-6"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-8",
+      "at_s": 29,
+      "voice": "analyst",
+      "text": "That's balance and composure. The defender goes down; Messi stays in complete control.",
       "evidence_ids": [
         "obs-6"
       ],
@@ -139,7 +152,11 @@
       "limitations": [
         "Showcase script, not untouched automatic pipeline output.",
         "Identities and actions were reviewed against this known match sequence and the footage."
-      ]
+      ],
+      "delivery": {
+        "voice_settings": "Use the stored settings for each configured ElevenLabs voice, without a forced speed.",
+        "writing": "Fuller caller phrases and substantial analyst turns before and after the decisive moment."
+      }
     }
   }
 }

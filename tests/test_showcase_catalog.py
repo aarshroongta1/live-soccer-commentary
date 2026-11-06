@@ -35,6 +35,11 @@ def test_browser_transcript_matches_reviewed_render_plan(clip) -> None:
     ]
     assert plan.metadata["review"]["not_pipeline_output"] is True
     assert {line.voice for line in plan.lines} == {"caller", "analyst"}
+    observations = json.loads(plan.path.read_text())["observations"]
+    first_goal = min(o["at_s"] for o in observations if o["kind"] == "goal")
+    analyst_cues = [line.at_s for line in plan.lines if line.voice == "analyst"]
+    assert any(cue < first_goal for cue in analyst_cues), "Analyst needs a buildup turn"
+    assert any(cue > first_goal for cue in analyst_cues), "Analyst needs a response to the finish"
     assert any(
         observation["kind"] == "goal"
         for observation in json.loads(plan.path.read_text())["observations"]
