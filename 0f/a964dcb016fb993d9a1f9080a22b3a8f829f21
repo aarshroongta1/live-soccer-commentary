@@ -1,0 +1,35 @@
+docs/PORTFOLIO.md
+  s_aba8a8d5718a34::t_3d96d5feb8a964 21-22,39-43
+tests/test_showcase_catalog.py
+  s_aba8a8d5718a34::t_f4735223d4e67d 38-42
+examples/demo-showcase/README.md
+  s_aba8a8d5718a34::t_1d031ee69970cf 23-32
+examples/demo-showcase/argentina-france.json
+  s_aba8a8d5718a34::t_3bfede54e85eeb 10-15,62,64,66,74,84,94,114,122,124,154-158
+examples/demo-showcase/arsenal-norwich.json
+  s_aba8a8d5718a34::t_a25e49da48b99b 55,57-58,68,76,78,86,88,90,95-98,100,105-108,116,118,148-152
+examples/demo-showcase/barcelona-bayern.json
+  s_aba8a8d5718a34::t_a00e851b2506c1 52,60,62,70,72,82,90,92,94-95,100-103,105-106,112-123,125,155-159
+examples/demo-showcase/betis-barcelona.json
+  s_aba8a8d5718a34::t_e0d75b64d602b4 46,56,64,66,76,86,94,96,103-106,137-141
+examples/demo-showcase/portugal-spain.json
+  s_aba8a8d5718a34::t_114b5266b6d9b6 46,54,56,58,63,66,73,76,83-84,86-97,128-132
+web/data/demo-clips.json
+  s_aba8a8d5718a34::t_6f1a1a8c4840dc 5,11,13,18,23,28,38,41,43,50,58,61,63,66,68,73,76,78-83,86,88,91,93,100,107-108,113,116,118,123,126,128,131-136,138,145,153,156,158,163,168,171,173-178,185,193,198,201,203,208,213,216,218,221-223
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0fa964dcb016fb993d9a1f9080a22b3a8f829f21",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
