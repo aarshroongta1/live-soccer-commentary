@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "betis-barcelona-ferran.mp4",
+    "start_s": 8,
+    "duration_s": 32
+  },
+  "observations": [
+    {
+      "id": "obs-1",
+      "at_s": 0,
+      "kind": "possession",
+      "description": "Barcelona work down the right against Betis, who defend near the edge of their area."
+    },
+    {
+      "id": "obs-2",
+      "at_s": 8.5,
+      "kind": "pass",
+      "description": "Kounde combines on the right, as established in the retained identity-reviewed example."
+    },
+    {
+      "id": "obs-3",
+      "at_s": 11.4,
+      "kind": "pass",
+      "description": "A low delivery is played across the face of goal from the right."
+    },
+    {
+      "id": "obs-4",
+      "at_s": 14.1,
+      "kind": "goal",
+      "description": "Ferran Torres finishes from close range. The ball is in the net."
+    },
+    {
+      "id": "obs-5",
+      "at_s": 19.4,
+      "kind": "celebration",
+      "description": "Ferran Torres, shirt 7, celebrates; the score updates to 1-1."
+    }
+  ],
+  "lines": [
+    {
+      "id": "caller-1",
+      "at_s": 0.2,
+      "voice": "caller",
+      "text": "Barcelona, working it down the right.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-2",
+      "at_s": 3.5,
+      "voice": "analyst",
+      "text": "Betis keep their shape on the edge of the box.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-3",
+      "at_s": 8.6,
+      "voice": "caller",
+      "text": "Koundé, on the right...",
+      "evidence_ids": [
+        "obs-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-4",
+      "at_s": 11.5,
+      "voice": "caller",
+      "text": "Low across goal...",
+      "evidence_ids": [
+        "obs-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-5",
+      "at_s": 14.2,
+      "voice": "caller",
+      "text": "Ferran Torres! Barcelona are level!",
+      "evidence_ids": [
+        "obs-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-6",
+      "at_s": 19.5,
+      "voice": "analyst",
+      "text": "They create the overlap, then Torres attacks the space in front of goal.",
+      "evidence_ids": [
+        "obs-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-7",
+      "at_s": 26,
+      "voice": "analyst",
+      "text": "Torres gets there ahead of his marker.",
+      "evidence_ids": [
+        "obs-5"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "Manually edited showcase script, reviewed against source contact sheets on 2026-11-06.",
+    "cost": 0,
+    "models": {
+      "writer": "manual editorial review"
+    },
+    "review": {
+      "not_pipeline_output": true,
+      "source_url": "https://www.youtube.com/watch?v=93LPZJkCW2w",
+      "download_window_s": [
+        965,
+        1005
+      ],
+      "mode": "Manually edited recorded demo",
+      "changes": [
+        "Replaced the old local-voice render with the same ElevenLabs caller and analyst used in the other clips.",
+        "Trimmed the first eight seconds of buildup.",
+        "Replaced generic description and form statistics with concise calls and action-specific analysis.",
+        "Delayed the goal confirmation until the ball is visibly in the net."
+      ],
+      "limitations": [
+        "Showcase script, not untouched automatic pipeline output.",
+        "Kounde identity references examples/recorded-demo/identity-reviewed-observations.json; the later ball carrier is not independently named."
+      ]
+    }
+  }
+}

@@ -480,8 +480,8 @@ def test_editorial_reference_caption_uses_honest_label() -> None:
     ass = render_demo.captions_ass(
         timeline, duration_s=5.0, recorded_label=True, editorial_reference=True
     )
-    assert "EDITORIAL REFERENCE - NOT PIPELINE OUTPUT" in ass
-    assert "RECORDED DEMO" not in ass
+    assert "RECORDED DEMO • EDITED COMMENTARY" in ass
+    assert "CLAUDE + LANGGRAPH" not in ass
 
 
 def test_ffmpeg_subtitles_detector_reads_filter_name_column(monkeypatch) -> None:

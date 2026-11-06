@@ -31,8 +31,11 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:3000 to switch between Argentina–France and Betis–Barcelona
-examples and inspect their seekable transcripts. The matching MP4s live in
+Open http://127.0.0.1:3000 for five recorded examples: Di María vs France,
+Messi vs Bayern, Arsenal vs Norwich, Ronaldo vs Spain, and Ferran Torres vs Betis.
+The showcase scripts are reviewed and edited before voicing; see their
+[plans and review notes](examples/demo-showcase/README.md). Each has a seekable
+transcript. The matching MP4s live in
 `web/public/soccer-commentary/`. Source
 footage and generated media are not committed. Without the videos, the saved
 transcripts still work. See the [portfolio guide](docs/PORTFOLIO.md) for media setup

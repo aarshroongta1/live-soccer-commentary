@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "argentina-france-dimaria.mp4",
+    "start_s": 12,
+    "duration_s": 28
+  },
+  "observations": [
+    {
+      "id": "obs-1",
+      "at_s": 1.5,
+      "kind": "possession",
+      "description": "Argentina recover the ball near their own penalty area."
+    },
+    {
+      "id": "obs-2",
+      "at_s": 6,
+      "kind": "transition",
+      "description": "Argentina move the ball forward with France players advanced."
+    },
+    {
+      "id": "obs-3",
+      "at_s": 8.7,
+      "kind": "pass",
+      "description": "Messi redirects the ball near halfway to continue the counterattack."
+    },
+    {
+      "id": "obs-4",
+      "at_s": 11.4,
+      "kind": "pass",
+      "description": "Alvarez releases Mac Allister into the open right channel."
+    },
+    {
+      "id": "obs-5",
+      "at_s": 15.5,
+      "kind": "pass",
+      "description": "Mac Allister squares towards Di Maria in the left side of the box."
+    },
+    {
+      "id": "obs-6",
+      "at_s": 17.5,
+      "kind": "goal",
+      "description": "Di Maria finishes past Lloris. The ball is in the net and Argentina celebrate."
+    },
+    {
+      "id": "obs-7",
+      "at_s": 22,
+      "kind": "celebration",
+      "description": "Di Maria celebrates and the score graphic reads Argentina 2, France 0."
+    }
+  ],
+  "lines": [
+    {
+      "id": "caller-1",
+      "at_s": 1.5,
+      "voice": "caller",
+      "text": "Argentina win it back.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-2",
+      "at_s": 3,
+      "voice": "analyst",
+      "text": "France have pushed up. There is space behind them.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-3",
+      "at_s": 8.8,
+      "voice": "caller",
+      "text": "Messi, round the corner.",
+      "evidence_ids": [
+        "obs-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-4",
+      "at_s": 11.5,
+      "voice": "caller",
+      "text": "Álvarez... Mac Allister is away!",
+      "evidence_ids": [
+        "obs-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-5",
+      "at_s": 15.6,
+      "voice": "caller",
+      "text": "Across to Di María...",
+      "evidence_ids": [
+        "obs-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-6",
+      "at_s": 17.6,
+      "voice": "caller",
+      "text": "Di María! Two-nil!",
+      "evidence_ids": [
+        "obs-6"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-7",
+      "at_s": 22,
+      "voice": "analyst",
+      "text": "One-touch football, all the way through. A brilliant team goal.",
+      "evidence_ids": [
+        "obs-7"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "Manually edited showcase script, reviewed against source contact sheets on 2026-11-06.",
+    "cost": 0,
+    "models": {
+      "writer": "manual editorial review"
+    },
+    "review": {
+      "not_pipeline_output": true,
+      "source_url": "https://www.youtube.com/watch?v=RgqKdplLIk4",
+      "download_window_s": [
+        2188,
+        2228
+      ],
+      "mode": "Manually edited recorded demo",
+      "changes": [
+        "Trimmed the original 40-second demo to its final 28 seconds.",
+        "Replaced unnamed directional calls with the Messi–Alvarez–Mac Allister–Di Maria sequence.",
+        "Removed unrelated ranking research and shortened the goal call."
+      ],
+      "limitations": [
+        "This edited script is a showcase, not untouched automatic pipeline output.",
+        "Player identities were reviewed against this known match sequence and the footage; automated identification is not being demonstrated."
+      ]
+    }
+  }
+}

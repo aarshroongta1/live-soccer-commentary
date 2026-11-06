@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "arsenal-team-goals.mp4",
+    "start_s": 89,
+    "duration_s": 28
+  },
+  "observations": [
+    {
+      "id": "obs-1",
+      "at_s": 0,
+      "kind": "possession",
+      "description": "Arsenal advance down the left against Norwich in yellow."
+    },
+    {
+      "id": "obs-2",
+      "at_s": 2.3,
+      "kind": "pass",
+      "description": "Cazorla moves infield and exchanges a short pass with Wilshere."
+    },
+    {
+      "id": "obs-3",
+      "at_s": 4.2,
+      "kind": "pass",
+      "description": "Wilshere and Giroud exchange quick first-time passes near the edge of the area."
+    },
+    {
+      "id": "obs-4",
+      "at_s": 6,
+      "kind": "pass",
+      "description": "Giroud returns the ball into the path of Wilshere running into the box."
+    },
+    {
+      "id": "obs-5",
+      "at_s": 7.9,
+      "kind": "goal",
+      "description": "Wilshere finishes beyond the goalkeeper and the ball crosses the line."
+    },
+    {
+      "id": "obs-6",
+      "at_s": 10.2,
+      "kind": "replay",
+      "description": "The replay shows the first-time passing exchange between Cazorla, Wilshere and Giroud."
+    },
+    {
+      "id": "obs-7",
+      "at_s": 21,
+      "kind": "replay",
+      "description": "Another replay follows Wilshere continuing his run after releasing the ball."
+    }
+  ],
+  "lines": [
+    {
+      "id": "caller-1",
+      "at_s": 0.1,
+      "voice": "caller",
+      "text": "Arsenal, building down the left.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-2",
+      "at_s": 2.4,
+      "voice": "caller",
+      "text": "Cazorla...",
+      "evidence_ids": [
+        "obs-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-3",
+      "at_s": 4.3,
+      "voice": "caller",
+      "text": "Wilshere... Giroud...",
+      "evidence_ids": [
+        "obs-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-4",
+      "at_s": 6.1,
+      "voice": "caller",
+      "text": "Back to Wilshere!",
+      "evidence_ids": [
+        "obs-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-5",
+      "at_s": 8,
+      "voice": "caller",
+      "text": "What a move! What a goal!",
+      "evidence_ids": [
+        "obs-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-6",
+      "at_s": 12.5,
+      "voice": "analyst",
+      "text": "Nobody stops the ball. Every touch takes another defender out of the move.",
+      "evidence_ids": [
+        "obs-6"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-7",
+      "at_s": 21.1,
+      "voice": "analyst",
+      "text": "Wilshere never stops running. He passes, then goes again.",
+      "evidence_ids": [
+        "obs-7"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "Manually edited showcase script, reviewed against source contact sheets on 2026-11-06.",
+    "cost": 0,
+    "models": {
+      "writer": "manual editorial review"
+    },
+    "review": {
+      "not_pipeline_output": true,
+      "source_url": "https://www.youtube.com/watch?v=q7wNwkJ4CB4",
+      "download_window_s": [
+        0,
+        140
+      ],
+      "mode": "Manually edited recorded demo",
+      "changes": [
+        "Selected the Wilshere–Norwich segment from Arsenal’s own compilation, excluding the preceding Sunderland goal and end screen.",
+        "Named the passing combination, with brief calls that fit the live sequence.",
+        "Put both explanatory lines over replays and end on Wilshere’s celebration."
+      ],
+      "limitations": [
+        "Showcase script, not untouched automatic pipeline output.",
+        "Identities and actions were reviewed against this known match sequence and the footage."
+      ]
+    }
+  }
+}

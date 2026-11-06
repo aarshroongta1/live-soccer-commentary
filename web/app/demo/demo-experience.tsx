@@ -65,9 +65,10 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
 
       <p className="demo-tech">
         Python and LangGraph coordinate video observation, pre-match research,
-        and two-voice script writing. OpenAI/Claude handle vision and text;
-        ElevenLabs or local voices handle speech. FFmpeg aligns the audio and
-        captions.
+        and two-voice script writing. These recorded showcase scripts are
+        reviewed and edited before voicing; they are not unedited system output.
+        ElevenLabs or local voices handle speech, with FFmpeg aligning audio
+        and captions.
       </p>
 
       <details className="demo-transcript" open={!available}>

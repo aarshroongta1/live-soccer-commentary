@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "barcelona-bayern-messi.mp4",
+    "start_s": 0,
+    "duration_s": 34
+  },
+  "observations": [
+    {
+      "id": "obs-1",
+      "at_s": 0,
+      "kind": "possession",
+      "description": "Barcelona circulate the ball in front of the compact Bayern defensive block."
+    },
+    {
+      "id": "obs-2",
+      "at_s": 6.3,
+      "kind": "pass",
+      "description": "Messi receives on the right and advances towards Boateng."
+    },
+    {
+      "id": "obs-3",
+      "at_s": 10.1,
+      "kind": "dribble",
+      "description": "Messi changes direction past Boateng, who loses his footing."
+    },
+    {
+      "id": "obs-4",
+      "at_s": 11.4,
+      "kind": "shot",
+      "description": "Messi lifts a right-footed chip over Neuer."
+    },
+    {
+      "id": "obs-5",
+      "at_s": 12,
+      "kind": "goal",
+      "description": "The ball crosses the line; Barcelona celebrate."
+    },
+    {
+      "id": "obs-6",
+      "at_s": 19,
+      "kind": "replay",
+      "description": "A slow-motion replay shows the change of direction and right-footed chip."
+    }
+  ],
+  "lines": [
+    {
+      "id": "caller-1",
+      "at_s": 0.2,
+      "voice": "caller",
+      "text": "Barcelona, looking for a way through.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-2",
+      "at_s": 3.4,
+      "voice": "analyst",
+      "text": "Bayern are narrow. There is room on the right.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-3",
+      "at_s": 6.8,
+      "voice": "caller",
+      "text": "Here is Messi...",
+      "evidence_ids": [
+        "obs-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-4",
+      "at_s": 10.2,
+      "voice": "caller",
+      "text": "Past Boateng!",
+      "evidence_ids": [
+        "obs-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-5",
+      "at_s": 11.5,
+      "voice": "caller",
+      "text": "Over Neuer!",
+      "evidence_ids": [
+        "obs-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-6",
+      "at_s": 13.5,
+      "voice": "caller",
+      "text": "Brilliant. Absolutely brilliant!",
+      "evidence_ids": [
+        "obs-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-7",
+      "at_s": 20,
+      "voice": "analyst",
+      "text": "He wrong-foots Boateng, then chips the goalkeeper with his right foot.",
+      "evidence_ids": [
+        "obs-6"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "Manually edited showcase script, reviewed against source contact sheets on 2026-11-06.",
+    "cost": 0,
+    "models": {
+      "writer": "manual editorial review"
+    },
+    "review": {
+      "not_pipeline_output": true,
+      "source_url": "https://www.youtube.com/watch?v=tbKMBuR-pxs",
+      "download_window_s": [
+        0,
+        49
+      ],
+      "mode": "Manually edited recorded demo",
+      "changes": [
+        "Selected the first 34 seconds; removed the UEFA end screen.",
+        "Named the defender and goalkeeper at their visible actions.",
+        "Kept the goal sequence brief, with analysis over the replay."
+      ],
+      "limitations": [
+        "Showcase script, not untouched automatic pipeline output.",
+        "Identities and actions were reviewed against this known match sequence and the footage."
+      ]
+    }
+  }
+}

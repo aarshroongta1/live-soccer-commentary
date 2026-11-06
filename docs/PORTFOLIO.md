@@ -6,15 +6,18 @@ The portfolio hosts a minimal player with a match switcher, three sentences
 about the tech, and an expandable, seekable transcript. Back to projects and
 source links remain visible. The project entry links directly to this page.
 
-Two 40-second recorded examples are available:
+Five recorded examples are available, all with the same ElevenLabs caller
+and analyst:
 
-- Argentina–France: ElevenLabs voices; transcript from the saved
-  `argfra-openai-claude-v2-plan.json` output.
-- Betis–Barcelona: local Daniel and Samantha voices; transcript from the
-  reviewed `examples/recorded-demo/named-plan.json` output.
+- Di María vs France, 2022 World Cup final — 28 seconds.
+- Messi vs Bayern, 2015 Champions League — 34 seconds.
+- Arsenal vs Norwich, 2013 Premier League — 28 seconds.
+- Ronaldo vs Spain, 2018 World Cup — 32 seconds.
+- Ferran Torres vs Betis, 2025 La Liga — 32 seconds.
 
-The Betis example contains documented manual review corrections. See its
-[review notes](../examples/recorded-demo/README.md).
+These scripts were manually reviewed and edited for the showcase. They are
+not unedited system output. The [retained plans and review notes](../examples/demo-showcase/README.md)
+record source footage, observations, exact words, and editorial decisions.
 
 ## Source and media
 
@@ -31,12 +34,15 @@ at the beginning. Playback and transcript inspection make no model calls.
 
 Local video files are deliberately excluded from Git:
 
-- `web/public/soccer-commentary/argentina-france.mp4`
-- `web/public/soccer-commentary/betis-barcelona.mp4`
+- `web/public/soccer-commentary/argentina-france-edited.mp4`
+- `web/public/soccer-commentary/barcelona-bayern-edited.mp4`
+- `web/public/soccer-commentary/arsenal-norwich-edited.mp4`
+- `web/public/soccer-commentary/portugal-spain-edited.mp4`
+- `web/public/soccer-commentary/betis-barcelona-edited.mp4`
 
-Alternatively set `DEMO_VIDEO_URL` and `DEMO_BETIS_VIDEO_URL` in
-`web/.env.local` or the hosting build environment. The page exposes the matching
-transcript if a video is absent or fails to load.
+Alternatively set the matching video URL variables documented in
+`web/.env.example`, in `web/.env.local` or the hosting build environment.
+The page exposes the matching transcript if a video is absent or fails to load.
 
 ## Run and deploy the player
 
@@ -56,7 +62,7 @@ source catalog and portfolio catalog aligned when replacing a clip or script.
 
 ## Verification
 
-Check both clips, switch while playback is active, and confirm the old video
+Check all five clips, switch while playback is active, and confirm the old video
 stops. Expand the transcript, verify each match has the correct lines, and seek
 using a timestamp. Check Back to projects, the source link, direct navigation to
 the demo route, and the portfolio's demo link. Test mobile and desktop widths.

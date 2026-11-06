@@ -20,10 +20,10 @@ const projectFont = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Live Soccer Commentary AI — Demo",
   description:
-    "A recorded demo of two-voice soccer commentary generated from video frames and pre-match research. A project by Aarsh Roongta.",
+    "Five recorded soccer moments with reviewed, edited two-voice commentary. A project by Aarsh Roongta.",
   openGraph: {
     title: "Live Soccer Commentary AI — Demo",
-    description: "A 40-second recorded demo of AI-generated soccer commentary.",
+    description: "Five edited commentary demos across the World Cup, Champions League, Premier League, and La Liga.",
     type: "website",
   },
 };

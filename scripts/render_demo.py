@@ -428,7 +428,7 @@ def captions_ass(
     ]
     if recorded_label:
         label = (
-            "EDITORIAL REFERENCE - NOT PIPELINE OUTPUT"
+            "RECORDED DEMO • EDITED COMMENTARY"
             if editorial_reference
             else "RECORDED DEMO • CLAUDE + LANGGRAPH"
         )

@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "portugal-spain-live.mp4",
+    "start_s": 8,
+    "duration_s": 32
+  },
+  "observations": [
+    {
+      "id": "obs-1",
+      "at_s": 0,
+      "kind": "set_piece",
+      "description": "Ronaldo stands over a free kick; the score is Portugal 2, Spain 3."
+    },
+    {
+      "id": "obs-2",
+      "at_s": 0,
+      "kind": "set_piece",
+      "description": "Spain form a defensive wall with De Gea positioned behind it."
+    },
+    {
+      "id": "obs-3",
+      "at_s": 12.7,
+      "kind": "shot",
+      "description": "Ronaldo strikes the free kick over the wall."
+    },
+    {
+      "id": "obs-4",
+      "at_s": 14.1,
+      "kind": "goal",
+      "description": "The ball goes into the upper corner; Ronaldo turns to celebrate."
+    },
+    {
+      "id": "obs-5",
+      "at_s": 22,
+      "kind": "celebration",
+      "description": "The graphic shows Portugal 3, Spain 3; Portugal players celebrate."
+    }
+  ],
+  "lines": [
+    {
+      "id": "caller-1",
+      "at_s": 0.2,
+      "voice": "caller",
+      "text": "Ronaldo stands over it. Portugal trail by one.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-2",
+      "at_s": 5,
+      "voice": "analyst",
+      "text": "The wall has to jump. He has to get this up and down.",
+      "evidence_ids": [
+        "obs-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-4",
+      "at_s": 12.8,
+      "voice": "caller",
+      "text": "Ronaldo...",
+      "evidence_ids": [
+        "obs-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "caller-5",
+      "at_s": 14.2,
+      "voice": "caller",
+      "text": "Oh, what a free kick! Three-three!",
+      "evidence_ids": [
+        "obs-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "analyst-6",
+      "at_s": 22.3,
+      "voice": "analyst",
+      "text": "Over the wall and into the corner. De Gea can only watch it go.",
+      "evidence_ids": [
+        "obs-5"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "Manually edited showcase script, reviewed against source contact sheets on 2026-11-06.",
+    "cost": 0,
+    "models": {
+      "writer": "manual editorial review"
+    },
+    "review": {
+      "not_pipeline_output": true,
+      "source_url": "https://www.youtube.com/watch?v=OFbyNU6UQQs",
+      "download_window_s": [
+        5460,
+        5500
+      ],
+      "mode": "Manually edited recorded demo",
+      "changes": [
+        "Used the live run-up and strike, rather than presenting a replay as live action.",
+        "Put the goal call after the ball crosses the line.",
+        "Kept setup analysis clear of the run-up and removed unrelated research.",
+        "Trimmed eight seconds of the static run-up and removed its redundant waiting line."
+      ],
+      "limitations": [
+        "Showcase script, not untouched automatic pipeline output.",
+        "Identities and actions were reviewed against this known match sequence and the footage."
+      ]
+    }
+  }
+}

@@ -60,8 +60,9 @@ its own transcript. To add different footage, add a catalog entry and its MP4
 under `web/public/soccer-commentary/`. Transcript timestamps must match the
 rendered audio placement, including any delays reported by the renderer.
 
-The current Argentina–France and Betis–Barcelona clips can also use remote URLs
-via `DEMO_VIDEO_URL` and `DEMO_BETIS_VIDEO_URL` in `web/.env.local`.
+The five featured clips can also use remote URLs through the variables in
+`web/.env.example`. Their [edited showcase plans](../examples/demo-showcase/README.md)
+retain the words, evidence, source windows, and review notes for each render.
 
 Media is git-ignored and is not supplied with a fresh clone. See the
 [portfolio guide](PORTFOLIO.md) for deployment and missing-video behavior.
