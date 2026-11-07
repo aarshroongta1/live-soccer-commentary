@@ -10,6 +10,7 @@ from commentary.llm.base import (
     image_block,
     text_block,
 )
+from commentary.llm.budget import RunBudget
 from commentary.llm.fake import ScriptedBackend
 from commentary.llm.pricing import cost_usd
 from commentary.llm.schema import strict_schema
@@ -34,6 +35,8 @@ def openai_factory(
     timeout_s: float | None = None,
     *,
     max_retries: int = 1,
+    budget: RunBudget | None = None,
+    default_effort: str | None = None,
 ) -> LLMBackend:
     """Construct the OpenAI Responses adapter from explicit environment settings."""
     import os
@@ -46,4 +49,6 @@ def openai_factory(
         timeout_s=(float(os.getenv("OPENAI_TIMEOUT_S", "8.0")) if timeout_s is None else timeout_s),
         max_retries=max_retries,
         base_url=os.getenv("OPENAI_BASE_URL"),
+        budget=budget,
+        default_effort=default_effort,
     )

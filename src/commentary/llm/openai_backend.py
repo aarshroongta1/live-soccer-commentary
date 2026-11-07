@@ -17,7 +17,8 @@ import openai
 from pydantic import BaseModel, ValidationError
 
 from commentary.llm.base import Block, LLMError, Parsed, Usage
-from commentary.llm.pricing import cost_usd
+from commentary.llm.budget import RunBudget
+from commentary.llm.pricing import PRICES, cost_usd
 from commentary.llm.schema import strict_schema
 
 T = TypeVar("T", bound=BaseModel)
@@ -71,6 +72,8 @@ class OpenAIBackend:
         timeout_s: float = 8.0,
         max_retries: int = 1,
         base_url: str | None = None,
+        budget: RunBudget | None = None,
+        default_effort: str | None = None,
     ) -> None:
         if client is not None:
             self._client = client
@@ -82,6 +85,8 @@ class OpenAIBackend:
             self._client = openai.AsyncOpenAI(timeout=timeout_s, max_retries=max_retries)
         self._total = Usage()
         self._lock = asyncio.Lock()
+        self.budget = budget
+        self.default_effort = default_effort
         # Scoped callers such as recorded research may attach Responses-only
         # parameters (for example, web search) for one request.
         self.extra_params: dict[str, Any] = {}
@@ -118,11 +123,17 @@ class OpenAIBackend:
                 }
             },
         }
+        effort = effort if effort is not None else self.default_effort
         if effort is not None:
             params["reasoning"] = {"effort": effort}
         params.update(self.extra_params)
+        if self.budget is not None:
+            params.setdefault("service_tier", "default")
 
+        reservation: int | None = None
         try:
+            if self.budget is not None:
+                reservation = await self._reserve_budget(params)
             response = await self._client.responses.create(**params)
         except (openai.APIStatusError, openai.APIConnectionError, openai.APITimeoutError) as exc:
             status = _value(exc, "status_code")
@@ -135,6 +146,12 @@ class OpenAIBackend:
         usage = self._usage(response, model, started)
         async with self._lock:
             self._total = self._total + usage
+        if (
+            self.budget is not None
+            and reservation is not None
+            and _value(response, "usage") is not None
+        ):
+            await self.budget.settle(reservation, usage.cost_usd)
 
         status = _value(response, "status")
         if status == "incomplete":
@@ -166,6 +183,35 @@ class OpenAIBackend:
                 f"output tokens): {exc}"
             ) from exc
         return Parsed(value=value, usage=usage, model=model)
+
+    async def _reserve_budget(self, params: dict[str, Any]) -> int:
+        """Count images/schema too; unknown pricing or hosted tools fail closed."""
+        assert self.budget is not None
+        identifier = await self.budget.begin()
+        if "model" in self.extra_params:
+            raise LLMError("budgeted runs cannot override the model through extra_params")
+        model = str(params["model"])
+        if model not in PRICES:
+            raise LLMError("budgeted runs require a model with known token pricing")
+        if params.get("tools"):
+            raise LLMError("budgeted runs require saved research; hosted tool fees are not bounded")
+        if params.get("service_tier", "default") != "default":
+            raise LLMError("budgeted runs support only standard service-tier pricing")
+        count_params = {
+            key: params[key]
+            for key in ("model", "instructions", "input", "text", "reasoning")
+            if key in params
+        }
+        counted = await self._client.responses.input_tokens.count(**count_params)
+        tokens = _value(counted, "input_tokens")
+        if not isinstance(tokens, int) or isinstance(tokens, bool) or tokens < 0:
+            raise LLMError("input token preflight did not return a valid count")
+        if tokens > 272_000:
+            raise LLMError("budgeted development runs require short-context requests")
+        in_rate, out_rate = PRICES[model]
+        maximum = (tokens * in_rate + int(params["max_output_tokens"]) * out_rate) / 1_000_000
+        await self.budget.reserve(identifier, maximum * 1.25)
+        return identifier
 
     @staticmethod
     def _refusal(response: Any) -> str | None:
