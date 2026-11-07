@@ -122,6 +122,102 @@
   white-space: nowrap;
   border: 0;
 }
+.demo-architecture {
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-rule, #e4e4e9);
+}
+.demo-architecture h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.demo-architecture-intro,
+.demo-architecture-note {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-muted, #66666d);
+}
+.demo-architecture-intro {
+  margin: 6px 0 24px;
+}
+.demo-architecture-note {
+  max-width: 65ch;
+  margin: 20px 0 0;
+}
+.demo-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.demo-flow-stage {
+  position: relative;
+  padding: 18px;
+  border: 1px solid var(--color-rule, #e4e4e9);
+  border-radius: 4px;
+}
+.demo-flow-number {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--color-muted, #66666d);
+  font-variant-numeric: tabular-nums;
+}
+.demo-flow-stage h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.demo-flow-stack {
+  margin: 7px 0;
+  color: var(--color-accent, #2444ff);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.demo-flow-detail {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-muted, #66666d);
+}
+.demo-flow-arrow {
+  position: absolute;
+  top: calc(50% - 14px);
+  right: -23px;
+  font-family: system-ui, sans-serif;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--color-muted, #66666d);
+}
+.demo-flow-stage:nth-child(3) .demo-flow-arrow {
+  top: auto;
+  right: calc(50% - 14px);
+  bottom: -31px;
+  transform: rotate(90deg);
+}
+.demo-flow-stage:nth-child(4) {
+  grid-column: 3;
+  grid-row: 2;
+}
+.demo-flow-stage:nth-child(5) {
+  grid-column: 2;
+  grid-row: 2;
+}
+.demo-flow-stage:nth-child(6) {
+  grid-column: 1;
+  grid-row: 2;
+}
+.demo-flow-stage:nth-child(4) .demo-flow-arrow,
+.demo-flow-stage:nth-child(5) .demo-flow-arrow {
+  right: auto;
+  left: -23px;
+  transform: rotate(180deg);
+}
 @media (max-width: 600px) {
   .demo-page {
     padding: 28px 20px 48px;
@@ -135,5 +231,25 @@
   }
   .demo-lines button > span:last-child {
     grid-column: 2;
+  }
+  .demo-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .demo-flow-stage {
+    padding: 16px 18px 16px 48px;
+  }
+  .demo-flow-number {
+    position: absolute;
+    left: 18px;
+    top: 18px;
+  }
+  .demo-flow-stage:nth-child(n) .demo-flow-arrow {
+    top: auto;
+    bottom: -29px;
+    right: calc(50% - 14px);
+    left: auto;
+    transform: rotate(90deg);
   }
 }

@@ -21,6 +21,9 @@ by default, with optional ElevenLabs synthesis.
 Built with **Python, LangGraph, Pydantic, OpenAI, OpenCV, FFmpeg, and
 Next.js/TypeScript**.
 
+[View the architecture flowchart](diagrams/commentary-pipeline.svg), or open
+the [editable diagram](diagrams/commentary-pipeline.excalidraw) in Excalidraw.
+
 ## Explore the demo
 
 Requires Node.js/npm. The saved demo makes no model calls and needs no API key:

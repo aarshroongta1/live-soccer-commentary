@@ -28,6 +28,7 @@ out/
 *.jpg
 *.png
 !docs/**/*.png
+!diagrams/*.png
 
 # Node / Next.js
 node_modules/

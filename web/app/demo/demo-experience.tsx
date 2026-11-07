@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import CommentaryArchitecture from "./architecture";
 import "./demo.css";
 
 export type DemoClip = {
@@ -64,11 +65,8 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
       )}
 
       <p className="demo-tech">
-        Python and LangGraph coordinate video observation, pre-match research,
-        and two-voice script writing. These recorded showcase scripts are
-        reviewed and edited before voicing; they are not unedited system output.
-        ElevenLabs or local voices handle speech, with FFmpeg aligning audio
-        and captions.
+        Two-voice commentary with synchronized captions. These recorded scripts
+        are reviewed and edited before voicing.
       </p>
 
       <details className="demo-transcript" open={!available}>
@@ -133,6 +131,7 @@ export default function DemoExperience({ clips }: { clips: DemoClip[] }) {
           </select>
         </label>
         <ClipPlayer key={active.id} clip={active} />
+        <CommentaryArchitecture />
       </div>
     </main>
   );
