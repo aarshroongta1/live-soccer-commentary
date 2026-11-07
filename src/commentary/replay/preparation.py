@@ -64,6 +64,11 @@ repeat-action/transition evidence; do not announce that action as new live play.
 Attach an actor only for a readable shirt number/name or action-linked graphic at that
 observation; otherwise actor=null. Do not set resolved_name or guess identity from fame,
 kit, team lists or a different action. A celebration cannot identify an earlier scorer.
+Copy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster
+name. Read a number from the image, not from the roster.
+Actively check the action participant for readable shirt identity, rather than defaulting
+to actor=null. When an otherwise clear action has a small potentially readable number/name,
+use inspect_frame on that participant. If the crop remains unreadable, leave actor=null.
 Do not report clocks, scores or tactical stories. A goal requires the ball clearly inside
 the net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.
 Describe only visible actions and keep genuine uncertainty explicit."""

@@ -1,0 +1,1455 @@
+{
+  "id": "player-name-check-20261107",
+  "model": "gpt-5.4-mini",
+  "scope": "Two existing development clips; paired observer prompt check and a static role-snapshot check. Not end-to-end replay or audio.",
+  "reference_status": "Agent-inspected drafts; not human-approved ground truth.",
+  "runtime_inputs": "Eight supplied frames, optional bounded inspection, and a partial roster; no reference event labels, target words, original audio or future frames.",
+  "baseline_commit": "47c224a",
+  "baseline_observer_system": "Observe only the currently available football images. Return at\nmost three chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over routine circulation or repeated reactions. Empty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.",
+  "results": [
+    {
+      "case": "dribble",
+      "version": "baseline",
+      "source": "clips/demo-sources/barcelona-bayern-messi.mp4",
+      "start_s": 7.5,
+      "duration_s": 6.5,
+      "source_sha256": "c47f518aac13032e44dc63018cc11e0a8c412412b612f895439812531efdcc5b",
+      "pack": {
+        "home": {
+          "name": "Barcelona",
+          "kit": "blue and red",
+          "starters": [
+            {
+              "name": "Lionel Messi",
+              "number": 10
+            },
+            {
+              "name": "Neymar",
+              "number": 11
+            },
+            {
+              "name": "Luis Su\u00e1rez",
+              "number": 9
+            }
+          ]
+        },
+        "away": {
+          "name": "Bayern",
+          "kit": "white"
+        }
+      },
+      "frame_hashes": [
+        {
+          "at_s": 0.0,
+          "sha256": "406d606f98acac6b068e45af71f13d628eb70bed6bc566abbc83c91b2f5f11aa"
+        },
+        {
+          "at_s": 1.0,
+          "sha256": "f1e12440e66ab01e03ef72c6b36ec320b8e68aa1b9535ad8c77f1bdfbc109c6b"
+        },
+        {
+          "at_s": 1.5,
+          "sha256": "46dbe9f17a4b81b82230ca60c4e03c7dd3f788937913eb5d76a731a77960c35d"
+        },
+        {
+          "at_s": 2.5,
+          "sha256": "c11827537ab9b6f41d5ce626b07ba13971dc400b039177ad44927a3c247ef17f"
+        },
+        {
+          "at_s": 3.5,
+          "sha256": "bdc45652e942af294014fd0ddf746517651d7fed7ff0483a21064482139fa7a6"
+        },
+        {
+          "at_s": 4.5,
+          "sha256": "1340c674777e1b9cc027e9a27e34db4f2efe3553d269a01ee01b69f9d67df2be"
+        },
+        {
+          "at_s": 5.0,
+          "sha256": "a5820e4e397b18b25195ca42249b65ca703dbfedb17cbfcb082d3fbffe52dfcc"
+        },
+        {
+          "at_s": 6.0,
+          "sha256": "a54fd243d6db728128cee116e69d237ffe32ee314a6431582fd1657d8dbb842c"
+        }
+      ],
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 1.5,
+          "kind": "play",
+          "description": "Barcelona attacker drives into the right side of the box with the ball under close pressure, shaping for a low attempt as defenders converge.",
+          "actor": null,
+          "action": {
+            "type": "carry",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              1.0,
+              1.5
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 3.5,
+          "kind": "play",
+          "description": "A close-range shot is released toward goal from inside the area; the goalkeeper dives across as the ball travels toward the left side of the net.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "ball_on_ground",
+              "keeper_contact"
+            ],
+            "support_at_s": [
+              2.5,
+              3.5,
+              4.5
+            ]
+          }
+        },
+        {
+          "id": "v1-o3",
+          "at_s": 4.5,
+          "kind": "goal",
+          "description": "The ball crosses the goal line and settles inside the net after the save attempt, confirming a goal.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              4.5,
+              5.0,
+              6.0
+            ]
+          }
+        }
+      ],
+      "audit": [
+        {
+          "cutoff_s": 6.0,
+          "frames_at_s": [
+            0.0,
+            1.0,
+            1.5,
+            2.5,
+            3.5,
+            4.5,
+            5.0,
+            6.0
+          ],
+          "inspection_mode": "optional",
+          "prompt_sha256": "a6114fb42c6daa3ea56e7dd08884b8d2e58a6819c3a8a0c342bd521f063f880c",
+          "initial": {
+            "observations": [
+              {
+                "id": "obs1",
+                "at_s": 1.5,
+                "kind": "play",
+                "description": "Barcelona attacker drives into the right side of the box with the ball under close pressure, shaping for a low attempt as defenders converge.",
+                "actor": null,
+                "action": {
+                  "type": "carry",
+                  "certainty": "confirmed",
+                  "ball_path": "ground",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "ball_on_ground"
+                  ],
+                  "support_at_s": [
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              {
+                "id": "obs2",
+                "at_s": 3.5,
+                "kind": "play",
+                "description": "A close-range shot is released toward goal from inside the area; the goalkeeper dives across as the ball travels toward the left side of the net.",
+                "actor": null,
+                "action": {
+                  "type": "shot",
+                  "certainty": "confirmed",
+                  "ball_path": "ground",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "ball_on_ground",
+                    "keeper_contact"
+                  ],
+                  "support_at_s": [
+                    2.5,
+                    3.5,
+                    4.5
+                  ]
+                }
+              },
+              {
+                "id": "obs3",
+                "at_s": 4.5,
+                "kind": "goal",
+                "description": "The ball crosses the goal line and settles inside the net after the save attempt, confirming a goal.",
+                "actor": null,
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net",
+                    "goal_line_crossing"
+                  ],
+                  "support_at_s": [
+                    4.5,
+                    5.0,
+                    6.0
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "ball_path_downgrades": [
+            {
+              "id": "obs3",
+              "reported": "ground",
+              "accepted": "unknown",
+              "reason": "missing_corresponding_visual_cue"
+            }
+          ],
+          "inspection": null,
+          "inspection_status": "not_requested",
+          "status": "complete",
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 1.5,
+              "kind": "play",
+              "description": "Barcelona attacker drives into the right side of the box with the ball under close pressure, shaping for a low attempt as defenders converge.",
+              "actor": null,
+              "action": {
+                "type": "carry",
+                "certainty": "confirmed",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "ball_on_ground"
+                ],
+                "support_at_s": [
+                  1.0,
+                  1.5
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 3.5,
+              "kind": "play",
+              "description": "A close-range shot is released toward goal from inside the area; the goalkeeper dives across as the ball travels toward the left side of the net.",
+              "actor": null,
+              "action": {
+                "type": "shot",
+                "certainty": "confirmed",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "ball_on_ground",
+                  "keeper_contact"
+                ],
+                "support_at_s": [
+                  2.5,
+                  3.5,
+                  4.5
+                ]
+              }
+            },
+            {
+              "id": "v1-o3",
+              "at_s": 4.5,
+              "kind": "goal",
+              "description": "The ball crosses the goal line and settles inside the net after the save attempt, confirming a goal.",
+              "actor": null,
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_in_net",
+                  "goal_line_crossing"
+                ],
+                "support_at_s": [
+                  4.5,
+                  5.0,
+                  6.0
+                ]
+              }
+            }
+          ],
+          "raw": {
+            "observations": [
+              {
+                "id": "obs1",
+                "at_s": 1.5,
+                "kind": "play",
+                "description": "Barcelona attacker drives into the right side of the box with the ball under close pressure, shaping for a low attempt as defenders converge.",
+                "actor": null,
+                "action": {
+                  "type": "carry",
+                  "certainty": "confirmed",
+                  "ball_path": "ground",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "ball_on_ground"
+                  ],
+                  "support_at_s": [
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              {
+                "id": "obs2",
+                "at_s": 3.5,
+                "kind": "play",
+                "description": "A close-range shot is released toward goal from inside the area; the goalkeeper dives across as the ball travels toward the left side of the net.",
+                "actor": null,
+                "action": {
+                  "type": "shot",
+                  "certainty": "confirmed",
+                  "ball_path": "ground",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "ball_on_ground",
+                    "keeper_contact"
+                  ],
+                  "support_at_s": [
+                    2.5,
+                    3.5,
+                    4.5
+                  ]
+                }
+              },
+              {
+                "id": "obs3",
+                "at_s": 4.5,
+                "kind": "goal",
+                "description": "The ball crosses the goal line and settles inside the net after the save attempt, confirming a goal.",
+                "actor": null,
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net",
+                    "goal_line_crossing"
+                  ],
+                  "support_at_s": [
+                    4.5,
+                    5.0,
+                    6.0
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "usage": {
+            "input_tokens": 11147,
+            "output_tokens": 353,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00994875,
+            "latency_s": 7.435033874993678
+          }
+        }
+      ],
+      "identity_diagnostic": {
+        "basis": "all player-labeled events, including missed detections; lexical name checks",
+        "aliases": "explicit reference aliases only; never runtime input",
+        "semantic_attribution_verified": false,
+        "named_observations": 0,
+        "player_labeled_events": 4,
+        "correctly_resolved_events": 0,
+        "resolution_recall": 0.0,
+        "named_spoken_events": 0,
+        "named_speech_recall": 0.0,
+        "status_counts": {
+          "identity_unresolved": 3,
+          "event_missed": 1
+        },
+        "events": [
+          {
+            "reference_id": "dribble-e1",
+            "expected_player": "Lionel Messi",
+            "evidence_id": "v1-o1",
+            "resolved_player": null,
+            "expected_action_role": "ball_carrier",
+            "observed_action_role": null,
+            "status": "identity_unresolved",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "dribble-e2",
+            "expected_player": "Lionel Messi",
+            "evidence_id": "v1-o2",
+            "resolved_player": null,
+            "expected_action_role": "shooter",
+            "observed_action_role": null,
+            "status": "identity_unresolved",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "dribble-e3",
+            "expected_player": "Lionel Messi",
+            "evidence_id": "v1-o3",
+            "resolved_player": null,
+            "expected_action_role": "scorer",
+            "observed_action_role": null,
+            "status": "identity_unresolved",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "dribble-identity-celebration",
+            "expected_player": "Lionel Messi",
+            "evidence_id": null,
+            "resolved_player": null,
+            "expected_action_role": "visible_player",
+            "observed_action_role": null,
+            "status": "event_missed",
+            "eligible_line_ids": []
+          }
+        ]
+      }
+    },
+    {
+      "case": "dribble",
+      "version": "candidate",
+      "source": "clips/demo-sources/barcelona-bayern-messi.mp4",
+      "start_s": 7.5,
+      "duration_s": 6.5,
+      "source_sha256": "c47f518aac13032e44dc63018cc11e0a8c412412b612f895439812531efdcc5b",
+      "pack": {
+        "home": {
+          "name": "Barcelona",
+          "kit": "blue and red",
+          "starters": [
+            {
+              "name": "Lionel Messi",
+              "number": 10
+            },
+            {
+              "name": "Neymar",
+              "number": 11
+            },
+            {
+              "name": "Luis Su\u00e1rez",
+              "number": 9
+            }
+          ]
+        },
+        "away": {
+          "name": "Bayern",
+          "kit": "white"
+        }
+      },
+      "frame_hashes": [
+        {
+          "at_s": 0.0,
+          "sha256": "406d606f98acac6b068e45af71f13d628eb70bed6bc566abbc83c91b2f5f11aa"
+        },
+        {
+          "at_s": 1.0,
+          "sha256": "f1e12440e66ab01e03ef72c6b36ec320b8e68aa1b9535ad8c77f1bdfbc109c6b"
+        },
+        {
+          "at_s": 1.5,
+          "sha256": "46dbe9f17a4b81b82230ca60c4e03c7dd3f788937913eb5d76a731a77960c35d"
+        },
+        {
+          "at_s": 2.5,
+          "sha256": "c11827537ab9b6f41d5ce626b07ba13971dc400b039177ad44927a3c247ef17f"
+        },
+        {
+          "at_s": 3.5,
+          "sha256": "bdc45652e942af294014fd0ddf746517651d7fed7ff0483a21064482139fa7a6"
+        },
+        {
+          "at_s": 4.5,
+          "sha256": "1340c674777e1b9cc027e9a27e34db4f2efe3553d269a01ee01b69f9d67df2be"
+        },
+        {
+          "at_s": 5.0,
+          "sha256": "a5820e4e397b18b25195ca42249b65ca703dbfedb17cbfcb082d3fbffe52dfcc"
+        },
+        {
+          "at_s": 6.0,
+          "sha256": "a54fd243d6db728128cee116e69d237ffe32ee314a6431582fd1657d8dbb842c"
+        }
+      ],
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 2.5,
+          "kind": "play",
+          "description": "Barcelona work the ball into the right side of the Bayern box; the attacker nudges it centrally as defenders close, and the ball is moving toward goal.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_contact",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              2.5,
+              3.5
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 4.5,
+          "kind": "goal",
+          "description": "The ball crosses into the Bayern goal and settles in the net after the attempt beats the keeper.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              4.5,
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o3",
+          "at_s": 4.5,
+          "kind": "celebration",
+          "description": "Barcelona players begin to peel away in celebration near the box after the finish.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        }
+      ],
+      "audit": [
+        {
+          "cutoff_s": 6.0,
+          "frames_at_s": [
+            0.0,
+            1.0,
+            1.5,
+            2.5,
+            3.5,
+            4.5,
+            5.0,
+            6.0
+          ],
+          "inspection_mode": "optional",
+          "prompt_sha256": "077280d38401e8a955c45e435bf88c8ee0de433b8df153a6dadf446a3a447183",
+          "initial": {
+            "observations": [
+              {
+                "id": "0",
+                "at_s": 2.5,
+                "kind": "play",
+                "description": "Barcelona work the ball into the right side of the Bayern box; the attacker nudges it centrally as defenders close, and the ball is moving toward goal.",
+                "actor": null,
+                "action": {
+                  "type": "shot",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion"
+                  ],
+                  "support_at_s": [
+                    2.5,
+                    3.5
+                  ]
+                }
+              },
+              {
+                "id": "1",
+                "at_s": 4.5,
+                "kind": "goal",
+                "description": "The ball crosses into the Bayern goal and settles in the net after the attempt beats the keeper.",
+                "actor": null,
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net",
+                    "goal_line_crossing"
+                  ],
+                  "support_at_s": [
+                    4.5,
+                    5.0,
+                    6.0
+                  ]
+                }
+              },
+              {
+                "id": "2",
+                "at_s": 4.5,
+                "kind": "celebration",
+                "description": "Barcelona players begin to peel away in celebration near the box after the finish.",
+                "actor": null,
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    5.0,
+                    6.0
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "ball_path_downgrades": [
+            {
+              "id": "0",
+              "reported": "ground",
+              "accepted": "unknown",
+              "reason": "missing_corresponding_visual_cue"
+            },
+            {
+              "id": "1",
+              "reported": "ground",
+              "accepted": "unknown",
+              "reason": "missing_corresponding_visual_cue"
+            }
+          ],
+          "inspection": null,
+          "inspection_status": "not_requested",
+          "status": "complete",
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 2.5,
+              "kind": "play",
+              "description": "Barcelona work the ball into the right side of the Bayern box; the attacker nudges it centrally as defenders close, and the ball is moving toward goal.",
+              "actor": null,
+              "action": {
+                "type": "shot",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  2.5,
+                  3.5
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 4.5,
+              "kind": "goal",
+              "description": "The ball crosses into the Bayern goal and settles in the net after the attempt beats the keeper.",
+              "actor": null,
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_in_net",
+                  "goal_line_crossing"
+                ],
+                "support_at_s": [
+                  4.5,
+                  5.0,
+                  6.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o3",
+              "at_s": 4.5,
+              "kind": "celebration",
+              "description": "Barcelona players begin to peel away in celebration near the box after the finish.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [],
+                "support_at_s": [
+                  5.0,
+                  6.0
+                ]
+              }
+            }
+          ],
+          "raw": {
+            "observations": [
+              {
+                "id": "0",
+                "at_s": 2.5,
+                "kind": "play",
+                "description": "Barcelona work the ball into the right side of the Bayern box; the attacker nudges it centrally as defenders close, and the ball is moving toward goal.",
+                "actor": null,
+                "action": {
+                  "type": "shot",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion"
+                  ],
+                  "support_at_s": [
+                    2.5,
+                    3.5
+                  ]
+                }
+              },
+              {
+                "id": "1",
+                "at_s": 4.5,
+                "kind": "goal",
+                "description": "The ball crosses into the Bayern goal and settles in the net after the attempt beats the keeper.",
+                "actor": null,
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net",
+                    "goal_line_crossing"
+                  ],
+                  "support_at_s": [
+                    4.5,
+                    5.0,
+                    6.0
+                  ]
+                }
+              },
+              {
+                "id": "2",
+                "at_s": 4.5,
+                "kind": "celebration",
+                "description": "Barcelona players begin to peel away in celebration near the box after the finish.",
+                "actor": null,
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    5.0,
+                    6.0
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "usage": {
+            "input_tokens": 11198,
+            "output_tokens": 266,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.0095955,
+            "latency_s": 6.510252791995299
+          }
+        }
+      ],
+      "identity_diagnostic": {
+        "basis": "all player-labeled events, including missed detections; lexical name checks",
+        "aliases": "explicit reference aliases only; never runtime input",
+        "semantic_attribution_verified": false,
+        "named_observations": 0,
+        "player_labeled_events": 4,
+        "correctly_resolved_events": 0,
+        "resolution_recall": 0.0,
+        "named_spoken_events": 0,
+        "named_speech_recall": 0.0,
+        "status_counts": {
+          "identity_unresolved": 3,
+          "event_missed": 1
+        },
+        "events": [
+          {
+            "reference_id": "dribble-e1",
+            "expected_player": "Lionel Messi",
+            "evidence_id": "v1-o1",
+            "resolved_player": null,
+            "expected_action_role": "ball_carrier",
+            "observed_action_role": null,
+            "status": "identity_unresolved",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "dribble-e2",
+            "expected_player": "Lionel Messi",
+            "evidence_id": null,
+            "resolved_player": null,
+            "expected_action_role": "shooter",
+            "observed_action_role": null,
+            "status": "event_missed",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "dribble-e3",
+            "expected_player": "Lionel Messi",
+            "evidence_id": "v1-o2",
+            "resolved_player": null,
+            "expected_action_role": "scorer",
+            "observed_action_role": null,
+            "status": "identity_unresolved",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "dribble-identity-celebration",
+            "expected_player": "Lionel Messi",
+            "evidence_id": "v1-o3",
+            "resolved_player": null,
+            "expected_action_role": "visible_player",
+            "observed_action_role": null,
+            "status": "identity_unresolved",
+            "eligible_line_ids": []
+          }
+        ]
+      }
+    },
+    {
+      "case": "free-kick",
+      "version": "baseline",
+      "source": "clips/demo-sources/portugal-spain-live.mp4",
+      "start_s": 19.5,
+      "duration_s": 6,
+      "source_sha256": "ce81a00b525a1c2de5490520d1a51534082dfb46874f2cae0c1a8e36ded65bf6",
+      "pack": {
+        "home": {
+          "name": "Portugal",
+          "kit": "red",
+          "starters": [
+            {
+              "name": "Cristiano Ronaldo",
+              "number": 7
+            },
+            {
+              "name": "Ricardo Quaresma",
+              "number": 20
+            }
+          ]
+        },
+        "away": {
+          "name": "Spain",
+          "kit": "white"
+        }
+      },
+      "frame_hashes": [
+        {
+          "at_s": 0.0,
+          "sha256": "d6d6216c9041c39bc371bb41aa8fb70653f8d4ec392b6ae12236618e6164d340"
+        },
+        {
+          "at_s": 1.0,
+          "sha256": "d34171221b6dca977e3b2454b6b3e824735daeddb6d01208d25cd6c5060224b1"
+        },
+        {
+          "at_s": 1.5,
+          "sha256": "03eb2131577f0ea2589784e6e63b830cff8e38185615120430d5327fdb62a27c"
+        },
+        {
+          "at_s": 2.5,
+          "sha256": "60a946c0425539cf4ca79cc662ebb7771bc26e3f5a9f63a401bea4f79e8fd730"
+        },
+        {
+          "at_s": 3.0,
+          "sha256": "2b48c42a3f545b65ba8a3db161f7a371859956643132fd4de02be2e0d18efef6"
+        },
+        {
+          "at_s": 4.0,
+          "sha256": "5bf72c7eb4f69381987f109cee97fbdd256806c90aa5a1bdbac8faa6815e11b8"
+        },
+        {
+          "at_s": 4.5,
+          "sha256": "b931b0362041232cb85f3abf715215a6dbdb3dc569bc9fee27138a981daffa4b"
+        },
+        {
+          "at_s": 5.5,
+          "sha256": "570345df675927fbc600f11f5a37218d10c775e503dc67d15220d62f9b3ab23b"
+        }
+      ],
+      "error": "LLMError",
+      "audit": []
+    },
+    {
+      "case": "free-kick",
+      "version": "candidate",
+      "source": "clips/demo-sources/portugal-spain-live.mp4",
+      "start_s": 19.5,
+      "duration_s": 6,
+      "source_sha256": "ce81a00b525a1c2de5490520d1a51534082dfb46874f2cae0c1a8e36ded65bf6",
+      "pack": {
+        "home": {
+          "name": "Portugal",
+          "kit": "red",
+          "starters": [
+            {
+              "name": "Cristiano Ronaldo",
+              "number": 7
+            },
+            {
+              "name": "Ricardo Quaresma",
+              "number": 20
+            }
+          ]
+        },
+        "away": {
+          "name": "Spain",
+          "kit": "white"
+        }
+      },
+      "frame_hashes": [
+        {
+          "at_s": 0.0,
+          "sha256": "d6d6216c9041c39bc371bb41aa8fb70653f8d4ec392b6ae12236618e6164d340"
+        },
+        {
+          "at_s": 1.0,
+          "sha256": "d34171221b6dca977e3b2454b6b3e824735daeddb6d01208d25cd6c5060224b1"
+        },
+        {
+          "at_s": 1.5,
+          "sha256": "03eb2131577f0ea2589784e6e63b830cff8e38185615120430d5327fdb62a27c"
+        },
+        {
+          "at_s": 2.5,
+          "sha256": "60a946c0425539cf4ca79cc662ebb7771bc26e3f5a9f63a401bea4f79e8fd730"
+        },
+        {
+          "at_s": 3.0,
+          "sha256": "2b48c42a3f545b65ba8a3db161f7a371859956643132fd4de02be2e0d18efef6"
+        },
+        {
+          "at_s": 4.0,
+          "sha256": "5bf72c7eb4f69381987f109cee97fbdd256806c90aa5a1bdbac8faa6815e11b8"
+        },
+        {
+          "at_s": 4.5,
+          "sha256": "b931b0362041232cb85f3abf715215a6dbdb3dc569bc9fee27138a981daffa4b"
+        },
+        {
+          "at_s": 5.5,
+          "sha256": "570345df675927fbc600f11f5a37218d10c775e503dc67d15220d62f9b3ab23b"
+        }
+      ],
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 1.0,
+          "kind": "play",
+          "description": "Portugal\u2019s free-kick setup continues with the ball placed just outside the penalty area while players in the box jostle for position.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 7,
+            "shirt_name": "Cristiano Ronaldo",
+            "identity_source": "shirt_number",
+            "action_role": "visible_player",
+            "resolved_name": "Cristiano Ronaldo"
+          },
+          "action": {
+            "type": "free_kick",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "restart_setup",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              0.0,
+              1.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 4.0,
+          "kind": "celebration",
+          "description": "Cristiano Ronaldo in Portugal\u2019s red kit runs away with both arms spread wide after the set piece, reacting as the attack has ended.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 7,
+            "shirt_name": "Cristiano Ronaldo",
+            "identity_source": "shirt_name",
+            "action_role": "visible_player",
+            "resolved_name": "Cristiano Ronaldo"
+          },
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              4.0,
+              4.5,
+              5.5
+            ]
+          }
+        }
+      ],
+      "audit": [
+        {
+          "cutoff_s": 5.5,
+          "frames_at_s": [
+            0.0,
+            1.0,
+            1.5,
+            2.5,
+            3.0,
+            4.0,
+            4.5,
+            5.5
+          ],
+          "inspection_mode": "optional",
+          "prompt_sha256": "077280d38401e8a955c45e435bf88c8ee0de433b8df153a6dadf446a3a447183",
+          "initial": {
+            "observations": [
+              {
+                "id": "obs1",
+                "at_s": 1.0,
+                "kind": "play",
+                "description": "Portugal\u2019s free-kick setup continues with the ball placed just outside the penalty area while players in the box jostle for position.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 7,
+                  "shirt_name": "Cristiano Ronaldo",
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "resolved_name": "Cristiano Ronaldo"
+                },
+                "action": {
+                  "type": "free_kick",
+                  "certainty": "confirmed",
+                  "ball_path": "ground",
+                  "cues": [
+                    "restart_setup",
+                    "ball_on_ground"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0
+                  ]
+                }
+              },
+              {
+                "id": "obs2",
+                "at_s": 4.0,
+                "kind": "celebration",
+                "description": "Cristiano Ronaldo in Portugal\u2019s red kit runs away with both arms spread wide after the set piece, reacting as the attack has ended.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 7,
+                  "shirt_name": "Cristiano Ronaldo",
+                  "identity_source": "shirt_name",
+                  "action_role": "visible_player",
+                  "resolved_name": "Cristiano Ronaldo"
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    4.0,
+                    4.5,
+                    5.5
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "ball_path_downgrades": [],
+          "inspection": null,
+          "inspection_status": "not_requested",
+          "status": "complete",
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 1.0,
+              "kind": "play",
+              "description": "Portugal\u2019s free-kick setup continues with the ball placed just outside the penalty area while players in the box jostle for position.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 7,
+                "shirt_name": "Cristiano Ronaldo",
+                "identity_source": "shirt_number",
+                "action_role": "visible_player",
+                "resolved_name": "Cristiano Ronaldo"
+              },
+              "action": {
+                "type": "free_kick",
+                "certainty": "confirmed",
+                "ball_path": "ground",
+                "cues": [
+                  "restart_setup",
+                  "ball_on_ground"
+                ],
+                "support_at_s": [
+                  0.0,
+                  1.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 4.0,
+              "kind": "celebration",
+              "description": "Cristiano Ronaldo in Portugal\u2019s red kit runs away with both arms spread wide after the set piece, reacting as the attack has ended.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 7,
+                "shirt_name": "Cristiano Ronaldo",
+                "identity_source": "shirt_name",
+                "action_role": "visible_player",
+                "resolved_name": "Cristiano Ronaldo"
+              },
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [],
+                "support_at_s": [
+                  4.0,
+                  4.5,
+                  5.5
+                ]
+              }
+            }
+          ],
+          "raw": {
+            "observations": [
+              {
+                "id": "obs1",
+                "at_s": 1.0,
+                "kind": "play",
+                "description": "Portugal\u2019s free-kick setup continues with the ball placed just outside the penalty area while players in the box jostle for position.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 7,
+                  "shirt_name": "Cristiano Ronaldo",
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "resolved_name": "Cristiano Ronaldo"
+                },
+                "action": {
+                  "type": "free_kick",
+                  "certainty": "confirmed",
+                  "ball_path": "ground",
+                  "cues": [
+                    "restart_setup",
+                    "ball_on_ground"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0
+                  ]
+                }
+              },
+              {
+                "id": "obs2",
+                "at_s": 4.0,
+                "kind": "celebration",
+                "description": "Cristiano Ronaldo in Portugal\u2019s red kit runs away with both arms spread wide after the set piece, reacting as the attack has ended.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 7,
+                  "shirt_name": "Cristiano Ronaldo",
+                  "identity_source": "shirt_name",
+                  "action_role": "visible_player",
+                  "resolved_name": "Cristiano Ronaldo"
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    4.0,
+                    4.5,
+                    5.5
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "usage": {
+            "input_tokens": 11179,
+            "output_tokens": 265,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00957675,
+            "latency_s": 5.568593583011534
+          }
+        }
+      ],
+      "identity_diagnostic": {
+        "basis": "all player-labeled events, including missed detections; lexical name checks",
+        "aliases": "explicit reference aliases only; never runtime input",
+        "semantic_attribution_verified": false,
+        "named_observations": 2,
+        "player_labeled_events": 3,
+        "correctly_resolved_events": 1,
+        "resolution_recall": 0.3333333333333333,
+        "named_spoken_events": 0,
+        "named_speech_recall": 0.0,
+        "status_counts": {
+          "action_role_mismatch": 1,
+          "event_missed": 1,
+          "no_eligible_speech": 1
+        },
+        "events": [
+          {
+            "reference_id": "free-kick-e1",
+            "expected_player": "Cristiano Ronaldo",
+            "evidence_id": "v1-o1",
+            "resolved_player": "Cristiano Ronaldo",
+            "expected_action_role": "shooter",
+            "observed_action_role": "visible_player",
+            "status": "action_role_mismatch",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "free-kick-e2",
+            "expected_player": "Cristiano Ronaldo",
+            "evidence_id": null,
+            "resolved_player": null,
+            "expected_action_role": "scorer",
+            "observed_action_role": null,
+            "status": "event_missed",
+            "eligible_line_ids": []
+          },
+          {
+            "reference_id": "free-kick-identity-celebration",
+            "expected_player": "Cristiano Ronaldo",
+            "evidence_id": "v1-o2",
+            "resolved_player": "Cristiano Ronaldo",
+            "expected_action_role": "visible_player",
+            "observed_action_role": "visible_player",
+            "status": "no_eligible_speech",
+            "eligible_line_ids": []
+          }
+        ]
+      }
+    }
+  ],
+  "speaker_check": {
+    "results": [
+      {
+        "role": "caller",
+        "snapshot_version": 1,
+        "cutoff_s": 5.5,
+        "line": null,
+        "reason": "The set-piece outcome is not shown clearly enough to call a goal or specific result, and the later celebration alone does not establish what happened.",
+        "trace": [
+          {
+            "event": "agent_action",
+            "at_s": 5.5,
+            "role": "caller",
+            "data": {
+              "step": 1,
+              "action": {
+                "kind": "abstain",
+                "tool": null,
+                "line": null,
+                "reason": "The set-piece outcome is not shown clearly enough to call a goal or specific result, and the later celebration alone does not establish what happened."
+              },
+              "usage": {
+                "input_tokens": 1065,
+                "output_tokens": 54,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00104175,
+                "latency_s": 2.602567875001114
+              },
+              "model": "gpt-5.4-mini",
+              "timestamp_basis": "snapshot_cutoff"
+            }
+          }
+        ]
+      },
+      {
+        "role": "analyst",
+        "snapshot_version": 1,
+        "cutoff_s": 5.5,
+        "line": {
+          "voice": "analyst",
+          "text": "The free-kick routine is still being worked from just outside the box, with Ronaldo then peeling away in celebration as the attack finishes.",
+          "evidence_ids": [
+            "v1-o1",
+            "v1-o2"
+          ],
+          "research_ids": []
+        },
+        "reason": "Visible setup and aftermath can be explained without inventing the outcome of the set piece.",
+        "trace": [
+          {
+            "event": "agent_action",
+            "at_s": 5.5,
+            "role": "analyst",
+            "data": {
+              "step": 1,
+              "action": {
+                "kind": "speak",
+                "tool": null,
+                "line": {
+                  "voice": "analyst",
+                  "text": "The free-kick routine is still being worked from just outside the box, with Ronaldo then peeling away in celebration as the attack finishes.",
+                  "evidence_ids": [
+                    "v1-o1",
+                    "v1-o2"
+                  ],
+                  "research_ids": []
+                },
+                "reason": "Visible setup and aftermath can be explained without inventing the outcome of the set piece."
+              },
+              "usage": {
+                "input_tokens": 1156,
+                "output_tokens": 94,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00129,
+                "latency_s": 1.4387764999992214
+              },
+              "model": "gpt-5.4-mini",
+              "timestamp_basis": "snapshot_cutoff"
+            }
+          }
+        ]
+      }
+    ],
+    "budget": {
+      "max_usd": 0.041039,
+      "max_calls": 2,
+      "attempts": 2,
+      "reported_usd": 0.0023317499999999996,
+      "unsettled_reservations_usd": 0,
+      "unsettled_requests": 0,
+      "basis": "counted input + maximum output at standard token rates, 25% margin",
+      "hosted_tools_allowed": false
+    },
+    "snapshot": {
+      "version": 1,
+      "cutoff_s": 5.5,
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 1.0,
+          "kind": "play",
+          "description": "Portugal\u2019s free-kick setup continues with the ball placed just outside the penalty area while players in the box jostle for position.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 7,
+            "shirt_name": "Cristiano Ronaldo",
+            "identity_source": "shirt_number",
+            "action_role": "visible_player",
+            "resolved_name": "Cristiano Ronaldo"
+          },
+          "action": {
+            "type": "free_kick",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "restart_setup",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              0.0,
+              1.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 4.0,
+          "kind": "celebration",
+          "description": "Cristiano Ronaldo in Portugal\u2019s red kit runs away with both arms spread wide after the set piece, reacting as the attack has ended.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 7,
+            "shirt_name": "Cristiano Ronaldo",
+            "identity_source": "shirt_name",
+            "action_role": "visible_player",
+            "resolved_name": "Cristiano Ronaldo"
+          },
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              4.0,
+              4.5,
+              5.5
+            ]
+          }
+        }
+      ],
+      "research": null,
+      "recent_lines": [],
+      "teams": {}
+    }
+  },
+  "budget": {
+    "overall_cap_usd": 0.08,
+    "overall_call_cap": 8,
+    "attempts": 6,
+    "reported_usd": 0.04129275,
+    "unsettled_requests": 0
+  },
+  "limits": [
+    "Baseline free-kick failed with LLMError. Exact error detail was not retained; incomplete output, refusal and schema failure cannot be distinguished from this artifact. No retry. No paired win claimed.",
+    "Both Messi outputs had no resolved actor; candidate Ronaldo output resolved a named visible player, not an established shooter/scorer.",
+    "Ronaldo raw shirt_name expands to Cristiano Ronaldo, which is not literal shirt text. A subsequent prompt clarification requires verbatim shirt text; that clarification has offline checks only, not another paid comparison.",
+    "Caller abstained; analyst used Ronaldo in describing celebration. Its full generated wording still needs editorial improvement. No named goal-call success claimed.",
+    "Identity metrics match event kind/time and explicit aliases lexically; they do not prove semantic attribution or visual readability.",
+    "No speech was synthesized and no demo media were changed."
+  ],
+  "final_observer_system_sha256": "3d1f41ddc9c1708340ccbde5a1e65505fddfc5c35014c59976d499b7e300adf8",
+  "local_reproduction_artifacts": "runs/replay/player-name-check-20261107",
+  "evaluated_candidate_observer_system": "Observe only the currently available football images. Return at\nmost three chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over routine circulation or repeated reactions. Empty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit."
+}

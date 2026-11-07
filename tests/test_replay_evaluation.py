@@ -462,3 +462,102 @@ def test_broadcast_draft_manifest_uses_catalog_hashes_and_local_windows() -> Non
         assert reference.source.sha256 == source["sha256"]
         assert reference.source.start_s + reference.duration_s <= source["local_duration_s"]
         assert reference.events
+
+
+def named_observation(identifier: str, at_s: float, name: str) -> Observation:
+    seen = observation(identifier, at_s)
+    seen.actor = ObservedActor(
+        side="home",
+        shirt_number=10,
+        identity_source="shirt_number",
+        action_role="scorer",
+        resolved_name=name,
+    )
+    return seen
+
+
+@pytest.mark.parametrize(
+    ("name", "text", "status"),
+    [
+        (None, "They score!", "identity_unresolved"),
+        ("Wrong Player", "Messi scores!", "identity_wrong"),
+        ("Lionel Messi", "They score!", "resolved_name_unused"),
+        ("Lionel Messi", "Messi scores!", "name_spoken"),
+        ("Lionel Messi", "Messina scores!", "resolved_name_unused"),
+    ],
+)
+def test_identity_diagnostic_separates_resolution_and_name_use(name, text, status) -> None:
+    seen = named_observation("goal", 8, name) if name else observation("goal", 8)
+    line = speech("call", ["goal"], 9, 10)
+    line.line.text = text
+    label = event("goal", 8).model_copy(
+        update={"player": "Lionel Messi", "player_aliases": ["Messi"]}
+    )
+    result = ReplayResult(
+        observations=[seen],
+        speech=[line],
+        trace=[
+            TraceEvent(
+                event="observation_available", at_s=8.5, data={"observations": [seen.model_dump()]}
+            )
+        ],
+    )
+    identity = evaluate_replay(result, case(label))["identity"]
+    assert identity["events"][0]["status"] == status
+    assert identity["named_speech_recall"] == (1 if status == "name_spoken" else 0)
+
+
+def test_identity_recall_includes_missed_events() -> None:
+    label = event("goal", 8).model_copy(update={"player": "Lionel Messi"})
+    identity = evaluate_replay(ReplayResult(), case(label))["identity"]
+    assert identity["resolution_recall"] == 0
+    assert identity["events"][0]["status"] == "event_missed"
+    assert evaluate_replay(ReplayResult(), case())["identity"]["resolution_recall"] is None
+
+
+@pytest.mark.parametrize("available_at,evidence", [(10, ["goal"]), (8, [])])
+def test_uncited_or_future_named_speech_does_not_count(available_at, evidence) -> None:
+    seen = named_observation("goal", 8, "Ángel Di María")
+    line = speech("call", evidence, 9, 10)
+    line.line.text = "Angel Di Maria scores!"
+    label = event("goal", 8).model_copy(update={"player": "Ángel Di María"})
+    result = ReplayResult(
+        observations=[seen],
+        speech=[line],
+        trace=[
+            TraceEvent(
+                event="observation_available",
+                at_s=available_at,
+                data={"observations": [seen.model_dump()]},
+            )
+        ],
+    )
+    identity = evaluate_replay(result, case(label))["identity"]
+    assert identity["named_speech_recall"] == 0
+    assert identity["events"][0]["status"] == "no_eligible_speech"
+
+
+def test_celebration_identity_does_not_fill_missing_goal_identity() -> None:
+    goal = observation("goal", 8)
+    celebration = named_observation("celebration", 10, "Lionel Messi")
+    celebration.kind = "celebration"
+    label = event("goal", 8).model_copy(update={"player": "Lionel Messi"})
+    result = ReplayResult(observations=[goal, celebration])
+    assert evaluate_replay(result, case(label))["identity"]["resolution_recall"] == 0
+
+
+def test_identity_aliases_require_player_labels() -> None:
+    with pytest.raises(ValidationError, match="aliases require"):
+        case(event("goal", 8).model_copy(update={"player_aliases": ["Messi"]}))
+
+
+def test_named_visible_player_does_not_count_as_identified_scorer() -> None:
+    seen = named_observation("goal", 8, "Lionel Messi")
+    seen.actor = seen.actor.model_copy(update={"action_role": "visible_player"})
+    label = event("goal", 8).model_copy(
+        update={"player": "Lionel Messi", "player_action_role": "scorer"}
+    )
+    result = ReplayResult(observations=[seen])
+    identity = evaluate_replay(result, case(label))["identity"]
+    assert identity["events"][0]["status"] == "action_role_mismatch"
+    assert identity["resolution_recall"] == 0

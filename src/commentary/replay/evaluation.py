@@ -44,6 +44,10 @@ class ReferenceEvent(BaseModel):
     at_s: float = Field(ge=0, allow_inf_nan=False)
     kind: Literal["play", "goal", "celebration", "replay"]
     player: str | None = None
+    player_aliases: list[str] = Field(default_factory=list, max_length=5)
+    player_action_role: (
+        Literal["ball_carrier", "passer", "shooter", "scorer", "visible_player"] | None
+    ) = None
     team: str | None = None
     required: bool = True
     action_type: ActionType | None = None
@@ -78,6 +82,12 @@ class EvaluationCase(BaseModel):
     @model_validator(mode="after")
     def valid_reference_timeline(self) -> EvaluationCase:
         for event in self.events:
+            if event.player_action_role is not None and event.player is None:
+                raise ValueError("player action role requires a player")
+            if event.player_aliases and (
+                event.player is None or any(not alias.strip() for alias in event.player_aliases)
+            ):
+                raise ValueError("player aliases require a player and nonempty values")
             if event.action_type == "unknown" or event.ball_path == "unknown":
                 raise ValueError("reference action/path labels must be known or omitted")
             if event.ball_path is not None and event.action_type not in {
@@ -164,6 +174,115 @@ def _match_events(
     for index in sorted(range(len(references)), key=lambda i: not references[i].required):
         augment(index, set())
     return prediction_to_reference
+
+
+def _identity_metrics(
+    result: ReplayResult,
+    case: EvaluationCase,
+    matches: dict[int, int],
+    availability: dict[str, float],
+    invalid_lines: list[str],
+) -> dict[str, Any]:
+    """Separate missed events, unresolved identities and unused available names.
+
+    Spoken-name checks are lexical diagnostics on cited evidence, not a semantic
+    claim that the named person performed the narrated action. Aliases come only
+    from evaluation labels and are never passed to runtime agents.
+    """
+    from commentary.recorded_demo import _normalized_name_tokens
+
+    def mentions(text: str, names: list[str]) -> bool:
+        words = _normalized_name_tokens(text)
+        for name in names:
+            tokens = _normalized_name_tokens(name)
+            if tokens and any(
+                words[i : i + len(tokens)] == tokens for i in range(len(words) - len(tokens) + 1)
+            ):
+                return True
+        return False
+
+    prediction_by_reference = {r: p for p, r in matches.items()}
+    rows: list[dict[str, Any]] = []
+    for index, reference in enumerate(case.events):
+        if reference.player is None:
+            continue
+        prediction = prediction_by_reference.get(index)
+        observed = result.observations[prediction] if prediction is not None else None
+        name = observed.actor.resolved_name if observed and observed.actor else None
+        names = [reference.player, *reference.player_aliases]
+        correct = name is not None and (
+            _normalized_name_tokens(name) == _normalized_name_tokens(reference.player)
+        )
+        eligible = [
+            record
+            for record in result.speech
+            if observed is not None
+            and observed.id in record.line.evidence_ids
+            and record.id not in invalid_lines
+            and record.ended_s > record.started_s
+            and observed.id in availability
+            and availability[observed.id] <= record.started_s
+        ]
+        role_matches = reference.player_action_role is None or (
+            observed is not None
+            and observed.actor is not None
+            and observed.actor.action_role == reference.player_action_role
+        )
+        spoken = (
+            correct
+            and role_matches
+            and any(mentions(record.line.text, names) for record in eligible)
+        )
+        status = (
+            "event_missed"
+            if observed is None
+            else "identity_unresolved"
+            if name is None
+            else "identity_wrong"
+            if not correct
+            else "action_role_mismatch"
+            if not role_matches
+            else "no_eligible_speech"
+            if not eligible
+            else "name_spoken"
+            if spoken
+            else "resolved_name_unused"
+        )
+        rows.append(
+            {
+                "reference_id": reference.id,
+                "expected_player": reference.player,
+                "evidence_id": observed.id if observed else None,
+                "resolved_player": name,
+                "expected_action_role": reference.player_action_role,
+                "observed_action_role": observed.actor.action_role
+                if observed and observed.actor
+                else None,
+                "status": status,
+                "eligible_line_ids": [record.id for record in eligible],
+            }
+        )
+    counts = Counter(row["status"] for row in rows)
+    labeled = len(rows)
+    correct_count = sum(
+        counts[status] for status in ("no_eligible_speech", "name_spoken", "resolved_name_unused")
+    )
+    return {
+        "basis": "all player-labeled events, including missed detections; lexical name checks",
+        "aliases": "explicit reference aliases only; never runtime input",
+        "semantic_attribution_verified": False,
+        "named_observations": sum(
+            item.actor is not None and item.actor.resolved_name is not None
+            for item in result.observations
+        ),
+        "player_labeled_events": labeled,
+        "correctly_resolved_events": correct_count,
+        "resolution_recall": _ratio(correct_count, labeled),
+        "named_spoken_events": counts["name_spoken"],
+        "named_speech_recall": _ratio(counts["name_spoken"], labeled),
+        "status_counts": dict(counts),
+        "events": rows,
+    }
 
 
 def _availability(result: ReplayResult) -> dict[str, float]:
@@ -490,6 +609,7 @@ def evaluate_replay(
             ],
         },
         "actions": _action_metrics(result.observations, case, matches),
+        "identity": _identity_metrics(result, case, matches, availability, invalid_lines),
         "speech_coverage": {
             "covered_reference_ids": [case.events[i].id for i in sorted(coverage)],
             "required_coverage": _ratio(len(required_covered), len(required)),

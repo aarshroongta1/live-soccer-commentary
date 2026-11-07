@@ -18,23 +18,43 @@
       "id": "free-kick-e1",
       "at_s": 1.25,
       "kind": "play",
-      "player": null,
+      "player": "Cristiano Ronaldo",
       "team": null,
       "required": true,
       "action_type": "free_kick",
       "ball_path": null,
-      "annotation_note": null
+      "annotation_note": "Player label is evaluation-only. An identity readable in celebration must not be backdated to this action.",
+      "player_aliases": [
+        "Ronaldo"
+      ],
+      "player_action_role": "shooter"
     },
     {
       "id": "free-kick-e2",
       "at_s": 3.0,
       "kind": "goal",
-      "player": null,
+      "player": "Cristiano Ronaldo",
       "team": null,
       "required": true,
       "action_type": "goal",
       "ball_path": null,
-      "annotation_note": null
+      "annotation_note": "Player label is evaluation-only. An identity readable in celebration must not be backdated to this action.",
+      "player_aliases": [
+        "Ronaldo"
+      ],
+      "player_action_role": "scorer"
+    },
+    {
+      "id": "free-kick-identity-celebration",
+      "at_s": 4.0,
+      "kind": "celebration",
+      "player": "Cristiano Ronaldo",
+      "player_aliases": [
+        "Ronaldo"
+      ],
+      "required": false,
+      "annotation_note": "Agent-inspected local frames show readable shirt identity in celebration. Does not identify earlier actions without direct evidence. Human review pending.",
+      "player_action_role": "visible_player"
     }
   ],
   "action_labels_complete": false,
@@ -42,7 +62,8 @@
     "cohort": "action-suite-v1",
     "review_method": "local frame inspection",
     "human_reviewed": false,
-    "timing_uncertainty_s": 1
+    "timing_uncertainty_s": 1,
+    "identity_review": "Agent-inspected source frames; not human-approved. Earlier player labels are reference truth, not runtime visual identity evidence."
   },
   "commentary": []
 }
