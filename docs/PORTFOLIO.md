@@ -29,9 +29,11 @@ separate integrated portfolio page or the public deployment automatically.
 
 `web/data/agent-runs.json` retains exact commentary text, elapsed execution
 events, source-frame times, model names, and source-run SHA-256 hashes for three
-unedited runs. The default penalty run reads number 9, resolves Harry Kane in Python,
-and pairs a named caller line with a separate analyst explanation. The observer
-and caller outputs were reused with their recorded delays; the analyst was regenerated.
+unedited runs. In the default penalty run, the observer requests roster context
+and proposes Harry Kane for readable number 9. Its saved identity decisions are
+inspectable with the evidence. The roster was supplied; the researcher was not run
+for this check. Visual readings and caller/analyst text are reused model outputs
+with their recorded delays.
 Speech timing is simulated and the run is not real-time. The red-card example
 includes the analyst's explicit abstention;
 the goal example distinguishes the deterministic caller reaction from model

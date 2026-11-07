@@ -19,6 +19,7 @@ export type AgentRun = {
       description: string; action: { type: string; certainty: string } | null;
       actor?: { resolved_name: string | null; shirt_number: number | null;
         shirt_name: string | null; action_role: string } | null }[] }[];
+  identity_steps?: { kind: string; reason: string; identities: { observation_id: string; player_name: string; squad_id: string }[] }[];
   provenance: { path: string; sha256: string; speech_timing: string; edited: boolean; reuse_note?: string | null };
 };
 const seconds = (time: number) => `${time.toFixed(1)}s`;
@@ -152,6 +153,17 @@ function RunReview({ run }: { run: AgentRun }) {
           </li>
         ))}</ul>
         {run.inspection && evidence.length > 0 && <p>The observer inspected one region at {[run.inspection.frame_at_s, ...run.inspection.context_at_s].sort((a, b) => a - b).map(seconds).join(", ")} of source time.</p>}
+        {evidence.length > 0 && Boolean(run.identity_steps?.length) && <div className="demo-run-identity-decisions">
+          <h4>Observer identity decisions</h4>
+          <ol>{run.identity_steps?.map((step, index) => <li key={index}>
+            {step.kind === "research_roster" ? "Requested research_roster context." :
+              step.kind === "abstain" ? "Abstained from naming a player." : "Proposed player identities."}
+            {step.reason && <p>{step.reason}</p>}
+            {step.identities.map((identity) => <p key={identity.observation_id}>
+              {identity.player_name} · evidence {identity.observation_id} · squad {identity.squad_id}
+            </p>)}
+          </li>)}</ol>
+        </div>}
       </details>
       <p className="demo-run-limit"><strong>What to notice:</strong> {run.limitation}</p>
       {run.provenance.reuse_note && <p className="demo-run-caption">{run.provenance.reuse_note}</p>}

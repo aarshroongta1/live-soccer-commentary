@@ -1,5 +1,10 @@
 # Player identification check
 
+Current replay identity decisions are agent-owned. The researcher prepares cited
+squads; the observer requests `research_roster` and proposes the player. Code accepts
+or rejects its proposal without selecting a substitute. Earlier checks below retain
+the previous deterministic mapping for comparison.
+
 The next quality target is accurate names during play. A roster maps a readable
 shirt identity to a player; pre-match statistics cannot identify an on-pitch actor.
 This work uses existing models and two clips from the fixed 15-clip development
@@ -112,3 +117,32 @@ with no unsettled requests. This is additional to the earlier six-call check.
 There were no model calls in the 301 passing regression tests. Ruff and mypy
 also pass. The reproducible local scripts and raw outputs are retained under
 `runs/replay/player-name-iteration-20261107/`.
+
+## Agent-owned research and identity decisions
+
+The current replay moves name selection out of Python. The researcher can prepare
+up to two cited squads (team side, kit context, canonical names, numbers, URL and
+date) alongside its six optional facts. The observer first reads available visual
+evidence, then has at most two short turns: request `research_roster`, and propose
+an identity or abstain. It cites the observation and returned squad ID. No separate
+identity agent, tracking framework or training was added.
+
+Code only accepts/rejects proposals. It checks that the cited observation exists,
+the squad was returned by the tool, side and literal reading agree, and the named
+player is in that squad. A wrong proposal is not replaced by a matching name.
+The observer can abstain even on a unique number. A celebration still cannot fill
+an earlier missing identity. Failures leave visual events intact and unnamed.
+
+The [saved model check](../examples/evaluation-results/agent-owned-identity-20261107.json)
+shows an observer requesting the roster and proposing Harry Kane for the readable
+number 9 observations. The first call failed JSON parsing; after clarifying one
+action per turn, two new calls succeeded. Total new reported spend was $0.00328725
+for three GPT-5.4 Mini calls. The source was the previously supplied roster, not
+fresh web research; researcher squad generation and the handoff were verified
+with offline scripted tests. No source-verification claim is made for this check.
+
+The demo replays the saved agent identity decisions with the existing unedited
+visual readings/commentary and recorded delays. Its provenance identifies that
+reuse and the supplied roster. Previous deterministic reports remain historical
+comparisons. Old identity caches cannot be reused as current agent-generated
+identities; changed research squads also invalidate cached vision.

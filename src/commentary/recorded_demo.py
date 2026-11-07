@@ -571,7 +571,12 @@ async def _research(state: DemoState, *, backend: LLMBackend) -> DemoState:
         "usage": _usage(parsed),
     }
     _persist_stage(config.audit_dir, "research", audit["research"])
-    brief = ResearchBrief(fixture=config.research_fixture, as_of=as_of, facts=parsed.value.facts)
+    brief = ResearchBrief(
+        fixture=config.research_fixture,
+        as_of=as_of,
+        facts=parsed.value.facts,
+        squads=parsed.value.squads,
+    )
     audit["research"]["result"] = brief.model_dump(mode="json")
     _persist_stage(config.audit_dir, "research", audit["research"])
     return {"research": brief, "audit": audit}

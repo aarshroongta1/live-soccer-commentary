@@ -15,6 +15,7 @@ from commentary.llm.base import LLMError
 from commentary.llm.fake import ScriptedBackend
 from commentary.recorded_demo import Frame, ObservedActor
 from commentary.recorded_research import ResearchBrief, ResearchDraft
+from commentary.replay.identity import IdentityAction, IdentityProposal
 from commentary.replay.preparation import (
     FrameInspection,
     ReplayObservation,
@@ -95,7 +96,7 @@ async def test_saved_research_is_fixture_and_cutoff_bound() -> None:
     assert not backend.calls
 
 
-async def test_observer_overwrites_model_guessed_identity_using_readable_evidence() -> None:
+async def test_observer_requires_agent_identity_proposal_after_visual_reading() -> None:
     backend = ScriptedBackend()
     backend.always(
         "replay_observer",
@@ -118,6 +119,22 @@ async def test_observer_overwrites_model_guessed_identity_using_readable_evidenc
         ),
     )
     pack = {"home": {"name": "Green", "starters": [{"name": "Ada Green", "number": 7}]}}
+    backend.queue(
+        "replay_observer_identity",
+        [
+            IdentityAction(kind="research_roster"),
+            IdentityAction(
+                kind="identify",
+                identities=[
+                    IdentityProposal(
+                        observation_id="v1-o1",
+                        squad_id="supplied-home",
+                        player_name="Ada Green",
+                    )
+                ],
+            ),
+        ],
+    )
     observer = ReplayObserver(backend, model="test", pack=pack)
     result = await observer([Frame(at_s=1, jpeg=b"test")], 1)
     assert result[0].actor is not None
@@ -484,11 +501,27 @@ async def test_identity_inspection_reads_before_python_resolves_roster(roster, e
 
     backend.register("replay_observer_inspection_plan", plan)
     backend.register("replay_observer_inspection", read)
+    backend.queue(
+        "replay_observer_identity",
+        [
+            IdentityAction(kind="research_roster"),
+            IdentityAction(
+                kind="identify",
+                identities=[
+                    IdentityProposal(
+                        observation_id="v1-o1",
+                        squad_id="supplied-home",
+                        player_name="Ada Green",
+                    )
+                ],
+            ),
+        ],
+    )
     observer = ReplayObserver(backend, model="offline", pack=pack, inspection_focus="identity")
     result = await observer(frames, 1)
     assert (result[0].actor.resolved_name if result[0].actor else None) == expected
     assert observer.audit[0]["inspection_focus"] == "identity"
-    assert len(backend.calls) == 2
+    assert len(backend.calls) == 4
 
 
 def test_unknown_identity_inspection_focus_is_rejected() -> None:

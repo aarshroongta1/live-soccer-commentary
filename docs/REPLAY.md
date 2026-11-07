@@ -240,11 +240,17 @@ or simulated timing as broadcast quality or measured audio latency.
 
 ### Reading player identities
 
-Use `--pack` for a pre-match number/name roster. The vision model receives only
-team and kit details; Python resolves its literal kit reading against that roster.
-Unmatched/ambiguous readings remain unnamed. `--inspection-focus identity` opts
+The researcher can prepare up to two dated, cited squads in its research brief,
+alongside team/player facts. The observer receives team/kit details first, then
+chooses whether to request `research_roster` and propose a player for each readable
+action-linked identity. Code validates its proposal; it never selects a replacement.
+`--pack` remains an explicitly supplied roster fallback when researched squads are
+absent. Unmatched, ambiguous, rejected and abstained proposals remain unnamed. `--inspection-focus identity` opts
 into one participant crop before each batch's final observation (two bounded
-vision calls). Default action focus is unchanged. Inspect the raw and resolved
+vision calls). The identity lookup adds at most two short model turns when readable actors and
+squad context exist. Default action focus is unchanged. Saved vision must match
+the research squads; legacy deterministic identity caches need fresh vision.
+Inspect the raw and resolved
 observer audit before accepting a named call. A readable celebrant does not
 identify an earlier scorer. See [the identity checks](PLAYER_IDENTIFICATION.md)
 for current evidence and limitations.

@@ -239,11 +239,15 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             or old["duration_s"] != duration
             or old.get("sample_fps") != args.fps
             or old.get("pack_sha256") != expected_pack
+            or old.get("observer_research_squads", [])
+            != ([s.model_dump(mode="json") for s in saved.squads] if saved else [])
             or old["config"]["batch_s"] != config.batch_s
         ):
             raise ValueError(
                 "saved vision source, frame rate, batches, duration, or pack do not match"
             )
+        if (pack or (saved and saved.squads)) and old.get("observer_identity_mode") != "agent":
+            raise ValueError("saved vision uses legacy identity resolution; regenerate vision")
         cached_observer = SavedVision(
             reused.metadata["observer_audit"],
             rate=args.rate,
@@ -281,6 +285,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             pack=pack,
             inspection_first=args.inspect_first,
             inspection_focus=args.inspection_focus,
+            research=research,
         )
     roles = RoleAgents(
         backend,
@@ -293,7 +298,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         run_role=roles.run,
         config=config,
         research=research,
-        teams={"home": "Green", "away": "Orange"} if args.diagnostic else team_names(pack),
+        teams={"home": "Green", "away": "Orange"}
+        if args.diagnostic
+        else team_names(pack, research),
     )
     result = await runtime.run(frames, duration_s=duration)
     result.metadata.update(
@@ -308,6 +315,16 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 if reused
                 else (args.inspect_first or args.inspection_focus == "identity")
             ),
+            "observer_identity_mode": (
+                "scripted"
+                if args.diagnostic
+                else reused.metadata.get("observer_identity_mode", "legacy")
+                if reused
+                else "agent"
+            ),
+            "observer_research_squads": [s.model_dump(mode="json") for s in research.squads]
+            if research
+            else [],
             "observer_inspection_focus": (
                 reused.metadata.get("observer_inspection_focus", "action")
                 if reused
