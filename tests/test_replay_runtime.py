@@ -422,16 +422,24 @@ async def test_timeout_is_bounded_and_tasks_are_cleaned_up() -> None:
 
 
 @pytest.mark.asyncio
-async def test_slow_observer_drops_pending_backlog_and_keeps_latest() -> None:
+async def test_slow_observer_coalesces_pending_frames_instead_of_losing_the_finish() -> None:
     clock = Clock()
     release = asyncio.Event()
-    observed: list[float] = []
+    observed: list[list[float]] = []
 
     async def slow_observer(frames: list[Frame], cutoff: float) -> list[Observation]:
-        observed.append(cutoff)
+        observed.append([frame.at_s for frame in frames])
         if cutoff == 0:
             await release.wait()
-        return await observe(frames, cutoff)
+        return [
+            Observation(
+                id=f"e-{frame.at_s}",
+                at_s=frame.at_s,
+                kind="goal" if frame.at_s == 2 else "celebration",
+                description="The ball is in the net." if frame.at_s == 2 else "Aftermath.",
+            )
+            for frame in frames
+        ]
 
     async def silent(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
         return TurnResult(role=role, snapshot_version=snapshot.version, cutoff_s=snapshot.cutoff_s)
@@ -445,11 +453,82 @@ async def test_slow_observer_drops_pending_backlog_and_keeps_latest() -> None:
     release.set()
     await drive(task, clock)
     result = task.result()
-    assert observed == [0, 6]
-    assert sum(event.event == "batch_superseded" for event in result.trace) == 2
+    assert observed == [[0], [2, 4, 6]]
+    assert any(item.kind == "goal" and item.at_s == 2 for item in result.observations)
+    assert sum(event.event == "batch_coalesced" for event in result.trace) == 2
     available = [event for event in result.trace if event.event == "observation_available"]
     assert available[0].data["cutoff_s"] == 0
     assert available[0].at_s >= 6
+
+
+async def test_coalescing_stays_bounded_and_preserves_time_coverage() -> None:
+    clock = Clock()
+    release = asyncio.Event()
+    batches: list[list[float]] = []
+
+    async def slow(frames: list[Frame], cutoff: float) -> list[Observation]:
+        batches.append([frame.at_s for frame in frames])
+        if cutoff == 0:
+            await release.wait()
+        return []
+
+    async def silent(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
+        return TurnResult(role=role, snapshot_version=snapshot.version, cutoff_s=snapshot.cutoff_s)
+
+    runtime = ReplayRuntime(
+        slow,
+        silent,
+        config=ReplayConfig(max_batch_frames=4),
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+    task = asyncio.create_task(runtime.run([Frame(float(t), b"f") for t in range(0, 20, 2)]))
+    await settle()
+    for t in range(2, 20, 2):
+        clock.advance(float(t))
+        await settle()
+    release.set()
+    await drive(task, clock, until=40)
+    assert batches[1][0] == 2
+    assert batches[1][-1] == 18
+    assert len(batches[1]) == 4
+    assert all(len(batch) <= 4 for batch in batches)
+    assert any(e.event == "frames_skipped" for e in task.result().trace)
+
+
+async def test_late_routine_call_is_not_spoken_after_visible_celebration() -> None:
+    clock = Clock()
+
+    async def phases(frames: list[Frame], cutoff: float) -> list[Observation]:
+        return [
+            Observation(
+                id=f"phase-{cutoff}",
+                at_s=cutoff,
+                kind="play" if cutoff == 0 else "celebration",
+                description="Attack." if cutoff == 0 else "Celebration.",
+            )
+        ]
+
+    async def role(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
+        if snapshot.version == 1:
+            if role == "analyst":
+                return speech(role, snapshot, "There is space to attack through the middle.")
+            await clock.sleep(1)
+            return speech(role, snapshot, "The attack is moving forward now.")
+        return TurnResult(role=role, snapshot_version=snapshot.version, cutoff_s=snapshot.cutoff_s)
+
+    runtime = ReplayRuntime(
+        phases,
+        role,
+        config=ReplayConfig(max_age_s=30),
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+    task = asyncio.create_task(runtime.run([Frame(0, b"a"), Frame(2, b"b")], duration_s=4))
+    await drive(task, clock)
+    result = task.result()
+    assert not any(s.line.text == "The attack is moving forward now." for s in result.speech)
+    assert any(e.event == "turn_stale" and e.role == "caller" for e in result.trace)
 
 
 @pytest.mark.asyncio

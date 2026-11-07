@@ -30,12 +30,16 @@ backend, not provider-native function calling. Default budget: three actions and
 if enabled, at most one reviewer-requested revision within that budget.
 
 The clock continues while model calls run. There is one observer job and at most
-one job per speaking role. When vision falls behind, pending input keeps the latest
-batch instead of accumulating an unbounded queue. This can miss an event; skipped
-batches are traced. Each role receives a deep-copied evidence snapshot. Invalid
+one job per speaking role. When vision falls behind, pending batches merge into at
+most eight frames spanning the unseen window instead of replacing the entire
+earlier batch. If this exceeds the frame limit, evenly spaced sampling can still
+miss an event; dropped frames and merged batches are traced. Each role receives a
+deep-copied evidence snapshot. Invalid
 citations, mismatched result origins, stale responses, and future evidence are
 rejected. New goal evidence interrupts stale speech from either voice and protects
 a queued goal call from being replaced by later routine play.
+Routine play-by-play is also discarded when newer visible celebration or replay
+evidence makes it obsolete, even if a debugging run uses a relaxed age limit.
 
 These are cooperative asyncio deadlines, not hard real-time guarantees. A backend
 must propagate cancellation. No framework can make an unresponsive provider finish

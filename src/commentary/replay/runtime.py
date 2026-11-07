@@ -89,8 +89,8 @@ class ReplayRuntime:
 
     ``monotonic`` and ``sleep`` can be replaced together by a manual test clock.
     Call timeouts use asyncio's wall clock; at an accelerated replay rate their
-    wall-time budgets are shortened proportionally. Overloaded observation keeps
-    only the latest pending batch, rather than accumulating work behind the clock.
+    wall-time budgets are shortened proportionally. Overloaded observation merges
+    pending frames into a bounded time-spanning sample instead of losing whole batches.
     """
 
     def __init__(
@@ -163,15 +163,29 @@ class ReplayRuntime:
         )
 
     def _submit_batch(self, frames: list[Frame]) -> None:
-        if len(frames) > self.config.max_batch_frames:
-            self._trace("frames_skipped", count=len(frames) - self.config.max_batch_frames)
-            frames = frames[-self.config.max_batch_frames :]
         if self._observer is None:
-            self._start_observer(frames)
+            self._start_observer(self._bound_frames(frames))
         else:
             if self._pending_batch is not None:
-                self._trace("batch_superseded", cutoff_s=self._pending_batch[-1].at_s)
-            self._pending_batch = frames
+                frames = [*self._pending_batch, *frames]
+                self._trace("batch_coalesced", start_s=frames[0].at_s, cutoff_s=frames[-1].at_s)
+            self._pending_batch = self._bound_frames(frames)
+
+    def _bound_frames(self, frames: list[Frame]) -> list[Frame]:
+        limit = self.config.max_batch_frames
+        if len(frames) <= limit:
+            return frames
+        self._trace(
+            "frames_skipped",
+            count=len(frames) - limit,
+            start_s=frames[0].at_s,
+            cutoff_s=frames[-1].at_s,
+        )
+        if limit == 1:
+            return frames[-1:]
+        # Keep both ends and evenly spaced interior frames. A slow call must not
+        # replace an unseen finish with nothing but the later celebration.
+        return [frames[round(i * (len(frames) - 1) / (limit - 1))] for i in range(limit)]
 
     def _cancel_role(self, role: Role, reason: str) -> None:
         job = self._jobs.pop(role, None)
@@ -332,14 +346,19 @@ class ReplayRuntime:
         if self._is_stale(snapshot):
             return True
         if result.role == "caller" and result.line is not None:
+            cited = [item for item in snapshot.observations if item.id in result.line.evidence_ids]
             latest = max(
-                (
-                    item.at_s
-                    for item in snapshot.observations
-                    if item.id in result.line.evidence_ids
-                ),
+                (item.at_s for item in cited),
                 default=-math.inf,
             )
+            newest = self._result.observations[-1] if self._result.observations else None
+            if (
+                newest is not None
+                and newest.kind in {"celebration", "replay"}
+                and newest.at_s > latest
+                and all(item.kind == "play" for item in cited)
+            ):
+                return True
             return self._now() - latest > self.config.max_age_s
         return False
 
