@@ -14,7 +14,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from commentary.recorded_demo import Observation
-from commentary.replay.contracts import ReplayResult, SpeechRecord
+from commentary.replay.contracts import ReplayResult, SpeechRecord, TraceEvent
 
 
 class ReferenceSource(BaseModel):
@@ -198,6 +198,29 @@ def _research_ids(metadata: dict[str, Any]) -> set[str] | None:
     return identifiers
 
 
+def _tool_accounting(result: ReplayResult) -> tuple[Counter[str], str, str]:
+    """Use the complete role audit so rejected/cancelled turns retain tool costs.
+
+    Successful role traces also occur in runtime.trace; choose a single source,
+    rather than summing both. A malformed or demonstrably incomplete role audit
+    falls back to runtime traces, which remain visible in trace_counts either way.
+    """
+    runtime_counts = Counter(item.event for item in result.trace)
+    raw_audit = result.metadata.get("role_audit")
+    if raw_audit is None:
+        return runtime_counts, "runtime.trace", "absent"
+    if not isinstance(raw_audit, list):
+        return runtime_counts, "runtime.trace", "invalid"
+    try:
+        audit = [TraceEvent.model_validate(item) for item in raw_audit]
+    except (ValueError, TypeError):
+        return runtime_counts, "runtime.trace", "invalid"
+    audit_counts = Counter(item.event for item in audit)
+    if any(audit_counts[name] < runtime_counts[name] for name in ("tool_call", "tool_result")):
+        return runtime_counts, "runtime.trace", "incomplete"
+    return audit_counts, "metadata.role_audit", "valid"
+
+
 def evaluate_replay(
     result: ReplayResult, case: EvaluationCase, tolerance_s: float = 2.0
 ) -> dict[str, Any]:
@@ -288,6 +311,7 @@ def evaluate_replay(
     }
     total_duration = sum(durations.values())
     event_counts = Counter(item.event for item in result.trace)
+    tool_counts, tool_accounting_source, role_audit_status = _tool_accounting(result)
     identity_pairs = [
         (result.observations[prediction], case.events[reference])
         for prediction, reference in matches.items()
@@ -372,9 +396,11 @@ def evaluate_replay(
             "trace_counts": dict(event_counts),
             "timeouts": event_counts["turn_timeout"] + event_counts["observer_timeout"],
             "stale_results": event_counts["turn_stale"],
-            "tool_calls": max(event_counts["tool_call"], event_counts["tool_result"]),
-            "tool_requests_traced": event_counts["tool_call"],
-            "tool_results_traced": event_counts["tool_result"],
+            "tool_calls": max(tool_counts["tool_call"], tool_counts["tool_result"]),
+            "tool_requests_traced": tool_counts["tool_call"],
+            "tool_results_traced": tool_counts["tool_result"],
+            "tool_accounting_source": tool_accounting_source,
+            "role_audit_status": role_audit_status,
             "rejected_turns": event_counts["turn_rejected"],
             "rejected_observation_batches": event_counts["observation_rejected"],
             "errors": event_counts["turn_error"] + event_counts["observer_error"],

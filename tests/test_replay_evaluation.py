@@ -8,8 +8,17 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from commentary.recorded_demo import Observation, ObservedActor
-from commentary.replay.contracts import ReplayResult, SpeechLine, SpeechRecord, TraceEvent
+from commentary.llm.fake import ScriptedBackend
+from commentary.recorded_demo import Frame, Observation, ObservedActor
+from commentary.replay.agents import RoleAgents
+from commentary.replay.contracts import (
+    AgentAction,
+    ReplayResult,
+    SpeechLine,
+    SpeechRecord,
+    ToolCall,
+    TraceEvent,
+)
 from commentary.replay.evaluation import (
     EvaluationCase,
     ReferenceEvent,
@@ -17,6 +26,7 @@ from commentary.replay.evaluation import (
     evaluate_replay,
     validate_manifest,
 )
+from commentary.replay.runtime import ReplayRuntime
 
 
 def case(*events: ReferenceEvent, **updates: object) -> EvaluationCase:
@@ -270,6 +280,65 @@ def test_tool_request_and_completion_traces_are_not_double_counted() -> None:
     assert score["execution"]["tool_calls"] == 1
     assert score["execution"]["tool_requests_traced"] == 1
     assert score["execution"]["tool_results_traced"] == 1
+
+
+@pytest.mark.asyncio
+async def test_failed_agent_turns_keep_executed_tool_counts_through_runtime_and_report() -> None:
+    backend = ScriptedBackend()
+    for role in ("caller", "analyst"):
+        backend.queue(
+            f"replay_{role}",
+            [
+                AgentAction(kind="tool", tool=ToolCall(name="recent_events")),
+                AgentAction(
+                    kind="speak",
+                    line=SpeechLine.model_validate(
+                        {"voice": role, "text": "An invalid call.", "evidence_ids": ["unknown"]}
+                    ),
+                ),
+            ],
+        )
+    roles = RoleAgents(backend, caller_model="scripted", analyst_model="scripted")
+
+    async def observe(_frames: list[Frame], _cutoff: float) -> list[Observation]:
+        return [observation("visible", 0, kind="play")]
+
+    # A stationary clock suffices: all work finishes at time zero without speech;
+    # runtime wake timers are cancelled by observer/role completion, never slept.
+    runtime = ReplayRuntime(observe, roles.run, monotonic=lambda: 0.0)
+    result = await runtime.run([Frame(0, b"unused")], duration_s=0)
+    assert sum(item.event == "tool_result" for item in roles.audit) == 2
+    assert not any(item.event == "tool_result" for item in result.trace)
+    result.metadata["role_audit"] = [item.model_dump(mode="json") for item in roles.audit]
+
+    score = evaluate_replay(result, case(event("play", 0, kind="play")))
+
+    assert score["execution"]["rejected_turns"] == 2
+    assert score["execution"]["tool_calls"] == 2
+    assert score["execution"]["tool_accounting_source"] == "metadata.role_audit"
+    assert score["execution"]["role_audit_status"] == "valid"
+    assert "tool_result" not in score["execution"]["trace_counts"]
+
+
+def test_role_audit_does_not_double_count_successful_tools_also_in_runtime_trace() -> None:
+    completed = TraceEvent(event="tool_result", at_s=1)
+    result = ReplayResult(
+        trace=[completed], metadata={"role_audit": [completed.model_dump(mode="json")]}
+    )
+    score = evaluate_replay(result, case())
+    assert score["execution"]["tool_calls"] == 1
+    assert score["execution"]["trace_counts"]["tool_result"] == 1
+
+
+@pytest.mark.parametrize("audit", ["invalid", [{"event": "tool_result", "at_s": "bad"}], []])
+def test_invalid_or_incomplete_role_audit_falls_back_to_runtime_trace(audit: object) -> None:
+    result = ReplayResult(
+        trace=[TraceEvent(event="tool_result", at_s=1)], metadata={"role_audit": audit}
+    )
+    score = evaluate_replay(result, case())
+    assert score["execution"]["tool_calls"] == 1
+    assert score["execution"]["tool_accounting_source"] == "runtime.trace"
+    assert score["execution"]["role_audit_status"] in {"invalid", "incomplete"}
 
 
 def test_empty_case_has_undefined_ratios_instead_of_perfect_scores() -> None:
