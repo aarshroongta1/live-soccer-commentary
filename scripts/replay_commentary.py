@@ -77,6 +77,12 @@ def arguments() -> argparse.Namespace:
         action="store_true",
         help="choose a bounded visual crop before classifying each batch; adds a model call",
     )
+    parser.add_argument(
+        "--inspection-focus",
+        choices=["action", "identity"],
+        default="action",
+        help="identity selects one participant crop before reading each batch",
+    )
     parser.add_argument("--spend", action="store_true", help="enable paid model calls")
     parser.add_argument("--max-usd", type=float, default=0.10, help="OpenAI token budget")
     parser.add_argument("--max-model-calls", type=int, default=40, help="OpenAI request limit")
@@ -209,6 +215,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 "sample_fps": args.fps,
                 "paid_calls_enabled": False,
                 "budget": budget.report() if args.provider == "openai" else None,
+                "observer_inspection_focus": args.inspection_focus,
                 "speech_simulated": True,
                 "note": "Pass --spend to run the observer and independent role agents.",
             }
@@ -269,7 +276,11 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 )
             research, research_audit = prepared.brief, prepared.audit
         observer = cached_observer or ReplayObserver(
-            backend, model=args.observer_model, pack=pack, inspection_first=args.inspect_first
+            backend,
+            model=args.observer_model,
+            pack=pack,
+            inspection_first=args.inspect_first,
+            inspection_focus=args.inspection_focus,
         )
     roles = RoleAgents(
         backend,
@@ -293,7 +304,14 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "source_sha256": reused.metadata.get("source_sha256") if reused else source_hash,
             "sample_fps": args.fps if not args.diagnostic else None,
             "observer_inspection_first": (
-                reused.metadata.get("observer_inspection_first") if reused else args.inspect_first
+                reused.metadata.get("observer_inspection_first")
+                if reused
+                else (args.inspect_first or args.inspection_focus == "identity")
+            ),
+            "observer_inspection_focus": (
+                reused.metadata.get("observer_inspection_focus", "action")
+                if reused
+                else args.inspection_focus
             ),
             "speech_simulated": True,
             "config": asdict(config),

@@ -433,3 +433,76 @@ async def test_fractional_frame_labels_round_trip_without_weakening_membership()
 
     backend.register("replay_observer", answer)
     await ReplayObserver(backend, model="offline")([Frame(timestamp, b"unused")], timestamp)
+
+
+@pytest.mark.parametrize(
+    "roster,expected",
+    [
+        ([{"name": "Ada Green", "number": 7}], "Ada Green"),
+        ([{"name": "Ada Green", "number": 8}], None),
+        ([{"name": "Ada Green", "number": 7}, {"name": "Bea Green", "number": 7}], None),
+    ],
+)
+async def test_identity_inspection_reads_before_python_resolves_roster(roster, expected) -> None:
+    backend = ScriptedBackend()
+    ok, jpeg = cv2.imencode(".jpg", np.zeros((60, 80, 3), dtype=np.uint8))
+    assert ok
+    frames = [Frame(1, jpeg.tobytes())]
+    pack = {"home": {"name": "Green", "kit": "green", "starters": roster}}
+
+    def plan(blocks: list[Any], _schema: Any) -> FrameInspection:
+        payload = json.loads(blocks[0]["text"])
+        assert payload["pack"] == {
+            "teams": {
+                "home": {
+                    "name": "Green",
+                    "kit_colours": "green",
+                }
+            }
+        }
+        assert "Ada Green" not in json.dumps(blocks)
+        return FrameInspection(frame_at_s=1, left=0, top=0, right=1, bottom=1)
+
+    def read(blocks: list[Any], _schema: Any) -> ReplayObserverFinal:
+        assert "Ada Green" not in json.dumps(blocks)
+        return ReplayObserverFinal(
+            observations=[
+                observation(
+                    id="pass",
+                    at_s=1,
+                    kind="play",
+                    description="Number 7 passes forward.",
+                    actor=ObservedActor(
+                        side="home",
+                        shirt_number=7,
+                        identity_source="shirt_number",
+                        action_role="passer",
+                    ),
+                )
+            ]
+        )
+
+    backend.register("replay_observer_inspection_plan", plan)
+    backend.register("replay_observer_inspection", read)
+    observer = ReplayObserver(backend, model="offline", pack=pack, inspection_focus="identity")
+    result = await observer(frames, 1)
+    assert (result[0].actor.resolved_name if result[0].actor else None) == expected
+    assert observer.audit[0]["inspection_focus"] == "identity"
+    assert len(backend.calls) == 2
+
+
+def test_unknown_identity_inspection_focus_is_rejected() -> None:
+    with pytest.raises(ValueError, match="inspection focus"):
+        ReplayObserver(ScriptedBackend(), model="offline", inspection_focus="other")
+
+
+@pytest.mark.parametrize("context,expected", [([2, 1], [1, 2]), ([3, 3], []), ([3, 1], [1])])
+def test_crop_context_is_canonical_without_adding_frames(context, expected) -> None:
+    request = FrameInspection(frame_at_s=3, context_at_s=context, left=0, top=0, right=1, bottom=1)
+    assert request.context_at_s == expected
+
+
+@pytest.mark.parametrize("context", [[float("nan")], [float("inf")], [-1]])
+def test_invalid_crop_times_are_rejected(context) -> None:
+    with pytest.raises(ValueError, match="finite and nonnegative"):
+        FrameInspection(frame_at_s=3, context_at_s=context, left=0, top=0, right=1, bottom=1)

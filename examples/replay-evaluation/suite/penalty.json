@@ -18,23 +18,31 @@
       "id": "penalty-e1",
       "at_s": 1.25,
       "kind": "play",
-      "player": null,
+      "player": "Harry Kane",
       "team": null,
       "required": true,
       "action_type": "penalty_kick",
       "ball_path": null,
-      "annotation_note": null
+      "annotation_note": "Number 9 is readable on the penalty taker in the source frames; mapped to the historical England roster. Identity reviewed by the coding agent, not human-approved.",
+      "player_aliases": [
+        "Kane"
+      ],
+      "player_action_role": "shooter"
     },
     {
       "id": "penalty-e2",
       "at_s": 1.75,
       "kind": "goal",
-      "player": null,
+      "player": "Harry Kane",
       "team": null,
       "required": true,
       "action_type": "goal",
       "ball_path": null,
-      "annotation_note": null
+      "annotation_note": "Number 9 is readable on the penalty taker in the source frames; mapped to the historical England roster. Identity reviewed by the coding agent, not human-approved.",
+      "player_aliases": [
+        "Kane"
+      ],
+      "player_action_role": "shooter"
     },
     {
       "id": "penalty-e3",
@@ -53,7 +61,8 @@
     "cohort": "action-suite-v1",
     "review_method": "local frame inspection",
     "human_reviewed": false,
-    "timing_uncertainty_s": 1
+    "timing_uncertainty_s": 1,
+    "identity_review": "Agent inspected readable kit number during the action; labels are evaluation-only. Human review pending."
   },
   "commentary": []
 }

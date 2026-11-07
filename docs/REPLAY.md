@@ -237,3 +237,14 @@ or simulated timing as broadcast quality or measured audio latency.
 5. Add bounded GEPA prompt experiments. SFT/GRPO and automatic prompt promotion are
    not implemented; see [the evaluation plan](EVALUATION.md) and
    [research review](RESEARCH.md).
+
+### Reading player identities
+
+Use `--pack` for a pre-match number/name roster. The vision model receives only
+team and kit details; Python resolves its literal kit reading against that roster.
+Unmatched/ambiguous readings remain unnamed. `--inspection-focus identity` opts
+into one participant crop before each batch's final observation (two bounded
+vision calls). Default action focus is unchanged. Inspect the raw and resolved
+observer audit before accepting a named call. A readable celebrant does not
+identify an earlier scorer. See [the identity checks](PLAYER_IDENTIFICATION.md)
+for current evidence and limitations.

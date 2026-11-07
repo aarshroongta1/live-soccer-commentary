@@ -65,3 +65,50 @@ Offline regression checks cover missed events, wrong identities, omitted names,
 alias token boundaries, future/uncited evidence, late celebration identities,
 and visible-player versus scorer roles. All 291 project tests pass, with network
 connections blocked; Ruff and mypy also pass.
+
+## Iteration: a named call and a useful handoff
+
+The [next bounded iteration](../examples/evaluation-results/player-name-iteration-20261107.json)
+kept the same source library and used four existing cases: dribble, free kick,
+penalty and miss. Vision now receives team/kit details without the roster name
+lookup table. Python resolves the literal observed number/name afterward.
+
+`--inspection-focus identity` makes the observer select one participant crop,
+then read the supplied original frames and bounded crop sequence. It reuses
+`inspect_frame`; there is no new agent, tracker or trained model. The normal
+action focus remains the default because crop localization is still imperfect.
+A repeated/out-of-order crop context is canonicalized locally; nonfinite,
+negative, unsupplied and future frame requests remain invalid.
+
+The penalty case produced an unedited caller line:
+
+> Harry Kane buries the penalty! England level at 1-1!
+
+The first analyst repeated the score. After a general prompt change to add one
+supported explanation, the revised analyst produced:
+
+> The penalty was driven low and out of the goalkeeper’s reach, with the dive going the wrong way.
+
+This last replay reused the exact model-produced visual evidence and caller line
+with their recorded delays; only the analyst was regenerated. Number 9 is
+visible during the kick in the original frames and resolves to Harry Kane. The
+selected crop itself missed the intended player: do not claim the crop caused
+this success. The two independent turns were coordinated by the real replay
+runtime. Neither line was manually rewritten. Both speech records completed
+without interruption. The seven-second source clip takes about 24 seconds to
+finish this diagnostic replay; the caller begins around 15.5 seconds. This is
+not real-time performance, and speech timing remains simulated.
+
+The result is an inspectable named-call example, not a broad accuracy win. The
+lexical identity diagnostic covers one of two player-labeled events; the earlier
+penalty-setup observation is still unresolved. Messi remained unresolved and
+Ronaldo remained identified only in celebration. The miss control failed twice:
+first on crop-context formatting, then on inconsistent scene/action output. The
+validator prevented accepting that inconsistent goal; **the negative control did
+not pass**, and no correct-miss claim is made. All failures remain in the report.
+
+This iteration used **12 GPT-5.4 Mini calls for $0.0664908**, below its $0.20 cap,
+with no unsettled requests. This is additional to the earlier six-call check.
+There were no model calls in the 301 passing regression tests. Ruff and mypy
+also pass. The reproducible local scripts and raw outputs are retained under
+`runs/replay/player-name-iteration-20261107/`.

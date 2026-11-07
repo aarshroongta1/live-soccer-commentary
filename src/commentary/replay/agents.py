@@ -73,6 +73,11 @@ supported movement or pattern; use research only when relevant to current play. 
 each statistic's stated competition, denominator, and time period exactly. Research cannot
 prove an on-pitch event. Cite visual evidence and/or research. Your tools are recent_events,
 player_context, and research. Abstain if there is nothing useful to add."""
+    + "\nAfter the caller announces a goal or score, add one visibly supported explanation "
+    "instead of repeating the scorer, score, or goal announcement. If the evidence only "
+    "shows the finish, explain that finish rather than inventing a buildup. Avoid "
+    "keeper-relative left/right or footedness unless directly established by the evidence. "
+    "Abstain if there is no new supported point."
     + "\nA recent goal and its buildup remain relevant during celebration. Use the supplied "
     "sequence to explain the move in 12–24 words, even if the latest frame is a celebration. "
     "Saves, defensive challenges, and referee decisions can also merit explanation without "

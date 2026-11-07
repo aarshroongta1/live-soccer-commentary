@@ -1,7 +1,8 @@
 """Pre-match research and causal frame observation for the replay runtime.
 
-Research runs before the replay clock starts. Only the observer sees the roster;
-spoken agents receive action-linked identities resolved from readable evidence.
+Research runs before the replay clock starts. The roster is resolved in Python;
+models see only team/kit details and directly
+readable identity evidence. Spoken agents receive action-linked resolved names.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ import math
 import time
 from dataclasses import asdict, dataclass, replace
 from datetime import date
-from typing import Any
+from typing import Any, Literal
 
 import cv2
 import numpy as np
@@ -26,6 +27,7 @@ from commentary.recorded_demo import (
     Frame,
     Observation,
     _resolve_observation_actors,
+    _writer_pack,
     safe_pack,
 )
 from commentary.recorded_research import (
@@ -135,6 +137,20 @@ unavailable frames to choose the region.
 """
 
 
+IDENTITY_INSPECTION_PLAN_SYSTEM = """
+Choose ONE inspect_frame crop to read a participant's kit number or shirt name. Prefer the
+ball carrier, passer or shooter DURING the action. Find the clearest available frame,
+then include at most two other supplied times in the same camera shot to check which
+person is involved. Crop around the torso/shorts with enough ball/player context to
+establish their role. Do not choose the goalkeeper, referee or a nearby teammate simply
+because their number is larger. If only a celebration has readable identity, inspect it
+but identify only that celebration. Do not transfer it to earlier play. If nothing is
+readable, choose the clearest action participant and allow the final reader to abstain.
+Use only supplied CURRENT frames. Do not infer numbers or names from fame or faces.
+Return a FrameInspection, without observations yet.
+"""
+
+
 class FrameInspection(BaseModel):
     frame_at_s: float = Field(ge=0, allow_inf_nan=False)
     context_at_s: list[float] = Field(default_factory=list, max_length=2)
@@ -145,14 +161,11 @@ class FrameInspection(BaseModel):
 
     @model_validator(mode="after")
     def valid_box(self) -> FrameInspection:
-        if (
-            any(not math.isfinite(t) or t < 0 for t in self.context_at_s)
-            or self.context_at_s != sorted(set(self.context_at_s))
-            or self.frame_at_s in self.context_at_s
-        ):
-            raise ValueError(
-                "inspection context timestamps must be finite, unique and chronological"
-            )
+        if any(not math.isfinite(t) or t < 0 for t in self.context_at_s):
+            raise ValueError("inspection context timestamps must be finite and nonnegative")
+        # Ordering/repeated timestamps do not change what the tool may access.
+        # Availability is still checked against the exact supplied frames below.
+        self.context_at_s = sorted(set(self.context_at_s) - {self.frame_at_s})
         if self.right - self.left < 0.05 or self.bottom - self.top < 0.05:
             raise ValueError("inspection box must span at least 5% of each image dimension")
         return self
@@ -287,10 +300,14 @@ class ReplayObserver:
         pack: dict[str, Any] | None = None,
         max_tokens: int = 1024,
         inspection_first: bool = False,
+        inspection_focus: Literal["action", "identity"] = "action",
     ) -> None:
         self.backend = backend
         self.model = model
-        self.inspection_first = inspection_first
+        if inspection_focus not in {"action", "identity"}:
+            raise ValueError("inspection focus must be action or identity")
+        self.inspection_focus = inspection_focus
+        self.inspection_first = inspection_first or inspection_focus == "identity"
         if not 256 <= max_tokens <= 2048:
             raise ValueError("observer output cap must be between 256 and 2048 tokens")
         self.max_tokens = max_tokens
@@ -305,7 +322,7 @@ class ReplayObserver:
             "batch_start_s": frames[0].at_s,
             "batch_end_s": frames[-1].at_s,
             "available_frame_timestamps": [frame.at_s for frame in frames],
-            "pack": self.pack,
+            "pack": _writer_pack(self.pack),
         }
         blocks = [text_block(json.dumps(payload))]
         for frame in frames:
@@ -316,7 +333,11 @@ class ReplayObserver:
         started = time.monotonic()
         system = REPLAY_OBSERVER_SYSTEM + ACTION_SYSTEM + INSPECTION_SYSTEM
         if self.inspection_first:
-            system += INSPECTION_PLAN_SYSTEM
+            system += (
+                IDENTITY_INSPECTION_PLAN_SYSTEM
+                if self.inspection_focus == "identity"
+                else INSPECTION_PLAN_SYSTEM
+            )
             plan = await self.backend.parse(
                 model=self.model,
                 system=system,
@@ -342,6 +363,7 @@ class ReplayObserver:
             "cutoff_s": cutoff_s,
             "frames_at_s": [frame.at_s for frame in frames],
             "inspection_mode": "first" if self.inspection_first else "optional",
+            "inspection_focus": self.inspection_focus,
             "prompt_sha256": hashlib.sha256(system.encode()).hexdigest(),
             "initial": initial.model_dump(mode="json"),
             "ball_path_downgrades": [
@@ -371,7 +393,12 @@ class ReplayObserver:
                     system=REPLAY_OBSERVER_SYSTEM
                     + ACTION_SYSTEM
                     + "\nThe requested crop sequence is supplied in timestamp order. "
-                    "Compare contact/outcome or actual card color. Return final observations. "
+                    "Compare contact/outcome and read any visible kit number "
+                    "or shirt name literally. "
+                    "Use number/name readings only for that same action participant; "
+                    "do not copy a celebrant identity to an earlier shooter. "
+                    "Return final observations; keep action/outcome evidence "
+                    "even if identity is unreadable. "
                     "Each crop shares its original CURRENT frame timestamp; "
                     "never infer later outcomes.",
                     blocks=[

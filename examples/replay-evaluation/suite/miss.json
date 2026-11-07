@@ -18,12 +18,16 @@
       "id": "miss-e1",
       "at_s": 2.25,
       "kind": "play",
-      "player": null,
+      "player": "Harry Kane",
       "team": null,
       "required": true,
       "action_type": "penalty_kick",
       "ball_path": null,
-      "annotation_note": "Live second penalty. Ball travels over the bar; do not label a goal or keeper save."
+      "annotation_note": "Live second penalty. Ball travels over the bar; do not label a goal or keeper save. Number 9 is readable on the penalty taker in the source frames; mapped to the historical England roster. Identity reviewed by the coding agent, not human-approved.",
+      "player_aliases": [
+        "Kane"
+      ],
+      "player_action_role": "shooter"
     }
   ],
   "action_labels_complete": false,
@@ -31,7 +35,8 @@
     "cohort": "action-suite-v1",
     "review_method": "local frame inspection",
     "human_reviewed": false,
-    "timing_uncertainty_s": 1
+    "timing_uncertainty_s": 1,
+    "identity_review": "Agent inspected readable kit number during the action; labels are evaluation-only. Human review pending."
   },
   "commentary": []
 }
