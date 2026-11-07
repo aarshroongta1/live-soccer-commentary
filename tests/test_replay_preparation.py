@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
@@ -417,3 +418,18 @@ async def test_inspection_first_rejects_unsupplied_planner_frames_before_classif
         await observer([Frame(2, b"unused")], 2)
     assert [call.tag for call in backend.calls] == ["replay_observer_inspection_plan"]
     assert observer.audit[0]["status"] == "failed"
+
+
+async def test_fractional_frame_labels_round_trip_without_weakening_membership() -> None:
+    backend = ScriptedBackend()
+    timestamp = 1 / 3
+
+    def answer(blocks: Any, _format: Any) -> ReplayObserverResult:
+        payload = json.loads(blocks[0]["text"])
+        assert payload["available_frame_timestamps"] == [timestamp]
+        label = blocks[1]["text"].split("at_s=")[1]
+        assert float(label) == timestamp
+        return ReplayObserverResult(observations=[])
+
+    backend.register("replay_observer", answer)
+    await ReplayObserver(backend, model="offline")([Frame(timestamp, b"unused")], timestamp)

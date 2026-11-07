@@ -299,12 +299,13 @@ class ReplayObserver:
             "playback_s": cutoff_s,
             "batch_start_s": frames[0].at_s,
             "batch_end_s": frames[-1].at_s,
+            "available_frame_timestamps": [frame.at_s for frame in frames],
             "pack": self.pack,
         }
         blocks = [text_block(json.dumps(payload))]
         for frame in frames:
             blocks.extend(
-                [text_block(f"CURRENT frame at_s={frame.at_s:.3f}"), image_block(frame.jpeg)]
+                [text_block(f"CURRENT frame at_s={frame.at_s!r}"), image_block(frame.jpeg)]
             )
         self._batches += 1
         started = time.monotonic()
@@ -382,7 +383,7 @@ class ReplayObserver:
                             block
                             for frame in crops
                             for block in (
-                                text_block(f"inspection crop at_s={frame.at_s:.3f}"),
+                                text_block(f"inspection crop at_s={frame.at_s!r}"),
                                 image_block(frame.jpeg),
                             )
                         ],
