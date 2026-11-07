@@ -28,6 +28,12 @@ def main() -> None:
             continue
         path = ROOT / row["local_path"]
         if not path.exists() and args.download_missing:
+            if "format_id" not in row:
+                failures.append(
+                    f"{row['id']}: legacy source has no pinned download format; "
+                    "restore the original local source before verifying its labels"
+                )
+                continue
             path.parent.mkdir(parents=True, exist_ok=True)
             subprocess.run(
                 [

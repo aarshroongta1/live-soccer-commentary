@@ -143,10 +143,9 @@
       "audio": false,
       "candidate_actions": [
         "pass",
-        "carry",
-        "throw_in"
+        "carry"
       ],
-      "review_note": "Continuous full-match excerpt, including routine possession, restarts and quiet stretches. Local 15s has a visible feed glitch; exclude that area. Reviewed 24-39s contains ordinary buildup.",
+      "review_note": "Ordinary possession in the selected 24-39s window. Earlier throw-in candidate was not confirmed; use the separate Stoke recording for throws. Avoid the local feed glitch around 15s.",
       "annotation_status": "candidate"
     },
     {
@@ -173,6 +172,118 @@
       ],
       "review_note": "Independent public broadcaster highlight of the Chelsea-Burnley 2015 match in official public labels. Only continuous 12-18.5s goal segment is clock-aligned; a global offset is invalid across highlight cuts.",
       "annotation_status": "candidate"
+    },
+    {
+      "id": "england-france-penalties",
+      "url": "https://www.youtube.com/watch?v=Q-zmXSb0WKU",
+      "publisher": "FIFA",
+      "publisher_channel_id": "UCpcTrCXblq78GZrTUTLWeBw",
+      "title": "Giroud header wins it! | England v France | FIFA World Cup Qatar 2022",
+      "download_start_s": 0,
+      "download_end_s": 128,
+      "format_id": "397",
+      "local_path": "clips/action-sources/england-france-penalties.mp4",
+      "sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+      "bytes": 8392199,
+      "local_duration_s": 127.72,
+      "fps": 25.0,
+      "audio": false,
+      "candidate_actions": [
+        "penalty_kick",
+        "penalty_awarded",
+        "shot",
+        "goal",
+        "replay"
+      ],
+      "review_note": "FIFA highlights; distinct first-penalty goal and second-penalty miss. Preserve the difference between live and replay angles.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "everton-var-offside",
+      "url": "https://www.youtube.com/watch?v=aG9TN_GCAbs",
+      "publisher": "NBC Sports",
+      "publisher_channel_id": "UCqZQlzSHbVJrwrn5XvzrzcA",
+      "title": "Everton stoppage-time winner ruled offside by VAR | Premier League | NBC Sports",
+      "download_start_s": 0,
+      "download_end_s": 130,
+      "format_id": "243",
+      "local_path": "clips/action-sources/everton-var-offside.webm",
+      "sha256": "72714f9de63a5e5b5a53f05544111568ff17ba4cd7bd9219f7287561dacfaf2f",
+      "bytes": 4674171,
+      "local_duration_s": 129.763,
+      "fps": 29.97002997002997,
+      "audio": false,
+      "candidate_actions": [
+        "offside",
+        "replay"
+      ],
+      "review_note": "NBC Sports highlight; explicit NO GOAL OFFSIDE stadium graphic at local 95.5s. A possible-offside review graphic alone is not the final decision.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "delap-match-throw",
+      "url": "https://www.youtube.com/watch?v=ZI_b6IoXO5w",
+      "publisher": "Max Zero",
+      "publisher_channel_id": "UCYBnfdtKSNeeHmVGXlYwFKg",
+      "title": "Roly Delap vs Man U 24/09/2011",
+      "download_start_s": 0,
+      "download_end_s": 30,
+      "format_id": "243",
+      "local_path": "clips/action-sources/delap-match-throw.webm",
+      "sha256": "7399eba14fa41915efba8c6b3aadac19a1886d7ecd6aa38f24633e4c293b9441",
+      "bytes": 1325059,
+      "local_duration_s": 29.997,
+      "fps": 29.97002997002997,
+      "audio": false,
+      "candidate_actions": [
+        "throw_in",
+        "header"
+      ],
+      "review_note": "Public spectator recording, publisher Max Zero, not an official broadcast upload. Visible setup, overhead release, and ball flight without explanatory captions.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "messi-bayern",
+      "url": "https://www.youtube.com/watch?v=tbKMBuR-pxs",
+      "publisher": "See existing showcase provenance; publisher not reverified",
+      "title": "messi-bayern",
+      "download_start_s": 0,
+      "download_end_s": 49,
+      "local_path": "clips/demo-sources/barcelona-bayern-messi.mp4",
+      "sha256": "c47f518aac13032e44dc63018cc11e0a8c412412b612f895439812531efdcc5b",
+      "bytes": 7490840,
+      "local_duration_s": 49.28,
+      "fps": 25.0,
+      "audio": true,
+      "candidate_actions": [
+        "dribble",
+        "shot",
+        "goal"
+      ],
+      "review_note": "Reused existing local showcase source. Runtime receives sampled video frames only, not original commentary audio. Download format is not pinned for this legacy source.",
+      "annotation_status": "candidate",
+      "legacy_source": true
+    },
+    {
+      "id": "ronaldo-spain",
+      "url": "https://www.youtube.com/watch?v=OFbyNU6UQQs",
+      "publisher": "See existing showcase provenance; publisher not reverified",
+      "title": "ronaldo-spain",
+      "download_start_s": 5460,
+      "download_end_s": 5500,
+      "local_path": "clips/demo-sources/portugal-spain-live.mp4",
+      "sha256": "ce81a00b525a1c2de5490520d1a51534082dfb46874f2cae0c1a8e36ded65bf6",
+      "bytes": 11696258,
+      "local_duration_s": 40.0,
+      "fps": 30.0,
+      "audio": true,
+      "candidate_actions": [
+        "free_kick",
+        "goal"
+      ],
+      "review_note": "Reused existing local showcase source. Runtime receives sampled video frames only, not original commentary audio. Download format is not pinned for this legacy source.",
+      "annotation_status": "candidate",
+      "legacy_source": true
     }
   ]
 }

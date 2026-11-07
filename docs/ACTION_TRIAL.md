@@ -37,9 +37,9 @@ Different revisions/batches were tried; this was not a controlled A/B experiment
 
 ## Next scope
 
-Keep roughly six short, fixed clips covering a goal, a save/header or missed chance,
-a tackle/carry, a card decision, passing/routine buildup, and a set piece. Existing
-footage is sufficient. Check labels and timing, then improve existing-model
+The user expanded coverage to 12–15 clips. The [selected set](ACTION_SUITE.md) now
+contains 15 short windows covering open play, outcomes, set pieces, and decisions.
+The footage is available. Check labels and timing, then improve existing-model
 recognition, caller/analyst content, and handoffs on those clips. Use small explicit
 budgets that let the chosen window finish; a budget-stopped trial is incomplete.
 No more broad dataset acquisition, full benchmark infrastructure, model training,

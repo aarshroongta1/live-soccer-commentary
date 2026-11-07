@@ -1,0 +1,37 @@
+{
+  "id": "offside",
+  "match_id": "everton-manchester-united-2020-var-source",
+  "split": "development",
+  "duration_s": 10.0,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/action-sources/everton-var-offside.webm",
+    "provenance": "Agent-drafted from direct local source frame inspection of https://www.youtube.com/watch?v=aG9TN_GCAbs. Not generated from model predictions. Approximate times; human review pending.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed",
+    "start_s": 92.0,
+    "sha256": "72714f9de63a5e5b5a53f05544111568ff17ba4cd7bd9219f7287561dacfaf2f"
+  },
+  "events": [
+    {
+      "id": "offside-e1",
+      "at_s": 3.5,
+      "kind": "play",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "offside",
+      "ball_path": null,
+      "annotation_note": "Stadium screen explicitly reads DECISION NO GOAL OFFSIDE. The prior review banner alone is not final confirmation."
+    }
+  ],
+  "action_labels_complete": false,
+  "reference_metadata": {
+    "cohort": "action-suite-v1",
+    "review_method": "local frame inspection",
+    "human_reviewed": false,
+    "timing_uncertainty_s": 1
+  },
+  "commentary": []
+}

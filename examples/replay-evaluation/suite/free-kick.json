@@ -1,0 +1,48 @@
+{
+  "id": "free-kick",
+  "match_id": "portugal-spain-2018-world-cup",
+  "split": "development",
+  "duration_s": 6.0,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/demo-sources/portugal-spain-live.mp4",
+    "provenance": "Agent-drafted from direct local source frame inspection of https://www.youtube.com/watch?v=OFbyNU6UQQs. Not generated from model predictions. Approximate times; human review pending.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed",
+    "start_s": 19.5,
+    "sha256": "ce81a00b525a1c2de5490520d1a51534082dfb46874f2cae0c1a8e36ded65bf6"
+  },
+  "events": [
+    {
+      "id": "free-kick-e1",
+      "at_s": 1.25,
+      "kind": "play",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "free_kick",
+      "ball_path": null,
+      "annotation_note": null
+    },
+    {
+      "id": "free-kick-e2",
+      "at_s": 3.0,
+      "kind": "goal",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "goal",
+      "ball_path": null,
+      "annotation_note": null
+    }
+  ],
+  "action_labels_complete": false,
+  "reference_metadata": {
+    "cohort": "action-suite-v1",
+    "review_method": "local frame inspection",
+    "human_reviewed": false,
+    "timing_uncertainty_s": 1
+  },
+  "commentary": []
+}

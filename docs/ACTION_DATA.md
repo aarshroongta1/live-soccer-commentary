@@ -1,7 +1,8 @@
 # Action development footage
 
-Seven video-only excerpts were downloaded on November 7, 2026, totaling 30.1 MB.
-The media stays locally in `clips/action-sources/`, outside Git. Sources, publisher
+The original seven video-only excerpts totaled 30.1 MB. The [15-clip selection](ACTION_SUITE.md)
+adds penalty, offside and throw-in footage and reuses two existing showcase files.
+The media stays locally under `clips/`, outside Git. Sources, publisher
 channel IDs, requested upstream sections, formats, decoded durations, sizes, and
 SHA-256 hashes are recorded in [the source catalog](../examples/action-sources.json).
 This is a development pool, not a held-out benchmark. No model calls were made to

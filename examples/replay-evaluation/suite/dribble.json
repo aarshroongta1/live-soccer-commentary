@@ -1,0 +1,59 @@
+{
+  "id": "dribble",
+  "match_id": "barcelona-bayern-2015-showcase",
+  "split": "development",
+  "duration_s": 6.5,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/demo-sources/barcelona-bayern-messi.mp4",
+    "provenance": "Agent-drafted from direct local source frame inspection of https://www.youtube.com/watch?v=tbKMBuR-pxs. Not generated from model predictions. Approximate times; human review pending.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed",
+    "start_s": 7.5,
+    "sha256": "c47f518aac13032e44dc63018cc11e0a8c412412b612f895439812531efdcc5b"
+  },
+  "events": [
+    {
+      "id": "dribble-e1",
+      "at_s": 2.5,
+      "kind": "play",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "dribble",
+      "ball_path": null,
+      "annotation_note": "Attacker beats the nearby defender; timing approximate."
+    },
+    {
+      "id": "dribble-e2",
+      "at_s": 3.25,
+      "kind": "play",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "shot",
+      "ball_path": null,
+      "annotation_note": null
+    },
+    {
+      "id": "dribble-e3",
+      "at_s": 4.5,
+      "kind": "goal",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "goal",
+      "ball_path": null,
+      "annotation_note": null
+    }
+  ],
+  "action_labels_complete": false,
+  "reference_metadata": {
+    "cohort": "action-suite-v1",
+    "review_method": "local frame inspection",
+    "human_reviewed": false,
+    "timing_uncertainty_s": 1
+  },
+  "commentary": []
+}

@@ -19,6 +19,8 @@
 
 # Evaluation scope
 
-- Keep evaluation to a handful of short clips covering different actions/events.
+- Keep evaluation to 12–15 short clips covering different actions/events; the
+  selected set is examples/action-suite.json (15 clips).
 - Prioritize recognition and commentary quality on those clips over more dataset
-  infrastructure or broad benchmark acquisition. Existing footage is sufficient.
+  infrastructure or broad benchmark acquisition. The selected footage is available;
+  add sources only to replace an actual coverage gap.

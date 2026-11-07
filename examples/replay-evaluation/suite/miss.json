@@ -1,0 +1,37 @@
+{
+  "id": "miss",
+  "match_id": "england-france-2022-world-cup",
+  "split": "development",
+  "duration_s": 5.0,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/action-sources/england-france-penalties.mp4",
+    "provenance": "Agent-drafted from direct local source frame inspection of https://www.youtube.com/watch?v=Q-zmXSb0WKU. Not generated from model predictions. Approximate times; human review pending.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed",
+    "start_s": 103.0,
+    "sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12"
+  },
+  "events": [
+    {
+      "id": "miss-e1",
+      "at_s": 2.25,
+      "kind": "play",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "penalty_kick",
+      "ball_path": null,
+      "annotation_note": "Live second penalty. Ball travels over the bar; do not label a goal or keeper save."
+    }
+  ],
+  "action_labels_complete": false,
+  "reference_metadata": {
+    "cohort": "action-suite-v1",
+    "review_method": "local frame inspection",
+    "human_reviewed": false,
+    "timing_uncertainty_s": 1
+  },
+  "commentary": []
+}

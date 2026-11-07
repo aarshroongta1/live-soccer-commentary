@@ -1,0 +1,274 @@
+{
+  "id": "action-suite-v1",
+  "version": 1,
+  "selection_frozen_on": "2026-11-07",
+  "purpose": "Small fixed development checks for perception, commentary and handoffs. Not a representative benchmark.",
+  "status": "selection_frozen_labels_unreviewed",
+  "clip_count": 15,
+  "total_duration_s": 112.5,
+  "model_training": false,
+  "runtime_input": "Sampled video frames only; no reference JSON, original commentary audio, or future frames.",
+  "access": "Independent public sources; no gated dataset credentials required.",
+  "limits": [
+    "Labels are sparse, agent-drafted or approximately aligned; not human-approved ground truth.",
+    "All clips are development cases. No held-out accuracy claim.",
+    "Manual checks are review guidance, not implemented semantic scores.",
+    "A set-piece subtype such as penalty_kick is more specific than shot; outcomes require separate evidence.",
+    "Missing taxonomy classes, including ordinary midfield fouls, are not automatically covered."
+  ],
+  "clips": [
+    {
+      "id": "buildup",
+      "title": "Routine buildup",
+      "reference": "examples/replay-evaluation/actions/liga-f-possession.json",
+      "source_id": "liga-f-routine",
+      "start_s": 24,
+      "duration_s": 15,
+      "targets": [
+        "pass",
+        "carry"
+      ],
+      "manual_checks": [
+        "Describe ordinary circulation without inventing a chance or filling every silence."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "dribble",
+      "title": "Dribble and finish",
+      "reference": "examples/replay-evaluation/suite/dribble.json",
+      "source_id": "messi-bayern",
+      "start_s": 7.5,
+      "duration_s": 6.5,
+      "targets": [
+        "dribble",
+        "shot",
+        "goal"
+      ],
+      "manual_checks": [
+        "Distinguish beating a defender from a routine carry. Do not infer player identity from the famous clip."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "tackle",
+      "title": "Recovery tackle",
+      "reference": "examples/replay-evaluation/actions/norwich-tottenham-tackle.json",
+      "source_id": "pl-tackles",
+      "start_s": 5,
+      "duration_s": 7,
+      "targets": [
+        "carry",
+        "tackle"
+      ],
+      "manual_checks": [
+        "Do not announce a goal after the keeper/challenge collision."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "interception",
+      "title": "Cut out a pass",
+      "reference": "examples/replay-evaluation/suite/interception.json",
+      "source_id": "pl-interceptions",
+      "start_s": 37,
+      "duration_s": 6.5,
+      "targets": [
+        "interception"
+      ],
+      "manual_checks": [
+        "Distinguish intercepting a pass from tackling a player already controlling the ball.",
+        "Do not count the closer repeat angle as another interception."
+      ],
+      "replay_check": true,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "cross-header",
+      "title": "Cross and headed chance",
+      "reference": "examples/replay-evaluation/suite/cross-header.json",
+      "source_id": "france-jamaica-late",
+      "start_s": 3,
+      "duration_s": 10,
+      "targets": [
+        "cross",
+        "header"
+      ],
+      "manual_checks": [
+        "Describe a headed chance without inventing a goal."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "save",
+      "title": "Shot, rebound header, save",
+      "reference": "examples/replay-evaluation/actions/villa-arsenal-save.json",
+      "source_id": "pl-saves",
+      "start_s": 10,
+      "duration_s": 8,
+      "targets": [
+        "shot",
+        "header",
+        "save"
+      ],
+      "manual_checks": [
+        "Keep woodwork, header and keeper intervention separate."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "miss",
+      "title": "Penalty missed over the bar",
+      "reference": "examples/replay-evaluation/suite/miss.json",
+      "source_id": "england-france-penalties",
+      "start_s": 103,
+      "duration_s": 5,
+      "targets": [
+        "penalty_kick"
+      ],
+      "manual_checks": [
+        "Call the miss over the bar, not a goal or a save."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "goal",
+      "title": "Goal and reaction",
+      "reference": "examples/replay-evaluation/public/chelsea-burnley-public-goal.json",
+      "source_id": "chelsea-burnley-2015",
+      "start_s": 12,
+      "duration_s": 6.5,
+      "targets": [
+        "goal"
+      ],
+      "manual_checks": [
+        "Wait for visible line/net evidence before the goal call."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "corner",
+      "title": "Corner delivery into a crowded box",
+      "reference": "examples/replay-evaluation/suite/corner.json",
+      "source_id": "pl-saves",
+      "start_s": 38.5,
+      "duration_s": 7.5,
+      "targets": [
+        "corner",
+        "save"
+      ],
+      "manual_checks": [
+        "Distinguish setup, corner delivery and outcome. Do not infer a goal from the crowd."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "free-kick",
+      "title": "Direct free kick",
+      "reference": "examples/replay-evaluation/suite/free-kick.json",
+      "source_id": "ronaldo-spain",
+      "start_s": 19.5,
+      "duration_s": 6,
+      "targets": [
+        "free_kick",
+        "goal"
+      ],
+      "manual_checks": [
+        "Recognize the wall and restart, then wait for the outcome."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "penalty",
+      "title": "Penalty scored, then replay",
+      "reference": "examples/replay-evaluation/suite/penalty.json",
+      "source_id": "england-france-penalties",
+      "start_s": 50.5,
+      "duration_s": 7,
+      "targets": [
+        "penalty_kick",
+        "goal"
+      ],
+      "manual_checks": [
+        "Do not announce success during the run-up.",
+        "The second angle is the same penalty, not another goal."
+      ],
+      "replay_check": true,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "throw-in",
+      "title": "Long throw into the area",
+      "reference": "examples/replay-evaluation/suite/throw-in.json",
+      "source_id": "delap-match-throw",
+      "start_s": 23,
+      "duration_s": 6.5,
+      "targets": [
+        "throw_in"
+      ],
+      "manual_checks": [
+        "Recognize a throw rather than a corner/cross. No outcome is established by the long delivery alone."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "foul-decision",
+      "title": "Foul followed by a penalty award",
+      "reference": "examples/replay-evaluation/suite/foul-decision.json",
+      "source_id": "england-france-penalties",
+      "start_s": 43,
+      "duration_s": 6,
+      "targets": [
+        "penalty_awarded"
+      ],
+      "manual_checks": [
+        "Collision alone is insufficient. Use the referee signal for the penalty award.",
+        "This tests foul-to-penalty decisions; an ordinary midfield foul is not separately labeled."
+      ],
+      "replay_check": true,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "card",
+      "title": "Red-card decision",
+      "reference": "examples/replay-evaluation/actions/france-jamaica-red-card.json",
+      "source_id": "france-jamaica-late",
+      "start_s": 37.5,
+      "duration_s": 5,
+      "targets": [
+        "red_card"
+      ],
+      "manual_checks": [
+        "Read the visible card color accurately; do not invent the booking history."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    },
+    {
+      "id": "offside",
+      "title": "VAR decision: no goal, offside",
+      "reference": "examples/replay-evaluation/suite/offside.json",
+      "source_id": "everton-var-offside",
+      "start_s": 92,
+      "duration_s": 10,
+      "targets": [
+        "offside"
+      ],
+      "manual_checks": [
+        "Do not call a new goal. Distinguish checking possible offside from the final no-goal decision."
+      ],
+      "replay_check": false,
+      "status": "selected_labels_need_review"
+    }
+  ]
+}
