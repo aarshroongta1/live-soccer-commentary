@@ -1,0 +1,379 @@
+[
+  {
+    "id": "red-card",
+    "title": "Red card and a deliberate pause",
+    "videoPath": "/soccer-commentary/agent-card.mp4",
+    "summary": "Recognizes the red card. The analyst stays quiet because the cause is not visible.",
+    "limitation": "Only the caller speaks in this run; the reason for dismissal is not established.",
+    "source_duration_s": 5,
+    "duration_s": 15.944315375003498,
+    "models": {
+      "observer": "gpt-5.4-mini",
+      "caller": "gpt-6-luna",
+      "analyst": "gpt-6-luna"
+    },
+    "research_used": false,
+    "inspection": {
+      "frame_at_s": 1.5,
+      "context_at_s": [
+        0.5,
+        2.0
+      ],
+      "left": 0.53,
+      "top": 0.0,
+      "right": 0.74,
+      "bottom": 0.45
+    },
+    "lines": [
+      {
+        "id": "speech-1",
+        "role": "caller",
+        "text": "A red card is shown, and protests erupt around the referee.",
+        "start_s": 12.27403066601255,
+        "end_s": 15.940697332679216,
+        "interrupted": false,
+        "evidence_ids": [
+          "v1-o1"
+        ],
+        "origin": "Model-generated text"
+      }
+    ],
+    "events": [
+      {
+        "id": "event-0",
+        "time_s": 4.502469791012118,
+        "kind": "frames_skipped",
+        "title": "Frames sampled",
+        "role": null,
+        "detail": "2 frames omitted by bounded sampling.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-1",
+        "time_s": 4.504502499999944,
+        "kind": "observation_started",
+        "title": "Observer starts",
+        "role": null,
+        "detail": "8 sampled frames; latest source time 4.5s.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-2",
+        "time_s": 10.697476375004044,
+        "kind": "observation_available",
+        "title": "Evidence available",
+        "role": null,
+        "detail": "2 observations released to the commentators.",
+        "source_at_s": 1.5,
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 1.5,
+            "kind": "play",
+            "description": "Referee raises a red card toward a player while nearby players react and gesture in protest.",
+            "action": {
+              "type": "red_card",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "referee_signal",
+                "red_card_visible"
+              ],
+              "support_at_s": [
+                1.5,
+                2.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 2.5,
+            "kind": "play",
+            "description": "Black-shirted players continue protesting the sending-off, with one gesturing open-handed toward the referee.",
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [],
+              "support_at_s": [
+                2.5,
+                3.0,
+                4.0,
+                4.5
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "event-3",
+        "time_s": 10.697834625010728,
+        "kind": "turn_started",
+        "title": "Commentator starts",
+        "role": "caller",
+        "detail": "Independent role receives its own evidence snapshot.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-4",
+        "time_s": 10.698023500008276,
+        "kind": "turn_started",
+        "title": "Commentator starts",
+        "role": "analyst",
+        "detail": "Independent role receives its own evidence snapshot.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-6",
+        "time_s": 12.21563866600627,
+        "kind": "abstained",
+        "title": "Analyst abstains",
+        "role": "analyst",
+        "detail": "The supplied sequence only shows a red card and protests; there is no supported movement or pattern to explain.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-9",
+        "time_s": 12.274370500002988,
+        "kind": "speech_started",
+        "title": "Speech starts",
+        "role": "caller",
+        "detail": "A red card is shown, and protests erupt around the referee.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-10",
+        "time_s": 15.944315375003498,
+        "kind": "speech_ended",
+        "title": "Speech ends",
+        "role": "caller",
+        "detail": "",
+        "source_at_s": null,
+        "observations": []
+      }
+    ],
+    "provenance": {
+      "path": "runs/replay/recognition-pass-20261107-inspected/card.json",
+      "sha256": "a96c98f02a6b3d0db4ed7186f8eeb9f4f842b9eda5066a7fca8d17c32d962d02",
+      "speech_timing": "Simulated from word counts; no synthesized audio.",
+      "edited": false
+    }
+  },
+  {
+    "id": "goal",
+    "title": "Goal reaction and analyst handoff",
+    "videoPath": "/soccer-commentary/agent-goal.mp4",
+    "summary": "The observer identifies a goal; the coordinator makes the immediate call and the analyst follows.",
+    "limitation": "The analyst\u2019s buildup description needs correction. Its final line was interrupted when the saved run ended.",
+    "source_duration_s": 6.5,
+    "duration_s": 18.502892500007874,
+    "models": {
+      "observer": "gpt-5.4-mini",
+      "caller": "gpt-6-luna",
+      "analyst": "gpt-6-luna"
+    },
+    "research_used": false,
+    "inspection": null,
+    "lines": [
+      {
+        "id": "speech-1",
+        "role": "caller",
+        "text": "It's in! They've found the net!",
+        "start_s": 10.413179875002243,
+        "end_s": 12.413179875002243,
+        "interrupted": false,
+        "evidence_ids": [
+          "v1-o3"
+        ],
+        "origin": "Deterministic goal reaction"
+      },
+      {
+        "id": "speech-2",
+        "role": "analyst",
+        "text": "The ball was swung into a crowded six-yard box, then dropped into a scramble before being redirected over the line.",
+        "start_s": 12.664584625003044,
+        "end_s": 18.502765292010736,
+        "interrupted": true,
+        "evidence_ids": [
+          "v1-o1",
+          "v1-o2",
+          "v1-o3"
+        ],
+        "origin": "Model-generated text"
+      }
+    ],
+    "events": [
+      {
+        "id": "event-0",
+        "time_s": 6.001578875002451,
+        "kind": "frames_skipped",
+        "title": "Frames sampled",
+        "role": null,
+        "detail": "5 frames omitted by bounded sampling.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-1",
+        "time_s": 6.00171812500048,
+        "kind": "observation_started",
+        "title": "Observer starts",
+        "role": null,
+        "detail": "8 sampled frames; latest source time 6s.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-2",
+        "time_s": 10.413031832998968,
+        "kind": "observation_available",
+        "title": "Evidence available",
+        "role": null,
+        "detail": "3 observations released to the commentators.",
+        "source_at_s": 3.5,
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 1.0,
+            "kind": "play",
+            "description": "A ball is swung into the six-yard box and players converge in front of goal; the exact contact is hard to see.",
+            "action": {
+              "type": "cross",
+              "certainty": "uncertain",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                0.0,
+                1.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 2.5,
+            "kind": "play",
+            "description": "The ball drops in the crowded goalmouth and is redirected toward the goal line amid a scramble.",
+            "action": {
+              "type": "shot",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_motion",
+                "goal_line_crossing",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                2.5,
+                3.5
+              ]
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 3.5,
+            "kind": "goal",
+            "description": "The ball is visible inside the net after crossing the line, with defenders and the goalkeeper in the goalmouth.",
+            "action": {
+              "type": "goal",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_in_net",
+                "goal_line_crossing"
+              ],
+              "support_at_s": [
+                3.5,
+                4.5
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "event-3",
+        "time_s": 10.413176041998668,
+        "kind": "fast_goal_call",
+        "title": "Goal reaction selected",
+        "role": "caller",
+        "detail": "Deterministic call from accepted goal evidence; no extra model call.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-4",
+        "time_s": 10.413378042008844,
+        "kind": "speech_started",
+        "title": "Speech starts",
+        "role": "caller",
+        "detail": "It's in! They've found the net!",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-5",
+        "time_s": 10.413553582999157,
+        "kind": "turn_started",
+        "title": "Commentator starts",
+        "role": "analyst",
+        "detail": "Independent role receives its own evidence snapshot.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-6",
+        "time_s": 12.418930458006798,
+        "kind": "speech_ended",
+        "title": "Speech ends",
+        "role": "caller",
+        "detail": "",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-9",
+        "time_s": 12.664973667007871,
+        "kind": "speech_started",
+        "title": "Speech starts",
+        "role": "analyst",
+        "detail": "The ball was swung into a crowded six-yard box, then dropped into a scramble before being redirected over the line.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-10",
+        "time_s": 18.502511667000363,
+        "kind": "replay_deadline",
+        "title": "Run ends",
+        "role": null,
+        "detail": "The saved replay reached its deadline.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-11",
+        "time_s": 18.502892500007874,
+        "kind": "speech_interrupted",
+        "title": "Speech interrupted",
+        "role": "analyst",
+        "detail": "replay ended",
+        "source_at_s": null,
+        "observations": []
+      }
+    ],
+    "provenance": {
+      "path": "runs/replay/action-baseline-20261107/public-goal-complete.json",
+      "sha256": "d2103f4e23ffc857816761df097b02cf3647ab63c9a9d938d8002fcea9c5ee4e",
+      "speech_timing": "Simulated from word counts; no synthesized audio.",
+      "edited": false
+    }
+  }
+]

@@ -21,6 +21,30 @@ record source footage, observations, exact words, and editorial decisions.
 Both voices use their saved ElevenLabs settings. The analyst contributes during
 the buildup and after the finish; fuller caller phrases carry the big moments.
 
+## Standalone agent demo
+
+The local standalone `/demo` now adds an architecture flow and an inspectable
+saved-run section below the five curated videos. This does not update the
+separate integrated portfolio page or the public deployment automatically.
+
+`web/data/agent-runs.json` retains exact commentary text, elapsed execution
+events, source-frame times, model names, and source-run SHA-256 hashes for two
+unedited runs. The red-card example includes the analyst's explicit abstention;
+the goal example distinguishes the deterministic caller reaction from model
+text and labels the analyst's inaccurate buildup and interrupted ending.
+
+The run clock preserves processing delays. Source footage stops at its end
+while the run continues. Replay, event selection, supporting-frame inspection,
+and the result shortcut work entirely in the browser. Speech timing in these
+runs is simulated from word counts; there is no generated audio. Research was
+not used in either saved example. The architecture documents the optional
+researcher and reviewer separately from the roles that actually ran.
+
+Optional local source videos are `web/public/soccer-commentary/agent-card.mp4`
+and `web/public/soccer-commentary/agent-goal.mp4`. They are ignored by Git. If
+absent at build time, the saved text, evidence, and timeline remain available.
+No API keys or paid calls are needed to browse the demo.
+
 ## Source and media
 
 The pipeline and standalone player live in this repository. The integrated

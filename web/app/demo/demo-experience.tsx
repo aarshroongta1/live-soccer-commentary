@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import AgentRuns, { type AgentRun } from "./agent-runs";
 import CommentaryArchitecture from "./architecture";
 import "./demo.css";
 
@@ -99,14 +100,13 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
   );
 }
 
-export default function DemoExperience({ clips }: { clips: DemoClip[] }) {
+export default function DemoExperience({ clips, runs }: { clips: DemoClip[]; runs: AgentRun[] }) {
   const [activeId, setActiveId] = useState(clips[0].id);
   const active = clips.find((clip) => clip.id === activeId)!;
 
   return (
     <main className="demo-page">
       <div className="demo-content">
-        <h1 className="demo-sr-only">Soccer commentary demos</h1>
         <nav className="demo-nav" aria-label="Project navigation">
           <a href="https://www.aarshroongta.com/projects">Back to projects</a>
           <a
@@ -117,6 +117,12 @@ export default function DemoExperience({ clips }: { clips: DemoClip[] }) {
             Source on GitHub
           </a>
         </nav>
+        <header className="demo-heading">
+          <h1>AI football commentary</h1>
+          <p>Five reviewed, two-voice clips. A look inside the agents that generate commentary.</p>
+          <a href="#agent-runs">Inspect automatic agent runs</a>
+        </header>
+        <h2 className="demo-showcase-title">Curated showcase</h2>
         <label className="demo-picker">
           <span className="demo-sr-only">Select a video</span>
           <select
@@ -132,6 +138,7 @@ export default function DemoExperience({ clips }: { clips: DemoClip[] }) {
         </label>
         <ClipPlayer key={active.id} clip={active} />
         <CommentaryArchitecture />
+        <AgentRuns runs={runs} />
       </div>
     </main>
   );
