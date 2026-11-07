@@ -1,0 +1,22 @@
+examples/evaluation-results/vision-model-comparison-20261107.json
+  s_6658308151c726::t_2559c5e002ec91 1-564
+  s_6658308151c726::t_672fa446f69af6 565-566
+docs/VISION_COMPARISON.md
+  s_6658308151c726::t_20f697feda30ee 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "da10892239a34ea13682525eef963539fc161746",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
