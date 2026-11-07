@@ -64,6 +64,28 @@ Choose a local clip or shared screen, confirm the paid-call notice, and press
 Run offline tests with `uv run pytest -q`. Check the website with
 `cd web && npm run lint && npm run build`.
 
+## Replay agents
+
+An experimental replay path separates the researcher, visual observer, caller,
+and analyst. Caller and analyst each run a bounded LangGraph tool loop; an asyncio
+coordinator advances the video clock, rejects stale results, and prioritizes goals.
+The existing recorded workflow and public showcase remain available.
+
+Try the synthetic diagnostic without credentials:
+
+```bash
+uv run python scripts/replay_commentary.py --diagnostic --rate 10 \
+  --out runs/replay/diagnostic.json
+uv run python scripts/evaluate_replay.py --run runs/replay/diagnostic.json \
+  --reference examples/replay-evaluation/diagnostic.json \
+  --out runs/replay/diagnostic-score.json
+```
+
+This exercises agent-selected tools and speech scheduling using fictional evidence
+and scripted model responses. Speech timing is simulated. See the
+[replay guide](docs/REPLAY.md) to run model agents over a local video, inspect traces,
+and understand what the initial evaluation does and does not measure.
+
 ## Current limits
 
 Screen commentary is text-only and trails the action by several seconds. Player

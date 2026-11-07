@@ -1,6 +1,9 @@
 # Commentary evaluation and improvement
 
-Status: proposed next stage, not an implemented training or evaluation system.
+Status: the initial structural replay evaluator and synthetic diagnostic are
+implemented; see [the replay guide](REPLAY.md). Broadcast reference curation,
+semantic/audio evaluation, baseline experiments, and training/optimization remain
+proposed next stages.
 
 Build the replayable real-time multi-agent core first. Keep the pre-match
 researcher, observer, caller, and analyst separate, with timestamped evidence,

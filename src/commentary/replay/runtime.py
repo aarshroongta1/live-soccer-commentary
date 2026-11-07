@@ -186,28 +186,41 @@ class ReplayRuntime:
         self._observer = None
         try:
             observations = job.task.result()
-            self._validate_observations(observations, job)
         except TimeoutError:
             self._trace("observer_timeout", cutoff_s=job.cutoff_s)
         except Exception as exc:
             self._trace("observer_error", error=type(exc).__name__, message=str(exc)[:240])
         else:
-            self._result.observations.extend(item.model_copy(deep=True) for item in observations)
-            self._availability_cutoff = job.cutoff_s
-            self._version += 1
-            self._trace(
-                "observation_available",
-                cutoff_s=job.cutoff_s,
-                snapshot_version=self._version,
-                observations=[item.model_dump(mode="json") for item in observations],
-            )
-            if any(item.kind == "goal" for item in observations):
-                self._goal_version = self._version
-                self._latest_goal_ids = {item.id for item in observations if item.kind == "goal"}
-                self._urgent_goal = True
-                self._cancel_role("caller", "new goal evidence")
-                self._cancel_role("analyst", "goal priority")
-                self._interrupt_for_goal()
+            try:
+                self._validate_observations(observations, job)
+            except (ValueError, TypeError, AttributeError) as exc:
+                self._trace(
+                    "observation_rejected",
+                    cutoff_s=job.cutoff_s,
+                    error=type(exc).__name__,
+                    message=str(exc)[:240],
+                )
+            else:
+                self._result.observations.extend(
+                    item.model_copy(deep=True) for item in observations
+                )
+                self._availability_cutoff = job.cutoff_s
+                self._version += 1
+                self._trace(
+                    "observation_available",
+                    cutoff_s=job.cutoff_s,
+                    snapshot_version=self._version,
+                    observations=[item.model_dump(mode="json") for item in observations],
+                )
+                if any(item.kind == "goal" for item in observations):
+                    self._goal_version = self._version
+                    self._latest_goal_ids = {
+                        item.id for item in observations if item.kind == "goal"
+                    }
+                    self._urgent_goal = True
+                    self._cancel_role("caller", "new goal evidence")
+                    self._cancel_role("analyst", "goal priority")
+                    self._interrupt_for_goal()
         if self._pending_batch is not None:
             pending, self._pending_batch = self._pending_batch, None
             self._start_observer(pending)

@@ -9,6 +9,7 @@ import pytest
 
 from commentary.recorded_demo import Frame, Observation
 from commentary.replay.contracts import Role, RuntimeSnapshot, SpeechLine, TurnResult
+from commentary.replay.evaluation import EvaluationCase, ReferenceSource, evaluate_replay
 from commentary.replay.runtime import ReplayConfig, ReplayRuntime
 
 
@@ -138,7 +139,46 @@ async def test_future_and_duplicate_observations_never_enter_role_context() -> N
     result = task.result()
     assert [item.id for item in result.observations] == ["same"]
     assert all([item.id for item in snap.observations] == ["same"] for snap in seen)
-    assert sum(event.event == "observer_error" for event in result.trace) == 2
+    assert sum(event.event == "observation_rejected" for event in result.trace) == 2
+
+
+@pytest.mark.asyncio
+async def test_observer_validation_rejection_and_provider_error_have_separate_metrics() -> None:
+    clock = Clock()
+
+    async def invalid_or_failed_observer(frames: list[Frame], cutoff: float) -> list[Observation]:
+        if cutoff == 0:
+            return [Observation(id="future", at_s=1, kind="goal", description="Not yet visible.")]
+        raise RuntimeError("simulated provider failure")
+
+    async def never_called(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
+        raise AssertionError("invalid observer output must not reach a role")
+
+    runtime = ReplayRuntime(
+        invalid_or_failed_observer, never_called, monotonic=clock.monotonic, sleep=clock.sleep
+    )
+    task = asyncio.create_task(runtime.run([Frame(0, b"0"), Frame(2, b"2")], duration_s=3))
+    await drive(task, clock)
+    result = task.result()
+    reference = EvaluationCase(
+        id="observer-failure-diagnostic",
+        match_id="fictional",
+        split="development",
+        duration_s=3,
+        source=ReferenceSource(
+            kind="synthetic",
+            locator="synthetic://observer-failures",
+            provenance="Fictional runtime failure test.",
+            usage_terms="Project-owned test fixture.",
+            annotation_status="synthetic",
+        ),
+    )
+    score = evaluate_replay(result, reference)
+    assert result.observations == []
+    assert result.speech == []
+    assert score["execution"]["rejected_observation_batches"] == 1
+    assert score["execution"]["errors"] == 1
+    assert score["execution"]["rejected_turns"] == 0
 
 
 @pytest.mark.asyncio
