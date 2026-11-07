@@ -1,0 +1,34 @@
+docs/REPLAY.md
+  s_aba8a8d5718a34::t_e4800aeda45781 33-37,41-42
+src/commentary/replay/runtime.py
+  s_aba8a8d5718a34::t_83a4143d75dc7f 92-93,167,170,172-178,183-188,351,354-355,360-361
+  s_6658308151c726::t_ff96bf34a835d2 171,179-182,349,356-359
+tests/test_replay_runtime.py
+  s_aba8a8d5718a34::t_1f45cc78e67d10 425,428,431,434,441-442,456-458,464-477,485-502,511-519,527-531
+  s_6658308151c726::t_11cee38d9e9dae 435-440,478-484,503-510,520-526
+  s_6658308151c726::t_d6a45eda2f77bd 532-533
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8e1dae3eea42962d77e87c09f6e670e5cdf3edbf",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
