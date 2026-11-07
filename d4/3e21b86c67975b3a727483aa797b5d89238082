@@ -1,0 +1,33 @@
+tests/test_replay_cli.py
+  s_aba8a8d5718a34::t_ecc11bbeafa956 151,155,159,169-170
+tests/test_replay_evaluation.py
+  s_6658308151c726::t_a5a6e7b14f18d0 414-444
+scripts/replay_commentary.py
+  s_6658308151c726::t_a5a6e7b14f18d0 193,210-211,225,286,318
+src/commentary/replay/evaluation.py
+  s_aba8a8d5718a34::t_f43dec6ce225ee 12,30-31,51,318-342,354,457
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d43e21b86c67975b3a727483aa797b5d89238082",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
