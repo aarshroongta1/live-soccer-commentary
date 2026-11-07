@@ -1,0 +1,67 @@
+scripts/replay_commentary.py
+  s_aba8a8d5718a34::t_a63b0c951bc25c 242-243,249-250,288,325-327
+  s_aba8a8d5718a34::t_9aa0be2f18be1b 318-324
+  s_aba8a8d5718a34::t_c1c87ff8de18a1 301-303
+src/commentary/replay/preparation.py
+  s_aba8a8d5718a34::t_0f24adfa6ebe7c 3-5,39
+  s_6658308151c726::t_25560176e0a62e 54-56,281-283,308,320-329,340,477-485,496-498,501-504,506-508
+examples/evaluation-results/agent-owned-identity-20261107.json
+  s_aba8a8d5718a34::t_e6b8dcd9ff9c9e 1-1234
+docs/REPLAY.md
+  s_6658308151c726::t_97fd091b8473d7 243-248,250-253
+web/data/agent-runs.json
+  s_aba8a8d5718a34::t_e6b8dcd9ff9c9e 6-7,9,12,14,33-34,45-46,57,67,157,167,177,186-187,196-197,206-207,216-238,240-241,244,408,624
+tests/test_replay_identity.py
+  s_aba8a8d5718a34::t_9aa0be2f18be1b 189-192,194-211
+  s_aba8a8d5718a34::t_4a553d3b1c7f98 193
+  s_aba8a8d5718a34::t_07c492d4b0e188 1-188
+src/commentary/recorded_research.py
+  s_6658308151c726::t_97fd091b8473d7 3-4
+  s_aba8a8d5718a34::t_2fc3eff454a61e 12,48-49,58-65,67-70,75-83,88,92,99-100,108
+  s_aba8a8d5718a34::t_07c492d4b0e188 50-57
+  s_aba8a8d5718a34::t_0f24adfa6ebe7c 119-120
+  s_aba8a8d5718a34::t_9aaf1f088236bb 95-97
+  s_6658308151c726::t_3f8a8fdb32f0a5 66,71-74,118
+tests/test_replay_preparation.py
+  s_aba8a8d5718a34::t_a63b0c951bc25c 18,99,122-137,504-519,524
+docs/PLAYER_IDENTIFICATION.md
+  s_aba8a8d5718a34::t_e6b8dcd9ff9c9e 120-148
+  s_6658308151c726::t_97fd091b8473d7 3-7
+web/app/demo/architecture.tsx
+  s_6658308151c726::t_97fd091b8473d7 2-4
+src/commentary/replay/identity.py
+  s_aba8a8d5718a34::t_f81bf42a511633 18-21
+  s_aba8a8d5718a34::t_07c492d4b0e188 14,129-140
+  s_aba8a8d5718a34::t_0f24adfa6ebe7c 100-103
+  s_aba8a8d5718a34::t_54883d26c86e4e 1-13,15-17,22-99,104-128,141-167
+docs/PORTFOLIO.md
+  s_6658308151c726::t_4963565b72093b 32-36
+src/commentary/recorded_demo.py
+  s_aba8a8d5718a34::t_904ca779512b83 574-579
+web/app/demo/agent-runs.tsx
+  s_6658308151c726::t_de32e787b04403 22,156-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "777408e90a9920f0b27dadf8876ad92501dcdaab",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
