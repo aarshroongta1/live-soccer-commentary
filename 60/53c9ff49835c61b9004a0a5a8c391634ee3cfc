@@ -1,0 +1,60 @@
+docs/ACTION_DATA.md
+  s_aba8a8d5718a34::t_cb93a0bc2c896b 3-5
+examples/replay-evaluation/suite/offside.json
+  s_aba8a8d5718a34::t_6c9418f21b0921 1-37
+examples/replay-evaluation/suite/penalty.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-59
+examples/action-sources.json
+  s_6658308151c726::t_0eeee4085a8397 146,148,175-286
+examples/replay-evaluation/suite/dribble.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-59
+examples/replay-evaluation/suite/corner.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-48
+scripts/fetch_action_sources.py
+  s_aba8a8d5718a34::t_cb93a0bc2c896b 31-36
+docs/ACTION_TRIAL.md
+  s_aba8a8d5718a34::t_cb93a0bc2c896b 40-42
+examples/replay-evaluation/suite/cross-header.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-48
+examples/replay-evaluation/suite/throw-in.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-4,6-37
+  s_aba8a8d5718a34::t_6c9418f21b0921 5
+examples/action-suite.json
+  s_aba8a8d5718a34::t_6c9418f21b0921 1-274
+examples/replay-evaluation/suite/interception.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-48
+examples/replay-evaluation/suite/foul-decision.json
+  s_aba8a8d5718a34::t_6c9418f21b0921 1-48
+examples/replay-evaluation/suite/miss.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-37
+docs/ACTION_SUITE.md
+  s_6658308151c726::t_c10d6bdc5c532f 1-42
+AGENTS.md
+  s_aba8a8d5718a34::t_cb93a0bc2c896b 22-23,25-26
+examples/replay-evaluation/suite/free-kick.json
+  s_aba8a8d5718a34::t_70d9603af7fd02 1-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6053c9ff49835c61b9004a0a5a8c391634ee3cfc",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
