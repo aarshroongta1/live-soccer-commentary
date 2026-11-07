@@ -1,0 +1,40 @@
+docs/PUBLIC_DATA.md
+  s_6658308151c726::t_e918d97544a4d8 83-104
+scripts/import_soccernet.py
+  s_aba8a8d5718a34::t_4deeb42a4bd0de 14,57
+tests/test_soccernet_import.py
+  s_aba8a8d5718a34::t_4deeb42a4bd0de 13,28-32,66,69,114,116-128
+tests/test_soccernet_splits.py
+  s_6658308151c726::t_e918d97544a4d8 6,8,11,70-118
+  s_aba8a8d5718a34::t_4deeb42a4bd0de 1-5,7,9-10,12-69
+src/commentary/replay/soccernet_splits.py
+  s_6658308151c726::t_a3acc57ddd5dea 1-89
+src/commentary/replay/data/soccernet-events-v2-splits.json
+  s_6658308151c726::t_a3acc57ddd5dea 1-583
+src/commentary/replay/soccernet.py
+  s_6658308151c726::t_a3acc57ddd5dea 14,58-60,62-66,99-101,159,169-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "08af36cee32b81b4047c4c4f8626b3ab83645568",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
