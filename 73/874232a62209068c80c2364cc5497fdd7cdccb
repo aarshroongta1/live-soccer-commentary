@@ -1,0 +1,54 @@
+scripts/replay_commentary.py
+  s_aba8a8d5718a34::t_6639aed34cd821 61-63,216-227,230-235,262,282,295,310-312
+  s_6658308151c726::t_6534518acf24db 228-229
+  s_aba8a8d5718a34::t_d3036e6bcb1c81 54-59
+  s_aba8a8d5718a34::t_fc9dfd038d1f7e 15
+  s_aba8a8d5718a34::t_a918bf9b33502f 30-31,214-215,296-301,307-309
+  s_aba8a8d5718a34::t_a377ab0bfad51d 83-84
+  s_aba8a8d5718a34::t_053ef054796e59 45-47
+  s_6658308151c726::t_651a8ed177f5b8 85-88,174,176-177,190,203,209,313-316,352
+docs/REPLAY.md
+  s_aba8a8d5718a34::t_a377ab0bfad51d 90-93
+  s_aba8a8d5718a34::t_fc9dfd038d1f7e 139-142
+  s_aba8a8d5718a34::t_0a9037e2d0d8e1 45-53,116-121
+  s_aba8a8d5718a34::t_88fa78baef2da6 122
+tests/test_replay_cache.py
+  s_aba8a8d5718a34::t_5f49f3a1c5b1b6 65-71
+  s_aba8a8d5718a34::t_6639aed34cd821 1-11,26-38,40-64
+  s_6658308151c726::t_6534518acf24db 12-25,39
+tests/test_replay_cli.py
+  s_aba8a8d5718a34::t_d3036e6bcb1c81 134-146
+  s_6658308151c726::t_4491ca2691db6c 152-153,158-188
+  s_aba8a8d5718a34::t_fc9dfd038d1f7e 124-128,132-133,147,197
+  s_aba8a8d5718a34::t_053ef054796e59 129-130
+  s_aba8a8d5718a34::t_3152c0297a77a3 131
+  s_aba8a8d5718a34::t_a377ab0bfad51d 120-121
+  s_aba8a8d5718a34::t_7395a8bf1309db 4,148-151,154-157,189-196
+src/commentary/replay/cache.py
+  s_aba8a8d5718a34::t_a918bf9b33502f 1-16,23,30-36,39,46-55,59-71,78-79
+  s_aba8a8d5718a34::t_5f49f3a1c5b1b6 17-22,24-29,37-38,40-45,56-58,72-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "73874232a62209068c80c2364cc5497fdd7cdccb",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
