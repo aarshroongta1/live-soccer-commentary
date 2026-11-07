@@ -1,0 +1,21 @@
+docs/RESEARCH.md
+  s_aba8a8d5718a34::t_2df0e54988cfd9 1-168
+docs/EVALUATION.md
+  s_aba8a8d5718a34::t_2df0e54988cfd9 92-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d82511bd09e270600725809bfc6491fa705a1486",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
