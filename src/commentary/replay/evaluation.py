@@ -72,6 +72,7 @@ class EvaluationCase(BaseModel):
     source: ReferenceSource
     events: list[ReferenceEvent] = Field(default_factory=list, max_length=500)
     action_labels_complete: bool = False
+    reference_metadata: dict[str, Any] = Field(default_factory=dict)
     commentary: list[ReferenceCommentary] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -454,6 +455,7 @@ def evaluate_replay(
         "match_id": case.match_id,
         "split": case.split,
         "reference_status": case.source.annotation_status,
+        "reference_metadata": case.reference_metadata,
         "source_alignment": source_alignment,
         "source": case.source.model_dump(mode="json"),
         "scope": {

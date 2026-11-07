@@ -52,7 +52,57 @@ for SN-Labels; this does not prevent individual JSON files from downloading.
    Review errors and judge semantic agreement, rather than exact word matching.
    Do not use the target broadcast transcript as an observer input.
 
-The import adapters and benchmark runs are not implemented yet. The immediate
-prerequisite for visual evaluation is access to the matching videos, not more
+The first `Labels-v2.json` importer is implemented. The dense ball-action adapter,
+Echoes import, official mAP integration, and benchmark runs remain pending. The
+immediate prerequisite for visual evaluation is access to matching videos, not more
 hand-labeling of unrelated highlight compilations. No NDA was accepted or account
 request submitted on the user's behalf.
+
+## Use the event-label importer
+
+Inspect the downloaded public sample with no video, network, or model calls:
+
+```bash
+uv run python scripts/import_soccernet.py \
+  --labels runs/datasets/soccernet/chelsea-burnley-2015/Labels-v2.json --inspect
+```
+
+For an authorized, matching half video, import a short evaluation window:
+
+```bash
+uv run python scripts/import_soccernet.py \
+  --labels /path/to/Labels-v2.json --half 1 --upstream-split valid \
+  --clip /path/to/1_224p.mkv --start 600 --duration 20 \
+  --video-half-offset 0 --case-id match-half1-window600 \
+  --label-origin 'publisher URL or versioned label-file locator' \
+  --usage-terms 'applicable terms for this source video' \
+  --out runs/references/match-half1-window600.json
+```
+
+Supply the match's actual published split, not an arbitrary partition. The importer
+records this supplied assignment as unverified and maps `train` to development,
+`valid` to validation, and `test` to test; those are dataset partition names, not
+instructions to train a model. Manifest validation rejects a match crossing splits.
+
+`--video-half-offset` is the timestamp in the supplied source video corresponding
+to timestamp zero of the original SoccerNet half video. Use zero for the unchanged
+half file. It is **not necessarily kickoff time**. The conversion is:
+
+`clip_time = position_ms / 1000 + video_half_offset - selected_clip_start`
+
+The importer selects only the requested half and the interval from start inclusive
+to end exclusive. It preserves the raw label, half, position, visibility, team,
+annotation index, origin, and label hash in evaluator-only `reference_metadata`.
+Source video bytes are hashed and the output refuses to overwrite an existing file.
+
+Events marked not shown, events with unspecified visibility, and unmapped labels
+are excluded with an audit reason. Penalty labels remain unmapped because award
+versus kick is ambiguous; ball-out is not silently converted to a restart. Shot
+outcomes and second-yellow detail remain in the raw annotation even when mapped
+to the broader project vocabulary. These event labels do not annotate all passes,
+saves, or other actions, so action precision remains unscored for incomplete labels.
+
+Imported windows remain unreviewed until local video alignment has been checked.
+The existing replay evaluator can read the exported JSON, but its output remains
+project diagnostics rather than official SoccerNet mAP. No labels are passed to
+observer or commentary agents, and no weights are updated.

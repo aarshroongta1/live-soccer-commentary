@@ -10,3 +10,9 @@
 - Use cheaper models for development smoke tests, with short inputs and explicit
   dollar/call limits. Keep retries, fresh web research, and TTS out of routine tests.
 - Reserve larger models for deliberate quality evaluations and report model usage.
+
+# Existing models only
+
+- Do not train models, fine-tune weights, or run RL. Use existing models.
+- Public datasets are for evaluation and checking prompt/workflow changes. Keep
+  reference labels and target commentary outside runtime agent inputs.

@@ -25,6 +25,6 @@
     "Yellow card": 3
   },
   "access": "Downloaded anonymously from the official publisher. No matched video was acquired.",
-  "status": "Inspection sample only; not imported into evaluation or supplied to runtime agents.",
+  "status": "Verified with the event-label importer inspection command. No matching video or scored case; never supplied to runtime agents.",
   "timing": "position is milliseconds within a half; gameTime identifies the half. Do not treat full-match clock values as local clip times."
 }
