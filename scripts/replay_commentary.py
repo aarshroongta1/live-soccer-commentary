@@ -72,6 +72,11 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--analyst-model")
     parser.add_argument("--research-model")
     parser.add_argument("--reviewer-model", help="optional bounded reviewer inside role deadline")
+    parser.add_argument(
+        "--inspect-first",
+        action="store_true",
+        help="choose a bounded visual crop before classifying each batch; adds a model call",
+    )
     parser.add_argument("--spend", action="store_true", help="enable paid model calls")
     parser.add_argument("--max-usd", type=float, default=0.10, help="OpenAI token budget")
     parser.add_argument("--max-model-calls", type=int, default=40, help="OpenAI request limit")
@@ -263,7 +268,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     saved=saved,
                 )
             research, research_audit = prepared.brief, prepared.audit
-        observer = cached_observer or ReplayObserver(backend, model=args.observer_model, pack=pack)
+        observer = cached_observer or ReplayObserver(
+            backend, model=args.observer_model, pack=pack, inspection_first=args.inspect_first
+        )
     roles = RoleAgents(
         backend,
         caller_model=args.caller_model,
@@ -285,6 +292,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "source_start_s": 0 if args.diagnostic else args.start,
             "source_sha256": reused.metadata.get("source_sha256") if reused else source_hash,
             "sample_fps": args.fps if not args.diagnostic else None,
+            "observer_inspection_first": (
+                reused.metadata.get("observer_inspection_first") if reused else args.inspect_first
+            ),
             "speech_simulated": True,
             "config": asdict(config),
             "provider": "scripted" if args.diagnostic else args.provider,

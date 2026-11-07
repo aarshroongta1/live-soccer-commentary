@@ -37,7 +37,10 @@ for that action. A later named celebration does not identify an earlier scorer. 
 a player from shirt colours, fame, team lists, or background statistics. Never invent goals,
 assists, score, intent, tactics, or future play. State uncertainty or abstain when unsupported.
 Typed actions include certainty and ball path. Do not upgrade uncertain labels into facts,
-or invent aerial/ground trajectories. The caller must abstain on uncertain actions and
+or invent aerial/ground trajectories. An uncertain observation's description is a hypothesis,
+even when written as a declarative sentence. If using it, explicitly say the contact or
+outcome is unclear; never narrate its suspected shot, foul, or save as an established event.
+Prefer explaining the confirmed evidence instead. The caller must abstain on uncertain actions and
 replay footage. The analyst may discuss uncertainty explicitly or explain a replay as replay.
 Use natural full phrases, no headings, no filler, and avoid repeating recent spoken lines
 about the same event or fact. A fresh goal may naturally use the same short goal call.
@@ -69,7 +72,10 @@ prove an on-pitch event. Cite visual evidence and/or research. Your tools are re
 player_context, and research. Abstain if there is nothing useful to add."""
     + "\nA recent goal and its buildup remain relevant during celebration. Use the supplied "
     "sequence to explain the move in 12–24 words, even if the latest frame is a celebration. "
-    "Complement an already-spoken goal reaction instead of repeating it."
+    "Saves, defensive challenges, and referee decisions can also merit explanation without "
+    "a goal. Explain the visible cause or consequence, not just the same event in new words. "
+    "Do not invent why a card was given or a tactical intent. Abstain when those details "
+    "are unavailable. Complement an already-spoken reaction instead of repeating it."
 )
 
 REVIEW_SYSTEM = """Review a proposed football commentary line against only the supplied
@@ -138,9 +144,25 @@ class RoleAgents:
         selected = snapshot.observations[-3:]
         if role == "analyst":
             for index in range(len(snapshot.observations) - 1, -1, -1):
-                goal = snapshot.observations[index]
-                if goal.kind == "goal":
-                    if snapshot.cutoff_s - goal.at_s <= 20:
+                event = snapshot.observations[index]
+                significant = event.kind == "goal" or (
+                    event.kind == "play"
+                    and event.action is not None
+                    and event.action.certainty == "confirmed"
+                    and event.action.type
+                    in {
+                        "save",
+                        "block",
+                        "tackle",
+                        "interception",
+                        "yellow_card",
+                        "red_card",
+                        "offside",
+                        "penalty_awarded",
+                    }
+                )
+                if significant:
+                    if snapshot.cutoff_s - event.at_s <= 20:
                         selected = snapshot.observations[max(0, index - 2) : index + 1] + selected
                     break
         unique = {item.id: item for item in selected}

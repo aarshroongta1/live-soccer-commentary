@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from commentary.football import FootballAction
 from commentary.llm.base import Parsed, Usage
 from commentary.llm.fake import ScriptedBackend
 from commentary.recorded_demo import Observation, ObservedActor
@@ -82,6 +83,40 @@ async def test_analyst_retains_recent_goal_buildup_during_celebrations() -> None
     backend.register("replay_analyst", answer)
     result = await agents(backend).run("analyst", view)
     assert result.line is not None and result.line.evidence_ids == ["e2"]
+
+
+@pytest.mark.parametrize("action_type", ["save", "tackle", "interception", "red_card"])
+def test_analyst_keeps_decisive_action_and_its_build_up(action_type: str) -> None:
+    events = [
+        Observation(id=f"e{i}", at_s=i, kind="play", description="Visible event.")
+        for i in range(1, 8)
+    ]
+    events[2].action = FootballAction.model_validate(
+        {
+            "type": action_type,
+            "certainty": "confirmed",
+            "support_at_s": [3],
+            "cues": ["red_card_visible" if action_type == "red_card" else "ball_contact"],
+        }
+    )
+    view = RuntimeSnapshot(version=1, cutoff_s=7, observations=events)
+    assert [e.id for e in RoleAgents._initial_observations("analyst", view)] == [
+        "e1",
+        "e2",
+        "e3",
+        "e5",
+        "e6",
+        "e7",
+    ]
+    assert [e.id for e in RoleAgents._initial_observations("caller", view)] == ["e5", "e6", "e7"]
+    expired = view.model_copy(update={"cutoff_s": 24})
+    assert [e.id for e in RoleAgents._initial_observations("analyst", expired)] == [
+        "e5",
+        "e6",
+        "e7",
+    ]
+    events[2].action.certainty = "uncertain"
+    assert [e.id for e in RoleAgents._initial_observations("analyst", view)] == ["e5", "e6", "e7"]
 
 
 async def test_selected_tool_supplies_older_evidence_before_speech() -> None:

@@ -21,6 +21,7 @@ from commentary.replay.preparation import (
     ReplayObserverFinal,
     ReplayObserverResult,
     inspect_frame,
+    inspect_frames,
     prepare_research,
     team_names,
 )
@@ -299,3 +300,120 @@ async def test_unsupported_path_is_downgraded_and_audited_without_losing_goal() 
             "reason": "missing_corresponding_visual_cue",
         }
     ]
+
+
+async def test_motion_inspection_compares_only_selected_current_frames() -> None:
+    frames = []
+    for at_s, color in [(1, (255, 0, 0)), (2, (0, 255, 0)), (3, (0, 0, 255))]:
+        raw = np.full((50, 100, 3), color, dtype=np.uint8)
+        ok, jpeg = cv2.imencode(".jpg", raw)
+        assert ok
+        frames.append(Frame(at_s, jpeg.tobytes()))
+    request = FrameInspection(
+        frame_at_s=2,
+        context_at_s=[1, 3],
+        left=0.5,
+        top=0,
+        right=1,
+        bottom=1,
+    )
+    crops = inspect_frames(frames, request)
+    assert [frame.at_s for frame in crops] == [1, 2, 3]
+    for index, crop in enumerate(crops):
+        decoded = cv2.imdecode(np.frombuffer(crop.jpeg, np.uint8), cv2.IMREAD_COLOR)
+        assert float(decoded[:, :, index].mean()) > 250
+    backend = ScriptedBackend()
+    backend.always("replay_observer", ReplayObserverResult(inspection=request))
+    backend.always(
+        "replay_observer_inspection",
+        ReplayObserverFinal(
+            observations=[
+                ReplayObservation(
+                    id="save",
+                    at_s=2,
+                    kind="play",
+                    description="The keeper deflects the shot.",
+                    action=FootballAction(
+                        type="save",
+                        certainty="confirmed",
+                        cues=["keeper_contact"],
+                        support_at_s=[1, 2, 3],
+                    ),
+                ),
+            ]
+        ),
+    )
+    observer = ReplayObserver(backend, model="offline")
+    result = await observer(frames, 3)
+    assert result[0].action is not None and result[0].action.type == "save"
+    assert backend.calls[1].images == 6  # three originals and three selected crops
+    assert observer.audit[0]["inspection_frames_at_s"] == [1, 2, 3]
+    with pytest.raises(ValueError, match="supplied"):
+        inspect_frames(frames, request.model_copy(update={"context_at_s": [1, 4]}))
+
+
+async def test_inspection_first_plans_a_bounded_region_before_classification() -> None:
+    backend = ScriptedBackend()
+    ok, jpeg = cv2.imencode(".jpg", np.zeros((60, 80, 3), dtype=np.uint8))
+    assert ok
+    frames = [Frame(1, jpeg.tobytes()), Frame(2, jpeg.tobytes())]
+    backend.always(
+        "replay_observer_inspection_plan",
+        FrameInspection(
+            frame_at_s=2,
+            context_at_s=[1],
+            left=0,
+            top=0,
+            right=1,
+            bottom=1,
+        ),
+    )
+    backend.always(
+        "replay_observer_inspection",
+        ReplayObserverFinal(
+            observations=[
+                ReplayObservation(
+                    id="card",
+                    at_s=2,
+                    kind="play",
+                    description="A red card is raised.",
+                    action=FootballAction(
+                        type="red_card",
+                        certainty="confirmed",
+                        cues=["red_card_visible"],
+                        support_at_s=[2],
+                    ),
+                ),
+            ]
+        ),
+    )
+    observer = ReplayObserver(backend, model="offline", inspection_first=True)
+    result = await observer(frames, 2)
+    assert result[0].action is not None and result[0].action.type == "red_card"
+    assert [call.tag for call in backend.calls] == [
+        "replay_observer_inspection_plan",
+        "replay_observer_inspection",
+    ]
+    assert observer.audit[0]["inspection_mode"] == "first"
+    assert observer.audit[0]["inspection_frames_at_s"] == [1, 2]
+    assert len(observer.audit[0]["prompt_sha256"]) == 64
+
+
+async def test_inspection_first_rejects_unsupplied_planner_frames_before_classification() -> None:
+    backend = ScriptedBackend()
+    backend.always(
+        "replay_observer_inspection_plan",
+        FrameInspection(
+            frame_at_s=2,
+            context_at_s=[3],
+            left=0,
+            top=0,
+            right=1,
+            bottom=1,
+        ),
+    )
+    observer = ReplayObserver(backend, model="offline", inspection_first=True)
+    with pytest.raises(ValueError, match="supplied"):
+        await observer([Frame(2, b"unused")], 2)
+    assert [call.tag for call in backend.calls] == ["replay_observer_inspection_plan"]
+    assert observer.audit[0]["status"] == "failed"
