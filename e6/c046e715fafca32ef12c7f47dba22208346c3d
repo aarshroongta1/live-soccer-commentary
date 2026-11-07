@@ -1,0 +1,48 @@
+examples/replay-evaluation/suite/free-kick.json
+  s_aba8a8d5718a34::t_829cd4341b1749 21,26-28,36,41-43,46-55,65-66
+  s_aba8a8d5718a34::t_f63d24e8b9a21d 29-30,44-45,56-57
+src/commentary/replay/agents.py
+  s_6658308151c726::t_82d3a675a5a6cc 36-37
+  s_aba8a8d5718a34::t_733143bf8fbab0 38-39
+src/commentary/replay/preparation.py
+  s_6658308151c726::t_82d3a675a5a6cc 69-71
+  s_aba8a8d5718a34::t_6d9165e25a5445 67-68
+examples/replay-evaluation/suite/dribble.json
+  s_aba8a8d5718a34::t_829cd4341b1749 21,26-28,36,41-43,51,56-58,61-70,80-81
+  s_aba8a8d5718a34::t_8b4538eecf17d3 29-30,44-45,59-60,71-72
+src/commentary/replay/evaluation.py
+  s_6658308151c726::t_82d3a675a5a6cc 47-50,85-90,179-225,230,232,235-287,612
+  s_aba8a8d5718a34::t_8b45d3cf64a006 226-229,231,233-234
+tests/test_replay_evaluation.py
+  s_aba8a8d5718a34::t_969581af7102d5 465-551,557,559,561,563
+  s_aba8a8d5718a34::t_527c6141577384 552-556,558,560,562
+docs/PLAYER_IDENTIFICATION.md
+  s_aba8a8d5718a34::t_77f17edd32c778 1-67
+examples/evaluation-results/player-name-check-20261107.json
+  s_6658308151c726::t_3309ad70305c62 1-1452,1455
+  s_6658308151c726::t_0dbd6226e81ff4 1453-1454
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e6c046e715fafca32ef12c7f47dba22208346c3d",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
