@@ -1,0 +1,42 @@
+web/app/demo/architecture.tsx
+  s_aba8a8d5718a34::t_73517e840af622 2-7,13-15,22,26-30
+web/app/demo/page.tsx
+  s_aba8a8d5718a34::t_73517e840af622 3,18-23
+web/app/demo/demo.css
+  s_aba8a8d5718a34::t_73517e840af622 256-305
+web/app/demo/agent-runs.tsx
+  s_aba8a8d5718a34::t_73517e840af622 1-39,44-88,94-170
+  s_6658308151c726::t_5347c1e44205b4 40-43,89-93
+web/app/demo/demo-experience.tsx
+  s_aba8a8d5718a34::t_73517e840af622 4,103,120-125,141
+web/app/layout.tsx
+  s_6658308151c726::t_9ff296d2d853a0 23
+docs/PORTFOLIO.md
+  s_6658308151c726::t_9ff296d2d853a0 24-47
+web/data/agent-runs.json
+  s_aba8a8d5718a34::t_f22c786614353f 1-379
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "47c224a1ecda4ce1454d19e493549a3bd848d525",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
