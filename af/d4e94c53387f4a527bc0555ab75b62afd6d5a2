@@ -1,0 +1,51 @@
+scripts/replay_commentary.py
+  s_aba8a8d5718a34::t_fc11e68d77a104 75-79,271-273,295-297
+src/commentary/replay/agents.py
+  s_aba8a8d5718a34::t_dd42f2591d06a9 40-43,75-78,147-153,162-165
+  s_aba8a8d5718a34::t_cc4e6d4c4c8207 154-161
+tests/test_replay_preparation.py
+  s_aba8a8d5718a34::t_1211e1ab137f81 24,303-354,356,360,374-375,378,380,382,385-389,400-401,403
+  s_aba8a8d5718a34::t_fc11e68d77a104 355,357-359,361-373,376-377,379,381,383-384,390-399,402,404-419
+tests/test_replay_agents.py
+  s_aba8a8d5718a34::t_ba19ac95cc8308 12,95-100,104-109,113-117
+  s_aba8a8d5718a34::t_db8643290b96c3 88-94,101-103,110-112,118-119
+  s_aba8a8d5718a34::t_03a601c373836c 120-121
+src/commentary/replay/preparation.py
+  s_aba8a8d5718a34::t_dd42f2591d06a9 91-93,126-127
+  s_aba8a8d5718a34::t_fc11e68d77a104 10,66,119-125,128-129,284,288,311-334,338-339
+  s_6658308151c726::t_cc45dc6ee0ed3a 12,55-65,67-70,87-90,94-97,104-115,135,143-150,197-207,306-308,360,362,365,367-368,381-388
+  s_aba8a8d5718a34::t_1211e1ab137f81 369-370
+  s_7531f572b63309::t_1a19baf955a3ea 116-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "afd4e94c53387f4a527bc0555ab75b62afd6d5a2",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_7531f572b63309": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b7a8-85ab-74f1-aefb-5dc60e7206b6",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
