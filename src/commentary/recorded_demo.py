@@ -22,6 +22,7 @@ import cv2
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from commentary.football import FootballAction
 from commentary.llm.base import LLMBackend, Parsed, encode_frame, image_block, text_block
 from commentary.recorded_research import ResearchBrief, research_brief
 
@@ -65,6 +66,24 @@ class Observation(BaseModel):
     kind: Literal["play", "goal", "celebration", "replay"]
     description: str = Field(min_length=1, max_length=280)
     actor: ObservedActor | None = None
+    action: FootballAction | None = None
+
+    @model_validator(mode="after")
+    def action_support_is_not_future(self) -> Observation:
+        if self.action is not None and any(t > self.at_s for t in self.action.support_at_s):
+            raise ValueError("action support cannot come after the observation timestamp")
+        if self.action is not None:
+            if self.kind == "goal" and (
+                self.action.type != "goal" or self.action.certainty != "confirmed"
+            ):
+                raise ValueError("a live goal requires a confirmed goal action")
+            if (
+                self.action.type == "goal"
+                and self.action.certainty == "confirmed"
+                and self.kind not in {"goal", "replay"}
+            ):
+                raise ValueError("confirmed goals must be live goals or replay footage")
+        return self
 
 
 class ObserverResult(BaseModel):

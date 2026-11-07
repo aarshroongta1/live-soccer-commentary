@@ -9,19 +9,34 @@ import cv2
 import numpy as np
 import pytest
 
+from commentary.football import FootballAction
 from commentary.llm.base import LLMError
 from commentary.llm.fake import ScriptedBackend
 from commentary.recorded_demo import Frame, ObservedActor
 from commentary.recorded_research import ResearchBrief, ResearchDraft
 from commentary.replay.preparation import (
     FrameInspection,
+    ReplayObservation,
     ReplayObserver,
+    ReplayObserverFinal,
     ReplayObserverResult,
     inspect_frame,
     prepare_research,
     team_names,
 )
-from commentary.streaming_demo import StreamingObservation, StreamingObserverResult
+
+
+def observation(**data: Any) -> ReplayObservation:
+    is_goal = data["kind"] == "goal"
+    return ReplayObservation(
+        **data,
+        action=FootballAction(
+            type="goal" if is_goal else "pass",
+            certainty="confirmed",
+            cues=["ball_in_net" if is_goal else "ball_motion"],
+            support_at_s=[data["at_s"]],
+        ),
+    )
 
 
 @dataclass
@@ -84,7 +99,7 @@ async def test_observer_overwrites_model_guessed_identity_using_readable_evidenc
         "replay_observer",
         ReplayObserverResult(
             observations=[
-                StreamingObservation(
+                observation(
                     id="x",
                     at_s=1,
                     kind="play",
@@ -120,7 +135,7 @@ async def test_observer_rejects_future_output_and_never_sends_future_frames() ->
         "replay_observer",
         ReplayObserverResult(
             observations=[
-                StreamingObservation(id="x", at_s=2, kind="goal", description="Ball is in the net.")
+                observation(id="x", at_s=2, kind="goal", description="Ball is in the net.")
             ]
         ),
     )
@@ -151,9 +166,9 @@ async def test_observer_can_select_one_existing_frame_for_bounded_inspection() -
     )
     backend.always(
         "replay_observer_inspection",
-        StreamingObserverResult(
+        ReplayObserverFinal(
             observations=[
-                StreamingObservation(id="g", at_s=1, kind="goal", description="Ball is in the net.")
+                observation(id="g", at_s=1, kind="goal", description="Ball is in the net.")
             ]
         ),
     )
@@ -220,11 +235,9 @@ async def test_inspected_result_still_cannot_invent_future_evidence() -> None:
     )
     backend.always(
         "replay_observer_inspection",
-        StreamingObserverResult(
+        ReplayObserverFinal(
             observations=[
-                StreamingObservation(
-                    id="future", at_s=2, kind="goal", description="Not yet visible."
-                )
+                observation(id="future", at_s=2, kind="goal", description="Not yet visible.")
             ]
         ),
     )

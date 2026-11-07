@@ -34,6 +34,9 @@ Name a player only if the same cited observation directly resolves that player's
 for that action. A later named celebration does not identify an earlier scorer. Never infer
 a player from shirt colours, fame, team lists, or background statistics. Never invent goals,
 assists, score, intent, tactics, or future play. State uncertainty or abstain when unsupported.
+Typed actions include certainty and ball path. Do not upgrade uncertain labels into facts,
+or invent aerial/ground trajectories. The caller must abstain on uncertain actions and
+replay footage. The analyst may discuss uncertainty explicitly or explain a replay as replay.
 Use natural full phrases, no headings, no filler, and avoid repeating recent spoken lines
 about the same event or fact. A fresh goal may naturally use the same short goal call.
 Prefer the newest relevant action. Speak at most 60 words, usually far fewer. An exciting
@@ -212,6 +215,13 @@ class RoleAgents:
             raise ValueError("caller requires visual evidence and cannot cite research")
         if not (line.evidence_ids or line.research_ids):
             raise ValueError("agent line needs evidence or research")
+        if state["role"] == "caller":
+            for item in state["snapshot"].observations:
+                if item.id in line.evidence_ids and (
+                    item.kind == "replay"
+                    or (item.action is not None and item.action.certainty == "uncertain")
+                ):
+                    raise ValueError("caller cannot announce uncertain actions or replay footage")
         normalized = " ".join(line.text.casefold().split())
         for previous in state["snapshot"].recent_lines[-6:]:
             overlaps = set(line.evidence_ids).intersection(previous.evidence_ids) or set(

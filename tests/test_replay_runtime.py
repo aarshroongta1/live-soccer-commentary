@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 
 import pytest
 
+from commentary.football import FootballAction
 from commentary.recorded_demo import Frame, Observation
 from commentary.replay.contracts import Role, RuntimeSnapshot, SpeechLine, TurnResult
 from commentary.replay.evaluation import EvaluationCase, ReferenceSource, evaluate_replay
@@ -615,3 +616,48 @@ async def test_bad_inputs_and_runtime_reuse_are_explicit_errors() -> None:
     await runtime.run([Frame(0, b"0")])
     with pytest.raises(ValueError, match="single-use"):
         await runtime.run([Frame(0, b"0")])
+
+
+@pytest.mark.parametrize("replayed", [True, False])
+async def test_replay_and_uncertain_finish_cannot_trigger_live_goal(replayed: bool) -> None:
+    clock = Clock()
+
+    async def observation(frames: list[Frame], cutoff: float) -> list[Observation]:
+        return [
+            Observation(
+                id="finish",
+                at_s=cutoff,
+                kind="replay" if replayed else "play",
+                description="A replayed or unclear finish.",
+                action=FootballAction(
+                    type="goal",
+                    certainty="confirmed" if replayed else "uncertain",
+                    cues=["ball_in_net"] if replayed else [],
+                    support_at_s=[cutoff],
+                ),
+            )
+        ]
+
+    async def role_turn(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
+        if role == "caller":
+            return speech(role, snapshot, "They have scored!")
+        return TurnResult(
+            role=role,
+            snapshot_version=snapshot.version,
+            cutoff_s=snapshot.cutoff_s,
+            reason="No supported explanation.",
+        )
+
+    runtime = ReplayRuntime(
+        observation,
+        role_turn,
+        config=ReplayConfig(fast_goal_calls=True),
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+    task = asyncio.create_task(runtime.run([Frame(0, b"0")], duration_s=3))
+    await drive(task, clock)
+    result = task.result()
+    assert result.speech == []
+    assert not any(item.event == "fast_goal_call" for item in result.trace)
+    assert any(item.event == "turn_rejected" and item.role == "caller" for item in result.trace)

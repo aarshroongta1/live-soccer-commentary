@@ -13,6 +13,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from commentary.football import ActionType, BallPath
 from commentary.recorded_demo import Observation
 from commentary.replay.contracts import ReplayResult, SpeechRecord, TraceEvent
 
@@ -42,6 +43,8 @@ class ReferenceEvent(BaseModel):
     player: str | None = None
     team: str | None = None
     required: bool = True
+    action_type: ActionType | None = None
+    ball_path: BallPath | None = None
 
 
 class ReferenceCommentary(BaseModel):
@@ -64,10 +67,20 @@ class EvaluationCase(BaseModel):
     time_basis: Literal["clip_relative"] = "clip_relative"
     source: ReferenceSource
     events: list[ReferenceEvent] = Field(default_factory=list, max_length=500)
+    action_labels_complete: bool = False
     commentary: list[ReferenceCommentary] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def valid_reference_timeline(self) -> EvaluationCase:
+        for event in self.events:
+            if event.action_type == "unknown" or event.ball_path == "unknown":
+                raise ValueError("reference action/path labels must be known or omitted")
+            if event.ball_path is not None and event.action_type not in {
+                "pass",
+                "cross",
+                "clearance",
+            }:
+                raise ValueError("reference ball path requires a pass, cross or clearance label")
         ids = [item.id for item in self.events]
         if len(ids) != len(set(ids)):
             raise ValueError("reference event IDs must be unique")
@@ -221,6 +234,83 @@ def _tool_accounting(result: ReplayResult) -> tuple[Counter[str], str, str]:
     return audit_counts, "metadata.role_audit", "valid"
 
 
+def _action_metrics(
+    observations: list[Observation], case: EvaluationCase, matches: dict[int, int]
+) -> dict[str, Any]:
+    """Classify already time/kind-matched events; never match using gold action types.
+
+    Missing/uncertain output is an abstention. Precision needs exhaustive labels;
+    sparse labels measure recall and confusions only, not false-positive rates.
+    """
+    by_reference = {reference: prediction for prediction, reference in matches.items()}
+    expected: Counter[str] = Counter(
+        event.action_type for event in case.events if event.action_type
+    )
+    predicted: Counter[str] = Counter()
+    correct: Counter[str] = Counter()
+    confusion: Counter[tuple[str, str]] = Counter()
+    path_confusion: Counter[tuple[str, str]] = Counter()
+    for item in observations:
+        if item.action and item.action.certainty == "confirmed":
+            predicted[item.action.type] += 1
+    for index, event in enumerate(case.events):
+        if event.action_type is None:
+            continue
+        prediction = observations[by_reference[index]] if index in by_reference else None
+        action = prediction.action if prediction else None
+        recognized = action.type if action and action.certainty == "confirmed" else "abstain"
+        confusion[event.action_type, recognized] += 1
+        if recognized == event.action_type:
+            correct[event.action_type] += 1
+        if event.ball_path is not None:
+            path = (
+                action.ball_path
+                if action
+                and action.certainty == "confirmed"
+                and action.type == event.action_type
+                and action.ball_path != "unknown"
+                else "abstain"
+            )
+            path_confusion[event.ball_path, path] += 1
+    return {
+        "matching": "existing one-to-one scene-kind/time matches; action labels not used",
+        "labels_complete": case.action_labels_complete,
+        "labeled_events": sum(expected.values()),
+        "confirmed_predictions": sum(predicted.values()),
+        "correct": sum(correct.values()),
+        "labeled_recall": _ratio(sum(correct.values()), sum(expected.values())),
+        "precision": (
+            _ratio(sum(correct.values()), sum(predicted.values()))
+            if case.action_labels_complete
+            else None
+        ),
+        "per_action": {
+            name: {
+                "references": expected[name],
+                "correct": correct[name],
+                "predictions": predicted[name],
+                "recall": _ratio(correct[name], expected[name]),
+                "precision": (
+                    _ratio(correct[name], predicted[name]) if case.action_labels_complete else None
+                ),
+            }
+            for name in sorted(expected.keys() | predicted.keys())
+        },
+        "confusions": [
+            {"reference": ref, "prediction": pred, "count": count}
+            for (ref, pred), count in sorted(confusion.items())
+        ],
+        "ball_path": {
+            "labeled_events": sum(path_confusion.values()),
+            "correct": sum(n for (ref, pred), n in path_confusion.items() if ref == pred),
+            "confusions": [
+                {"reference": ref, "prediction": pred, "count": count}
+                for (ref, pred), count in sorted(path_confusion.items())
+            ],
+        },
+    }
+
+
 def evaluate_replay(
     result: ReplayResult, case: EvaluationCase, tolerance_s: float = 2.0
 ) -> dict[str, Any]:
@@ -366,6 +456,7 @@ def evaluate_replay(
                 for p, r in sorted(matches.items())
             ],
         },
+        "actions": _action_metrics(result.observations, case, matches),
         "speech_coverage": {
             "covered_reference_ids": [case.events[i].id for i in sorted(coverage)],
             "required_coverage": _ratio(len(required_covered), len(required)),

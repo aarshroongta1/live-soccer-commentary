@@ -291,7 +291,15 @@ class ReplayRuntime:
     def _validate_observations(self, observations: list[Observation], job: _ObserverJob) -> None:
         known = {item.id for item in self._result.observations}
         previous = self._result.observations[-1].at_s if self._result.observations else -1.0
+        supplied_times = {frame.at_s for frame in job.frames}
         for item in observations:
+            # Revalidate custom observers as well as provider-parsed results.
+            Observation.model_validate(item.model_dump())
+            if item.action is not None and (
+                item.at_s not in supplied_times
+                or not set(item.action.support_at_s) <= supplied_times
+            ):
+                raise ValueError("action evidence must use exact supplied frame timestamps")
             if item.id in known:
                 raise ValueError("duplicate observation ID")
             if (
@@ -386,6 +394,13 @@ class ReplayRuntime:
             raise ValueError("caller requires visual evidence and cannot cite research")
         if role == "analyst" and not (line.evidence_ids or line.research_ids):
             raise ValueError("analyst requires evidence or research")
+        if role == "caller":
+            for item in snapshot.observations:
+                if item.id in line.evidence_ids and (
+                    item.kind == "replay"
+                    or (item.action is not None and item.action.certainty == "uncertain")
+                ):
+                    raise ValueError("caller cannot announce uncertain actions or replay footage")
 
     def _is_stale(self, snapshot: RuntimeSnapshot) -> bool:
         return (
