@@ -12,7 +12,9 @@ it does not synthesize or stream live audio yet.
   source dates/URLs are structurally validated, not independently verified.
 - **Observer:** receives only available sampled frames. Readable action-linked
   shirt details are resolved against a separately supplied roster. The speakers do
-  not receive that roster as a way to guess identities.
+  not receive that roster as a way to guess identities. It can select one bounded
+  `inspect_frame` crop of a supplied frame, then return its final observations.
+  A failed or cancelled inspection preserves its request in the observer audit.
 - **Caller:** independent prompt, model selection, and turn state for play-by-play.
   May choose `recent_events` or `player_context`; cannot access research.
 - **Analyst:** independent prompt, model selection, and turn state for explanation.
@@ -104,6 +106,14 @@ GPT-6 Luna standard pricing was checked on November 6, 2026: $0.10 input and $0.
 output per million tokens, with $0.01 cached input. See the
 [official model page](https://developers.openai.com/api/docs/models/gpt-6-luna).
 Use scripted diagnostics and tests for regressions; paid runs are short smoke tests.
+For deliberate vision quality checks, `--observer-model gpt-5.4-mini` keeps the
+speaking roles on Luna. Its checked standard rates are $0.75 input and $4.50 output
+per million tokens. One saved Di María finish-window call recognized the goal for
+$0.00841 in reported token usage; this is a single development case, not a benchmark.
+Luna remained uncertain on the same footage. Tool availability alone did not make
+Luna request a crop in these trials, so its inspection policy still needs evaluation.
+The observer output cap is 1,024 tokens; an optional crop adds at most one model call
+inside the existing deadline and shared spend budget.
 
 Use `--reviewer-model` only for a deliberate draft-quality experiment. It consumes
 the same turn deadline. The default live-oriented path leaves it off.

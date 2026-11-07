@@ -5,13 +5,22 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
+import cv2
+import numpy as np
 import pytest
 
 from commentary.llm.base import LLMError
 from commentary.llm.fake import ScriptedBackend
 from commentary.recorded_demo import Frame, ObservedActor
 from commentary.recorded_research import ResearchBrief, ResearchDraft
-from commentary.replay.preparation import ReplayObserver, prepare_research, team_names
+from commentary.replay.preparation import (
+    FrameInspection,
+    ReplayObserver,
+    ReplayObserverResult,
+    inspect_frame,
+    prepare_research,
+    team_names,
+)
 from commentary.streaming_demo import StreamingObservation, StreamingObserverResult
 
 
@@ -73,7 +82,7 @@ async def test_observer_overwrites_model_guessed_identity_using_readable_evidenc
     backend = ScriptedBackend()
     backend.always(
         "replay_observer",
-        StreamingObserverResult(
+        ReplayObserverResult(
             observations=[
                 StreamingObservation(
                     id="x",
@@ -109,7 +118,7 @@ async def test_observer_rejects_future_output_and_never_sends_future_frames() ->
     assert not backend.calls
     backend.always(
         "replay_observer",
-        StreamingObserverResult(
+        ReplayObserverResult(
             observations=[
                 StreamingObservation(id="x", at_s=2, kind="goal", description="Ball is in the net.")
             ]
@@ -117,4 +126,133 @@ async def test_observer_rejects_future_output_and_never_sends_future_frames() ->
     )
     with pytest.raises(ValueError, match="inside its frame batch"):
         await observer([Frame(at_s=1, jpeg=b"test")], 1)
-    assert not observer.audit
+    assert observer.audit[0]["status"] == "failed"
+    assert observer.audit[0]["resolved"] == []
+
+
+async def test_observer_can_select_one_existing_frame_for_bounded_inspection() -> None:
+    backend = ScriptedBackend()
+    image = np.zeros((100, 200, 3), dtype=np.uint8)
+    image[:, 100:] = (0, 255, 0)
+    ok, jpeg = cv2.imencode(".jpg", image)
+    assert ok
+    frames = [Frame(at_s=1, jpeg=jpeg.tobytes())]
+    backend.always(
+        "replay_observer",
+        ReplayObserverResult(
+            inspection=FrameInspection(
+                frame_at_s=1,
+                left=0.5,
+                top=0,
+                right=1,
+                bottom=1,
+            )
+        ),
+    )
+    backend.always(
+        "replay_observer_inspection",
+        StreamingObserverResult(
+            observations=[
+                StreamingObservation(id="g", at_s=1, kind="goal", description="Ball is in the net.")
+            ]
+        ),
+    )
+    observer = ReplayObserver(backend, model="test")
+    result = await observer(frames, 1)
+    assert result[0].kind == "goal"
+    assert [call.tag for call in backend.calls] == ["replay_observer", "replay_observer_inspection"]
+    assert backend.calls[1].images == 2
+    assert observer.audit[0]["inspection"]["frame_at_s"] == 1
+    cropped = cv2.imdecode(
+        np.frombuffer(
+            inspect_frame(
+                frames,
+                FrameInspection(
+                    frame_at_s=1,
+                    left=0.5,
+                    top=0,
+                    right=1,
+                    bottom=1,
+                ),
+            ),
+            np.uint8,
+        ),
+        cv2.IMREAD_COLOR,
+    )
+    assert cropped.shape[0] <= 720 and cropped.shape[1] <= 1280
+    assert float(cropped[:, :, 1].mean()) > 250
+
+
+async def test_inspection_cannot_fetch_a_future_or_unsupplied_frame() -> None:
+    backend = ScriptedBackend()
+    backend.always(
+        "replay_observer",
+        ReplayObserverResult(
+            inspection=FrameInspection(
+                frame_at_s=2,
+                left=0,
+                top=0,
+                right=1,
+                bottom=1,
+            )
+        ),
+    )
+    with pytest.raises(ValueError, match="exact supplied"):
+        await ReplayObserver(backend, model="test")([Frame(at_s=1, jpeg=b"test")], 1)
+    assert [call.tag for call in backend.calls] == ["replay_observer"]
+
+
+async def test_inspected_result_still_cannot_invent_future_evidence() -> None:
+    backend = ScriptedBackend()
+    ok, jpeg = cv2.imencode(".jpg", np.zeros((20, 20, 3), dtype=np.uint8))
+    assert ok
+    backend.always(
+        "replay_observer",
+        ReplayObserverResult(
+            inspection=FrameInspection(
+                frame_at_s=1,
+                left=0,
+                top=0,
+                right=1,
+                bottom=1,
+            )
+        ),
+    )
+    backend.always(
+        "replay_observer_inspection",
+        StreamingObserverResult(
+            observations=[
+                StreamingObservation(
+                    id="future", at_s=2, kind="goal", description="Not yet visible."
+                )
+            ]
+        ),
+    )
+    with pytest.raises(ValueError, match="inside its frame batch"):
+        await ReplayObserver(backend, model="test")([Frame(at_s=1, jpeg=jpeg.tobytes())], 1)
+    assert len(backend.calls) == 2
+
+
+async def test_failed_inspection_keeps_the_selected_tool_in_the_audit() -> None:
+    backend = ScriptedBackend()
+    ok, jpeg = cv2.imencode(".jpg", np.zeros((20, 20, 3), dtype=np.uint8))
+    assert ok
+    backend.always(
+        "replay_observer",
+        ReplayObserverResult(
+            inspection=FrameInspection(
+                frame_at_s=1,
+                left=0,
+                top=0,
+                right=1,
+                bottom=1,
+            )
+        ),
+    )
+    observer = ReplayObserver(backend, model="test")
+    with pytest.raises(LLMError, match="no scripted handler"):
+        await observer([Frame(at_s=1, jpeg=jpeg.tobytes())], 1)
+    assert observer.audit[0]["status"] == "failed"
+    assert observer.audit[0]["inspection_status"] == "executed"
+    assert observer.audit[0]["inspection"]["frame_at_s"] == 1
+    assert observer.audit[0]["resolved"] == []
