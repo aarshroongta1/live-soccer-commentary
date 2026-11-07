@@ -54,6 +54,12 @@ its title alone must not establish an interception label. No interception refere
 has been accepted yet. The card window establishes visible red only, not the
 booking history, identity, or reason for dismissal.
 
+## Public benchmark priority
+
+Use the [published datasets](PUBLIC_DATA.md) as the main evaluation path. SoccerNet
+already supplies action/event annotations; the local excerpts above are supplementary
+smoke cases. Matching protected videos require the official access process.
+
 ## Reuse and next pass
 
 Verify existing local files without networking:

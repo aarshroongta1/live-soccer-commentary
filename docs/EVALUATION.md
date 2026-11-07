@@ -14,6 +14,10 @@ ElevenLabs voice settings while developing this path.
 
 ## Reference data
 
+Prioritize [existing public datasets](PUBLIC_DATA.md): SoccerNet Ball Action Spotting
+for dense actions, Action Spotting for match events, and Echoes for noisy commentary
+references. Import their labels rather than rebuilding those annotations manually.
+
 Use actual broadcast commentary as a reference for event selection, correct player
 mentions, analysis, and delivery. A broadcaster's sentence is one valid description,
 not the only acceptable output. Verify factual claims against video, event labels,

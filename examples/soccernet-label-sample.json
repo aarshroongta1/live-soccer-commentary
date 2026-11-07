@@ -1,0 +1,30 @@
+{
+  "checked_on": "2026-11-07",
+  "dataset": "SoccerNet/SN-Labels",
+  "file": "england_epl/2014-2015/2015-02-21 - 18-00 Chelsea 1 - 1 Burnley/Labels-v2.json",
+  "url": "https://huggingface.co/datasets/SoccerNet/SN-Labels/resolve/main/england_epl/2014-2015/2015-02-21%20-%2018-00%20Chelsea%201%20-%201%20Burnley/Labels-v2.json",
+  "local_path": "runs/datasets/soccernet/chelsea-burnley-2015/Labels-v2.json",
+  "sha256": "4a47044fddef220b4f57abb22c10d74088bd9f9f8bf0e41c4f2d118f165354a6",
+  "bytes": 37609,
+  "annotations": 190,
+  "label_counts": {
+    "Ball out of play": 68,
+    "Clearance": 20,
+    "Corner": 14,
+    "Direct free-kick": 1,
+    "Foul": 16,
+    "Goal": 2,
+    "Indirect free-kick": 1,
+    "Kick-off": 4,
+    "Offside": 3,
+    "Red card": 1,
+    "Shots off target": 7,
+    "Shots on target": 8,
+    "Substitution": 4,
+    "Throw-in": 38,
+    "Yellow card": 3
+  },
+  "access": "Downloaded anonymously from the official publisher. No matched video was acquired.",
+  "status": "Inspection sample only; not imported into evaluation or supplied to runtime agents.",
+  "timing": "position is milliseconds within a half; gameTime identifies the half. Do not treat full-match clock values as local clip times."
+}
