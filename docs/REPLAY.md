@@ -64,10 +64,15 @@ blocks, tackles, interceptions, recoveries, clearances, goals, restarts, and ref
 decisions. `football.py` contains the exact labels. Each action includes:
 
 - `certainty`: confirmed or uncertain; `unknown` actions must remain uncertain.
-- `support_at_s`: exact supplied frame timestamps no later than the observation.
+- `support_at_s`: up to eight exact supplied frame timestamps. A later available
+  frame can confirm an earlier action, but support cannot exceed the snapshot
+  cutoff or cite a frame absent from the observer batch/saved visual response.
 - `cues`: reported visible support, with event-specific requirements for goals,
   referee decisions, cards, and substitutions.
-- `ball_path`: ground, aerial, or unknown for passes, crosses, and clearances.
+- `ball_path`: ground, aerial, or unknown for visible ball motion. Without its
+  corresponding visual cue, a reported path is downgraded to unknown and retained
+  in `ball_path_downgrades` in the observer audit. A valid goal/action is preserved;
+  the unsupported trajectory does not reach speakers as a typed assertion.
 
 Scene kind and action are separate: a replay can contain a confirmed goal action
 without becoming a new live goal. Uncertain goals remain ordinary play observations.

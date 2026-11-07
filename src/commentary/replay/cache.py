@@ -56,6 +56,8 @@ class SavedVision:
                     raise ValueError(
                         "saved observations must be chronological and inside their batch"
                     )
+                if observation.action and not set(observation.action.support_at_s) <= set(stamps):
+                    raise ValueError("saved action support must use supplied frame timestamps")
                 previous = observation.at_s
             self._rows[stamps] = copy.deepcopy(row)
         if not self._rows:

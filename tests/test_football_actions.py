@@ -53,7 +53,6 @@ def test_decisive_events_need_specific_visible_support(kind: str, cue: str) -> N
         {"support_at_s": [1, 1]},
         {"cues": []},
         {"type": "unknown"},
-        {"ball_path": "aerial"},
     ],
 )
 def test_unsupported_action_claims_are_rejected(updates: dict[str, Any]) -> None:
@@ -81,14 +80,6 @@ def test_replay_goal_is_historical_and_uncertain_goal_cannot_trigger_live_goal()
             kind="goal",
             description="Maybe in.",
             action=action("goal", certainty="uncertain"),
-        )
-    with pytest.raises(ValidationError, match="after"):
-        ReplayObservation(
-            id="e3",
-            at_s=0,
-            kind="play",
-            description="A pass.",
-            action=action(),
         )
 
 

@@ -49,6 +49,8 @@ class RuntimeSnapshot(BaseModel):
         for item in self.observations:
             if not 0 <= item.at_s <= self.cutoff_s or item.at_s < previous:
                 raise ValueError("snapshot evidence must be chronological and visible")
+            if item.action and any(t > self.cutoff_s for t in item.action.support_at_s):
+                raise ValueError("action support must be visible at the snapshot cutoff")
             previous = item.at_s
         return self
 

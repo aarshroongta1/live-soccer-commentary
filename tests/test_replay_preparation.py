@@ -269,3 +269,33 @@ async def test_failed_inspection_keeps_the_selected_tool_in_the_audit() -> None:
     assert observer.audit[0]["inspection_status"] == "executed"
     assert observer.audit[0]["inspection"]["frame_at_s"] == 1
     assert observer.audit[0]["resolved"] == []
+
+
+async def test_unsupported_path_is_downgraded_and_audited_without_losing_goal() -> None:
+    backend = ScriptedBackend()
+    event = ReplayObservation(
+        id="g",
+        at_s=1,
+        kind="goal",
+        description="The ball is in the net.",
+        action=FootballAction(
+            type="goal",
+            certainty="confirmed",
+            ball_path="ground",
+            cues=["ball_in_net"],
+            support_at_s=[1],
+        ),
+    )
+    backend.always("replay_observer", ReplayObserverResult(observations=[event]))
+    observer = ReplayObserver(backend, model="offline")
+    result = await observer([Frame(at_s=1, jpeg=b"test")], 1)
+    assert result[0].kind == "goal"
+    assert result[0].action is not None and result[0].action.ball_path == "unknown"
+    assert observer.audit[0]["ball_path_downgrades"] == [
+        {
+            "id": "g",
+            "reported": "ground",
+            "accepted": "unknown",
+            "reason": "missing_corresponding_visual_cue",
+        }
+    ]

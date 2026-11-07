@@ -59,9 +59,11 @@ corner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_car
 substitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble
 beats/challenges a defender. A header describes head contact, not a guessed outcome.
 Support each confirmed action with visible cues and exact supplied support_at_s frame
-timestamps no later than at_s. Use certainty=uncertain when contact/outcome cannot be
+timestamps. at_s is when the action occurs; later supplied frames may confirm it.
+All supporting frames must belong to this batch and remain at or before playback_s.
+Use certainty=uncertain when contact/outcome cannot be
 established; type=unknown when no action is identifiable. Empty observations are valid.
-For passes, crosses and clearances distinguish ground from aerial only with corresponding
+For any visible ball motion, distinguish ground from aerial only with corresponding
 ball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball
 lofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.
 A foul/penalty award needs referee signal or explicit graphic, not a collision alone.
@@ -253,6 +255,16 @@ class ReplayObserver:
             "cutoff_s": cutoff_s,
             "frames_at_s": [frame.at_s for frame in frames],
             "initial": initial.model_dump(mode="json"),
+            "ball_path_downgrades": [
+                {
+                    "id": item.id,
+                    "reported": item.action._unsupported_ball_path,
+                    "accepted": "unknown",
+                    "reason": "missing_corresponding_visual_cue",
+                }
+                for item in initial.observations
+                if item.action._unsupported_ball_path is not None
+            ],
             "inspection": initial.inspection.model_dump() if initial.inspection else None,
             "inspection_status": "requested" if initial.inspection else "not_requested",
             "status": "pending",
@@ -287,6 +299,16 @@ class ReplayObserver:
                     tag="replay_observer_inspection",
                 )
                 final = inspected.value
+                audit["ball_path_downgrades"].extend(
+                    {
+                        "id": item.id,
+                        "reported": item.action._unsupported_ball_path,
+                        "accepted": "unknown",
+                        "reason": "missing_corresponding_visual_cue",
+                    }
+                    for item in final.observations
+                    if item.action._unsupported_ball_path is not None
+                )
                 usage = usage + inspected.usage
             audit["raw"] = final.model_dump(mode="json")
             result = final.observations

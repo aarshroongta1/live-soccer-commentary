@@ -69,9 +69,7 @@ class Observation(BaseModel):
     action: FootballAction | None = None
 
     @model_validator(mode="after")
-    def action_support_is_not_future(self) -> Observation:
-        if self.action is not None and any(t > self.at_s for t in self.action.support_at_s):
-            raise ValueError("action support cannot come after the observation timestamp")
+    def consistent_action(self) -> Observation:
         if self.action is not None:
             if self.kind == "goal" and (
                 self.action.type != "goal" or self.action.certainty != "confirmed"

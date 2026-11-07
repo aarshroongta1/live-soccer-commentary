@@ -9,7 +9,7 @@ from __future__ import annotations
 import math
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 ActionType = Literal[
     "pass",
@@ -67,7 +67,8 @@ class FootballAction(BaseModel):
     certainty: Literal["confirmed", "uncertain"]
     ball_path: BallPath = "unknown"
     cues: list[VisualCue] = Field(default_factory=list, max_length=4)
-    support_at_s: list[float] = Field(default_factory=list, max_length=4)
+    support_at_s: list[float] = Field(default_factory=list, max_length=8)
+    _unsupported_ball_path: BallPath | None = PrivateAttr(default=None)
 
     @model_validator(mode="after")
     def supported_claim(self) -> FootballAction:
@@ -95,11 +96,10 @@ class FootballAction(BaseModel):
         ):
             raise ValueError(f"confirmed {self.type} needs direct event-specific evidence")
         if self.ball_path != "unknown":
-            if self.type not in {"pass", "cross", "clearance"}:
-                raise ValueError(
-                    "ball path is currently classified only for passes/crosses/clearances"
-                )
             cue = "ball_on_ground" if self.ball_path == "ground" else "ball_flight"
             if cue not in self.cues:
-                raise ValueError("ball path requires its corresponding visible cue")
+                # Abstain on an unsupported subclaim without discarding a valid action.
+                # The observer retains this downgrade in its audit, not the speaker input.
+                self._unsupported_ball_path = self.ball_path
+                self.ball_path = "unknown"
         return self
