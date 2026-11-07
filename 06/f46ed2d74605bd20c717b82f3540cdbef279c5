@@ -1,0 +1,48 @@
+docs/REPLAY.md
+  s_aba8a8d5718a34::t_2f69892ca41faa 67-69,72-75
+tests/test_action_confirmation.py
+  s_aba8a8d5718a34::t_26b820595afbf3 1-12,17-23,31-38,46-52,60-61
+  s_aba8a8d5718a34::t_ac4cba09fc8600 13-16,24-30,39-45,53-59,62-71
+  s_6658308151c726::t_20fb9320cc3bc8 72-94
+src/commentary/replay/contracts.py
+  s_aba8a8d5718a34::t_ac4cba09fc8600 52-53
+tests/test_replay_preparation.py
+  s_aba8a8d5718a34::t_eb17daf3fb96f0 272-301
+src/commentary/replay/preparation.py
+  s_6658308151c726::t_20fb9320cc3bc8 258-267,302-311
+  s_aba8a8d5718a34::t_e910e19f00153a 62-64,66
+src/commentary/recorded_demo.py
+  s_aba8a8d5718a34::t_ac4cba09fc8600 72
+src/commentary/replay/cache.py
+  s_aba8a8d5718a34::t_ac4cba09fc8600 59-60
+src/commentary/replay/agents.py
+  s_6658308151c726::t_e8efa89cde594c 56-57
+  s_aba8a8d5718a34::t_ac4cba09fc8600 28-30
+src/commentary/football.py
+  s_6658308151c726::t_e8efa89cde594c 70
+  s_6658308151c726::t_20fb9320cc3bc8 12,71,101-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "06f46ed2d74605bd20c717b82f3540cdbef279c5",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
