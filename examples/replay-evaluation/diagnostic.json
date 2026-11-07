@@ -1,0 +1,20 @@
+{
+  "id": "synthetic-pass-goal",
+  "match_id": "synthetic-green-orange",
+  "split": "development",
+  "duration_s": 12,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "synthetic",
+    "locator": "synthetic://green-orange/pass-goal",
+    "provenance": "Hand-authored diagnostic labels for fictional Green versus Orange. No broadcast or model result is represented.",
+    "usage_terms": "Project-owned synthetic fixture for offline tests.",
+    "annotation_status": "synthetic"
+  },
+  "events": [
+    {"id": "pass", "at_s": 2, "kind": "play", "required": true},
+    {"id": "goal", "at_s": 6, "kind": "goal", "required": true},
+    {"id": "celebrate", "at_s": 9, "kind": "celebration", "required": false}
+  ],
+  "commentary": []
+}
