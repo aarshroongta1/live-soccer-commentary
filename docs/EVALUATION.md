@@ -89,6 +89,14 @@ do not count many windows from one match as independent evidence.
    checked rewards. Start with one role; whole-system multi-agent credit assignment
    adds complexity. Do not equate reward-model score with demonstrated improvement.
 
+Further domain research suggests **player grounding** as an alternative first RL
+target: [GameSight](https://arxiv.org/html/2604.00057v1) reports SFT and GRPO for
+player alignment with a binary reward. This offers a verifiable subtask before
+attempting subjective commentary-style rewards. Its segment-based visual context
+must be adapted to our causal replay constraints. See [the framework and related
+work review](RESEARCH.md) for this and reference-data candidates including MatchTime
+and SoccerNet-Echoes.
+
 Correctness, evidence availability, and temporal leakage checks gate candidate
 promotion. Among passing candidates, compare quality, delay, and cost. Do not let a
 weighted average compensate for a wrong scorer or a future-information leak.
