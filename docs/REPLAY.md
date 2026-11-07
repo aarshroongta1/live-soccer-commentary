@@ -80,7 +80,8 @@ These contracts structure VLM predictions; they do not train a detector or prove
 that a claimed visual cue exists. Sparse sampling can miss brief contacts, and the
 current observer has no persistent ball/player tracking. No action-recognition
 accuracy is established by the synthetic tests. See [evaluation](EVALUATION.md)
-for separate action and ball-path diagnostics.
+for separate action and ball-path diagnostics. The [action source pool](ACTION_DATA.md)
+adds local non-goal development footage and sparse, unreviewed references.
 
 The next layer is temporal play recognition: counterattacks, one-twos, switches,
 through balls, cutbacks, and pressing sequences. This is not implemented yet. It

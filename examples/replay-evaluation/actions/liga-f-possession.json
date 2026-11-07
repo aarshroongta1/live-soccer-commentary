@@ -1,0 +1,28 @@
+{
+  "id": "liga-f-possession",
+  "match_id": "atletico-real-madrid-liga-f-source",
+  "split": "development",
+  "duration_s": 15,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/action-sources/liga-f-routine.mp4",
+    "start_s": 24,
+    "sha256": "fde153afd6fe81eae352f5f2f2947293b1e3ba75f11ce72e73b6016892e8652c",
+    "provenance": "Agent-drafted labels from direct local frame inspection of https://www.youtube.com/watch?v=6A6NR4pIPVY (DAZN Women's Football). Not copied from model predictions or commentary. Awaiting human review; timestamps are approximate and labels sparse.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed"
+  },
+  "action_labels_complete": false,
+  "events": [
+    {
+      "id": "pass",
+      "at_s": 1,
+      "kind": "play",
+      "action_type": "pass",
+      "ball_path": "ground",
+      "annotation_note": "Short circulation pass in ordinary buildup; later passes are intentionally not exhaustively labeled."
+    }
+  ],
+  "commentary": []
+}

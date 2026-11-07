@@ -1,0 +1,34 @@
+{
+  "id": "norwich-tottenham-tackle",
+  "match_id": "norwich-tottenham-tackle-source",
+  "split": "development",
+  "duration_s": 7,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/action-sources/pl-tackles.mp4",
+    "start_s": 5,
+    "sha256": "83bdd2c36f200a7e14aca42fd9b8036192ad82976aab6bffae07317b984d2082",
+    "provenance": "Agent-drafted labels from direct local frame inspection of https://www.youtube.com/watch?v=j4rbHl-3aL0 (Premier League). Not copied from model predictions or commentary. Awaiting human review; timestamps are approximate and labels sparse.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed"
+  },
+  "action_labels_complete": false,
+  "events": [
+    {
+      "id": "carry",
+      "at_s": 2,
+      "kind": "play",
+      "action_type": "carry",
+      "annotation_note": "Attacker advances toward goal; this is a point within a carry, not its onset."
+    },
+    {
+      "id": "tackle",
+      "at_s": 3.5,
+      "kind": "play",
+      "action_type": "tackle",
+      "annotation_note": "Defender slides across the ball carrier; contact/outcome timing needs human confirmation."
+    }
+  ],
+  "commentary": []
+}

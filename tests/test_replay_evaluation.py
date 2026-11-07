@@ -442,3 +442,23 @@ def test_broadcast_scoring_checks_source_window_and_recorded_hash() -> None:
             evaluate_replay(wrong, reference)
     with pytest.raises(ValueError, match="requires run source"):
         evaluate_replay(ReplayResult(), reference)
+
+
+def test_broadcast_draft_manifest_uses_catalog_hashes_and_local_windows() -> None:
+    root = Path(__file__).parents[1]
+    catalog = json.loads((root / "examples/action-sources.json").read_text())
+    sources = {row["local_path"]: row for row in catalog["sources"]}
+    references = [
+        EvaluationCase.model_validate_json(path.read_text())
+        for path in sorted((root / "examples/replay-evaluation/actions").glob("*.json"))
+    ]
+    assert len(references) == 4
+    validate_manifest(references)
+    for reference in references:
+        source = sources[reference.source.locator]
+        assert reference.source.kind == "broadcast"
+        assert reference.source.annotation_status == "unreviewed"
+        assert not reference.action_labels_complete
+        assert reference.source.sha256 == source["sha256"]
+        assert reference.source.start_s + reference.duration_s <= source["local_duration_s"]
+        assert reference.events

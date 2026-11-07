@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "acquired_on": "2026-11-07",
+  "purpose": "Local development source pool, not a benchmark or public demo.",
+  "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+  "time_basis": "Case times refer to the decoded local file. Upstream section requests can include keyframe preroll; do not add download_start_s to derive precise original-video timestamps.",
+  "sources": [
+    {
+      "id": "pl-saves",
+      "url": "https://www.youtube.com/watch?v=7UgMDj43lrY",
+      "publisher": "Premier League",
+      "publisher_channel_id": "UCG5qGWdu8nIRZqJ_GgDwQ-w",
+      "title": "How Did He Save That?! | Best Premier League Saves of the Season",
+      "download_start_s": 0,
+      "download_end_s": 65,
+      "format_id": "397",
+      "local_path": "clips/action-sources/pl-saves.mp4",
+      "sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+      "bytes": 3949010,
+      "local_duration_s": 65.0,
+      "fps": 25.0,
+      "audio": false,
+      "candidate_actions": [
+        "shot",
+        "header",
+        "save",
+        "corner",
+        "replay"
+      ],
+      "review_note": "Goalkeeper interventions, headed/struck attempts, corners and replays. Opening 0-8s is a rapid montage; prefer 10-18s for a continuous sequence.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "pl-tackles",
+      "url": "https://www.youtube.com/watch?v=j4rbHl-3aL0",
+      "publisher": "Premier League",
+      "publisher_channel_id": "UCG5qGWdu8nIRZqJ_GgDwQ-w",
+      "title": "Unbelievable Last-Ditch Tackles You Need to See",
+      "download_start_s": 0,
+      "download_end_s": 65,
+      "format_id": "397",
+      "local_path": "clips/action-sources/pl-tackles.mp4",
+      "sha256": "83bdd2c36f200a7e14aca42fd9b8036192ad82976aab6bffae07317b984d2082",
+      "bytes": 3592108,
+      "local_duration_s": 65.0,
+      "fps": 25.0,
+      "audio": false,
+      "candidate_actions": [
+        "carry",
+        "tackle",
+        "pass",
+        "replay"
+      ],
+      "review_note": "Norwich-Tottenham recovery at 5-10s; another recovery tackle at 27-38s. Later views repeat the same action and must remain replay.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "pl-interceptions",
+      "url": "https://www.youtube.com/watch?v=_KCzxPGQGAs",
+      "publisher": "Premier League",
+      "publisher_channel_id": "UCG5qGWdu8nIRZqJ_GgDwQ-w",
+      "title": "CRAZY Interceptions | BEST Premier League Interceptors In FIFA 22",
+      "download_start_s": 30,
+      "download_end_s": 95,
+      "format_id": "243",
+      "local_path": "clips/action-sources/pl-interceptions.webm",
+      "sha256": "ca47b5d0dbecb5ad593a0135e85289e62073117804d6ba2ba55db45386cc132f",
+      "bytes": 2938359,
+      "local_duration_s": 66.72,
+      "fps": 25.0,
+      "audio": false,
+      "candidate_actions": [
+        "interception",
+        "clearance",
+        "pass"
+      ],
+      "review_note": "Real match footage mixed with FIFA rating cards. Exclude 28-37s graphics. Candidate interceptions still need action-by-action review; the upload title is not an event label.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "france-jamaica",
+      "url": "https://www.youtube.com/watch?v=Zs7UXviIH90",
+      "publisher": "FOX Soccer",
+      "publisher_channel_id": "UCooTLkxcpnTNx6vfOovfBFA",
+      "title": "France vs. Jamaica Highlights | 2023 FIFA Women\u2019s World Cup",
+      "download_start_s": 30,
+      "download_end_s": 95,
+      "format_id": "243",
+      "local_path": "clips/action-sources/france-jamaica.webm",
+      "sha256": "eb36d6b6b1af7660dbf152d078e67458ab4a3bdcc38920648ee1c8255978180f",
+      "bytes": 2991687,
+      "local_duration_s": 65.499,
+      "fps": 29.97002997002997,
+      "audio": false,
+      "candidate_actions": [
+        "free_kick",
+        "cross",
+        "save",
+        "header",
+        "replay"
+      ],
+      "review_note": "Scoreless match highlights: free kicks, crosses, goalkeeping and missed chances. Contains edits and replay angles.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "france-jamaica-late",
+      "url": "https://www.youtube.com/watch?v=Zs7UXviIH90",
+      "publisher": "FOX Soccer",
+      "publisher_channel_id": "UCooTLkxcpnTNx6vfOovfBFA",
+      "title": "France vs. Jamaica Highlights | 2023 FIFA Women\u2019s World Cup",
+      "download_start_s": 225,
+      "download_end_s": 299,
+      "format_id": "243",
+      "local_path": "clips/action-sources/france-jamaica-late.webm",
+      "sha256": "1ae57eeb2a804107e434614840a6761e08122c073bd6def42fbe5f39986b2cb9",
+      "bytes": 3056307,
+      "local_duration_s": 74.575,
+      "fps": 29.97002997002997,
+      "audio": false,
+      "candidate_actions": [
+        "header",
+        "cross",
+        "red_card",
+        "replay"
+      ],
+      "review_note": "Late missed chance and a visible red-card sequence around local 38-40s. Challenge contact alone does not establish a foul; card identity and reason need independent review.",
+      "annotation_status": "candidate"
+    },
+    {
+      "id": "liga-f-routine",
+      "url": "https://www.youtube.com/watch?v=6A6NR4pIPVY",
+      "publisher": "DAZN Women's Football",
+      "publisher_channel_id": "UCxgii5f9u4YgXCeubCozbEA",
+      "title": "Atl\u00e9tico de Madrid vs. Real Madrid | Liga F 2025-26 Matchday 1 Full Match",
+      "download_start_s": 3600,
+      "download_end_s": 3690,
+      "format_id": "397",
+      "local_path": "clips/action-sources/liga-f-routine.mp4",
+      "sha256": "fde153afd6fe81eae352f5f2f2947293b1e3ba75f11ce72e73b6016892e8652c",
+      "bytes": 7948762,
+      "local_duration_s": 94.933,
+      "fps": 30.0,
+      "audio": false,
+      "candidate_actions": [
+        "pass",
+        "carry",
+        "throw_in"
+      ],
+      "review_note": "Continuous full-match excerpt, including routine possession, restarts and quiet stretches. Local 15s has a visible feed glitch; exclude that area. Reviewed 24-39s contains ordinary buildup.",
+      "annotation_status": "candidate"
+    }
+  ]
+}

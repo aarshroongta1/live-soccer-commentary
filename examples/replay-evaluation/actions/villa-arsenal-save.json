@@ -1,0 +1,41 @@
+{
+  "id": "villa-arsenal-save",
+  "match_id": "villa-arsenal-raya-source",
+  "split": "development",
+  "duration_s": 8,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/action-sources/pl-saves.mp4",
+    "start_s": 10,
+    "sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+    "provenance": "Agent-drafted labels from direct local frame inspection of https://www.youtube.com/watch?v=7UgMDj43lrY (Premier League). Not copied from model predictions or commentary. Awaiting human review; timestamps are approximate and labels sparse.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed"
+  },
+  "action_labels_complete": false,
+  "events": [
+    {
+      "id": "shot",
+      "at_s": 2.5,
+      "kind": "play",
+      "action_type": "shot",
+      "annotation_note": "Initial strike from outside the area. Do not label the woodwork rebound as a save without keeper contact."
+    },
+    {
+      "id": "header",
+      "at_s": 4.5,
+      "kind": "play",
+      "action_type": "header",
+      "annotation_note": "Close-range follow-up header after the first attempt."
+    },
+    {
+      "id": "save",
+      "at_s": 5.5,
+      "kind": "play",
+      "action_type": "save",
+      "annotation_note": "Keeper gets across to stop the follow-up. Timing estimated to nearest 0.5s from source frames."
+    }
+  ],
+  "commentary": []
+}

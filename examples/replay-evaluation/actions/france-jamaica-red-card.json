@@ -1,0 +1,27 @@
+{
+  "id": "france-jamaica-red-card",
+  "match_id": "france-jamaica-2023-womens-world-cup",
+  "split": "development",
+  "duration_s": 5,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/action-sources/france-jamaica-late.webm",
+    "start_s": 37.5,
+    "sha256": "1ae57eeb2a804107e434614840a6761e08122c073bd6def42fbe5f39986b2cb9",
+    "provenance": "Agent-drafted labels from direct local frame inspection of https://www.youtube.com/watch?v=Zs7UXviIH90 (FOX Soccer). Not copied from model predictions or commentary. Awaiting human review; timestamps are approximate and labels sparse.",
+    "usage_terms": "Copyright remains with the original rights holders. Public viewing availability is not a redistribution or training license. No permissive license was supplied in the downloaded metadata. Retain locally; publication/training rights are not established.",
+    "annotation_status": "unreviewed"
+  },
+  "action_labels_complete": false,
+  "events": [
+    {
+      "id": "red-card",
+      "at_s": 0.5,
+      "kind": "play",
+      "action_type": "red_card",
+      "annotation_note": "Red card visibly raised by referee; no inference about identity, prior booking, or reason."
+    }
+  ],
+  "commentary": []
+}
