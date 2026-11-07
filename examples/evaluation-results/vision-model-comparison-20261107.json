@@ -1,0 +1,566 @@
+{
+  "date": "2026-11-07",
+  "purpose": "Controlled perception-only model comparison on two fixed development cases.",
+  "scope": "Not a complete replay/voice run, official benchmark, or general accuracy estimate.",
+  "changed_variable": "Model ID only within each case. Prompt, schema, frames, crops, reasoning effort and output cap held fixed.",
+  "source_code_revision": "d5c64df",
+  "plan": {
+    "models": [
+      "gpt-5.4-mini",
+      "gpt-5.4-2026-03-05"
+    ],
+    "output_token_cap": 768,
+    "maximum_reserved_total_usd": 0.09969375,
+    "effort": "none",
+    "cases": {
+      "save": {
+        "baseline_run": "runs/replay/recognition-pass-20261107-inspected/save.json",
+        "baseline_sha256": "4781bb41012a9a50f057fa9559111c408e33575225f182ab6c32a5164524de3a",
+        "source_clip": "clips/action-sources/pl-saves.mp4",
+        "source_start_s": 10,
+        "duration_s": 8,
+        "sample_fps": 2,
+        "source_sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+        "frames": [
+          {
+            "at_s": 0.0,
+            "sha256": "bf0f6cddb151deebac67124a18c776bf0d13b7c4a21dad2b43520dce0cbd7003"
+          },
+          {
+            "at_s": 1.0,
+            "sha256": "2e6f003dd64832771ded4a99382ff24cdb88a3a2faddd86a2715bd407f987ef4"
+          },
+          {
+            "at_s": 2.0,
+            "sha256": "11855103c4e3f2970b82605093a11b95ac58fd75ef643aeaee6ca2c0f535e710"
+          },
+          {
+            "at_s": 3.0,
+            "sha256": "06fdc11ce49fa013c85af725b3a8196812d7303c9acb465d80021be033e37bad"
+          },
+          {
+            "at_s": 4.5,
+            "sha256": "f96991f7dd51bdb0e357781097ce28234c03700e5102a9b5406f33bedbeacd69"
+          },
+          {
+            "at_s": 5.5,
+            "sha256": "5fccac5fa6c59a9715c6c102591a6f68a8e049edf22155ebb8ca5f44d9a67464"
+          },
+          {
+            "at_s": 6.5,
+            "sha256": "f68a68dce29bd24e1d19db5bb93395402063bef8358e80be071a51ecb7a67b53"
+          },
+          {
+            "at_s": 7.5,
+            "sha256": "2ad9fc61c56af29eb5f584d7fe1024fa153b9c5bb78ab8a0b01c670a9272c3c5"
+          }
+        ],
+        "inspection": {
+          "frame_at_s": 4.5,
+          "context_at_s": [
+            3.0,
+            5.5
+          ],
+          "left": 0.28,
+          "top": 0.18,
+          "right": 0.53,
+          "bottom": 0.62
+        },
+        "crops": [
+          {
+            "at_s": 3.0,
+            "sha256": "635fa27dda7442696e3dd78b74b205066cf9733f10be0499d4a070bfcc699b09"
+          },
+          {
+            "at_s": 4.5,
+            "sha256": "3cf362f53bc3f4c5125b92987b0359423213f027eb1bc3b3977bf27b726b721d"
+          },
+          {
+            "at_s": 5.5,
+            "sha256": "17cd45d5164fcb3a6687b211003b2aa8d1385df70896a3d985068c62c7d9cc87"
+          }
+        ],
+        "blocks_sha256": "e2fadd8826c899ff8bcb72fc10c64459f481fe52c6ed0f2f40376d8ac8bd33fb",
+        "prompt_sha256": "ce2e181ced28787d7aa4f791d71cdb5070f592f8aa6fe05f11e15772c41bd9cc",
+        "schema_sha256": "b42b682a5ea76061c9298bc348df555f3a5808ee652d4cc07e33e8d11bae3dce"
+      },
+      "tackle": {
+        "baseline_run": "runs/replay/recognition-pass-20261107-contact-final/tackle.json",
+        "baseline_sha256": "728e471d37ea3a693a6fed2e12b238f19613b4a66ba8bc44ad3886cc96fb0444",
+        "source_clip": "clips/action-sources/pl-tackles.mp4",
+        "source_start_s": 6.5,
+        "duration_s": 3.5,
+        "sample_fps": 3,
+        "source_sha256": "83bdd2c36f200a7e14aca42fd9b8036192ad82976aab6bffae07317b984d2082",
+        "frames": [
+          {
+            "at_s": 0.0,
+            "sha256": "136654f9763877b9b53a4abcfdc7ca0d1e1535a7afe9ac96d19291e791f10f31"
+          },
+          {
+            "at_s": 0.3181818181818182,
+            "sha256": "696e22ea09b07958f1bd073e3138cdcc5ec949163604f8396c8dff455fe81a86"
+          },
+          {
+            "at_s": 0.9545454545454546,
+            "sha256": "37cd20a5683c0d7fa3502f903c3212fcac5e85b1b696ba11fe57ed423a32ac4e"
+          },
+          {
+            "at_s": 1.2727272727272727,
+            "sha256": "62939677794af08efc48284c2173cd464647138a8d4319e25443cebf15f5a18e"
+          },
+          {
+            "at_s": 1.9090909090909092,
+            "sha256": "542f6e9027e28cd387e31237e817b128012d48205f82d6619a0283c84925caa0"
+          },
+          {
+            "at_s": 2.227272727272727,
+            "sha256": "27ad9849540e3520ed31875596b79c313dc543fdb2fa3acde69991ef407043bc"
+          },
+          {
+            "at_s": 2.8636363636363638,
+            "sha256": "f0e759288fafd42ee53026d50cf588d8107fa8e932b72c5b00acded2c26de0c5"
+          },
+          {
+            "at_s": 3.1818181818181817,
+            "sha256": "64cb13902f02e0ca635c466d0c3ec0b39031a832d303d72d2f1acd04c724cc6e"
+          }
+        ],
+        "inspection": {
+          "frame_at_s": 1.9090909090909092,
+          "context_at_s": [
+            1.2727272727272727,
+            2.227272727272727
+          ],
+          "left": 0.58,
+          "top": 0.43,
+          "right": 0.78,
+          "bottom": 0.78
+        },
+        "crops": [
+          {
+            "at_s": 1.2727272727272727,
+            "sha256": "aa7f137c0b917385f8486fa9c99c4194416903d3c67c1c678806ba6028be45ae"
+          },
+          {
+            "at_s": 1.9090909090909092,
+            "sha256": "538ce521a766de7a445ae43210ae36f1babce8a1499ff730e2911894a574d064"
+          },
+          {
+            "at_s": 2.227272727272727,
+            "sha256": "ae7c521412365270c2d0018716771853a3ed3846802fa2e6f5e05187947ef14a"
+          }
+        ],
+        "blocks_sha256": "98092c00f953b76229af67c9f10afaec08ab0da9e3956456076d9e4ec2813a7e",
+        "prompt_sha256": "ce2e181ced28787d7aa4f791d71cdb5070f592f8aa6fe05f11e15772c41bd9cc",
+        "schema_sha256": "b42b682a5ea76061c9298bc348df555f3a5808ee652d4cc07e33e8d11bae3dce"
+      }
+    },
+    "preflights": [
+      {
+        "case": "save",
+        "model": "gpt-5.4-mini",
+        "input_tokens": 7609
+      },
+      {
+        "case": "save",
+        "model": "gpt-5.4-2026-03-05",
+        "input_tokens": 7609
+      },
+      {
+        "case": "tackle",
+        "model": "gpt-5.4-mini",
+        "input_tokens": 7715
+      },
+      {
+        "case": "tackle",
+        "model": "gpt-5.4-2026-03-05",
+        "input_tokens": 7715
+      }
+    ],
+    "pricing": {
+      "gpt-5.4-mini": [
+        0.75,
+        4.5
+      ],
+      "gpt-5.4-2026-03-05": [
+        2.5,
+        15
+      ]
+    },
+    "pricing_source": "https://developers.openai.com/api/docs/models/gpt-5.4",
+    "pricing_checked": "2026-11-07",
+    "budget_usd": 0.1
+  },
+  "results": [
+    {
+      "case": "save",
+      "model": "gpt-5.4-mini",
+      "blocks_sha256": "e2fadd8826c899ff8bcb72fc10c64459f481fe52c6ed0f2f40376d8ac8bd33fb",
+      "prompt_sha256": "ce2e181ced28787d7aa4f791d71cdb5070f592f8aa6fe05f11e15772c41bd9cc",
+      "status": "complete",
+      "result": {
+        "observations": [
+          {
+            "id": "obs1",
+            "at_s": 3.0,
+            "kind": "play",
+            "description": "An attacking ball is driven across the six-yard area from the right side toward the far post, with the goalkeeper tracking across his goal.",
+            "actor": null,
+            "action": {
+              "type": "cross",
+              "certainty": "confirmed",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight"
+              ],
+              "support_at_s": [
+                3.0,
+                4.5
+              ]
+            }
+          },
+          {
+            "id": "obs2",
+            "at_s": 4.5,
+            "kind": "play",
+            "description": "The goalkeeper dives low to his left and gets a touch on the shot, deflecting the ball away from the goalmouth.",
+            "actor": {
+              "side": "home",
+              "shirt_number": null,
+              "shirt_name": "David Raya",
+              "identity_source": "graphic",
+              "action_role": "visible_player",
+              "resolved_name": null
+            },
+            "action": {
+              "type": "save",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "keeper_contact",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                4.5,
+                5.5
+              ]
+            }
+          },
+          {
+            "id": "obs3",
+            "at_s": 5.5,
+            "kind": "play",
+            "description": "The loose ball continues away from the goal area after the save, with an attacker sliding in too late to reach it.",
+            "actor": null,
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_motion"
+              ],
+              "support_at_s": [
+                5.5,
+                6.5,
+                7.5
+              ]
+            }
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 7609,
+        "output_tokens": 302,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.00706575,
+        "latency_s": 4.504422666999744
+      },
+      "reported_usd": 0.00706575
+    },
+    {
+      "case": "save",
+      "model": "gpt-5.4-2026-03-05",
+      "blocks_sha256": "e2fadd8826c899ff8bcb72fc10c64459f481fe52c6ed0f2f40376d8ac8bd33fb",
+      "prompt_sha256": "ce2e181ced28787d7aa4f791d71cdb5070f592f8aa6fe05f11e15772c41bd9cc",
+      "status": "complete",
+      "result": {
+        "observations": [
+          {
+            "id": "obs1",
+            "at_s": 2.0,
+            "kind": "play",
+            "description": "A home attacker strikes an aerial shot from around the top-right edge of the penalty arc toward the far side of goal.",
+            "actor": null,
+            "action": {
+              "type": "shot",
+              "certainty": "confirmed",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_contact",
+                "ball_flight"
+              ],
+              "support_at_s": [
+                2.0,
+                3.0
+              ]
+            }
+          },
+          {
+            "id": "obs2",
+            "at_s": 5.5,
+            "kind": "play",
+            "description": "The away goalkeeper makes a low save near his left post, stopping the shot and pushing the ball back across the face of goal.",
+            "actor": null,
+            "action": {
+              "type": "save",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "keeper_contact",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                4.5,
+                5.5
+              ]
+            }
+          },
+          {
+            "id": "obs3",
+            "at_s": 7.5,
+            "kind": "play",
+            "description": "An away defender completes a clearance from inside the box after the rebound runs loose across goal.",
+            "actor": null,
+            "action": {
+              "type": "clearance",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_contact",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                6.5,
+                7.5
+              ]
+            }
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 7609,
+        "output_tokens": 268,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0230425,
+        "latency_s": 5.526745875002234
+      },
+      "reported_usd": 0.0230425
+    },
+    {
+      "case": "tackle",
+      "model": "gpt-5.4-mini",
+      "blocks_sha256": "98092c00f953b76229af67c9f10afaec08ab0da9e3956456076d9e4ec2813a7e",
+      "prompt_sha256": "ce2e181ced28787d7aa4f791d71cdb5070f592f8aa6fe05f11e15772c41bd9cc",
+      "status": "complete",
+      "result": {
+        "observations": [
+          {
+            "id": "obs1",
+            "at_s": 0.0,
+            "kind": "play",
+            "description": "Blue attacker carries the ball centrally toward the edge of the box with three yellow defenders retreating.",
+            "actor": null,
+            "action": {
+              "type": "carry",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_contact",
+                "ball_motion",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                0.0,
+                0.3181818181818182
+              ]
+            }
+          },
+          {
+            "id": "obs2",
+            "at_s": 1.2727272727272727,
+            "kind": "play",
+            "description": "Blue attacker reaches the right side of the area and nudges the ball goalward under pressure as defenders close in.",
+            "actor": null,
+            "action": {
+              "type": "shot",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_motion"
+              ],
+              "support_at_s": [
+                1.2727272727272727,
+                1.9090909090909092
+              ]
+            }
+          },
+          {
+            "id": "obs3",
+            "at_s": 1.9090909090909092,
+            "kind": "play",
+            "description": "The goalkeeper and a defender converge near the six-yard box and the ball is loose in front of goal after the attempt.",
+            "actor": null,
+            "action": {
+              "type": "save",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [
+                "keeper_contact",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                1.9090909090909092,
+                2.227272727272727,
+                2.8636363636363638,
+                3.1818181818181817
+              ]
+            }
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 291,
+        "output_tokens": 316,
+        "cache_read_tokens": 7424,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0021970500000000003,
+        "latency_s": 4.1995138749916805
+      },
+      "reported_usd": 0.0021970500000000025
+    },
+    {
+      "case": "tackle",
+      "model": "gpt-5.4-2026-03-05",
+      "blocks_sha256": "98092c00f953b76229af67c9f10afaec08ab0da9e3956456076d9e4ec2813a7e",
+      "prompt_sha256": "ce2e181ced28787d7aa4f791d71cdb5070f592f8aa6fe05f11e15772c41bd9cc",
+      "status": "complete",
+      "result": {
+        "observations": [
+          {
+            "id": "obs1",
+            "at_s": 0.3181818181818182,
+            "kind": "play",
+            "description": "A dark-blue attacker carries the ball on the ground into the penalty area with three yellow-green defenders chasing.",
+            "actor": null,
+            "action": {
+              "type": "carry",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_motion",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                0.0,
+                0.3181818181818182,
+                0.9545454545454546
+              ]
+            }
+          },
+          {
+            "id": "obs2",
+            "at_s": 1.9090909090909092,
+            "kind": "play",
+            "description": "Near the left side of the six-yard area, a yellow-green defender slides across the dark-blue ball carrier and appears to poke the ball away in a challenge.",
+            "actor": null,
+            "action": {
+              "type": "tackle",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "player_challenge",
+                "ball_motion",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                1.2727272727272727,
+                1.9090909090909092,
+                2.227272727272727
+              ]
+            }
+          },
+          {
+            "id": "obs3",
+            "at_s": 3.1818181818181817,
+            "kind": "play",
+            "description": "The goalkeeper and defenders are gathered by the near post with the dark-blue attacker on the ground, but the ball outcome is not visible.",
+            "actor": null,
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [
+                "player_challenge"
+              ],
+              "support_at_s": [
+                2.8636363636363638,
+                3.1818181818181817
+              ]
+            }
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 7715,
+        "output_tokens": 339,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0243725,
+        "latency_s": 5.94829629099695
+      },
+      "reported_usd": 0.0243725
+    }
+  ],
+  "budget": {
+    "max_usd": 0.1,
+    "max_calls": 4,
+    "attempts": 4,
+    "reported_usd": 0.0566778,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "raw_result_path": "runs/replay/vision-model-comparison-20261107/results.json",
+  "raw_result_sha256": "18d3512167ea2982f4b236a8d08afe76421a8125d6393949ea6cf64486909807",
+  "comparison_script_path": "runs/replay/vision-model-comparison-20261107/comparison.py",
+  "comparison_script_sha256": "f8589af2b6b226e1735986200577d0b4bf0a0e37cc88fd1edabef248f85a6bc0",
+  "limits": [
+    "One generation per model/case; model variability is unmeasured.",
+    "Crops were fixed from the earlier Mini inspection so the comparison isolates classification, not inspection selection.",
+    "Save uses the eight selected frames from its 8s source window; tackle uses eight selected frames from the earlier focused 3.5s window, not the full 7s case.",
+    "No reference labels, transcripts, source names, case names or expected action names were provided as case-specific model inputs.",
+    "Both models were limited to three observations, 768 output tokens, effort none, zero retries.",
+    "Full GPT-5.4 used a dated snapshot; Mini used its alias.",
+    "One Mini call benefited from cached input; observed cost ratios should not be generalized.",
+    "No caller/analyst generations or TTS were run; model observation descriptions are not final commentary.",
+    "No model training, production default change, additional footage or paid retries."
+  ],
+  "source_review": {
+    "reviewed_by": "agent",
+    "human_verified": false,
+    "save": {
+      "mini": "Mistakes buildup for a confirmed aerial cross; detects keeper intervention; omits initial shot, woodwork and header.",
+      "full": "Recognizes initial shot and later save; still omits woodwork and rebound header, implying a simpler shot/save sequence.",
+      "verdict": "Partial improvement, not showcase-ready."
+    },
+    "tackle": {
+      "mini": "Suggests uncertain shot/save after a carry; misses the defensive challenge.",
+      "full": "Describes a sliding defensive challenge and possible poke-away as an uncertain tackle; avoids the false shot/save narrative.",
+      "verdict": "Better grounded hypothesis; tackle still not confirmed."
+    }
+  }
+}
