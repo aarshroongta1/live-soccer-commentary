@@ -1,0 +1,28 @@
+web/app/demo/agent-runs.tsx
+  s_aba8a8d5718a34::t_6680315a6bed27 19-22,147-152,157
+docs/PORTFOLIO.md
+  s_aba8a8d5718a34::t_6680315a6bed27 31-34,48-49
+  s_aba8a8d5718a34::t_dab08df784bfe3 35-36,44,47
+web/app/demo/architecture.tsx
+  s_aba8a8d5718a34::t_6680315a6bed27 4
+web/app/demo/demo.css
+  s_aba8a8d5718a34::t_6680315a6bed27 306-307
+web/data/agent-runs.json
+  s_aba8a8d5718a34::t_b3c9e68a64daa6 2-222,309-310,328-329,388-389,482-483,503-504,523-524,603-604
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "90aa8add6d500c2d41264ebd351dd2bd78416933",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
