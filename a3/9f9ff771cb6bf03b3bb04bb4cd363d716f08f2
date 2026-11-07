@@ -1,0 +1,36 @@
+web/app/demo/demo-experience.tsx
+  s_aba8a8d5718a34::t_7bf391889c915f 4,68-69,134
+diagrams/commentary-pipeline.mmd
+  s_aba8a8d5718a34::t_7bf391889c915f 1-8
+.gitignore
+  s_aba8a8d5718a34::t_e1ffc333889f29 31
+README.md
+  s_aba8a8d5718a34::t_e1ffc333889f29 24-26
+web/app/demo/architecture.tsx
+  s_aba8a8d5718a34::t_7bf391889c915f 1-60
+diagrams/README.md
+  s_aba8a8d5718a34::t_e1ffc333889f29 1-20
+web/app/demo/demo.css
+  s_aba8a8d5718a34::t_f322fde45ece11 248
+  s_aba8a8d5718a34::t_7bf391889c915f 125-220,235-247,249-254
+diagrams/commentary-pipeline.excalidraw
+  s_aba8a8d5718a34::t_e5e24c30df4ee6 1
+diagrams/commentary-pipeline.svg
+  s_aba8a8d5718a34::t_b4ed40020df799 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a39f9ff771cb6bf03b3bb04bb4cd363d716f08f2",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
