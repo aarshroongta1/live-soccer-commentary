@@ -22,6 +22,7 @@ from pydantic import BaseModel
 
 from commentary.llm import LLMBackend, ScriptedBackend, openai_factory
 from commentary.llm.base import Block
+from commentary.llm.budget import RunBudget
 from commentary.recorded_demo import Frame, Observation, sample_clip, validate_inputs
 from commentary.recorded_research import ResearchBrief
 from commentary.replay.agents import ANALYST_SYSTEM, CALLER_SYSTEM, RoleAgents
@@ -58,9 +59,11 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--research-model")
     parser.add_argument("--reviewer-model", help="optional bounded reviewer inside role deadline")
     parser.add_argument("--spend", action="store_true", help="enable paid model calls")
+    parser.add_argument("--max-usd", type=float, default=0.10, help="OpenAI token budget")
+    parser.add_argument("--max-model-calls", type=int, default=40, help="OpenAI request limit")
     parser.add_argument("--out", type=Path, default=Path("runs/replay/result.json"))
     args = parser.parse_args()
-    default_model = "claude-haiku-4-5" if args.provider == "anthropic" else "gpt-5.6-terra"
+    default_model = "claude-haiku-4-5" if args.provider == "anthropic" else "gpt-6-luna"
     for field in ("observer_model", "caller_model", "analyst_model", "research_model"):
         if getattr(args, field) is None:
             setattr(args, field, default_model)
@@ -150,12 +153,17 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         max_age_s=args.max_age,
         drain_s=args.drain,
     )
+    budget = RunBudget(max_usd=args.max_usd, max_calls=args.max_model_calls)
     pack = _load_json(args.pack) if args.pack else None
     saved = ResearchBrief.model_validate(_load_json(args.research)) if args.research else None
     if (args.fixture is None) != (args.as_of is None):
         raise ValueError("research requires --fixture and --as-of together")
     if saved is not None and args.fixture is None:
         raise ValueError("saved research requires --fixture and --as-of for cutoff validation")
+    if args.provider == "openai" and args.fixture and saved is None:
+        raise ValueError(
+            "bounded replay uses saved research; pass --research with a cited pre-match brief"
+        )
     if args.diagnostic and any(
         [args.spend, args.pack, args.research, args.fixture, args.reviewer_model]
     ):
@@ -171,6 +179,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 "clip": str(args.clip),
                 "duration_s": duration,
                 "paid_calls_enabled": False,
+                "budget": budget.report() if args.provider == "openai" else None,
                 "speech_simulated": True,
                 "note": "Pass --spend to run the observer and independent role agents.",
             }
@@ -188,7 +197,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         if args.fixture and saved is None:
             provider_timeout = max(provider_timeout, 90)
         if args.provider == "openai":
-            backend = openai_factory(timeout_s=provider_timeout, max_retries=0)
+            backend = openai_factory(
+                timeout_s=provider_timeout, max_retries=0, budget=budget, default_effort="none"
+            )
         else:
             from commentary.llm.anthropic_backend import AnthropicBackend
 
@@ -244,6 +255,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "observer_audit": observer.audit if isinstance(observer, ReplayObserver) else [],
             "role_audit": [event.model_dump(mode="json") for event in roles.audit],
             "usage": asdict(backend.total),
+            "spend_guard": budget.report()
+            if not args.diagnostic and args.provider == "openai"
+            else None,
         }
     )
     return result.model_dump(mode="json")
@@ -262,6 +276,7 @@ def main() -> None:
     args.out.write_text(json.dumps(output, indent=2) + "\n")
     speech = output["speech"]
     print(f"Replay saved to {args.out}: {len(speech)} simulated speech turns")
+    print(f"Reported model token cost: ${output['metadata']['usage']['cost_usd']:.6f}")
     for record in speech:
         print(f"{record['started_s']:.2f}s {record['line']['voice']}: {record['line']['text']}")
     failures = sum(

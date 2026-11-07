@@ -99,9 +99,23 @@ def test_failed_provider_run_saves_trace_and_exits_unsuccessfully(
     monkeypatch.setattr(sys, "argv", ["replay_commentary", "--diagnostic", "--out", str(output)])
 
     async def failed(_args: object) -> dict[str, object]:
-        return {"mode": "causal_replay", "speech": [], "trace": [{"event": "observer_error"}]}
+        return {
+            "mode": "causal_replay",
+            "speech": [],
+            "trace": [{"event": "observer_error"}],
+            "metadata": {"usage": {"cost_usd": 0}},
+        }
 
     monkeypatch.setattr(module, "run", failed)
     with pytest.raises(SystemExit, match="No speech was produced"):
         module.main()
     assert output.exists()
+
+
+def test_replay_defaults_are_cheap_and_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
+    module = script()
+    monkeypatch.setattr(sys, "argv", ["replay_commentary", "--clip", "local.mp4"])
+    args = module.arguments()
+    assert args.observer_model == args.caller_model == args.analyst_model == "gpt-6-luna"
+    assert args.max_usd == 0.10
+    assert args.max_model_calls == 40

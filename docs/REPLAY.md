@@ -72,19 +72,34 @@ uv run python scripts/replay_commentary.py \
 ```
 
 Add `--spend` to enable paid observation and role calls using `OPENAI_API_KEY` in
-the local `.env`. Defaults use the same OpenAI model family as the existing
-streaming experiment. Each role can be selected independently using
+the local `.env`. OpenAI development defaults use GPT-6 Luna, reasoning `none`,
+and no retries. Each role can be selected independently using
 `--observer-model`, `--caller-model`, and `--analyst-model`. For Anthropic, pass
 `--provider anthropic`; the default becomes `claude-haiku-4-5` and requires
 `ANTHROPIC_API_KEY`. An optional `--pack` file uses the recorded workflow's team
 and roster JSON format.
 
 Pre-match research requires both `--fixture "Argentina v France"` and
-`--as-of 2022-12-17`. These enable a fresh bounded search before the replay starts.
-Add `--research path/to/brief.json` to reuse a `ResearchBrief` instead; its fixture
+`--as-of 2022-12-17`. For budgeted OpenAI replay, also supply
+`--research path/to/brief.json` to reuse a `ResearchBrief`; its fixture
 must match exactly and its date cannot exceed the requested cutoff. For historical
 matches, verify archived source contents; a source page may have changed since its
 publication date. Research cannot establish who performed an action in the footage.
+
+OpenAI paid replay defaults to `--max-usd 0.10 --max-model-calls 40`. Each request
+preflights image/schema input tokens and reserves maximum output cost with a 25%
+margin. Concurrent calls share the ledger. Failed or cancelled calls retain their
+reservations when final usage is unknown. Hosted tools and long-context requests
+are refused under this guard, so fresh web research cannot add untracked fees.
+Saved research is reusable without a search call. These limits apply to the OpenAI
+replay path, not to Anthropic or the older generation scripts, and are application
+guards rather than a provider-account billing cap. Completed usage and outstanding
+reservations are saved in `metadata.spend_guard`.
+
+GPT-6 Luna standard pricing was checked on November 6, 2026: $0.10 input and $0.50
+output per million tokens, with $0.01 cached input. See the
+[official model page](https://developers.openai.com/api/docs/models/gpt-6-luna).
+Use scripted diagnostics and tests for regressions; paid runs are short smoke tests.
 
 Use `--reviewer-model` only for a deliberate draft-quality experiment. It consumes
 the same turn deadline. The default live-oriented path leaves it off.
