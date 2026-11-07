@@ -1,5 +1,226 @@
 [
   {
+    "id": "named-penalty",
+    "title": "Named penalty and analyst handoff",
+    "videoPath": "/soccer-commentary/agent-penalty.mp4",
+    "summary": "Reads number 9 during the penalty, resolves Harry Kane, and gives the analyst a separate explanation.",
+    "limitation": "A saved seven-second clip with processing delays; this is not real-time commentary. The crop missed the intended player; the original frames supplied the readable number.",
+    "source_duration_s": 7,
+    "duration_s": 24.70218391600065,
+    "models": {
+      "observer": "saved:gpt-5.4-mini",
+      "caller": "saved:gpt-5.4-mini",
+      "analyst": "gpt-5.4-mini"
+    },
+    "research_used": false,
+    "inspection": {
+      "frame_at_s": 0.0,
+      "context_at_s": [
+        1.0,
+        2.0
+      ],
+      "left": 0.44,
+      "top": 0.28,
+      "right": 0.59,
+      "bottom": 0.72
+    },
+    "lines": [
+      {
+        "id": "speech-1",
+        "role": "caller",
+        "text": "Harry Kane buries the penalty! England level at 1-1!",
+        "start_s": 15.449491083010798,
+        "end_s": 18.4494910830108,
+        "interrupted": false,
+        "evidence_ids": [
+          "v1-o2"
+        ],
+        "origin": "Model-generated text"
+      },
+      {
+        "id": "speech-2",
+        "role": "analyst",
+        "text": "The penalty was driven low and out of the goalkeeper\u2019s reach, with the dive going the wrong way.",
+        "start_s": 18.70071825000923,
+        "end_s": 24.70071825000923,
+        "interrupted": false,
+        "evidence_ids": [
+          "v1-o2"
+        ],
+        "origin": "Model-generated text"
+      }
+    ],
+    "events": [
+      {
+        "id": "event-0",
+        "time_s": 6.50141183300002,
+        "kind": "observation_started",
+        "title": "Observer starts",
+        "role": null,
+        "detail": "8 sampled frames; latest source time 6.5s.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-1",
+        "time_s": 14.159768583005643,
+        "kind": "observation_available",
+        "title": "Evidence available",
+        "role": null,
+        "detail": "3 observations released to the commentators.",
+        "source_at_s": 0.0,
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 0.0,
+            "kind": "play",
+            "description": "England are awarded and taking a penalty kick; the ball is placed on the spot with the referee indicating the restart and players waiting around the area.",
+            "action": {
+              "type": "penalty_kick",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "restart_setup",
+                "referee_signal",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                0.0,
+                1.0,
+                2.0
+              ]
+            },
+            "actor": null
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 1.0,
+            "kind": "goal",
+            "description": "The penalty is struck low toward the left side and the ball crosses into the net despite the goalkeeper diving the other way.",
+            "action": {
+              "type": "goal",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_motion",
+                "goal_line_crossing",
+                "ball_in_net",
+                "keeper_contact"
+              ],
+              "support_at_s": [
+                1.0,
+                2.0,
+                3.0
+              ]
+            },
+            "actor": {
+              "side": "home",
+              "shirt_number": 9,
+              "shirt_name": null,
+              "identity_source": "shirt_number",
+              "action_role": "shooter",
+              "resolved_name": "Harry Kane"
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 3.0,
+            "kind": "celebration",
+            "description": "An England player runs away from goal celebrating after the equalising penalty goal; the scoreboard now shows 1-1.",
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [],
+              "support_at_s": [
+                3.0,
+                3.5,
+                4.5,
+                5.5,
+                6.5
+              ]
+            },
+            "actor": {
+              "side": "home",
+              "shirt_number": 9,
+              "shirt_name": null,
+              "identity_source": "shirt_number",
+              "action_role": "visible_player",
+              "resolved_name": "Harry Kane"
+            }
+          }
+        ]
+      },
+      {
+        "id": "event-2",
+        "time_s": 14.160172083007637,
+        "kind": "turn_started",
+        "title": "Commentator starts",
+        "role": "caller",
+        "detail": "Independent role receives its own evidence snapshot.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-4",
+        "time_s": 15.449481458010268,
+        "kind": "turn_started",
+        "title": "Commentator starts",
+        "role": "analyst",
+        "detail": "Independent role receives its own evidence snapshot.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-5",
+        "time_s": 15.449887041002512,
+        "kind": "speech_started",
+        "title": "Speech starts",
+        "role": "caller",
+        "detail": "Harry Kane buries the penalty! England level at 1-1!",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-8",
+        "time_s": 18.450722666006186,
+        "kind": "speech_ended",
+        "title": "Speech ends",
+        "role": "caller",
+        "detail": "",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-9",
+        "time_s": 18.700840250006877,
+        "kind": "speech_started",
+        "title": "Speech starts",
+        "role": "analyst",
+        "detail": "The penalty was driven low and out of the goalkeeper\u2019s reach, with the dive going the wrong way.",
+        "source_at_s": null,
+        "observations": []
+      },
+      {
+        "id": "event-10",
+        "time_s": 24.70218391600065,
+        "kind": "speech_ended",
+        "title": "Speech ends",
+        "role": "analyst",
+        "detail": "",
+        "source_at_s": null,
+        "observations": []
+      }
+    ],
+    "provenance": {
+      "path": "runs/replay/player-name-iteration-20261107/penalty-refined.json",
+      "sha256": "ad0ab85a6eee425550fe68a201ad0d8e26ed52e26f593c335e38470cc740f267",
+      "speech_timing": "Simulated from word counts; no synthesized audio.",
+      "edited": false,
+      "reuse_note": "Saved vision and caller reused with recorded delays; one new analyst call. Exact words are unedited."
+    }
+  },
+  {
     "id": "red-card",
     "title": "Red card and a deliberate pause",
     "videoPath": "/soccer-commentary/agent-card.mp4",
@@ -85,7 +306,8 @@
                 1.5,
                 2.0
               ]
-            }
+            },
+            "actor": null
           },
           {
             "id": "v1-o2",
@@ -103,7 +325,8 @@
                 4.0,
                 4.5
               ]
-            }
+            },
+            "actor": null
           }
         ]
       },
@@ -162,7 +385,8 @@
       "path": "runs/replay/recognition-pass-20261107-inspected/card.json",
       "sha256": "a96c98f02a6b3d0db4ed7186f8eeb9f4f842b9eda5066a7fca8d17c32d962d02",
       "speech_timing": "Simulated from word counts; no synthesized audio.",
-      "edited": false
+      "edited": false,
+      "reuse_note": null
     }
   },
   {
@@ -255,7 +479,8 @@
                 0.0,
                 1.0
               ]
-            }
+            },
+            "actor": null
           },
           {
             "id": "v1-o2",
@@ -275,7 +500,8 @@
                 2.5,
                 3.5
               ]
-            }
+            },
+            "actor": null
           },
           {
             "id": "v1-o3",
@@ -294,7 +520,8 @@
                 3.5,
                 4.5
               ]
-            }
+            },
+            "actor": null
           }
         ]
       },
@@ -373,7 +600,8 @@
       "path": "runs/replay/action-baseline-20261107/public-goal-complete.json",
       "sha256": "d2103f4e23ffc857816761df097b02cf3647ab63c9a9d938d8002fcea9c5ee4e",
       "speech_timing": "Simulated from word counts; no synthesized audio.",
-      "edited": false
+      "edited": false,
+      "reuse_note": null
     }
   }
 ]

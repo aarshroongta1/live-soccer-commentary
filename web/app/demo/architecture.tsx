@@ -1,7 +1,7 @@
 const stages = [
   { title: "Pre-match researcher", stack: "Python · cited research", detail: "Optional dated team/player facts, prepared before the replay. Research cannot establish on-pitch events." },
   { title: "Visual observer", stack: "OpenCV · vision model", detail: "Sees only available frames. Can inspect one region across up to three supplied images." },
-  { title: "Shared evidence", stack: "Pydantic · read-only tools", detail: "Timestamped events and readable identities. Agents can retrieve recent events or relevant context." },
+  { title: "Shared evidence", stack: "Pydantic · read-only tools", detail: "Timestamped events. Python maps readable kit numbers/names to the roster; agents retrieve that evidence and context." },
   { title: "Caller + analyst", stack: "Independent LangGraph turns", detail: "Separate prompts, model choices and tool loops. Each can speak, request context, or abstain." },
   { title: "Speech coordinator", stack: "Python asyncio", detail: "Owns the replay clock, deadlines, turn-taking and goal priority. Rejects stale or unavailable evidence." },
   { title: "Text + run trace", stack: "Next.js · React · TypeScript", detail: "Saved observations, exact generated words and execution events. Replay speech timing is simulated." },

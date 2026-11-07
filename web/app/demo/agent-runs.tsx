@@ -16,8 +16,10 @@ export type AgentRun = {
     interrupted: boolean; evidence_ids: string[]; origin: string }[];
   events: { id: string; time_s: number; kind: string; title: string; role: string | null;
     detail: string; source_at_s: number | null; observations: { id: string; at_s: number;
-      description: string; action: { type: string; certainty: string } | null }[] }[];
-  provenance: { path: string; sha256: string; speech_timing: string; edited: boolean };
+      description: string; action: { type: string; certainty: string } | null;
+      actor?: { resolved_name: string | null; shirt_number: number | null;
+        shirt_name: string | null; action_role: string } | null }[] }[];
+  provenance: { path: string; sha256: string; speech_timing: string; edited: boolean; reuse_note?: string | null };
 };
 const seconds = (time: number) => `${time.toFixed(1)}s`;
 
@@ -142,11 +144,17 @@ function RunReview({ run }: { run: AgentRun }) {
         <summary>Available visual evidence ({evidence.length})</summary>
         <ul>{evidence.map((item) => (
           <li key={item.id}><time>{seconds(item.at_s)}</time> <strong>{item.action?.type.replaceAll("_", " ") ?? "Observation"}</strong>
-            {item.action?.certainty === "uncertain" ? " (uncertain)" : ""}: {item.description}</li>
+            {item.action?.certainty === "uncertain" ? " (uncertain)" : ""}: {item.description}
+            {item.actor?.resolved_name && <small className="demo-run-identity">
+              Kit identity: {item.actor.shirt_number !== null ? `#${item.actor.shirt_number}` : item.actor.shirt_name}
+              {" → "}{item.actor.resolved_name} · {item.actor.action_role.replaceAll("_", " ")}
+            </small>}
+          </li>
         ))}</ul>
         {run.inspection && evidence.length > 0 && <p>The observer inspected one region at {[run.inspection.frame_at_s, ...run.inspection.context_at_s].sort((a, b) => a - b).map(seconds).join(", ")} of source time.</p>}
       </details>
       <p className="demo-run-limit"><strong>What to notice:</strong> {run.limitation}</p>
+      {run.provenance.reuse_note && <p className="demo-run-caption">{run.provenance.reuse_note}</p>}
       <p className="demo-run-caption">Unedited saved output. Text only; speech durations are simulated. Research was not used in this example. Browsing this run makes no model calls.</p>
     </>
   );

@@ -303,3 +303,5 @@
   .demo-picker { max-width: 100%; }
   .demo-run-trace ol { max-height: 240px; }
 }
+
+.demo-run-identity { display: block; margin-top: 4px; color: var(--demo-muted, #66666d); }
