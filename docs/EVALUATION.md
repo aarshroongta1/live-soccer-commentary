@@ -69,6 +69,43 @@ judge against human labels, randomize pairwise ordering, and track disagreements
 Use match-level uncertainty estimates when there are enough independent matches;
 do not count many windows from one match as independent evidence.
 
+## Action recognition diagnostics
+
+The replay observer now requires explicit football action labels, separately from
+`play`, `goal`, `celebration`, and `replay` scene categories. Reference events can
+include `action_type` and, for a pass/cross/clearance, `ball_path`. For example:
+
+```json
+{"id":"p1","at_s":2,"kind":"play","action_type":"pass","ball_path":"ground"}
+```
+
+`evaluate_replay` reports action recall, per-action counts, classification
+confusions, and ground/aerial confusions. It uses the existing one-to-one scene/time
+matches without consulting gold action types, so a pass misclassified as a shot
+remains a mistake. Missing, unknown, uncertain, and unmatched predictions count as
+abstentions against labeled events. Old saved runs with no typed actions receive
+no action-recognition credit from their prose descriptions.
+
+Set `action_labels_complete=true` only when action labels exhaustively cover the
+clip, including routine actions and replayed actions. Action precision is otherwise
+null: a prediction outside sparse labels cannot fairly be called a false positive.
+These are event-level diagnostics at an explicit timestamp tolerance, not temporal
+segment IoU, tracking scores, or semantic scoring of spoken sentences.
+
+Build the first independent action set from varied short sequences: routine passes,
+aerial crosses, carries and dribbles, successful and missed shots, saves, defensive
+interventions, set pieces, and referee decisions. Include unclear views and replays.
+Review frame timestamps and ball paths directly from video, keeping labels outside
+runtime inputs. Start with development clips; reserve matches for validation and
+final testing before optimizing prompts. The five manually edited goal showcases
+alone cannot establish broad action recognition. The new contract and synthetic
+regressions have not yet been evaluated on a labeled broadcast action benchmark.
+
+Add temporal pattern labels separately after establishing action quality. A one-two
+requires linked exchanges between participants; a counterattack requires possession
+transition and progression over time. Evaluate those sequences independently rather
+than treating a plausible tactical sentence as evidence that the pattern occurred.
+
 ## Improvement sequence
 
 1. **Establish a baseline.** Freeze prompts, model IDs, configuration, dataset split,

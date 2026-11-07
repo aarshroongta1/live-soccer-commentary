@@ -56,6 +56,37 @@ These are cooperative asyncio deadlines, not hard real-time guarantees. A backen
 must propagate cancellation. No framework can make an unresponsive provider finish
 within a match deadline.
 
+## Football actions
+
+New replay vision calls must return a typed action alongside the coarse scene kind.
+The vocabulary covers passes, carries, dribbles, crosses, shots, headers, saves,
+blocks, tackles, interceptions, recoveries, clearances, goals, restarts, and referee
+decisions. `football.py` contains the exact labels. Each action includes:
+
+- `certainty`: confirmed or uncertain; `unknown` actions must remain uncertain.
+- `support_at_s`: exact supplied frame timestamps no later than the observation.
+- `cues`: reported visible support, with event-specific requirements for goals,
+  referee decisions, cards, and substitutions.
+- `ball_path`: ground, aerial, or unknown for passes, crosses, and clearances.
+
+Scene kind and action are separate: a replay can contain a confirmed goal action
+without becoming a new live goal. Uncertain goals remain ordinary play observations.
+The caller cannot cite uncertain actions or replay footage as live play; the analyst
+can qualify uncertainty or discuss a replay explicitly. Both role validation and the
+coordinator enforce the caller restriction. Legacy saved observations may omit
+`action`; evaluation treats their fine-grained classification as an abstention.
+
+These contracts structure VLM predictions; they do not train a detector or prove
+that a claimed visual cue exists. Sparse sampling can miss brief contacts, and the
+current observer has no persistent ball/player tracking. No action-recognition
+accuracy is established by the synthetic tests. See [evaluation](EVALUATION.md)
+for separate action and ball-path diagnostics.
+
+The next layer is temporal play recognition: counterattacks, one-twos, switches,
+through balls, cutbacks, and pressing sequences. This is not implemented yet. It
+needs supported action sequences and, where relevant, possession and participant
+links across windows. A single-frame action label cannot establish those patterns.
+
 ## Offline control-flow diagnostic
 
 Run from the repository root after `uv sync --dev`:
