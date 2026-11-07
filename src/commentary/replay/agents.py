@@ -34,7 +34,8 @@ Name a player only if the same cited observation directly resolves that player's
 for that action. A later named celebration does not identify an earlier scorer. Never infer
 a player from shirt colours, fame, team lists, or background statistics. Never invent goals,
 assists, score, intent, tactics, or future play. State uncertainty or abstain when unsupported.
-Use natural full phrases, no headings, no filler, and avoid repeating recent spoken lines.
+Use natural full phrases, no headings, no filler, and avoid repeating recent spoken lines
+about the same event or fact. A fresh goal may naturally use the same short goal call.
 Prefer the newest relevant action. Speak at most 60 words, usually far fewer. An exciting
 but unsupported call is worse than silence. Prior reviewer feedback is advice; evidence
 and role permissions still govern every revision."""
@@ -190,9 +191,13 @@ class RoleAgents:
             raise ValueError("caller requires visual evidence and cannot cite research")
         if not (line.evidence_ids or line.research_ids):
             raise ValueError("agent line needs evidence or research")
-        recent = {item.text.casefold().strip() for item in state["snapshot"].recent_lines[-6:]}
-        if line.text.casefold().strip() in recent:
-            raise ValueError("agent repeated a recent spoken line")
+        normalized = " ".join(line.text.casefold().split())
+        for previous in state["snapshot"].recent_lines[-6:]:
+            overlaps = set(line.evidence_ids).intersection(previous.evidence_ids) or set(
+                line.research_ids
+            ).intersection(previous.research_ids)
+            if overlaps and normalized == " ".join(previous.text.casefold().split()):
+                raise ValueError("agent repeated a recent spoken line about the same evidence")
 
     def _tool(self, state: _TurnState) -> dict[str, Any]:
         action = state["action"]

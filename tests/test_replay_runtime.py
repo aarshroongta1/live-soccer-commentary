@@ -86,6 +86,56 @@ async def test_independent_roles_and_nonoverlapping_simulated_speech() -> None:
 
 
 @pytest.mark.asyncio
+async def test_concurrent_roles_cannot_repeat_same_words_for_same_event() -> None:
+    clock = Clock()
+    contexts: list[RuntimeSnapshot] = []
+
+    async def run_role(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
+        contexts.append(snapshot)
+        text = "The pass goes forward." if role == "caller" else "  THE pass goes forward!"
+        return speech(role, snapshot, text)
+
+    runtime = ReplayRuntime(observe, run_role, monotonic=clock.monotonic, sleep=clock.sleep)
+    task = asyncio.create_task(runtime.run([Frame(0, b"0")], duration_s=3))
+    await drive(task, clock)
+    result = task.result()
+    assert len(contexts) == 2
+    assert all(snapshot.recent_lines == [] for snapshot in contexts)
+    assert len(result.speech) == 1
+    assert result.speech[0].line.text == "The pass goes forward."
+    duplicate = next(event for event in result.trace if event.event == "speech_duplicate")
+    assert duplicate.role == "analyst"
+    assert duplicate.data["duplicate_of"] == result.speech[0].id
+
+
+@pytest.mark.asyncio
+async def test_identical_goal_words_are_allowed_for_distinct_goal_evidence() -> None:
+    clock = Clock()
+
+    async def goals(frames: list[Frame], cutoff: float) -> list[Observation]:
+        return [
+            Observation(
+                id=f"goal-{cutoff}", at_s=cutoff, kind="goal", description="Ball crosses the line."
+            )
+        ]
+
+    async def run_role(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
+        if role == "analyst":
+            return TurnResult(
+                role=role, snapshot_version=snapshot.version, cutoff_s=snapshot.cutoff_s
+            )
+        return speech(role, snapshot, "Goal!")
+
+    runtime = ReplayRuntime(goals, run_role, monotonic=clock.monotonic, sleep=clock.sleep)
+    task = asyncio.create_task(runtime.run([Frame(0, b"0"), Frame(4, b"4")], duration_s=5))
+    await drive(task, clock)
+    result = task.result()
+    assert [item.line.text for item in result.speech] == ["Goal!", "Goal!"]
+    assert [item.line.evidence_ids for item in result.speech] == [["goal-0"], ["goal-4"]]
+    assert not any(event.event == "speech_duplicate" for event in result.trace)
+
+
+@pytest.mark.asyncio
 async def test_clock_advances_while_roles_work_and_snapshots_are_isolated() -> None:
     clock = Clock()
     release = asyncio.Event()

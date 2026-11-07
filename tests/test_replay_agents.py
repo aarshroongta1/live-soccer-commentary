@@ -241,6 +241,44 @@ async def test_recent_verbatim_repetition_is_rejected() -> None:
         await agents(backend).run("caller", state)
 
 
+async def test_same_goal_call_is_allowed_for_a_distinct_goal() -> None:
+    state = snapshot()
+    state.observations[-1].kind = "goal"
+    state.observations[-1].description = "The ball crosses the goal line."
+    state.recent_lines.append(
+        SpeechLine(voice="caller", text="Goal!", evidence_ids=["earlier-goal"])
+    )
+    backend = ScriptedBackend()
+    backend.always("replay_caller", speak(text="Goal!"))
+
+    result = await agents(backend).run("caller", state)
+
+    assert result.line is not None
+    assert result.line.text == "Goal!" and result.line.evidence_ids == ["e4"]
+
+
+async def test_same_research_fact_cannot_repeat_with_normalized_whitespace() -> None:
+    state = snapshot()
+    state.recent_lines.append(
+        SpeechLine(voice="analyst", text="Green had good form.", research_ids=["r1"])
+    )
+    backend = ScriptedBackend()
+    backend.queue(
+        "replay_analyst",
+        [
+            AgentAction(kind="tool", tool=ToolCall(name="research")),
+            AgentAction(
+                kind="speak",
+                line=SpeechLine(
+                    voice="analyst", text=" GREEN  had good form. ", research_ids=["r1"]
+                ),
+            ),
+        ],
+    )
+    with pytest.raises(ValueError, match="repeated"):
+        await agents(backend).run("analyst", state)
+
+
 async def test_research_citation_requires_tool_retrieval_even_for_analyst() -> None:
     backend = ScriptedBackend()
     backend.always(

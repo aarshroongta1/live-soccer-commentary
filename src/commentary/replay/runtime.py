@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import math
+import re
 import time
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
@@ -18,6 +19,7 @@ from commentary.replay.contracts import (
     ReplayResult,
     Role,
     RuntimeSnapshot,
+    SpeechLine,
     SpeechRecord,
     TraceEvent,
     TurnResult,
@@ -363,6 +365,25 @@ class ReplayRuntime:
             self._active = None
             self._next_speech_s = self._now()
 
+    def _spoken_duplicate(self, line: SpeechLine) -> SpeechRecord | None:
+        """Final admission uses live speech history, not a role's older snapshot.
+
+        Equal words alone do not make a duplicate: two distinct goals may both
+        deserve 'Goal!'. Require an overlapping event or research-fact citation.
+        """
+        normalized = re.sub(r"\W+", " ", line.text.casefold()).strip()
+        evidence = set(line.evidence_ids)
+        research = set(line.research_ids)
+        for previous in reversed(self._result.speech[-6:]):
+            same_text = re.sub(r"\W+", " ", previous.line.text.casefold()).strip() == normalized
+            shared_source = bool(
+                evidence.intersection(previous.line.evidence_ids)
+                or research.intersection(previous.line.research_ids)
+            )
+            if same_text and shared_source:
+                return previous
+        return None
+
     def _speech(self) -> None:
         now = self._now()
         if self._active is not None:
@@ -389,6 +410,16 @@ class ReplayRuntime:
             if selected_candidate is None or selected_candidate.result.line is None:
                 continue
             line = selected_candidate.result.line.model_copy(deep=True)
+            duplicate = self._spoken_duplicate(line)
+            if duplicate is not None:
+                self._trace(
+                    "speech_duplicate",
+                    role,
+                    duplicate_of=duplicate.id,
+                    evidence_ids=line.evidence_ids,
+                    research_ids=line.research_ids,
+                )
+                continue
             event_times = [
                 item.at_s
                 for item in selected_candidate.snapshot.observations
