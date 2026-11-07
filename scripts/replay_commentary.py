@@ -190,6 +190,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         [args.spend, args.pack, args.research, args.fixture, args.reviewer_model, args.reuse_vision]
     ):
         raise ValueError("diagnostic mode uses only fictional evidence and scripted roles")
+    source_hash = None
     duration = 12.0 if args.diagnostic else args.duration
     if args.diagnostic:
         frames = [Frame(at_s=float(index), jpeg=b"synthetic") for index in range(13)]
@@ -206,6 +207,8 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 "speech_simulated": True,
                 "note": "Pass --spend to run the observer and independent role agents.",
             }
+        with args.clip.open("rb") as media:
+            source_hash = hashlib.file_digest(media, "sha256").hexdigest()
         frames = sample_clip(args.clip, args.start, duration, fps=args.fps)
     backend: LLMBackend
     observer: Any
@@ -219,6 +222,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         expected_pack = hashlib.sha256(args.pack.read_bytes()).hexdigest() if args.pack else None
         if (
             Path(old["source_clip"]).resolve() != args.clip.resolve()
+            or (old.get("source_sha256") is not None and old["source_sha256"] != source_hash)
             or old["source_start_s"] != args.start
             or old["duration_s"] != duration
             or old.get("sample_fps") != args.fps
@@ -279,6 +283,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "provenance": "synthetic diagnostic" if args.diagnostic else "model-generated replay",
             "source_clip": None if args.diagnostic else str(args.clip),
             "source_start_s": 0 if args.diagnostic else args.start,
+            "source_sha256": reused.metadata.get("source_sha256") if reused else source_hash,
             "sample_fps": args.fps if not args.diagnostic else None,
             "speech_simulated": True,
             "config": asdict(config),
@@ -310,7 +315,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "vision_reuse": {
                 "source": str(args.reuse_vision),
                 "sha256": hashlib.sha256(args.reuse_vision.read_bytes()).hexdigest(),
-                "media_contents_verified": False,
+                "media_contents_verified": reused.metadata.get("source_sha256") is not None,
             }
             if args.reuse_vision
             else None,

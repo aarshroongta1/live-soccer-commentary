@@ -148,12 +148,15 @@ async def test_invalid_frame_rate_is_rejected_before_any_model_setup(
         await module.run(module.arguments())
 
 
+@pytest.mark.parametrize("mismatch", ["fps", "media_hash"])
 async def test_cache_metadata_mismatch_is_rejected_before_paid_setup(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    mismatch: str,
 ) -> None:
     module = script()
     clip = tmp_path / "clip.mp4"
+    clip.write_bytes(b"local test media")
     prior = tmp_path / "prior.json"
     prior.write_text(
         json.dumps(
@@ -163,7 +166,8 @@ async def test_cache_metadata_mismatch_is_rejected_before_paid_setup(
                     "source_clip": str(clip),
                     "source_start_s": 0,
                     "duration_s": 12,
-                    "sample_fps": 2,
+                    "sample_fps": 2 if mismatch == "fps" else 1,
+                    "source_sha256": "b" * 64 if mismatch == "media_hash" else None,
                     "pack_sha256": None,
                     "config": {"batch_s": 2},
                 },

@@ -411,3 +411,34 @@ def test_synthetic_diagnostic_manifest_is_honestly_labeled() -> None:
     assert reference.source.kind == reference.source.annotation_status == "synthetic"
     assert reference.split == "development"
     validate_manifest([reference])
+
+
+def test_broadcast_scoring_checks_source_window_and_recorded_hash() -> None:
+    reference = case(
+        source=ReferenceSource(
+            kind="broadcast",
+            locator="clips/action-sources/test.mp4",
+            start_s=3,
+            sha256="a" * 64,
+            provenance="Test source metadata, not a real broadcast.",
+            usage_terms="Test fixture.",
+            annotation_status="unreviewed",
+        )
+    )
+    metadata = dict(source_clip="clips/action-sources/test.mp4", source_start_s=3, duration_s=12)
+    result = ReplayResult(metadata=metadata)
+    alignment = evaluate_replay(result, reference)["source_alignment"]
+    assert alignment == {"status": "path_and_window", "media_contents_verified": False}
+    result.metadata["source_sha256"] = "a" * 64
+    assert evaluate_replay(result, reference)["source_alignment"]["media_contents_verified"]
+    for field, value in [
+        ("source_clip", "clips/other.mp4"),
+        ("source_start_s", 0),
+        ("duration_s", 10),
+        ("source_sha256", "b" * 64),
+    ]:
+        wrong = ReplayResult(metadata={**result.metadata, field: value})
+        with pytest.raises(ValueError, match="does not match"):
+            evaluate_replay(wrong, reference)
+    with pytest.raises(ValueError, match="requires run source"):
+        evaluate_replay(ReplayResult(), reference)

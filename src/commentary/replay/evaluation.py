@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 from collections import Counter
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -26,6 +27,8 @@ class ReferenceSource(BaseModel):
     provenance: str = Field(min_length=1)
     usage_terms: str = Field(min_length=1)
     annotation_status: Literal["synthetic", "reviewed", "unreviewed"]
+    start_s: float = Field(default=0, ge=0, allow_inf_nan=False)
+    sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
     @model_validator(mode="after")
     def synthetic_is_explicit(self) -> ReferenceSource:
@@ -45,6 +48,7 @@ class ReferenceEvent(BaseModel):
     required: bool = True
     action_type: ActionType | None = None
     ball_path: BallPath | None = None
+    annotation_note: str | None = Field(default=None, max_length=500)
 
 
 class ReferenceCommentary(BaseModel):
@@ -311,6 +315,31 @@ def _action_metrics(
     }
 
 
+def _source_alignment(result: ReplayResult, case: EvaluationCase) -> dict[str, Any]:
+    """Broadcast scores must refer to the labeled source window, never a shifted clip.
+
+    Legacy outputs without media hashes can verify path/window only. Hashes are
+    recorded by the runner, not recomputed from a mutable local file during scoring.
+    """
+    if case.source.kind == "synthetic":
+        return {"status": "synthetic", "media_contents_verified": False}
+    actual = result.metadata
+    if not isinstance(actual.get("source_clip"), str):
+        raise ValueError("broadcast evaluation requires run source_clip metadata")
+    if Path(actual["source_clip"]).resolve() != Path(case.source.locator).resolve():
+        raise ValueError("run source clip does not match the reference")
+    if actual.get("source_start_s") != case.source.start_s:
+        raise ValueError("run source start does not match the reference")
+    if actual.get("duration_s") != case.duration_s:
+        raise ValueError("run duration does not match the reference")
+    recorded_hash = actual.get("source_sha256")
+    if case.source.sha256 is not None and recorded_hash is not None:
+        if recorded_hash != case.source.sha256:
+            raise ValueError("run source hash does not match the reference")
+        return {"status": "path_window_and_hash", "media_contents_verified": True}
+    return {"status": "path_and_window", "media_contents_verified": False}
+
+
 def evaluate_replay(
     result: ReplayResult, case: EvaluationCase, tolerance_s: float = 2.0
 ) -> dict[str, Any]:
@@ -322,6 +351,7 @@ def evaluate_replay(
     """
     validate_manifest([case])
     case = EvaluationCase.model_validate(case.model_dump(mode="python"))
+    source_alignment = _source_alignment(result, case)
     if not math.isfinite(tolerance_s) or tolerance_s < 0:
         raise ValueError("tolerance_s must be finite and at least zero")
     ids = [item.id for item in result.observations]
@@ -424,6 +454,7 @@ def evaluate_replay(
         "match_id": case.match_id,
         "split": case.split,
         "reference_status": case.source.annotation_status,
+        "source_alignment": source_alignment,
         "source": case.source.model_dump(mode="json"),
         "scope": {
             "event_match": "one-to-one kind and timestamp; no semantic text scoring",
