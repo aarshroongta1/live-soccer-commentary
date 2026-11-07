@@ -1,0 +1,23 @@
+src/commentary/replay/preparation.py
+  s_aba8a8d5718a34::t_1434d02a90a91a 1-174
+  s_aba8a8d5718a34::t_3f11122db7b2f3 175-184
+tests/test_replay_preparation.py
+  s_aba8a8d5718a34::t_bff0aa8b032d78 1-100
+  s_aba8a8d5718a34::t_ec6be63bbbd644 101-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0b771b741aca58337c2de24038241c2418217ff8",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
