@@ -1,0 +1,41 @@
+examples/replay-evaluation/public/chelsea-burnley-public-goal.json
+  s_aba8a8d5718a34::t_3c8588c8a40b14 1-73
+examples/evaluation-results/action-smoke-20261107.json
+  s_6658308151c726::t_be6b9b167ac43e 1-581
+examples/action-sources.json
+  s_6658308151c726::t_be6b9b167ac43e 151-175
+AGENTS.md
+  s_6658308151c726::t_bfd2ca315eef87 19-24
+docs/ACTION_DATA.md
+  s_6658308151c726::t_5838858cdd4073 3,59-62
+docs/ACTION_TRIAL.md
+  s_6658308151c726::t_8d680c1709cf4e 1-46
+docs/EVALUATION.md
+  s_6658308151c726::t_d5a7ed7df48a85 3-7,127-130,140-141,151
+docs/PUBLIC_DATA.md
+  s_6658308151c726::t_920b6b29f5e938 3-8,37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "758f01d3dfe66267a90579ad02b28edef751cfc1",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
