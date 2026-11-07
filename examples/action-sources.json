@@ -148,6 +148,31 @@
       ],
       "review_note": "Continuous full-match excerpt, including routine possession, restarts and quiet stretches. Local 15s has a visible feed glitch; exclude that area. Reviewed 24-39s contains ordinary buildup.",
       "annotation_status": "candidate"
+    },
+    {
+      "id": "chelsea-burnley-2015",
+      "url": "https://www.youtube.com/watch?v=2MW6hl9d1vk",
+      "publisher": "FOX Sports Italia",
+      "publisher_channel_id": "UCcgJEz1CzGmJGlHOQnw3PQA",
+      "title": "[Premier League] Chelsea vs Burnley 1-1 - 26^ giornata 2015",
+      "download_start_s": 0,
+      "download_end_s": 131,
+      "format_id": "243",
+      "local_path": "clips/action-sources/chelsea-burnley-2015.webm",
+      "sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913",
+      "bytes": 5589560,
+      "local_duration_s": 130.731,
+      "fps": 29.97002997002997,
+      "audio": false,
+      "candidate_actions": [
+        "goal",
+        "shot",
+        "red_card",
+        "corner",
+        "replay"
+      ],
+      "review_note": "Independent public broadcaster highlight of the Chelsea-Burnley 2015 match in official public labels. Only continuous 12-18.5s goal segment is clock-aligned; a global offset is invalid across highlight cuts.",
+      "annotation_status": "candidate"
     }
   ]
 }

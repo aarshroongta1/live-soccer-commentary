@@ -1,6 +1,6 @@
 # Action development footage
 
-Six video-only excerpts were downloaded on November 7, 2026, totaling 24.5 MB.
+Seven video-only excerpts were downloaded on November 7, 2026, totaling 30.1 MB.
 The media stays locally in `clips/action-sources/`, outside Git. Sources, publisher
 channel IDs, requested upstream sections, formats, decoded durations, sizes, and
 SHA-256 hashes are recorded in [the source catalog](../examples/action-sources.json).
@@ -56,9 +56,10 @@ booking history, identity, or reason for dismissal.
 
 ## Public benchmark priority
 
-Use the [published datasets](PUBLIC_DATA.md) as the main evaluation path. SoccerNet
-already supplies action/event annotations; the local excerpts above are supplementary
-smoke cases. Matching protected videos require the official access process.
+Keep the evaluation to a handful of clips; existing footage is sufficient. Use
+[published labels](PUBLIC_DATA.md) where practical, without expanding into broad
+benchmark work. The [first checks](ACTION_TRIAL.md) include one public highlight
+aligned to a published event label, with no protected-video access needed.
 
 ## Reuse and next pass
 

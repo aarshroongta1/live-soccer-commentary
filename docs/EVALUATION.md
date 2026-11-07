@@ -1,10 +1,10 @@
 # Commentary evaluation and improvement
 
-Status: the initial structural replay evaluator and synthetic diagnostic are
-implemented; see [the replay guide](REPLAY.md). A small broadcast source pool and
-four unreviewed action-reference drafts are now [available locally](ACTION_DATA.md).
-Human annotation review, semantic/audio evaluation, baseline experiments, and
-training/optimization remain next stages.
+Current scope: a handful of short action/event clips, using existing models only.
+No training, fine-tuning, or RL. Improve recognition and caller/analyst output on
+this fixed set before adding infrastructure. The [first checks](ACTION_TRIAL.md)
+found both integration failures and recognition mistakes; they are not a benchmark.
+The structural evaluator and public-label importer are available when useful.
 
 Build the replayable real-time multi-agent core first. Keep the pre-match
 researcher, observer, caller, and analyst separate, with timestamped evidence,
@@ -124,23 +124,10 @@ than treating a plausible tactical sentence as evidence that the pattern occurre
    data under a fixed evaluation budget. This optimizes prompts, not model weights.
    Keep test data untouched and version every candidate. A bounded critic revision
    during a run is a separate mechanism from this across-run improvement loop.
-3. **Learn from preferences if justified.** Collect preferred/rejected generations
-   for the same input, including our manual corrections. Consider supervised
-   fine-tuning for good demonstrations, then DPO for pairwise preferences on a model
-   we can actually fine-tune. Neither method by itself trains the ElevenLabs voices.
-4. **Try RL only after the reward is credible.** A later GRPO experiment could train
-   a small caller or analyst policy using multiple sampled outputs and grounded
-   quality feedback. It requires a trainable model, rollout budget, and independently
-   checked rewards. Start with one role; whole-system multi-agent credit assignment
-   adds complexity. Do not equate reward-model score with demonstrated improvement.
-
-Further domain research suggests **player grounding** as an alternative first RL
-target: [GameSight](https://arxiv.org/html/2604.00057v1) reports SFT and GRPO for
-player alignment with a binary reward. This offers a verifiable subtask before
-attempting subjective commentary-style rewards. Its segment-based visual context
-must be adapted to our causal replay constraints. See [the framework and related
-work review](RESEARCH.md) for this and reference-data candidates including MatchTime
-and SoccerNet-Echoes.
+3. **Review the resulting commentary.** Check the handful of clips for factual
+   accuracy, useful analysis, natural dialogue, timing, and the saved voice delivery.
+   Compare existing models or targeted prompt changes under an explicit budget.
+   No model weight updates, fine-tuning, or RL are planned.
 
 Correctness, evidence availability, and temporal leakage checks gate candidate
 promotion. Among passing candidates, compare quality, delay, and cost. Do not let a
@@ -150,8 +137,8 @@ verbose stat dumping, copied reference wording, and a judge-favored but false ca
 
 Keep improvement offline. No prompt self-editing during a match and no automatic
 production promotion. Promote versioned candidates only after regression checks;
-publish measured results, including regressions, rather than claiming RL gains
-before training and evaluation have occurred.
+record observed improvements and regressions without claiming general accuracy
+from a few development clips.
 
 ## First deliverables
 
@@ -161,7 +148,7 @@ before training and evaluation have occurred.
   plus saved role/tool/speech traces and blind listening comparisons.
 - A baseline-versus-agent experiment and a bounded prompt optimization experiment,
   with data hashes, prompt versions, budgets, failures, and repeatable run settings.
-- A decision based on those results about whether fine-tuning or RL is worthwhile.
+- A short record of clip-level failures and prompt/model/workflow changes; no training.
 
 ## Research consulted
 

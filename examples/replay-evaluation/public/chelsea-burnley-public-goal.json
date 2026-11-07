@@ -1,0 +1,73 @@
+{
+  "id": "chelsea-burnley-public-goal",
+  "match_id": "england_epl/2014-2015/2015-02-21 - 18-00 Chelsea 1 - 1 Burnley",
+  "split": "development",
+  "duration_s": 6.5,
+  "time_basis": "clip_relative",
+  "source": {
+    "kind": "broadcast",
+    "locator": "clips/action-sources/chelsea-burnley-2015.webm",
+    "provenance": "Published SoccerNet events-v2 annotations from https://huggingface.co/datasets/SoccerNet/SN-Labels/resolve/main/england_epl/2014-2015/2015-02-21%20-%2018-00%20Chelsea%201%20-%201%20Burnley/Labels-v2.json.",
+    "usage_terms": "Independent public FOX Sports Italia highlight; original broadcaster copyright, no redistribution or training rights established.",
+    "annotation_status": "unreviewed",
+    "start_s": 12.0,
+    "sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913"
+  },
+  "events": [
+    {
+      "id": "sn-h1-a31",
+      "at_s": 3.72199999999998,
+      "kind": "goal",
+      "player": null,
+      "team": null,
+      "required": true,
+      "action_type": "goal",
+      "ball_path": null,
+      "annotation_note": "Published events-v2 label: Goal; local alignment awaits review."
+    }
+  ],
+  "action_labels_complete": false,
+  "reference_metadata": {
+    "dataset": "SoccerNet",
+    "task": "events-v2",
+    "upstream_split": "train",
+    "split_assignment_verified": true,
+    "split_manifest_source": "https://github.com/SoccerNet/SoccerNet",
+    "split_manifest_revision": "95d76e2b46b43738dbf18f2d7ab3d7283d5aeff5",
+    "split_manifest_sha256": "4120a2264a2d0e6ada3dde9a2a4a86fe2ddf9e6e9b2af3dbee2026a23568cbcd",
+    "half": 1,
+    "label_origin": "https://huggingface.co/datasets/SoccerNet/SN-Labels/resolve/main/england_epl/2014-2015/2015-02-21%20-%2018-00%20Chelsea%201%20-%201%20Burnley/Labels-v2.json",
+    "labels_sha256": "4a47044fddef220b4f57abb22c10d74088bd9f9f8bf0e41c4f2d118f165354a6",
+    "video_half_offset_s": -775.0,
+    "timing": "position milliseconds in original half video, plus explicit video offset",
+    "interval": "start inclusive, end exclusive",
+    "window_annotations": [
+      {
+        "annotation_index": 31,
+        "gameTime": "1 - 13:10",
+        "position": 790722,
+        "label": "Goal",
+        "visibility": "visible",
+        "team": "home",
+        "clip_at_s": 3.72199999999998,
+        "mapped_action": "goal",
+        "excluded_reason": null
+      }
+    ],
+    "alignment_reviewed": false,
+    "metric_scope": "project diagnostics; not official SoccerNet mAP",
+    "alignment": {
+      "method": "agent-reviewed on-screen clock anchor in an independently public broadcast highlight",
+      "source_url": "https://www.youtube.com/watch?v=2MW6hl9d1vk",
+      "local_anchor_s": 14.0,
+      "displayed_match_clock": "13:09",
+      "assumed_dataset_half_video_s": 789.0,
+      "offset_s": -775.0,
+      "estimated_uncertainty_s": 1.0,
+      "scope": "Only the continuous 12.0-18.5s local segment. Not valid across highlight cuts.",
+      "human_reviewed": false,
+      "original_soccernet_video": false
+    }
+  },
+  "commentary": []
+}

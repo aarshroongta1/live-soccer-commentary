@@ -1,8 +1,11 @@
 # Public datasets for recognition and commentary
 
-Checked November 7, 2026. Established datasets should be the primary evaluation
-source. The manually drafted cases in `examples/replay-evaluation/actions/` remain
-small development smoke cases, not a replacement for published annotations.
+Current scope: a handful of short clips covering different actions and events.
+Use published labels where they help, but do not build a broad benchmark or require
+gated dataset access for the demo. Existing local footage is sufficient. See the
+[first action checks](ACTION_TRIAL.md) for actual results and remaining problems.
+The dataset inventory below was checked November 7, 2026; larger integrations are
+background options, not the next milestone.
 
 | Dataset | Relevant contents | Access checked |
 | --- | --- | --- |
@@ -31,7 +34,7 @@ has been downloaded. No recognition accuracy can be scored from labels alone.
 The Hugging Face combined dataset viewer currently reports a schema-cast error
 for SN-Labels; this does not prevent individual JSON files from downloading.
 
-## Integration order
+## Optional larger integration (deferred)
 
 1. Use Ball Action Spotting for passes, carries/drives, headers, crosses, tackles,
    and blocks. Use Action Spotting for decisions and match events. These cover

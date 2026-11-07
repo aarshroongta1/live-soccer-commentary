@@ -1,0 +1,581 @@
+{
+  "date": "2026-11-07",
+  "scope": "Development smoke checks only; no official benchmark or validated population accuracy.",
+  "training": false,
+  "tts": false,
+  "total_reported_usd": 0.0631551,
+  "total_unsettled_usd": 0,
+  "overall_limit_usd": 0.09,
+  "final_code_revision": "06f46ed2d74605bd20c717b82f3540cdbef279c5",
+  "limitations": [
+    "Tackle/save/card references are agent drafts, not human-approved labels.",
+    "Public goal label is published SoccerNet data mapped to an independent highlight by a rounded on-screen clock; alignment is unreviewed and approximate.",
+    "No protected SoccerNet video was acquired.",
+    "Tackle/save retries hit vision budget stops, so misses do not isolate model capability.",
+    "Multiple development revisions and batching changes; no controlled A/B improvement claim.",
+    "Speech timestamps are simulated; source audio was excluded and no TTS was generated."
+  ],
+  "runs": [
+    {
+      "run": "runs/replay/action-baseline-20261107/public-goal-complete.json",
+      "sha256": "d2103f4e23ffc857816761df097b02cf3647ab63c9a9d938d8002fcea9c5ee4e",
+      "reference": "examples/replay-evaluation/public/chelsea-burnley-public-goal.json",
+      "reported_usd": 0.0017595500000000001,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.012,
+      "model_attempts": 2,
+      "observed_actions": [
+        {
+          "at_s": 1.0,
+          "kind": "play",
+          "type": "cross",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 2.5,
+          "kind": "play",
+          "type": "shot",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 3.5,
+          "kind": "goal",
+          "type": "goal",
+          "certainty": "confirmed"
+        }
+      ],
+      "transcript": [
+        {
+          "role": "caller",
+          "text": "It's in! They've found the net!",
+          "started_s": 10.413179875002243,
+          "ended_s": 12.413179875002243,
+          "interrupted": false
+        },
+        {
+          "role": "analyst",
+          "text": "The ball was swung into a crowded six-yard box, then dropped into a scramble before being redirected over the line.",
+          "started_s": 12.664584625003044,
+          "ended_s": 18.502765292010736,
+          "interrupted": true
+        }
+      ],
+      "execution": {
+        "trace_counts": {
+          "frames_skipped": 1,
+          "observation_started": 1,
+          "observation_available": 1,
+          "fast_goal_call": 1,
+          "speech_started": 2,
+          "turn_started": 1,
+          "speech_ended": 1,
+          "agent_action": 1,
+          "speech_queued": 1,
+          "replay_deadline": 1,
+          "speech_interrupted": 1
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 0,
+        "errors": 0
+      },
+      "missed_reference_ids": [],
+      "labeled_action_recall": 1.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/public-goal-final.json",
+      "sha256": "97e82e14f953be98d003521650ea5d25134d2e35e7e8b8d2dacf345e6f2718ed",
+      "reference": "examples/replay-evaluation/public/chelsea-burnley-public-goal.json",
+      "reported_usd": 0.0,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.008,
+      "model_attempts": 1,
+      "observed_actions": [],
+      "transcript": [],
+      "execution": {
+        "trace_counts": {
+          "frames_skipped": 1,
+          "observation_started": 1,
+          "budget_exhausted": 1
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 1,
+        "errors": 0
+      },
+      "missed_reference_ids": [
+        "sn-h1-a31"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/public-goal.json",
+      "sha256": "413ebe5394efe434ac22f3dae075e2f43a7aa90be89793f6068dcfc625b0877c",
+      "reference": "examples/replay-evaluation/public/chelsea-burnley-public-goal.json",
+      "reported_usd": 0.00405375,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.012,
+      "model_attempts": 1,
+      "observed_actions": [],
+      "transcript": [],
+      "execution": {
+        "trace_counts": {
+          "frames_skipped": 1,
+          "observation_started": 1,
+          "observer_error": 1
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 0,
+        "errors": 1
+      },
+      "missed_reference_ids": [
+        "sn-h1-a31"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/red-card-complete.json",
+      "sha256": "2fbc0e7e19a60c9a9d7a3cc13fc092bc18eefc59f2335f093005a2133a6f1012",
+      "reference": "examples/replay-evaluation/actions/france-jamaica-red-card.json",
+      "reported_usd": 0.004216650000000001,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.012,
+      "model_attempts": 3,
+      "observed_actions": [
+        {
+          "at_s": 1.5,
+          "kind": "celebration",
+          "type": "yellow_card",
+          "certainty": "confirmed"
+        },
+        {
+          "at_s": 4.0,
+          "kind": "celebration",
+          "type": "unknown",
+          "certainty": "uncertain"
+        }
+      ],
+      "transcript": [
+        {
+          "role": "analyst",
+          "text": "The replay confirms a yellow card, with number 11 gesturing toward the referee; the incident itself isn\u2019t shown clearly enough to explain further.",
+          "started_s": 10.407264166991808,
+          "ended_s": 17.00299358299526,
+          "interrupted": true
+        }
+      ],
+      "execution": {
+        "trace_counts": {
+          "frames_skipped": 1,
+          "observation_started": 1,
+          "observation_available": 1,
+          "turn_started": 2,
+          "agent_action": 2,
+          "turn_stale": 1,
+          "speech_queued": 1,
+          "speech_started": 1,
+          "replay_deadline": 1,
+          "speech_interrupted": 1
+        },
+        "timeouts": 0,
+        "stale_results": 1,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 0,
+        "errors": 0
+      },
+      "missed_reference_ids": [
+        "red-card"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/red-card-final.json",
+      "sha256": "5eefe4b7488c9eab15c911362048ae2bd19fd08a2d002d6415eb1886880685d5",
+      "reference": "examples/replay-evaluation/actions/france-jamaica-red-card.json",
+      "reported_usd": 0.0,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.008,
+      "model_attempts": 1,
+      "observed_actions": [],
+      "transcript": [],
+      "execution": {
+        "trace_counts": {
+          "frames_skipped": 1,
+          "observation_started": 1,
+          "budget_exhausted": 1
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 1,
+        "errors": 0
+      },
+      "missed_reference_ids": [
+        "red-card"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/red-card-fixed.json",
+      "sha256": "11d4bb556268648fb4511c79362b57c48a138fbc1a9d7b30b164dd81efa3ac48",
+      "reference": "examples/replay-evaluation/actions/france-jamaica-red-card.json",
+      "reported_usd": 0.0075644,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.015,
+      "model_attempts": 4,
+      "observed_actions": [
+        {
+          "at_s": 3.0,
+          "kind": "celebration",
+          "type": "unknown",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 3.5,
+          "kind": "celebration",
+          "type": "unknown",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 4.0,
+          "kind": "celebration",
+          "type": "unknown",
+          "certainty": "uncertain"
+        }
+      ],
+      "transcript": [],
+      "execution": {
+        "trace_counts": {
+          "observation_started": 2,
+          "observer_error": 1,
+          "observation_available": 1,
+          "turn_started": 2,
+          "agent_action": 1,
+          "abstained": 1,
+          "turn_error": 1
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 0,
+        "errors": 2
+      },
+      "missed_reference_ids": [
+        "red-card"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/red-card.json",
+      "sha256": "0bf44a40f61079a0a0081d2d9d6a74badbaa21464822dc551d9a1e51943eeb8c",
+      "reference": "examples/replay-evaluation/actions/france-jamaica-red-card.json",
+      "reported_usd": 0.0080209,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.03,
+      "model_attempts": 4,
+      "observed_actions": [
+        {
+          "at_s": 3.0,
+          "kind": "celebration",
+          "type": "unknown",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 3.5,
+          "kind": "celebration",
+          "type": "unknown",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 4.0,
+          "kind": "celebration",
+          "type": "unknown",
+          "certainty": "uncertain"
+        }
+      ],
+      "transcript": [],
+      "execution": {
+        "trace_counts": {
+          "observation_started": 2,
+          "observer_error": 1,
+          "observation_available": 1,
+          "turn_started": 2,
+          "agent_action": 1,
+          "abstained": 1,
+          "turn_error": 1
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 0,
+        "errors": 2
+      },
+      "missed_reference_ids": [
+        "red-card"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/save-fixed.json",
+      "sha256": "4a943cad3a19feeb542ab74992b547791c6d032cb2f110394b78e01cee62b60f",
+      "reference": "examples/replay-evaluation/actions/villa-arsenal-save.json",
+      "reported_usd": 0.008464,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.015,
+      "model_attempts": 7,
+      "observed_actions": [
+        {
+          "at_s": 1.0,
+          "kind": "play",
+          "type": "cross",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 2.0,
+          "kind": "play",
+          "type": "pass",
+          "certainty": "uncertain"
+        },
+        {
+          "at_s": 6.5,
+          "kind": "play",
+          "type": "cross",
+          "certainty": "confirmed"
+        },
+        {
+          "at_s": 7.5,
+          "kind": "play",
+          "type": "ball_recovery",
+          "certainty": "uncertain"
+        }
+      ],
+      "transcript": [
+        {
+          "role": "caller",
+          "text": "A confirmed cross is driven across the penalty area.",
+          "started_s": 11.975742541995714,
+          "ended_s": 14.975742541995714,
+          "interrupted": false
+        },
+        {
+          "role": "analyst",
+          "text": "The cross travels in from the right, but the ball drops among converging players and the defender\u2019s control is not clear.",
+          "started_s": 15.2271906669921,
+          "ended_s": 20.001999667001655,
+          "interrupted": true
+        }
+      ],
+      "execution": {
+        "trace_counts": {
+          "observation_started": 3,
+          "observation_available": 2,
+          "turn_started": 4,
+          "budget_exhausted": 1,
+          "agent_action": 4,
+          "abstained": 2,
+          "speech_queued": 2,
+          "speech_started": 2,
+          "speech_ended": 1,
+          "replay_deadline": 1,
+          "speech_interrupted": 1
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 1,
+        "errors": 0
+      },
+      "missed_reference_ids": [
+        "header"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/save.json",
+      "sha256": "36163a36286adbe6c92af56d47fa0727e98dcce3d61c15c903138eabc33d049f",
+      "reference": "examples/replay-evaluation/actions/villa-arsenal-save.json",
+      "reported_usd": 0.013305,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.03,
+      "model_attempts": 3,
+      "observed_actions": [],
+      "transcript": [],
+      "execution": {
+        "trace_counts": {
+          "observation_started": 3,
+          "observer_error": 3
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 0,
+        "errors": 3
+      },
+      "missed_reference_ids": [
+        "shot",
+        "header",
+        "save"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/tackle-fixed.json",
+      "sha256": "00ff397657af309547393f99cadf6cdef5e272197d89d599e6468d97b71fbd42",
+      "reference": "examples/replay-evaluation/actions/norwich-tottenham-tackle.json",
+      "reported_usd": 0.00537735,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.015,
+      "model_attempts": 4,
+      "observed_actions": [
+        {
+          "at_s": 0.0,
+          "kind": "play",
+          "type": "carry",
+          "certainty": "confirmed"
+        },
+        {
+          "at_s": 1.5,
+          "kind": "play",
+          "type": "pass",
+          "certainty": "confirmed"
+        },
+        {
+          "at_s": 2.0,
+          "kind": "play",
+          "type": "cross",
+          "certainty": "uncertain"
+        }
+      ],
+      "transcript": [
+        {
+          "role": "caller",
+          "text": "He drives forward and slides the ball into the box, across goal.",
+          "started_s": 9.071361041991622,
+          "ended_s": 13.071361041991622,
+          "interrupted": false
+        }
+      ],
+      "execution": {
+        "trace_counts": {
+          "observation_started": 2,
+          "batch_coalesced": 1,
+          "observation_available": 1,
+          "turn_started": 2,
+          "budget_exhausted": 1,
+          "agent_action": 2,
+          "speech_queued": 2,
+          "speech_started": 1,
+          "speech_ended": 1,
+          "turn_stale": 1
+        },
+        "timeouts": 0,
+        "stale_results": 1,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 1,
+        "errors": 0
+      },
+      "missed_reference_ids": [
+        "tackle"
+      ],
+      "labeled_action_recall": 0.0
+    },
+    {
+      "run": "runs/replay/action-baseline-20261107/tackle.json",
+      "sha256": "3c921ee557503b237e33ae4cae0e7b756bd0fcffaefdb90f7a073350249392ce",
+      "reference": "examples/replay-evaluation/actions/norwich-tottenham-tackle.json",
+      "reported_usd": 0.0103935,
+      "unsettled_usd": 0,
+      "configured_cap_usd": 0.03,
+      "model_attempts": 2,
+      "observed_actions": [],
+      "transcript": [],
+      "execution": {
+        "trace_counts": {
+          "observation_started": 2,
+          "batch_coalesced": 1,
+          "observer_error": 2
+        },
+        "timeouts": 0,
+        "stale_results": 0,
+        "tool_calls": 0,
+        "tool_requests_traced": 0,
+        "tool_results_traced": 0,
+        "tool_accounting_source": "metadata.role_audit",
+        "role_audit_status": "valid",
+        "rejected_turns": 0,
+        "rejected_observation_batches": 0,
+        "budget_stops": 0,
+        "errors": 2
+      },
+      "missed_reference_ids": [
+        "carry",
+        "tackle"
+      ],
+      "labeled_action_recall": 0.0
+    }
+  ]
+}

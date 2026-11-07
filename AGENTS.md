@@ -16,3 +16,9 @@
 - Do not train models, fine-tune weights, or run RL. Use existing models.
 - Public datasets are for evaluation and checking prompt/workflow changes. Keep
   reference labels and target commentary outside runtime agent inputs.
+
+# Evaluation scope
+
+- Keep evaluation to a handful of short clips covering different actions/events.
+- Prioritize recognition and commentary quality on those clips over more dataset
+  infrastructure or broad benchmark acquisition. Existing footage is sufficient.
