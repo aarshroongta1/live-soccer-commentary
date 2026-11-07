@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from commentary.football import ActionType
 from commentary.replay.evaluation import EvaluationCase, ReferenceEvent, ReferenceSource
+from commentary.replay.soccernet_splits import canonical_match_id, official_splits, verify_split
 
 Split = Literal["train", "valid", "test"]
 
@@ -54,8 +55,15 @@ EVENTS: dict[str, ActionType] = {
 
 def inspect_labels(raw: bytes) -> dict[str, object]:
     labels = SoccerNetLabels.model_validate_json(raw)
+    match_id = canonical_match_id(labels.UrlLocal)
+    index = official_splits()
+    official = index.assignments.get(match_id)
     return {
-        "match_id": labels.UrlLocal.rstrip("/"),
+        "match_id": match_id,
+        "official_split": official,
+        "split_status": "known" if official is not None else "unknown_match",
+        "split_manifest_revision": index.revision,
+        "split_manifest_sha256": index.sha256,
         "labels_sha256": hashlib.sha256(raw).hexdigest(),
         "annotations": len(labels.annotations),
         "label_counts": dict(sorted(Counter(a.label for a in labels.annotations).items())),
@@ -88,6 +96,9 @@ def import_case(
         raise ValueError("unsupported half")
     if upstream_split not in {"train", "valid", "test"}:
         raise ValueError("an official dataset split is required")
+    match_id = canonical_match_id(labels.UrlLocal)
+    verify_split(match_id, upstream_split)
+    split_index = official_splits()
     if not math.isfinite(video_half_offset_s):
         raise ValueError("video half offset must be finite")
     if not math.isfinite(duration_s) or duration_s <= 0:
@@ -145,7 +156,7 @@ def import_case(
     }
     return EvaluationCase(
         id=case_id,
-        match_id=labels.UrlLocal.rstrip("/"),
+        match_id=match_id,
         split=splits[upstream_split],
         duration_s=duration_s,
         source=source,
@@ -155,7 +166,10 @@ def import_case(
             "dataset": "SoccerNet",
             "task": "events-v2",
             "upstream_split": upstream_split,
-            "split_assignment_verified": False,
+            "split_assignment_verified": True,
+            "split_manifest_source": split_index.source,
+            "split_manifest_revision": split_index.revision,
+            "split_manifest_sha256": split_index.sha256,
             "half": half,
             "label_origin": label_origin,
             "labels_sha256": hashlib.sha256(raw).hexdigest(),

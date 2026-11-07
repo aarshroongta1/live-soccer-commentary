@@ -80,9 +80,28 @@ uv run python scripts/import_soccernet.py \
 ```
 
 Supply the match's actual published split, not an arbitrary partition. The importer
-records this supplied assignment as unverified and maps `train` to development,
-`valid` to validation, and `test` to test; those are dataset partition names, not
-instructions to train a model. Manifest validation rejects a match crossing splits.
+verifies that assignment offline against the official SoccerNet package lists pinned
+at [commit 95d76e2](https://github.com/SoccerNet/SoccerNet/tree/95d76e2b46b43738dbf18f2d7ab3d7283d5aeff5/SoccerNet/data).
+The package's [list-selection code](https://github.com/SoccerNet/SoccerNet/blob/main/SoccerNet/utils.py)
+selects `SoccerNetGamesTrain/Valid/Test/Challenge.json` for event spotting; the
+separate ball-action lists are not interchangeable with these partitions.
+
+The bundled snapshot contains 300 development/train, 100 validation, 100 test, and
+50 challenge match identities. The downloaded Chelsea–Burnley 2015 sample belongs
+to `train`/development. `--inspect` reports the official assignment. A contradictory
+claim, a challenge match, or an unknown identity fails before the CLI reads the
+video. Unknown matches require checking the dataset/release and updating the pinned
+official manifest; there is no unverified-assignment override.
+
+Successful imports record `split_assignment_verified=true`, the official repository,
+revision, and bundled-manifest hash. Original-list URLs and byte hashes are retained
+in `src/commentary/replay/data/soccernet-events-v2-splits.json`. This verifies split
+membership, not video alignment, annotation accuracy, or a user's declared label
+origin. Imported windows therefore remain unreviewed for alignment.
+
+The mapping is `train` to development, `valid` to validation, and `test` to test;
+these are dataset partition names, not instructions to train a model. Evaluation
+manifest validation also rejects a match crossing splits.
 
 `--video-half-offset` is the timestamp in the supplied source video corresponding
 to timestamp zero of the original SoccerNet half video. Use zero for the unchanged

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from commentary.recorded_demo import Observation
 from commentary.replay.contracts import ReplayResult
-from commentary.replay.evaluation import ReferenceSource, evaluate_replay, validate_manifest
+from commentary.replay.evaluation import ReferenceSource, evaluate_replay
 from commentary.replay.soccernet import import_case, inspect_labels
 
 
@@ -25,10 +25,11 @@ def annotation(label: str, position: int, **updates: Any) -> dict[str, Any]:
     }
 
 
-def labels(*events: dict[str, Any]) -> bytes:
-    return json.dumps(
-        {"UrlLocal": "league/season/fictional-match/", "annotations": list(events)}
-    ).encode()
+KNOWN_VALID = "england_epl/2014-2015/2015-04-11 - 19-30 Burnley 0 - 1 Arsenal"
+
+
+def labels(*events: dict[str, Any], match_id: str = KNOWN_VALID) -> bytes:
+    return json.dumps({"UrlLocal": match_id + "/", "annotations": list(events)}).encode()
 
 
 def convert(raw: bytes, **updates: Any) -> Any:
@@ -62,10 +63,10 @@ def test_half_video_position_and_offsets_govern_time_not_match_clock() -> None:
     )
     case = convert(raw)
     assert [(e.action_type, e.at_s) for e in case.events] == [("yellow_card", 0), ("foul", 5)]
-    assert case.match_id == "league/season/fictional-match"
+    assert case.match_id == KNOWN_VALID
     assert case.split == "validation"
     assert case.reference_metadata["upstream_split"] == "valid"
-    assert not case.reference_metadata["split_assignment_verified"]
+    assert case.reference_metadata["split_assignment_verified"]
     assert case.source.annotation_status == "unreviewed"  # alignment is not certified by labels
     assert not case.action_labels_complete
     assert len(case.reference_metadata["window_annotations"]) == 2
@@ -110,12 +111,21 @@ def test_converted_reference_scores_without_exposing_labels_to_runtime() -> None
     assert result.observations[0].action is None
 
 
-def test_same_match_cannot_be_imported_across_evaluation_splits() -> None:
+def test_known_match_cannot_be_assigned_to_the_wrong_official_split() -> None:
     raw = labels(annotation("Goal", 61000))
-    development = convert(raw, upstream_split="train", case_id="development")
-    test = convert(raw, upstream_split="test", case_id="test")
-    with pytest.raises(ValueError, match="multiple splits"):
-        validate_manifest([development, test])
+    convert(raw, upstream_split="valid")
+    for split in ("train", "test"):
+        with pytest.raises(ValueError, match="disagrees with official split 'valid'"):
+            convert(raw, upstream_split=split)
+
+
+def test_unknown_match_is_explicit_in_inspection_and_cannot_be_imported() -> None:
+    raw = labels(annotation("Goal", 61000), match_id="league/season/fictional-match")
+    summary = inspect_labels(raw)
+    assert summary["official_split"] is None
+    assert summary["split_status"] == "unknown_match"
+    with pytest.raises(ValueError, match="unknown in the pinned"):
+        convert(raw)
 
 
 @pytest.mark.parametrize("position,time", [(-1, "2 - 01:00"), (1, "3 - 01:00"), (1, "2 - 01:60")])

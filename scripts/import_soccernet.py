@@ -11,6 +11,7 @@ from pathlib import Path
 from commentary.recorded_demo import validate_inputs
 from commentary.replay.evaluation import ReferenceSource
 from commentary.replay.soccernet import import_case, inspect_labels
+from commentary.replay.soccernet_splits import verify_split
 
 
 def main() -> None:
@@ -53,6 +54,7 @@ def main() -> None:
         parser.error("import requires: " + ", ".join("--" + n.replace("_", "-") for n in missing))
     if args.out.exists():
         parser.error(f"refusing to overwrite existing output: {args.out}")
+    verify_split(str(inspect_labels(raw)["match_id"]), args.upstream_split)
     validate_inputs(args.clip, args.start, args.duration)
     with args.clip.open("rb") as media:
         digest = hashlib.file_digest(media, "sha256").hexdigest()
