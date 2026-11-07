@@ -47,6 +47,9 @@ You are the CALLER, responsible for immediate play-by-play and an appropriate em
 reaction to a verified goal. Your voice must be caller. Cite visual evidence for every line.
 You cannot use research or cite research IDs. Your tools are recent_events and player_context.
 Let the analyst supply explanation rather than narrating every moment yourself."""
+    + "\nAim for one sentence of 6–14 words. Do not read frame descriptions or narrate "
+    "uncertainty at length. A short goal reaction may already have been spoken; "
+    "do not announce that same goal again."
 )
 
 ANALYST_SYSTEM = (
@@ -58,6 +61,9 @@ supported movement or pattern; use research only when relevant to current play. 
 each statistic's stated competition, denominator, and time period exactly. Research cannot
 prove an on-pitch event. Cite visual evidence and/or research. Your tools are recent_events,
 player_context, and research. Abstain if there is nothing useful to add."""
+    + "\nA recent goal and its buildup remain relevant during celebration. Use the supplied "
+    "sequence to explain the move in 12–24 words, even if the latest frame is a celebration. "
+    "Complement an already-spoken goal reaction instead of repeating it."
 )
 
 REVIEW_SYSTEM = """Review a proposed football commentary line against only the supplied
@@ -121,6 +127,19 @@ class RoleAgents:
         base = ["recent_events", "player_context"]
         return base if role == "caller" else [*base, "research"]
 
+    @staticmethod
+    def _initial_observations(role: Role, snapshot: RuntimeSnapshot) -> list[Observation]:
+        selected = snapshot.observations[-3:]
+        if role == "analyst":
+            for index in range(len(snapshot.observations) - 1, -1, -1):
+                goal = snapshot.observations[index]
+                if goal.kind == "goal":
+                    if snapshot.cutoff_s - goal.at_s <= 20:
+                        selected = snapshot.observations[max(0, index - 2) : index + 1] + selected
+                    break
+        unique = {item.id: item for item in selected}
+        return sorted(unique.values(), key=lambda item: item.at_s)
+
     def _payload(self, state: _TurnState) -> dict[str, Any]:
         snapshot = state["snapshot"]
         return {
@@ -128,7 +147,9 @@ class RoleAgents:
             "snapshot_version": snapshot.version,
             "cutoff_s": snapshot.cutoff_s,
             "teams": snapshot.teams,
-            "observations": [_event_data(item) for item in snapshot.observations[-3:]],
+            "observations": [
+                _event_data(item) for item in self._initial_observations(state["role"], snapshot)
+            ],
             "recent_lines": [item.model_dump(mode="json") for item in snapshot.recent_lines[-6:]],
             "allowed_tools": self._tools(state["role"]),
             "remaining_actions": self.max_steps - state["steps"],
@@ -321,7 +342,7 @@ class RoleAgents:
                 reason="",
                 feedback="",
                 tool_results=[],
-                visible_evidence=[item.id for item in snapshot.observations[-3:]],
+                visible_evidence=[item.id for item in self._initial_observations(role, snapshot)],
                 visible_research=[],
                 trace=[],
             ),

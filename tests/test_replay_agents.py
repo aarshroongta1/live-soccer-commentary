@@ -61,6 +61,29 @@ def agents(backend: ScriptedBackend, **kwargs: object) -> RoleAgents:
     return RoleAgents(backend, "caller-model", "analyst-model", **kwargs)  # type: ignore[arg-type]
 
 
+async def test_analyst_retains_recent_goal_buildup_during_celebrations() -> None:
+    backend = ScriptedBackend()
+    events = [
+        Observation(
+            id=f"e{i}",
+            at_s=i,
+            kind="goal" if i == 3 else ("play" if i < 3 else "celebration"),
+            description="Visible event.",
+        )
+        for i in range(1, 7)
+    ]
+    view = RuntimeSnapshot(version=1, cutoff_s=6, observations=events)
+
+    def answer(blocks: Any, _format: Any) -> AgentAction:
+        payload = json.loads(blocks[0]["text"])
+        assert [o["id"] for o in payload["observations"]] == [f"e{i}" for i in range(1, 7)]
+        return speak("analyst", evidence="e2", text="That pass opened the route to goal.")
+
+    backend.register("replay_analyst", answer)
+    result = await agents(backend).run("analyst", view)
+    assert result.line is not None and result.line.evidence_ids == ["e2"]
+
+
 async def test_selected_tool_supplies_older_evidence_before_speech() -> None:
     backend = ScriptedBackend()
     backend.queue(

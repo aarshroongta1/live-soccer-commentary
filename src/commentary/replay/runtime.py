@@ -13,6 +13,7 @@ import time
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 
+from commentary.llm.budget import BudgetExceeded
 from commentary.recorded_demo import Frame, Observation
 from commentary.recorded_research import ResearchBrief
 from commentary.replay.contracts import (
@@ -44,6 +45,7 @@ class ReplayConfig:
     line_gap_s: float = 0.25
     max_batch_frames: int = 8
     max_context_observations: int = 64
+    fast_goal_calls: bool = False
 
     def __post_init__(self) -> None:
         for name in (
@@ -127,6 +129,7 @@ class ReplayRuntime:
         self._next_speech_s = 0.0
         self._last_voice: Role | None = None
         self._availability_cutoff = 0.0
+        self._goal_episode: str | None = None
 
     def _now(self) -> float:
         return max(0.0, (self._monotonic() - self._start) * self.config.rate)
@@ -204,6 +207,8 @@ class ReplayRuntime:
             observations = job.task.result()
         except TimeoutError:
             self._trace("observer_timeout", cutoff_s=job.cutoff_s)
+        except BudgetExceeded:
+            self._trace("budget_exhausted", stage="observer", cutoff_s=job.cutoff_s)
         except Exception as exc:
             self._trace("observer_error", error=type(exc).__name__, message=str(exc)[:240])
         else:
@@ -217,11 +222,12 @@ class ReplayRuntime:
                     message=str(exc)[:240],
                 )
             else:
+                observations = self._consolidate_goals(observations)
                 self._result.observations.extend(
                     item.model_copy(deep=True) for item in observations
                 )
                 self._availability_cutoff = job.cutoff_s
-                self._version += 1
+                self._version += bool(observations)
                 self._trace(
                     "observation_available",
                     cutoff_s=job.cutoff_s,
@@ -237,9 +243,50 @@ class ReplayRuntime:
                     self._cancel_role("caller", "new goal evidence")
                     self._cancel_role("analyst", "goal priority")
                     self._interrupt_for_goal()
+                    if self.config.fast_goal_calls:
+                        snapshot = self._snapshot()
+                        line = SpeechLine(
+                            voice="caller",
+                            text="It's in! They've found the net!",
+                            evidence_ids=[item.id for item in observations if item.kind == "goal"],
+                        )
+                        self._queue["caller"] = _Candidate(
+                            TurnResult(
+                                role="caller",
+                                snapshot_version=snapshot.version,
+                                cutoff_s=snapshot.cutoff_s,
+                                line=line,
+                            ),
+                            snapshot,
+                        )
+                        self._requested["caller"] = self._version
+                        self._urgent_goal = False
+                        self._trace(
+                            "fast_goal_call",
+                            "caller",
+                            origin="deterministic_goal_reaction",
+                            evidence_ids=line.evidence_ids,
+                        )
+                        self._speech()
         if self._pending_batch is not None:
             pending, self._pending_batch = self._pending_batch, None
             self._start_observer(pending)
+
+    def _consolidate_goals(self, observations: list[Observation]) -> list[Observation]:
+        """One goal per episode until visible play resumes, keeping raw audits intact."""
+        accepted = []
+        for item in observations:
+            if item.kind == "play":
+                self._goal_episode = None
+            elif item.kind == "goal":
+                if self._goal_episode is not None:
+                    self._trace(
+                        "goal_duplicate", evidence_id=item.id, canonical_goal_id=self._goal_episode
+                    )
+                    continue
+                self._goal_episode = item.id
+            accepted.append(item)
+        return accepted
 
     def _validate_observations(self, observations: list[Observation], job: _ObserverJob) -> None:
         known = {item.id for item in self._result.observations}
@@ -260,6 +307,8 @@ class ReplayRuntime:
         if not self._result.observations:
             return
         for role in ("caller", "analyst"):
+            if role == "caller" and self.config.fast_goal_calls and self._goal_episode is not None:
+                continue
             if role == "analyst" and self._urgent_goal:
                 continue
             if role == "caller" and self._is_goal_candidate(self._queue.get("caller")):
@@ -293,6 +342,8 @@ class ReplayRuntime:
                 self._validate_turn(result, role, job.snapshot)
             except TimeoutError:
                 self._trace("turn_timeout", role, snapshot_version=job.snapshot.version)
+            except BudgetExceeded:
+                self._trace("budget_exhausted", role, stage="role")
             except ValueError as exc:
                 self._trace("turn_rejected", role, error=type(exc).__name__, message=str(exc)[:240])
             except Exception as exc:

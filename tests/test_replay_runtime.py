@@ -115,24 +115,71 @@ async def test_identical_goal_words_are_allowed_for_distinct_goal_evidence() -> 
     async def goals(frames: list[Frame], cutoff: float) -> list[Observation]:
         return [
             Observation(
-                id=f"goal-{cutoff}", at_s=cutoff, kind="goal", description="Ball crosses the line."
+                id=f"goal-{cutoff}",
+                at_s=cutoff,
+                kind="play" if cutoff == 2 else "goal",
+                description="Play resumes." if cutoff == 2 else "Ball crosses the line.",
             )
         ]
 
     async def run_role(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
-        if role == "analyst":
+        if role == "analyst" or snapshot.observations[-1].kind != "goal":
             return TurnResult(
                 role=role, snapshot_version=snapshot.version, cutoff_s=snapshot.cutoff_s
             )
         return speech(role, snapshot, "Goal!")
 
     runtime = ReplayRuntime(goals, run_role, monotonic=clock.monotonic, sleep=clock.sleep)
-    task = asyncio.create_task(runtime.run([Frame(0, b"0"), Frame(4, b"4")], duration_s=5))
+    task = asyncio.create_task(
+        runtime.run([Frame(0, b"0"), Frame(2, b"2"), Frame(4, b"4")], duration_s=5)
+    )
     await drive(task, clock)
     result = task.result()
     assert [item.line.text for item in result.speech] == ["Goal!", "Goal!"]
     assert [item.line.evidence_ids for item in result.speech] == [["goal-0"], ["goal-4"]]
     assert not any(event.event == "speech_duplicate" for event in result.trace)
+
+
+async def test_repeated_goal_during_celebration_does_not_cancel_analyst() -> None:
+    clock = Clock()
+    cancelled = []
+
+    async def repeated(frames: list[Frame], cutoff: float) -> list[Observation]:
+        return [
+            Observation(
+                id=f"g-{cutoff}",
+                at_s=cutoff,
+                kind="goal",
+                description="The same goal is shown again.",
+            )
+        ]
+
+    async def roles(role: Role, snapshot: RuntimeSnapshot) -> TurnResult:
+        if role == "caller":
+            raise AssertionError("verified goal reaction must not wait for a caller model")
+        try:
+            await clock.sleep(3)
+        except asyncio.CancelledError:
+            cancelled.append(role)
+            raise
+        return speech(role, snapshot, "The move gave the attacker room to finish.")
+
+    runtime = ReplayRuntime(
+        repeated,
+        roles,
+        config=ReplayConfig(fast_goal_calls=True),
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+    task = asyncio.create_task(runtime.run([Frame(0, b"0"), Frame(2, b"2")], duration_s=5))
+    await drive(task, clock)
+    result = task.result()
+    assert not cancelled
+    assert len([o for o in result.observations if o.kind == "goal"]) == 1
+    assert [s.line.voice for s in result.speech] == ["caller", "analyst"]
+    assert result.speech[0].started_s == 0
+    assert any(e.event == "goal_duplicate" for e in result.trace)
+    assert len([e for e in result.trace if e.event == "fast_goal_call"]) == 1
 
 
 @pytest.mark.asyncio
@@ -381,7 +428,7 @@ async def test_empty_observer_batches_cannot_refresh_an_old_caller_event() -> No
     await drive(task, clock)
     result = task.result()
     assert result.speech == []
-    assert any(event.event == "turn_stale" for event in result.trace)
+    assert len([event for event in result.trace if event.event == "turn_started"]) == 2
 
 
 @pytest.mark.asyncio
