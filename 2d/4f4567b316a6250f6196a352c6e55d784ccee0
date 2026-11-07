@@ -1,0 +1,21 @@
+src/commentary/replay/__init__.py
+  s_aba8a8d5718a34::t_a8303c64ebcaf2 1
+src/commentary/replay/contracts.py
+  s_aba8a8d5718a34::t_a8303c64ebcaf2 1-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2d4f4567b316a6250f6196a352c6e55d784ccee0",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
