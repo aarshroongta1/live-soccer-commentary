@@ -1,0 +1,45 @@
+scripts/replay_commentary.py
+  s_aba8a8d5718a34::t_ce0b844693286a 13,27,45,55-58,62-67,149,227-229,233-236
+  s_aba8a8d5718a34::t_b16d2626b974fe 268-275
+  s_aba8a8d5718a34::t_0bff557a6cac99 36-38,50-52,105-113,125-133,146-148,150-151,159-161,170-174,194,199-203,208-210,214-217,221-226,237-244,246-248
+  s_aba8a8d5718a34::t_95b84154d89553 96-102
+  s_aba8a8d5718a34::t_71f7c73174f978 187-189,191,195
+  s_aba8a8d5718a34::t_e1dc4be7e5417d 230-232,245
+  s_aba8a8d5718a34::t_acf63713edeaf4 1-12,14-26,28-35,39-44,46-49,53-54,59-61,68-95,103-104,114-124,134-145,152-158,162-169,175-186,190,192-193,196-198,204-207,211-213,218-220,249-266,284-287
+  s_aba8a8d5718a34::t_64ed635af8c85b 267,276-283
+tests/test_replay_cli.py
+  s_aba8a8d5718a34::t_b16d2626b974fe 94-95,102
+  s_aba8a8d5718a34::t_64ed635af8c85b 17-19,27-28,31-42,58-59,62-66,80-81,84-88,91-93,96-101,103-107
+  s_aba8a8d5718a34::t_b23b8d81cc837d 1-16,20-26,29-30,43-57,60-61,67-79,82-83,89-90
+src/commentary/replay/runtime.py
+  s_aba8a8d5718a34::t_b167695820999e 194-197,202-203,207-216,220-223
+  s_aba8a8d5718a34::t_0aa68195e9e672 198-201,204-206,217-219
+README.md
+  s_aba8a8d5718a34::t_71f7c73174f978 67-88
+docs/EVALUATION.md
+  s_aba8a8d5718a34::t_71f7c73174f978 3-6
+tests/test_replay_runtime.py
+  s_aba8a8d5718a34::t_95a26136c4b4d8 12,142-163,168,173-181
+  s_aba8a8d5718a34::t_0aa68195e9e672 164-167,169-172
+docs/REPLAY.md
+  s_aba8a8d5718a34::t_71f7c73174f978 1-152
+scripts/evaluate_replay.py
+  s_aba8a8d5718a34::t_b23b8d81cc837d 1-32
+  s_aba8a8d5718a34::t_48e0a6c77d7af3 33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a66a04b878ae6fec206e1231b2ee803ddc4de09b",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
