@@ -1,0 +1,29 @@
+examples/evaluation-results/recognition-pass-20261107.json
+  s_6658308151c726::t_7af611ff02a7be 1-1213
+docs/RECOGNITION_PASS.md
+  s_aba8a8d5718a34::t_bb99f7c1382412 1-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d5c64df60889c7700cf92098611990f75a5d7c63",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
