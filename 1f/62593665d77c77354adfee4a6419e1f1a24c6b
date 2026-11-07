@@ -1,0 +1,35 @@
+src/commentary/llm/pricing.py
+  s_aba8a8d5718a34::t_d0e1275939f652 10
+docs/REPLAY.md
+  s_aba8a8d5718a34::t_09d738ced51d27 15-17,109-116
+src/commentary/replay/preparation.py
+  s_aba8a8d5718a34::t_3e9cde0092bc26 9,221-226,229-242,251-255,257-270,274-284
+  s_aba8a8d5718a34::t_95976917b92e4e 101-102
+  s_aba8a8d5718a34::t_ff417be869feca 54,57-61
+  s_aba8a8d5718a34::t_d0e1275939f652 187,191-193,216
+  s_aba8a8d5718a34::t_7b23423b4495ff 227-228,243-250,271-273
+  s_aba8a8d5718a34::t_bd85c5a6430b50 11-12,16-20,53,55-56,62-100,103-109,210,213,215,219-220
+  s_aba8a8d5718a34::t_a43dd992654a36 110
+tests/test_replay_preparation.py
+  s_aba8a8d5718a34::t_508e06a66adcd7 8-9,16,23,85,121,131-139,160-165,182-187,200-208,231-233
+  s_aba8a8d5718a34::t_8637a68614dd1a 240-251
+  s_aba8a8d5718a34::t_09d738ced51d27 234-239,252-258
+  s_aba8a8d5718a34::t_95976917b92e4e 17-22,140-159,166-181,188-199,209-230
+  s_aba8a8d5718a34::t_3e9cde0092bc26 129-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f62593665d77c77354adfee4a6419e1f1a24c6b",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
