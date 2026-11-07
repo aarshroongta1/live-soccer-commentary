@@ -1,0 +1,48 @@
+src/commentary/replay/runtime.py
+  s_aba8a8d5718a34::t_7bc5f6b0093e5c 294,296-302
+  s_aba8a8d5718a34::t_d852d519758ae0 397-403
+tests/test_football_actions.py
+  s_aba8a8d5718a34::t_b9a061e4562462 1-220
+src/commentary/replay/agents.py
+  s_aba8a8d5718a34::t_d852d519758ae0 37-39,218-224
+src/commentary/football.py
+  s_aba8a8d5718a34::t_8ea5aee7337a73 1-14,41-43,60-90,96-98,102-105
+  s_6658308151c726::t_c3523219d5323b 15-40,44-59,91-95,99-101
+src/commentary/replay/preparation.py
+  s_6658308151c726::t_c3523219d5323b 20,39,54-73,102-112,244,263,270,285,295,302-306
+tests/test_replay_runtime.py
+  s_aba8a8d5718a34::t_7bc5f6b0093e5c 10,619-663
+src/commentary/replay/evaluation.py
+  s_aba8a8d5718a34::t_d852d519758ae0 16,46-47,70,75-83,237-245,249-313,459
+  s_aba8a8d5718a34::t_b9a061e4562462 246-248
+src/commentary/recorded_demo.py
+  s_6658308151c726::t_c3523219d5323b 25
+  s_aba8a8d5718a34::t_8ea5aee7337a73 69-74,86
+  s_aba8a8d5718a34::t_d852d519758ae0 75-85
+tests/test_replay_preparation.py
+  s_6658308151c726::t_c3523219d5323b 12,19,21,27-39,102,138,169,171,238,240
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f0212c73549bbdce713207e045feb9d577be5708",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
