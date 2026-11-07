@@ -1,0 +1,45 @@
+examples/replay-evaluation/actions/norwich-tottenham-tackle.json
+  s_aba8a8d5718a34::t_b350420169120b 1-34
+docs/ACTION_DATA.md
+  s_6658308151c726::t_3dae41ece6a7b7 1-88
+examples/action-sources.json
+  s_aba8a8d5718a34::t_b350420169120b 1-153
+tests/test_replay_evaluation.py
+  s_6658308151c726::t_3dae41ece6a7b7 445-464
+scripts/fetch_action_sources.py
+  s_6658308151c726::t_3dae41ece6a7b7 1-69
+examples/replay-evaluation/actions/liga-f-possession.json
+  s_aba8a8d5718a34::t_b350420169120b 1-28
+examples/replay-evaluation/actions/france-jamaica-red-card.json
+  s_aba8a8d5718a34::t_b350420169120b 1-27
+examples/replay-evaluation/actions/villa-arsenal-save.json
+  s_aba8a8d5718a34::t_b350420169120b 1-41
+docs/EVALUATION.md
+  s_aba8a8d5718a34::t_6c7d3720a60a0a 4-7
+docs/REPLAY.md
+  s_aba8a8d5718a34::t_4e5770b80d245c 83-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "01e331fa64e2737041466f39c0a126af1b4447ce",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
