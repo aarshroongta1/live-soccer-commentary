@@ -1,0 +1,46 @@
+tests/test_replay_preparation.py
+  s_6658308151c726::t_24f740b7df1160 436-437,447-450,452-488,490-496
+  s_aba8a8d5718a34::t_a4f957e530fcb1 438-446,451,489
+  s_6658308151c726::t_71b07816d565f2 497-508
+examples/evaluation-results/player-name-iteration-20261107.json
+  s_aba8a8d5718a34::t_a8ec4d0ec59498 1-2312
+examples/replay-evaluation/suite/penalty.json
+  s_aba8a8d5718a34::t_a8ec4d0ec59498 21,26-30,36,41-45,64-65
+examples/replay-evaluation/suite/miss.json
+  s_aba8a8d5718a34::t_a8ec4d0ec59498 21,26-30,38-39
+docs/PLAYER_IDENTIFICATION.md
+  s_6658308151c726::t_14abc06f9582b8 68-114
+docs/REPLAY.md
+  s_6658308151c726::t_14abc06f9582b8 240-250
+scripts/replay_commentary.py
+  s_6658308151c726::t_24f740b7df1160 307-314
+  s_6658308151c726::t_7043af9fad0966 80-85,218,279-283
+src/commentary/replay/agents.py
+  s_6658308151c726::t_e9411ec6551093 76-80
+src/commentary/replay/preparation.py
+  s_6658308151c726::t_9f2876289e90f5 3-5,17,30,140-153,164-168,303,307-310,325,336-340,366,396-401
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "528c50bc3990eedd0cda3b44ab49f7400ec39291",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
