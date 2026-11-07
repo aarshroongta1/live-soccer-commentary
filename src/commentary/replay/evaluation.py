@@ -311,6 +311,11 @@ def evaluate_replay(
     }
     total_duration = sum(durations.values())
     event_counts = Counter(item.event for item in result.trace)
+    legacy_budget_stops = sum(
+        item.event in {"turn_error", "observer_error"}
+        and item.data.get("error") == "BudgetExceeded"
+        for item in result.trace
+    )
     tool_counts, tool_accounting_source, role_audit_status = _tool_accounting(result)
     identity_pairs = [
         (result.observations[prediction], case.events[reference])
@@ -403,6 +408,9 @@ def evaluate_replay(
             "role_audit_status": role_audit_status,
             "rejected_turns": event_counts["turn_rejected"],
             "rejected_observation_batches": event_counts["observation_rejected"],
-            "errors": event_counts["turn_error"] + event_counts["observer_error"],
+            "budget_stops": event_counts["budget_exhausted"] + legacy_budget_stops,
+            "errors": event_counts["turn_error"]
+            + event_counts["observer_error"]
+            - legacy_budget_stops,
         },
     }

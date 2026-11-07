@@ -48,6 +48,19 @@ def case(*events: ReferenceEvent, **updates: object) -> EvaluationCase:
     return EvaluationCase.model_validate(data)
 
 
+def test_budget_limits_are_not_reported_as_provider_errors() -> None:
+    result = ReplayResult(
+        trace=[
+            TraceEvent(event="budget_exhausted", at_s=0, role="caller"),
+            TraceEvent(event="turn_error", at_s=1, data={"error": "BudgetExceeded"}),
+            TraceEvent(event="observer_error", at_s=2, data={"error": "RuntimeError"}),
+        ]
+    )
+    report = evaluate_replay(result, case())
+    assert report["execution"]["budget_stops"] == 2
+    assert report["execution"]["errors"] == 1
+
+
 def event(
     identifier: str, at_s: float, *, kind: str = "goal", required: bool = True
 ) -> ReferenceEvent:
@@ -212,7 +225,10 @@ def test_dialogue_uses_elapsed_durations_and_counts_overlap_once() -> None:
 def test_resolved_player_accuracy_is_separate_from_event_detection() -> None:
     seen = observation("goal", 8)
     seen.actor = ObservedActor(
-        side="home", shirt_number=9, identity_source="shirt_number", action_role="scorer",
+        side="home",
+        shirt_number=9,
+        identity_source="shirt_number",
+        action_role="scorer",
         resolved_name="Wrong Player",
     )
     label = event("goal", 8).model_copy(update={"player": "Correct Player"})
