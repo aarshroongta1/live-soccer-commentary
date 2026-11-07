@@ -42,6 +42,15 @@ rejected. New goal evidence interrupts stale speech from either voice and protec
 a queued goal call from being replaced by later routine play.
 Routine play-by-play is also discarded when newer visible celebration or replay
 evidence makes it obsolete, even if a debugging run uses a relaxed age limit.
+Repeated goal observations are consolidated until visible play resumes, so another
+celebration view cannot restart the goal call and cancel the analyst. The analyst
+retains the recent goal and its preceding two observations alongside the latest view.
+
+The CLI enables an immediate deterministic goal reaction, explicitly recorded as
+`fast_goal_call`, from the accepted visual goal event. It uses no guessed scorer or
+scoreline and consumes no model call. Follow-up explanation comes from the analyst.
+Use `--no-fast-goals` to compare the fully model-written route. The library's
+`ReplayConfig.fast_goal_calls` defaults to false; the CLI opts in.
 
 These are cooperative asyncio deadlines, not hard real-time guarantees. A backend
 must propagate cancellation. No framework can make an unresponsive provider finish
@@ -78,8 +87,10 @@ uv run python scripts/replay_commentary.py \
 ```
 
 Add `--spend` to enable paid observation and role calls using `OPENAI_API_KEY` in
-the local `.env`. OpenAI development defaults use GPT-6 Luna, reasoning `none`,
-and no retries. Each role can be selected independently using
+the local `.env`. OpenAI replay defaults use GPT-5.4 Mini for vision and GPT-6 Luna
+for speaking roles, reasoning `none`, and no retries. This follows the measured
+goal-recognition difference below. `--observer-model gpt-6-luna` selects the cheapest
+vision smoke path; it missed this finish in the recorded checks. Each role can be selected using
 `--observer-model`, `--caller-model`, and `--analyst-model`. For Anthropic, pass
 `--provider anthropic`; the default becomes `claude-haiku-4-5` and requires
 `ANTHROPIC_API_KEY`. An optional `--pack` file uses the recorded workflow's team
@@ -102,6 +113,13 @@ replay path, not to Anthropic or the older generation scripts, and are applicati
 guards rather than a provider-account billing cap. Completed usage and outstanding
 reservations are saved in `metadata.spend_guard`.
 
+Use `--reuse-vision path/to/prior-replay.json` to develop the speaking agents without
+repaying for vision. Source path, start, duration, sampling rate, batch size, and
+roster hash must match. Only the exact current batch is exposed; a cache miss fails
+without a paid fallback. Original observed delays are replayed to retain backpressure
+behavior. Prior token usage is stored separately from the current zero-cost visual
+replay. This does not verify the video file's current contents against the older run.
+
 GPT-6 Luna standard pricing was checked on November 6, 2026: $0.10 input and $0.50
 output per million tokens, with $0.01 cached input. See the
 [official model page](https://developers.openai.com/api/docs/models/gpt-6-luna).
@@ -118,7 +136,10 @@ inside the existing deadline and shared spend budget.
 Use `--reviewer-model` only for a deliberate draft-quality experiment. It consumes
 the same turn deadline. The default live-oriented path leaves it off.
 
-Frame JPEGs are sampled locally before replay, then revealed only as the clock
+Development replay samples one frame per second by default to limit image cost;
+`--fps 2` restores denser sampling for a deliberate quality check. Fewer frames can
+miss fast actions, so retain this setting when comparing runs. Frame JPEGs are
+sampled locally before replay, then revealed only as the clock
 reaches their timestamps. The model does not receive the original commentary audio,
 reference transcripts, curated scripts, or future video. This is bounded to short
 clips using the existing sampler's 90-frame ceiling, not a full-match capture system.

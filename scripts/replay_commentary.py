@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import math
 from dataclasses import asdict
 from datetime import date
 from pathlib import Path
@@ -26,7 +27,8 @@ from commentary.llm.budget import RunBudget
 from commentary.recorded_demo import Frame, Observation, sample_clip, validate_inputs
 from commentary.recorded_research import ResearchBrief
 from commentary.replay.agents import ANALYST_SYSTEM, CALLER_SYSTEM, RoleAgents
-from commentary.replay.contracts import AgentAction, Role, SpeechLine, ToolCall
+from commentary.replay.cache import SavedVision
+from commentary.replay.contracts import AgentAction, ReplayResult, Role, SpeechLine, ToolCall
 from commentary.replay.preparation import ReplayObserver, prepare_research, team_names
 from commentary.replay.runtime import ReplayConfig, ReplayRuntime
 
@@ -40,13 +42,25 @@ def arguments() -> argparse.Namespace:
     mode.add_argument("--clip", type=Path, help="local video; requires --spend for model calls")
     parser.add_argument("--start", type=float, default=0)
     parser.add_argument("--duration", type=float, default=28)
+    parser.add_argument(
+        "--fps", type=float, default=1, help="sampled frames per second (0 < fps <= 2)"
+    )
     parser.add_argument("--rate", type=float, default=1, help="replay seconds per wall second")
     parser.add_argument("--batch-seconds", type=float, default=2)
     parser.add_argument("--turn-timeout", type=float, default=8, help="replay seconds")
     parser.add_argument("--observer-timeout", type=float, default=8, help="replay seconds")
     parser.add_argument("--max-age", type=float, default=8, help="replay seconds")
     parser.add_argument("--drain", type=float, default=10, help="replay seconds after final frame")
+    parser.add_argument(
+        "--no-fast-goals",
+        action="store_false",
+        dest="fast_goal_calls",
+        help="disable the immediate deterministic goal reaction",
+    )
     parser.add_argument("--pack", type=Path, help="optional team names and pre-match roster")
+    parser.add_argument(
+        "--reuse-vision", type=Path, help="saved replay with matching media/settings"
+    )
     parser.add_argument("--research", type=Path, help="saved cited pre-match ResearchBrief")
     parser.add_argument(
         "--fixture", help="fixture for fresh web research or saved-brief validation"
@@ -66,7 +80,12 @@ def arguments() -> argparse.Namespace:
     default_model = "claude-haiku-4-5" if args.provider == "anthropic" else "gpt-6-luna"
     for field in ("observer_model", "caller_model", "analyst_model", "research_model"):
         if getattr(args, field) is None:
-            setattr(args, field, default_model)
+            selected = (
+                "gpt-5.4-mini"
+                if field == "observer_model" and args.provider == "openai"
+                else default_model
+            )
+            setattr(args, field, selected)
     return args
 
 
@@ -152,7 +171,10 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         observer_timeout_s=args.observer_timeout,
         max_age_s=args.max_age,
         drain_s=args.drain,
+        fast_goal_calls=args.fast_goal_calls,
     )
+    if not math.isfinite(args.fps) or not 0 < args.fps <= 2:
+        raise ValueError("--fps must be finite and greater than zero, at most 2")
     budget = RunBudget(max_usd=args.max_usd, max_calls=args.max_model_calls)
     pack = _load_json(args.pack) if args.pack else None
     saved = ResearchBrief.model_validate(_load_json(args.research)) if args.research else None
@@ -165,7 +187,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "bounded replay uses saved research; pass --research with a cited pre-match brief"
         )
     if args.diagnostic and any(
-        [args.spend, args.pack, args.research, args.fixture, args.reviewer_model]
+        [args.spend, args.pack, args.research, args.fixture, args.reviewer_model, args.reuse_vision]
     ):
         raise ValueError("diagnostic mode uses only fictional evidence and scripted roles")
     duration = 12.0 if args.diagnostic else args.duration
@@ -178,16 +200,39 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 "mode": "dry_run",
                 "clip": str(args.clip),
                 "duration_s": duration,
+                "sample_fps": args.fps,
                 "paid_calls_enabled": False,
                 "budget": budget.report() if args.provider == "openai" else None,
                 "speech_simulated": True,
                 "note": "Pass --spend to run the observer and independent role agents.",
             }
-        frames = sample_clip(args.clip, args.start, duration, fps=2)
+        frames = sample_clip(args.clip, args.start, duration, fps=args.fps)
     backend: LLMBackend
     observer: Any
     research = None
     research_audit: dict[str, Any] = {"source": "disabled"}
+    reused: ReplayResult | None = None
+    cached_observer: SavedVision | None = None
+    if args.reuse_vision:
+        reused = ReplayResult.model_validate_json(args.reuse_vision.read_text())
+        old = reused.metadata
+        expected_pack = hashlib.sha256(args.pack.read_bytes()).hexdigest() if args.pack else None
+        if (
+            Path(old["source_clip"]).resolve() != args.clip.resolve()
+            or old["source_start_s"] != args.start
+            or old["duration_s"] != duration
+            or old.get("sample_fps") != args.fps
+            or old.get("pack_sha256") != expected_pack
+            or old["config"]["batch_s"] != config.batch_s
+        ):
+            raise ValueError(
+                "saved vision source, frame rate, batches, duration, or pack do not match"
+            )
+        cached_observer = SavedVision(
+            reused.metadata["observer_audit"],
+            rate=args.rate,
+            source_rate=float(reused.metadata["rate"]),
+        )
     if args.diagnostic:
         backend = diagnostic_backend()
         observer = diagnostic_observer
@@ -214,7 +259,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     saved=saved,
                 )
             research, research_audit = prepared.brief, prepared.audit
-        observer = ReplayObserver(backend, model=args.observer_model, pack=pack)
+        observer = cached_observer or ReplayObserver(backend, model=args.observer_model, pack=pack)
     roles = RoleAgents(
         backend,
         caller_model=args.caller_model,
@@ -234,6 +279,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "provenance": "synthetic diagnostic" if args.diagnostic else "model-generated replay",
             "source_clip": None if args.diagnostic else str(args.clip),
             "source_start_s": 0 if args.diagnostic else args.start,
+            "sample_fps": args.fps if not args.diagnostic else None,
             "speech_simulated": True,
             "config": asdict(config),
             "provider": "scripted" if args.diagnostic else args.provider,
@@ -246,13 +292,28 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 "analyst": hashlib.sha256(ANALYST_SYSTEM.encode()).hexdigest(),
             },
             "models": {
-                "observer": "synthetic oracle" if args.diagnostic else args.observer_model,
+                "observer": "synthetic oracle"
+                if args.diagnostic
+                else (
+                    "saved:" + reused.metadata["models"]["observer"]
+                    if reused
+                    else args.observer_model
+                ),
                 "caller": "scripted policy" if args.diagnostic else args.caller_model,
                 "analyst": "scripted policy" if args.diagnostic else args.analyst_model,
             },
             "research": research.model_dump(mode="json") if research else None,
             "research_audit": research_audit,
-            "observer_audit": observer.audit if isinstance(observer, ReplayObserver) else [],
+            "observer_audit": observer.audit
+            if isinstance(observer, (ReplayObserver, SavedVision))
+            else [],
+            "vision_reuse": {
+                "source": str(args.reuse_vision),
+                "sha256": hashlib.sha256(args.reuse_vision.read_bytes()).hexdigest(),
+                "media_contents_verified": False,
+            }
+            if args.reuse_vision
+            else None,
             "role_audit": [event.model_dump(mode="json") for event in roles.audit],
             "usage": asdict(backend.total),
             "spend_guard": budget.report()
@@ -288,6 +349,7 @@ def main() -> None:
             "turn_timeout",
             "turn_rejected",
             "observation_rejected",
+            "budget_exhausted",
         }
         for event in output["trace"]
     )

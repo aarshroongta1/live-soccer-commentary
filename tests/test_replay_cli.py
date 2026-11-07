@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -116,6 +117,81 @@ def test_replay_defaults_are_cheap_and_bounded(monkeypatch: pytest.MonkeyPatch) 
     module = script()
     monkeypatch.setattr(sys, "argv", ["replay_commentary", "--clip", "local.mp4"])
     args = module.arguments()
-    assert args.observer_model == args.caller_model == args.analyst_model == "gpt-6-luna"
+    assert args.observer_model == "gpt-5.4-mini"
+    assert args.caller_model == args.analyst_model == "gpt-6-luna"
     assert args.max_usd == 0.10
     assert args.max_model_calls == 40
+    assert args.fps == 1
+
+
+@pytest.mark.parametrize("fps", ["0", "-1", "nan", "inf", "3"])
+async def test_invalid_frame_rate_is_rejected_before_any_model_setup(
+    fps: str,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = script()
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "replay_commentary",
+            "--clip",
+            "local.mp4",
+            "--fps",
+            fps,
+            "--out",
+            str(tmp_path / "result.json"),
+        ],
+    )
+    with pytest.raises(ValueError, match="--fps"):
+        await module.run(module.arguments())
+
+
+async def test_cache_metadata_mismatch_is_rejected_before_paid_setup(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = script()
+    clip = tmp_path / "clip.mp4"
+    prior = tmp_path / "prior.json"
+    prior.write_text(
+        json.dumps(
+            {
+                "mode": "causal_replay",
+                "metadata": {
+                    "source_clip": str(clip),
+                    "source_start_s": 0,
+                    "duration_s": 12,
+                    "sample_fps": 2,
+                    "pack_sha256": None,
+                    "config": {"batch_s": 2},
+                },
+            }
+        )
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "replay_commentary",
+            "--clip",
+            str(clip),
+            "--duration",
+            "12",
+            "--reuse-vision",
+            str(prior),
+            "--spend",
+            "--out",
+            str(tmp_path / "new.json"),
+        ],
+    )
+    monkeypatch.setattr(module, "validate_inputs", lambda *_args: 12)
+    monkeypatch.setattr(module, "sample_clip", lambda *_args, **_kwargs: [])
+
+    def forbidden(*_args: object, **_kwargs: object) -> None:
+        pytest.fail("invalid saved vision must not construct a paid backend")
+
+    monkeypatch.setattr(module, "openai_factory", forbidden)
+    with pytest.raises(ValueError, match="do not match"):
+        await module.run(module.arguments())
