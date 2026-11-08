@@ -1,0 +1,93 @@
+src/commentary/replay/identity.py
+  s_aba8a8d5718a34::t_584ddda4491dcf 56,60,150-154,157,167,170
+  s_aba8a8d5718a34::t_01628d0208b72d 155-156
+  s_6658308151c726::t_10d4951d8fe483 10
+web/.env.example
+  s_6658308151c726::t_d8d323e5ac8cec 8-10
+examples/recorded-agent-demo/README.md
+  s_aba8a8d5718a34::t_92da76e914cc40 1-69
+web/app/demo/page.tsx
+  s_6658308151c726::t_d8d323e5ac8cec 5,24-26
+web/app/demo/demo.css
+  s_6658308151c726::t_d8d323e5ac8cec 313-319
+web/app/demo/demo-experience.tsx
+  s_6658308151c726::t_d8d323e5ac8cec 17,38-43,75,108,127-128,130-139
+tests/test_prepare_agent_demo.py
+  s_aba8a8d5718a34::t_072b8cb68dd4ec 1-65
+src/commentary/replay/recorded.py
+  s_aba8a8d5718a34::t_1f0fb46e3d6994 206-246
+  s_aba8a8d5718a34::t_023c49229ee868 16,19-53,55-68,70-71,73-117,120-141,145,147-150,175,181,197,309,316
+  s_aba8a8d5718a34::t_885762d4e0afce 1-15,17-18,54,69,72,118-119,142-144,146,151-174,176-180,182-196,198-205,247-308,310-315
+docs/DEMO.md
+  s_aba8a8d5718a34::t_92da76e914cc40 3-9
+src/commentary/replay/agents.py
+  s_aba8a8d5718a34::t_584ddda4491dcf 234-235,239
+  s_6658308151c726::t_f72556a8117101 236-237
+  s_6658308151c726::t_cde24535c12ed3 197,214-233,238,240,243,274-276
+web/data/prepared-demo.json
+  s_6658308151c726::t_d8d323e5ac8cec 35,41-42
+  s_aba8a8d5718a34::t_54244eb9b20f52 1-34,36-40,43
+examples/recorded-agent-demo/synthesis-summary.json
+  s_aba8a8d5718a34::t_54244eb9b20f52 1-47
+web/public/soccer-commentary/prepared-penalty.trace.json
+  s_6658308151c726::t_d8d323e5ac8cec 1-1668
+examples/recorded-agent-demo/evaluation.json
+  s_6658308151c726::t_072129fc93edb4 1-61
+tests/test_replay_preparation.py
+  s_aba8a8d5718a34::t_320dcd8c07d8a8 621-648
+examples/recorded-agent-demo/render-report.md
+  s_aba8a8d5718a34::t_54244eb9b20f52 1-3,5-10,12-25
+  s_6658308151c726::t_072129fc93edb4 4,11
+web/app/demo/agent-runs.tsx
+  s_6658308151c726::t_b4847e5eee55f7 96,112,115,117,191
+examples/recorded-agent-demo/penalty-plan.json
+  s_aba8a8d5718a34::t_54244eb9b20f52 1-233,235-361,364-365
+  s_6658308151c726::t_072129fc93edb4 234,362-363
+tests/test_recorded_agents.py
+  s_6658308151c726::t_b4847e5eee55f7 98-171
+  s_aba8a8d5718a34::t_1bb8466de1f0a7 1-97
+examples/recorded-agent-demo/research.json
+  s_6658308151c726::t_cc95222d4bbb79 1-121
+examples/recorded-agent-demo/team-context.json
+  s_6658308151c726::t_b787624cd95d1a 1-10
+scripts/prepare_agent_demo.py
+  s_6658308151c726::t_e72bf1f5100dff 1-178
+scripts/render_demo.py
+  s_aba8a8d5718a34::t_fc096a0b730cac 433
+src/commentary/llm/openai_backend.py
+  s_6658308151c726::t_b7fb0b042f45be 13,78,92,159-161
+src/commentary/llm/pricing.py
+  s_aba8a8d5718a34::t_feb22143e9c88b 11
+src/commentary/replay/contracts.py
+  s_aba8a8d5718a34::t_0e78f6ad926b81 42
+src/commentary/replay/preparation.py
+  s_aba8a8d5718a34::t_fb7fc6ec15e1c7 81-86,385,395-399,545
+tests/test_openai_backend.py
+  s_6658308151c726::t_469a021a71b064 192-211
+tests/test_render_demo.py
+  s_aba8a8d5718a34::t_602d06607a04e6 469
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe1819e543965488930bc3c5701c2e402069b939",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
