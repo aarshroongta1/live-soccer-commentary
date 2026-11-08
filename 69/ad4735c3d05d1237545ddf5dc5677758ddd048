@@ -1,0 +1,21 @@
+scripts/speech_blocks.py
+  s_aba8a8d5718a34::t_c28f07455cecb5 6,67-72,91-94
+tests/test_speech_blocks.py
+  s_aba8a8d5718a34::t_c28f07455cecb5 88-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "69ad4735c3d05d1237545ddf5dc5677758ddd048",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
