@@ -85,3 +85,7 @@ def test_one_request_per_voice_block_preserves_each_phrase(tmp_path, monkeypatch
     assert set(json.loads((tmp_path / "manifest.json").read_text())) == {"c1", "c2", "a1"}
     assert len(cuts) == 3
     assert (tmp_path / "block-1.response.json").is_file()
+    audit = json.loads((tmp_path / "synthesis-audit.json").read_text())
+    assert [block["voice_id"] for block in audit["blocks"]] == ["c", "a"]
+    assert all(len(block["audio_sha256"]) == 64 for block in audit["blocks"])
+    assert "no request overrides" in audit["settings_source"]

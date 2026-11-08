@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import math
 import shutil
@@ -63,7 +64,12 @@ def synthesize_blocks(
     if shutil.which(ffmpeg) is None:
         raise RenderError("ffmpeg is required before synthesizing continuous speech")
     manifest: dict[str, str] = {}
-    audit: dict[str, Any] = {"model": model, "mode": "continuous_voice_blocks", "blocks": []}
+    audit: dict[str, Any] = {
+        "model": model,
+        "mode": "continuous_voice_blocks",
+        "settings_source": "saved ElevenLabs voice settings; no request overrides",
+        "blocks": [],
+    }
     for number, (role, group) in enumerate(groupby(plan.lines, key=lambda line: line.voice), 1):
         lines = list(group)
         speaker = caller if role == "caller" else analyst
@@ -82,6 +88,10 @@ def synthesize_blocks(
         block.write_bytes(base64.b64decode(data["audio_base64"], validate=True))
         row = {
             "voice": role,
+            "voice_id": speaker,
+            "provider_request_id": response.headers.get("request-id")
+            or response.headers.get("x-request-id"),
+            "audio_sha256": hashlib.sha256(block.read_bytes()).hexdigest(),
             "request": request,
             "line_ids": [x.id for x in lines],
             "credit_headers": {
