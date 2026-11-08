@@ -16,6 +16,7 @@ from pathlib import Path
 
 import dotenv
 from render_demo import RenderError, read_plan
+from speech_blocks import synthesize_blocks
 
 MODEL = "eleven_flash_v2_5"
 CALLER_VOICE = "JBFqnCBsd6RMkjVDRZzb"
@@ -37,13 +38,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--analyst-voice")
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--max-characters", type=int, default=5000)
+    parser.add_argument(
+        "--continuous",
+        action="store_true",
+        help="generate consecutive same-voice phrases in one performance",
+    )
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     plan = read_plan(args.plan)
+    if any(Path(line.id).name != line.id for line in plan.lines):
+        raise RenderError("line IDs cannot contain a path")
     characters = sum(len(line.text) for line in plan.lines)
+    if args.continuous:
+        characters += sum(
+            a.voice == b.voice for a, b in zip(plan.lines, plan.lines[1:], strict=False)
+        )
     if args.max_characters < 1 or characters > args.max_characters:
         raise RenderError("plan exceeds synthesis character limit")
     if args.spend:
@@ -74,6 +86,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     manifest_path = args.out_dir / "manifest.json"
     audit_path = args.out_dir / "synthesis-audit.json"
     with httpx.Client(timeout=60) as client:
+        if args.continuous:
+            synthesize_blocks(
+                client,
+                plan,
+                out_dir=args.out_dir,
+                api_key=api_key,
+                caller=caller,
+                analyst=analyst,
+                model=args.model,
+            )
+            return 0
         for index, line in enumerate(plan.lines):
             if Path(line.id).name != line.id:
                 raise RenderError(f"line ID cannot contain a path: {line.id!r}")

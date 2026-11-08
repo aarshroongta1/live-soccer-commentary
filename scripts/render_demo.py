@@ -44,6 +44,7 @@ class RenderLine:
     evidence_ids: tuple[str, ...] = ()
     research_ids: tuple[str, ...] = ()
     goal_evidence: bool = False
+    evidence_ready_s: float | None = None
 
 
 @dataclass(frozen=True)
@@ -142,7 +143,12 @@ def read_plan(path: Path) -> OfflinePlan:
             observation.get("kind"), label=f"observations[{index}].kind"
         )
         _nonempty_string(observation.get("description"), label=f"observations[{index}].description")
-        observation_times[observation_id] = at_s
+        support = (observation.get("action") or {}).get("support_at_s", [])
+        if not isinstance(support, list):
+            raise RenderError("action support timestamps must be an array")
+        observation_times[observation_id] = max(
+            [at_s, *[_finite_number(t, label="action support") for t in support]]
+        )
 
     metadata = raw.get("metadata")
     if not isinstance(metadata, dict) or metadata.get("offline") is not True:
@@ -220,6 +226,7 @@ def read_plan(path: Path) -> OfflinePlan:
                 research_ids=research_ids,
                 goal_evidence=voice == "caller"
                 and any(observation_kinds[item] == "goal" for item in evidence),
+                evidence_ready_s=max((observation_times[item] for item in evidence), default=0),
             )
         )
     return OfflinePlan(
@@ -243,16 +250,29 @@ def plan_timeline(
     *,
     duration_s: float,
     audio_seconds: Mapping[str, float] | None = None,
+    response_gap_s: float | None = None,
 ) -> Timeline:
     """Place lines sequentially, reserving their planned cue for offline goal calls."""
     if duration_s <= 0:
         raise RenderError("--duration must be greater than zero")
+    if response_gap_s is not None and (
+        not math.isfinite(response_gap_s) or not 0 <= response_gap_s <= 2
+    ):
+        raise RenderError("response gap must be between 0 and 2 seconds")
     audio_seconds = audio_seconds or {}
     planned: list[PlannedLine] = []
     omitted_for_goal: list[RenderLine] = []
     cursor = 0.0
     for line in lines:
         natural = line.at_s
+        if (
+            response_gap_s is not None
+            and line.voice == "analyst"
+            and line.evidence_ready_s is not None
+            and planned
+            and planned[-1].line.voice == "caller"
+        ):
+            natural = max(line.evidence_ready_s, cursor + response_gap_s)
         line_duration = audio_seconds.get(line.id, estimate_duration(line.text))
         if line_duration <= 0:
             raise RenderError(f"Audio for {line.id!r} has no measurable duration")
@@ -572,6 +592,7 @@ def report_markdown(
     estimated: bool,
     captions: Path | None = None,
     research: ResearchBrief | None = None,
+    response_gap_s: float | None = None,
     caller_voice: str = CALLER_VOICE,
     analyst_voice: str = ANALYST_VOICE,
     editorial_reference: bool = False,
@@ -583,7 +604,10 @@ def report_markdown(
         f"- Plan: `{plan}`",
         f"- Clip: `{clip}`",
         f"- Window: {duration_s:.3f} seconds; source video starts at {source_start_s:.3f} s.",
-        "- Alignment: each line uses its at_s cue relative to the selected clip window.",
+        "- Alignment: each line uses its at_s cue relative to the selected clip window."
+        if response_gap_s is None
+        else f"- Alignment: caller cues preserved; analyst follows measured caller audio by "
+        f"{response_gap_s:.2f} s, never before cited evidence is available.",
         "- Speech order: plan order without overlap; goal calls can trim preceding speech.",
         "- Broadcast audio: muted; the output contains only synthesized commentary.",
         f"- Voice assignment: caller `{caller_voice}`; analyst `{analyst_voice}` (distinct).",
@@ -714,6 +738,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="FFmpeg executable (default: bundled imageio-ffmpeg binary when installed)",
     )
     parser.add_argument("--ffprobe", default="ffprobe")
+    parser.add_argument(
+        "--response-gap",
+        type=float,
+        default=None,
+        help="place analyst responses after measured caller audio (seconds)",
+    )
     return parser
 
 
@@ -746,12 +776,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         source_start_s=plan.source_start_s,
         duration_s=plan.duration_s,
         research=plan.research,
+        response_gap_s=args.response_gap,
         caller_voice=args.caller_voice,
         analyst_voice=args.analyst_voice,
         editorial_reference=editorial_reference,
     )
     if args.dry_run:
-        timeline = plan_timeline(plan.lines, duration_s=plan.duration_s)
+        timeline = plan_timeline(
+            plan.lines, duration_s=plan.duration_s, response_gap_s=args.response_gap
+        )
         print(report_markdown(timeline, estimated=True, **report_options), end="")
         return 0
 
@@ -804,7 +837,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             line.id: probe_duration(audio_by_id[line.id], ffprobe=args.ffprobe)
             for line in plan.lines
         }
-        timeline = plan_timeline(plan.lines, duration_s=plan.duration_s, audio_seconds=seconds)
+        timeline = plan_timeline(
+            plan.lines,
+            duration_s=plan.duration_s,
+            audio_seconds=seconds,
+            response_gap_s=args.response_gap,
+        )
         caption_path = audio_dir / "captions.ass" if args.captions else None
         if caption_path:
             caption_path.write_text(

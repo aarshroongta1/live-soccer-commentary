@@ -130,6 +130,27 @@ async def test_analyst_gets_space_after_a_major_call_and_room_for_a_response() -
     assert snapshots[1].speech_budget_words == 28
 
 
+async def test_short_slot_can_go_to_caller_when_analyst_cannot_fit() -> None:
+    seen = []
+    goal = Observation(id="goal", at_s=10, kind="goal", description="A goal.")
+
+    async def run(role, view):
+        seen.append((role, view.cutoff_s))
+        line = None
+        if role == "caller":
+            line = SpeechLine(
+                voice=role, text="Forward...", evidence_ids=[view.observations[-1].id]
+            )
+        return TurnResult(
+            role=role, snapshot_version=view.version, cutoff_s=view.cutoff_s, line=line
+        )
+
+    await prepare_dialogue(
+        run, [event("early", 0, [0]), event("approach", 9, [9]), goal], duration_s=20, max_turns=6
+    )
+    assert ("caller", 9) in seen
+
+
 def test_unknown_celebration_tag_is_weakened_without_promoting_a_goal() -> None:
     from commentary.replay.recorded import RecordedObservation
 

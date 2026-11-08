@@ -1,0 +1,252 @@
+{
+  "prior_plan": "examples/recorded-agent-demo/naturalness/candidate-plan.json",
+  "runup": {
+    "result": {
+      "role": "caller",
+      "snapshot_version": 3,
+      "cutoff_s": 9.0,
+      "line": {
+        "voice": "caller",
+        "text": "Kane...",
+        "evidence_ids": [
+          "recorded-3"
+        ],
+        "research_ids": []
+      },
+      "reason": "The run-up is in progress and the actor is resolved; the cue asks for anticipation without claiming an outcome.",
+      "trace": [
+        {
+          "event": "agent_action",
+          "at_s": 9.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane...",
+                "evidence_ids": [
+                  "recorded-3"
+                ],
+                "research_ids": []
+              },
+              "reason": "The run-up is in progress and the actor is resolved; the cue asks for anticipation without claiming an outcome."
+            },
+            "usage": {
+              "input_tokens": 1507,
+              "output_tokens": 70,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00144525,
+              "latency_s": 2.3164414999992005
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 9.0,
+          "role": "caller",
+          "data": {
+            "accepted": true,
+            "feedback": "Good to air: the surname-only call is supported by the identified shooter and keeps the moment tense. Keep it as a brief pause-driven continuation, not a new descriptive claim.",
+            "usage": {
+              "input_tokens": 697,
+              "output_tokens": 51,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00075225,
+              "latency_s": 1.444023958996695
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        }
+      ]
+    },
+    "budget": {
+      "max_usd": 0.03,
+      "max_calls": 4,
+      "attempts": 2,
+      "reported_usd": 0.0021975,
+      "unsettled_reservations_usd": 0,
+      "unsettled_requests": 0,
+      "basis": "counted input + maximum output at standard token rates, 25% margin",
+      "hosted_tools_allowed": false
+    }
+  },
+  "goal": {
+    "result": {
+      "role": "caller",
+      "snapshot_version": 4,
+      "cutoff_s": 10.0,
+      "line": {
+        "voice": "caller",
+        "text": "Kane scores!",
+        "evidence_ids": [
+          "recorded-4"
+        ],
+        "research_ids": []
+      },
+      "reason": "Immediate supported goal reaction with verified scorer, avoiding replaying the penalty setup.",
+      "trace": [
+        {
+          "event": "agent_action",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane scores! England have their penalty.",
+                "evidence_ids": [
+                  "recorded-4"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported scoring reaction with verified name, within broadcast limits."
+            },
+            "usage": {
+              "input_tokens": 1556,
+              "output_tokens": 65,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.0014595,
+              "latency_s": 2.466114666000067
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "accepted": false,
+            "feedback": "Use a pure goal reaction and avoid re-reporting the restart: rewrite to something like \u201cKane scores!\u201d",
+            "usage": {
+              "input_tokens": 751,
+              "output_tokens": 38,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00073425,
+              "latency_s": 1.3493406670022523
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "step": 2,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane scores!",
+                "evidence_ids": [
+                  "recorded-4"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported goal reaction with verified scorer, avoiding replaying the penalty setup."
+            },
+            "usage": {
+              "input_tokens": 1611,
+              "output_tokens": 64,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00149625,
+              "latency_s": 1.3873907500019413
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "accepted": true,
+            "feedback": "Accepted. The line is a concise, natural goal reaction and matches the verified scorer. Keep it as an immediate call; no need to add restart or shot details.",
+            "usage": {
+              "input_tokens": 774,
+              "output_tokens": 49,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.000801,
+              "latency_s": 1.1605923750030342
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        }
+      ]
+    },
+    "budget": {
+      "max_usd": 0.03,
+      "max_calls": 4,
+      "attempts": 4,
+      "reported_usd": 0.004490999999999999,
+      "unsettled_reservations_usd": 0,
+      "unsettled_requests": 0,
+      "basis": "counted input + maximum output at standard token rates, 25% margin",
+      "hosted_tools_allowed": false
+    }
+  },
+  "speech": {
+    "model": "eleven_flash_v2_5",
+    "mode": "continuous_voice_blocks",
+    "blocks": [
+      {
+        "voice": "caller",
+        "request": {
+          "text": "England drive on. Penalty to England! They've got the big decision. Kane... Kane scores!",
+          "model_id": "eleven_flash_v2_5"
+        },
+        "line_ids": [
+          "line-1",
+          "line-2",
+          "runup",
+          "line-3"
+        ],
+        "credit_headers": {
+          "character-cost": "44"
+        },
+        "cuts": [
+          [
+            0.0,
+            1.01
+          ],
+          [
+            1.01,
+            3.199
+          ],
+          [
+            3.199,
+            3.7439999999999998
+          ],
+          [
+            3.7439999999999998,
+            5.003
+          ]
+        ]
+      }
+    ]
+  },
+  "analyst_audio_reused": true,
+  "response_gap_s": 0.25,
+  "quality_status": "Listening candidate; user acceptance pending."
+}

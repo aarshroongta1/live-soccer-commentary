@@ -189,8 +189,21 @@ class RoleAgents:
             if state["role"] == "caller" and newest.kind == "goal":
                 broadcast_cue = (
                     "The ball is already in. Give the immediate scoring reaction, led by "
-                    "the verified name if available. Let the reaction land. Leave the "
+                    "the verified name if available. If you just said the name, continue "
+                    "that thought rather than introducing the player again. Let the reaction land. "
+                    "Leave the "
                     "placement and mechanics for the analyst; avoid a neutral report sentence."
+                )
+            elif (
+                state["role"] == "caller"
+                and newest.kind == "play"
+                and newest.action
+                and newest.action.type == "penalty_kick"
+            ):
+                broadcast_cue = (
+                    "The penalty approach is in progress; its outcome is not yet available. "
+                    "A verified surname and a trailing pause can carry anticipation. "
+                    "Keep this connected to the previous call rather than restarting a report."
                 )
             elif (
                 state["role"] == "caller"
@@ -252,6 +265,9 @@ class RoleAgents:
                 "Speak to a viewer watching alongside you. The observations are private notes, "
                 "not a script to paraphrase. Use spoken English, contractions, and varied rhythm. "
                 "Short connected phrases or two sentences are welcome. Keep grammatical articles. "
+                "Carry on from your recent words rather than opening a new miniature report. "
+                "During an approach or run-up, a name or an unfinished phrase can carry "
+                "anticipation into the next call. Don't force every turn to end in a full stop. "
                 "Caller: call what is happening NOW. If the outcome is already visible, "
                 "react to it directly; do not rewind to a run-up or approach in that line. "
                 "Use a verified player's name naturally. Let a major moment sound bigger than "

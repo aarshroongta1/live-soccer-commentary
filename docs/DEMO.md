@@ -72,6 +72,18 @@ preserving the exact spoken words and saved voice settings.
 `--model` selects a speech model for a deliberate comparison; the default remains
 `eleven_flash_v2_5`. Each plan line makes one request with no automatic retries.
 
+For consecutive phrases that should share a delivery, add `--continuous`. This
+makes one timestamped speech request per uninterrupted speaker block. Exact
+character alignment identifies the cuts between phrases; the original block and
+alignment are saved, and each phrase still has its own source-video cue. Words
+are not rewritten. Invalid alignment stops the run without a paid retry.
+
+The renderer's optional `--response-gap 0.25` places an analyst response after
+the measured caller audio instead of retaining an estimated scheduling gap.
+It preserves caller event cues and never advances a response before its cited
+observations and supporting frames are available. These are recorded playback
+options; they do not demonstrate real-time synthesis latency.
+
 ## View the result
 
 The player at `/demo` uses `web/data/demo-clips.json` to pair each video with

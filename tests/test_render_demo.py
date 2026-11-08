@@ -32,6 +32,20 @@ def test_cli_accepts_only_recorded_plans() -> None:
     assert parser.parse_args(["--plan", "plan.json", "--clip", "clip.mp4"]).captions is True
 
 
+def test_measured_handoff_cannot_announce_unavailable_evidence():
+    caller = render_demo.RenderLine(0, "c", "caller", "Goal!", 10)
+    analyst = render_demo.RenderLine(1, "a", "analyst", "A low finish.", 16, evidence_ready_s=10)
+    timeline = render_demo.plan_timeline(
+        [caller, analyst], duration_s=20, audio_seconds={"c": 2, "a": 3}, response_gap_s=0.25
+    )
+    assert timeline.planned[1].start_s == 12.25
+    later = render_demo.replace(analyst, evidence_ready_s=15)
+    timeline = render_demo.plan_timeline(
+        [caller, later], duration_s=20, audio_seconds={"c": 2, "a": 3}, response_gap_s=0.25
+    )
+    assert timeline.planned[1].start_s == 15
+
+
 def test_complete_manifest_needs_no_say_and_measures_every_line(tmp_path, monkeypatch) -> None:
     source = tmp_path / "plan.json"
     data = _valid_plan()

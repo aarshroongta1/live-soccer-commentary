@@ -224,11 +224,18 @@ async def prepare_dialogue(
             and (item.action is None or item.action.certainty == "confirmed")
             for item in visible
         )
+        next_goal = min(
+            (ready_at(item) for item in ordered if priority(item) and ready_at(item) > cursor),
+            default=duration_s,
+        )
+        available_words = math.floor((min(duration_s, next_goal) - cursor - 0.35) * 2.6)
         role = next(
             (
                 r
                 for r in alternatives
-                if (r, version) not in requested and (r != "caller" or caller_has_new)
+                if (r, version) not in requested
+                and (r != "caller" or caller_has_new)
+                and available_words >= (1 if r == "caller" else 8)
             ),
             None,
         )
@@ -238,15 +245,7 @@ async def prepare_dialogue(
         requested.add((role, version))
         # Reserve the next visible goal's slot during recorded preparation. Its
         # contents are never exposed in an earlier speaking agent's snapshot.
-        next_goal = min(
-            (ready_at(item) for item in ordered if priority(item) and ready_at(item) > cursor),
-            default=duration_s,
-        )
-        available = min(duration_s, next_goal) - cursor - 0.35
-        limit = min(18 if role == "caller" else 28, math.floor(available * 2.6))
-        if limit < (1 if role == "caller" else 8):
-            cursor = next((at for at in frontiers if at > cursor), duration_s)
-            continue
+        limit = min(18 if role == "caller" else 28, available_words)
         view = RuntimeSnapshot(
             version=len(visible),
             cutoff_s=cursor,
