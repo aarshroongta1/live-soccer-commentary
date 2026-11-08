@@ -1,0 +1,60 @@
+src/commentary/replay/agents.py
+  s_aba8a8d5718a34::t_1833724d470108 83-84
+  s_aba8a8d5718a34::t_80f6c02d6da53a 41-44
+src/commentary/replay/preparation.py
+  s_aba8a8d5718a34::t_1833724d470108 116-117
+  s_aba8a8d5718a34::t_5ddeb1a3da4752 45-47
+  s_aba8a8d5718a34::t_ef624107f8d33f 61-76,87-88,262-263,271-279,307-319,324-325,333-335
+docs/RESEARCH_HANDOFF.md
+  s_6658308151c726::t_1e678e9fe7c518 1-74
+web/data/agent-runs.json
+  s_6658308151c726::t_95b889396bd4d2 6-7,9,11,14,17-29,31,36-38,41,49-51,54,63,73,78,82,84,86,88,90-93,101-108,112,114,120,124-125,133,139,141,152,158,167-168,177-178,182,188,197-198,202,207-208,221,227-228,232-233,237,241-242,245,262,433
+docs/PLAYER_IDENTIFICATION.md
+  s_6658308151c726::t_696cff0e7d0edb 149-156
+examples/evaluation-results/researched-handoff-20261107.json
+  s_6658308151c726::t_696cff0e7d0edb 1271-3203
+  s_6658308151c726::t_95b889396bd4d2 1-1270,3204-3205
+docs/REPLAY.md
+  s_6658308151c726::t_696cff0e7d0edb 11-12,15-16,259-264
+tests/test_replay_preparation.py
+  s_6658308151c726::t_215ddfdeaf27a9 542-553,556-573
+  s_aba8a8d5718a34::t_960b253ecc16c5 574-620
+  s_aba8a8d5718a34::t_2c9112d5611d74 18,125,507,554-555
+tests/test_replay_identity.py
+  s_6658308151c726::t_8088752cda6a13 217-221
+  s_aba8a8d5718a34::t_73edfb512efdff 11-16,76,88,105,130,141,166
+docs/PORTFOLIO.md
+  s_aba8a8d5718a34::t_8e45431a4ccb55 34-38
+web/app/demo/agent-runs.tsx
+  s_aba8a8d5718a34::t_8e45431a4ccb55 14,76-84,180
+web/app/demo/demo.css
+  s_aba8a8d5718a34::t_8e45431a4ccb55 308-312
+scripts/replay_commentary.py
+  s_6658308151c726::t_1def5536aa609e 74-75,282-285
+src/commentary/replay/identity.py
+  s_6658308151c726::t_6c1a7a0fd07ffd 56-61,135-145,149,151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c32fe9a7eaf722b1a43b8f18dd7bea82a989ff1f",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
