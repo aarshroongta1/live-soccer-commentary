@@ -1,0 +1,74 @@
+examples/recorded-agent-demo/continuity/trace.json
+  s_6658308151c726::t_0bce51f026fb20 1-252
+src/commentary/replay/recorded.py
+  s_aba8a8d5718a34::t_acafa07f52cac4 227-231,238,248
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 236-237
+examples/recorded-agent-demo/continuity/README.md
+  s_aba8a8d5718a34::t_67603c5c4baf6e 1-42
+examples/recorded-agent-demo/continuity/render-report.md
+  s_6658308151c726::t_0bce51f026fb20 1-25
+examples/recorded-agent-demo/continuity/alignment.json
+  s_6658308151c726::t_0bce51f026fb20 1-272
+src/commentary/replay/agents.py
+  s_aba8a8d5718a34::t_e47b3d92a853aa 202-207
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 198-201
+  s_aba8a8d5718a34::t_acafa07f52cac4 268-270
+  s_aba8a8d5718a34::t_02d6f47e9182d2 192-194
+  s_aba8a8d5718a34::t_cd2351d8900781 197
+examples/recorded-agent-demo/continuity/candidate-plan.json
+  s_6658308151c726::t_0bce51f026fb20 1-367
+tests/test_render_demo.py
+  s_aba8a8d5718a34::t_e47b3d92a853aa 35-36,41-42,46-48
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 37-40,43-45
+tests/test_recorded_agents.py
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 141-146,148-150
+  s_aba8a8d5718a34::t_e47b3d92a853aa 133-140,147,151-153
+web/public/commentary-comparison.html
+  s_6658308151c726::t_0bce51f026fb20 1
+scripts/render_demo.py
+  s_aba8a8d5718a34::t_6ba9ff822cb5ef 595,607,610,779
+  s_aba8a8d5718a34::t_acafa07f52cac4 47,146-151,229,253,258-261,268,273-275,785-787,840,844-845
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 269-272,741-746,841-843
+  s_6658308151c726::t_c61e0aa986c883 608-609
+docs/DEMO.md
+  s_aba8a8d5718a34::t_1ded29ba5c2097 75-86
+scripts/speech_blocks.py
+  s_aba8a8d5718a34::t_c51c1afbf3d39b 1-7,9-18,21-28,34-51,60-62,65-73,76-82,93-99,114-118
+  s_aba8a8d5718a34::t_f0d6e94f2d8a19 8,19-20,63-64
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 29-33,52-59,74-75,83-92,100-113
+scripts/synthesize_demo.py
+  s_aba8a8d5718a34::t_c51c1afbf3d39b 19,52-53,89,99
+  s_aba8a8d5718a34::t_f0d6e94f2d8a19 55
+  s_6658308151c726::t_0bce51f026fb20 56-58
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 41-45,90-98
+tests/test_speech_blocks.py
+  s_aba8a8d5718a34::t_9b6e29c87ef23a 18-22,27,41
+  s_aba8a8d5718a34::t_40df1de3bf8853 5,14,53-58,68-83
+  s_aba8a8d5718a34::t_f0d6e94f2d8a19 13,42,67
+  s_aba8a8d5718a34::t_e47b3d92a853aa 1-2,6,8-11,15-17,23-26,29-40,43
+  s_aba8a8d5718a34::t_8953788c4d4f33 3-4,7,12,28,44-52,59-66,84-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ca928f848b2823c0d02a647da7f72dbaa9e3f3cc",
+  "prompts": {},
+  "sessions": {
+    "s_6658308151c726": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
