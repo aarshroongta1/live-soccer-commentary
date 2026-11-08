@@ -42,7 +42,9 @@ from commentary.streaming_demo import (
     StreamingObservation,
 )
 
-RESEARCHER_SYSTEM = """Prepare a compact pre-match football research brief using web search.
+RESEARCHER_SYSTEM = """Return exactly ONE JSON object matching the requested schema.
+Do not concatenate objects or add prose outside the JSON.
+Prepare a compact pre-match football research brief using web search.
 Find up to six useful player or team facts: recent form, competition-specific statistics,
 previous meetings, and relevant matchups. Every fact must include a direct HTTP source URL
 and source_date on or before the supplied as_of. Preserve competition, denominator, period,
@@ -56,6 +58,22 @@ only when the source establishes them for this fixture/competition. Squad public
 must be on or before as_of. These are identity context for the observer, not visual proof.
 These background facts cannot establish a goal, scorer, assist, or any in-match event."""
 
+SQUAD_RESEARCH_SYSTEM = """
+For this run, research ONLY pre-match squad lists and shirt numbers. Return facts=[].
+Use searches about each team's tournament squad numbers published before as_of, not
+match previews, highlights, results or later historical summaries. Prefer federation,
+club or tournament publications; a dated reputable contemporary news list is acceptable.
+A tournament squad can be used for a later fixture in that same tournament. It does not
+prove the starting XI, availability or who is on screen. Include canonical names and
+numbers actually present in the source. Partial squads are acceptable if directly sourced.
+Read the source content, not just a search snippet. Check its publication/update date.
+Do not cite a later PDF export or a page updated after the cutoff as pre-match evidence.
+The requested_sides input limits which teams to research; omit every other side.
+Every source_date MUST be on or before as_of. If a squad cannot be verified, omit the
+entire squad: return squads=[] or only the verified side. Never emit an empty players list.
+Do not include this fixture's outcome or any later facts, even with a disclaimer.
+"""
+
 REPLAY_OBSERVER_SYSTEM = """Observe only the currently available football images. Return at
 most three chronological, concrete observations, using exact CURRENT batch timestamps.
 Before selecting observations, compare the ball and participants across frames: contact,
@@ -66,7 +84,8 @@ Choose scene kind carefully. A referee decision and players protesting are play,
 celebration. A close camera angle is not by itself a replay. Label replay only with visible
 repeat-action/transition evidence; do not announce that action as new live play.
 Attach an actor only for a readable shirt number/name or action-linked graphic at that
-observation; otherwise actor=null. Do not set resolved_name or guess identity from fame,
+observation; otherwise actor=null. Preserve readable run-up/kick identities rather than
+only repeated celebrations. Do not set resolved_name or guess identity from fame,
 kit, team lists or a different action. A celebration cannot identify an earlier scorer.
 Copy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster
 name. Read a number from the image, not from the roster.
@@ -94,6 +113,8 @@ ball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call 
 lofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.
 A foul/penalty award needs referee signal or explicit graphic, not a collision alone.
 A save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.
+Use keeper_contact only when the ball visibly touches the keeper. Do not add it to a
+shot or goal because a keeper is present, dives, or goes the wrong way.
 A shot rebounding from the woodwork is not a save without visible keeper contact.
 For a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;
 falling players alone do not establish a tackle or foul. Interception cuts out a pass.
@@ -238,6 +259,8 @@ async def prepare_research(
     as_of: date,
     model: str,
     saved: ResearchBrief | None = None,
+    focus: Literal["context", "squads"] = "context",
+    squad_sides: tuple[Literal["home", "away"], ...] = ("home", "away"),
 ) -> PreparedResearch:
     """Reuse a validated brief or make one bounded search-enabled call.
 
@@ -245,6 +268,15 @@ async def prepare_research(
     before running any concurrent agent calls on this backend: the existing search
     adapter temporarily attaches provider tool configuration to the backend.
     """
+    if focus not in {"context", "squads"}:
+        raise ValueError("research focus must be context or squads")
+    if (
+        not squad_sides
+        or len(set(squad_sides)) != len(squad_sides)
+        or not set(squad_sides) <= {"home", "away"}
+    ):
+        raise ValueError("research squad sides must be unique home/away sides")
+    system = RESEARCHER_SYSTEM + (SQUAD_RESEARCH_SYSTEM if focus == "squads" else "")
     if saved is not None:
         brief = ResearchBrief.model_validate(saved.model_dump())
         if brief.fixture != fixture or brief.as_of > as_of:
@@ -272,12 +304,25 @@ async def prepare_research(
             raise LLMError("fresh pre-match research requires a search-capable backend")
         parsed = await backend.parse(
             model=model,
-            system=RESEARCHER_SYSTEM,
-            blocks=[text_block(json.dumps({"fixture": fixture, "as_of": as_of.isoformat()}))],
+            system=system,
+            blocks=[
+                text_block(
+                    json.dumps(
+                        {
+                            "fixture": fixture,
+                            "as_of": as_of.isoformat(),
+                            "focus": focus,
+                            "requested_sides": list(squad_sides),
+                        }
+                    )
+                )
+            ],
             output_format=ResearchDraft,
             max_tokens=4096,
             tag="replay_researcher",
         )
+    if any(squad.side not in squad_sides for squad in parsed.value.squads):
+        raise ValueError("research returned an unrequested squad side")
     brief = ResearchBrief(
         fixture=fixture, as_of=as_of, facts=parsed.value.facts, squads=parsed.value.squads
     )
@@ -285,6 +330,9 @@ async def prepare_research(
         brief,
         {
             "source": "web_research",
+            "focus": focus,
+            "squad_sides": list(squad_sides),
+            "prompt_sha256": hashlib.sha256(system.encode()).hexdigest(),
             "model_called": True,
             "model": parsed.model,
             "usage": asdict(parsed.usage),

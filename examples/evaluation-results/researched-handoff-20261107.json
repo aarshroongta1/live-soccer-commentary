@@ -1,0 +1,3205 @@
+{
+  "scope": "One existing seven-second penalty clip; new researcher-generated squad context, source review, observer identity lookup and commentary evaluations. No training or synthesized speech.",
+  "source_verification": {
+    "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+    "source_date": "2022-11-14",
+    "source_text_sha256": "9f6c13ad58fc09569e507e921faba19e7bf3726821847eb10b88d4bd9be2a475",
+    "matched_number_name_pairs": 26,
+    "source_review": "Coding-agent browser check of official page; roster entries unchanged.",
+    "retained_squads": [
+      "england-world-cup-2022-squad"
+    ],
+    "excluded_squads": [
+      {
+        "id": "france-world-cup-2022-squad",
+        "url": "https://www.fff.fr/article/8531-les-numeros-des-bleus.html",
+        "reason": "Source returned HTTP 403; content not independently verified."
+      }
+    ]
+  },
+  "accepted_research": {
+    "fixture": "England v France, FIFA World Cup quarter-final, 10 December 2022",
+    "as_of": "2022-12-09",
+    "facts": [],
+    "squads": [
+      {
+        "id": "england-world-cup-2022-squad",
+        "side": "home",
+        "team": "England",
+        "kit_colours": "white shirts, dark shorts",
+        "players": [
+          {
+            "name": "Jordan Pickford",
+            "number": 1
+          },
+          {
+            "name": "Kyle Walker",
+            "number": 2
+          },
+          {
+            "name": "Luke Shaw",
+            "number": 3
+          },
+          {
+            "name": "Declan Rice",
+            "number": 4
+          },
+          {
+            "name": "John Stones",
+            "number": 5
+          },
+          {
+            "name": "Harry Maguire",
+            "number": 6
+          },
+          {
+            "name": "Jack Grealish",
+            "number": 7
+          },
+          {
+            "name": "Jordan Henderson",
+            "number": 8
+          },
+          {
+            "name": "Harry Kane",
+            "number": 9
+          },
+          {
+            "name": "Raheem Sterling",
+            "number": 10
+          },
+          {
+            "name": "Marcus Rashford",
+            "number": 11
+          },
+          {
+            "name": "Kieran Trippier",
+            "number": 12
+          },
+          {
+            "name": "Nick Pope",
+            "number": 13
+          },
+          {
+            "name": "Kalvin Phillips",
+            "number": 14
+          },
+          {
+            "name": "Eric Dier",
+            "number": 15
+          },
+          {
+            "name": "Conor Coady",
+            "number": 16
+          },
+          {
+            "name": "Bukayo Saka",
+            "number": 17
+          },
+          {
+            "name": "Trent Alexander-Arnold",
+            "number": 18
+          },
+          {
+            "name": "Mason Mount",
+            "number": 19
+          },
+          {
+            "name": "Phil Foden",
+            "number": 20
+          },
+          {
+            "name": "Ben White",
+            "number": 21
+          },
+          {
+            "name": "Jude Bellingham",
+            "number": 22
+          },
+          {
+            "name": "Aaron Ramsdale",
+            "number": 23
+          },
+          {
+            "name": "Callum Wilson",
+            "number": 24
+          },
+          {
+            "name": "James Maddison",
+            "number": 25
+          },
+          {
+            "name": "Conor Gallagher",
+            "number": 26
+          }
+        ],
+        "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+        "source_date": "2022-11-14"
+      }
+    ]
+  },
+  "final_replay": {
+    "mode": "causal_replay",
+    "observations": [
+      {
+        "id": "v1-o1",
+        "at_s": 1.0,
+        "kind": "play",
+        "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+        "actor": {
+          "side": "home",
+          "shirt_number": 9,
+          "shirt_name": null,
+          "identity_source": "shirt_number",
+          "action_role": "shooter",
+          "resolved_name": "Harry Kane"
+        },
+        "action": {
+          "type": "shot",
+          "certainty": "confirmed",
+          "ball_path": "unknown",
+          "cues": [
+            "ball_contact",
+            "ball_motion",
+            "goal_line_crossing",
+            "keeper_contact"
+          ],
+          "support_at_s": [
+            0.0,
+            1.0,
+            2.0
+          ]
+        }
+      },
+      {
+        "id": "v1-o2",
+        "at_s": 3.5,
+        "kind": "goal",
+        "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+        "actor": {
+          "side": "home",
+          "shirt_number": 9,
+          "shirt_name": null,
+          "identity_source": "shirt_number",
+          "action_role": "scorer",
+          "resolved_name": "Harry Kane"
+        },
+        "action": {
+          "type": "goal",
+          "certainty": "confirmed",
+          "ball_path": "unknown",
+          "cues": [
+            "ball_in_net"
+          ],
+          "support_at_s": [
+            2.0,
+            3.0,
+            3.5
+          ]
+        }
+      },
+      {
+        "id": "v1-o3",
+        "at_s": 5.5,
+        "kind": "celebration",
+        "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+        "actor": null,
+        "action": {
+          "type": "unknown",
+          "certainty": "uncertain",
+          "ball_path": "unknown",
+          "cues": [],
+          "support_at_s": [
+            5.5,
+            6.5
+          ]
+        }
+      }
+    ],
+    "speech": [
+      {
+        "id": "speech-1",
+        "line": {
+          "voice": "caller",
+          "text": "Harry Kane scores for England!",
+          "evidence_ids": [
+            "v1-o1",
+            "v1-o2"
+          ],
+          "research_ids": []
+        },
+        "snapshot_version": 1,
+        "event_at_s": 3.5,
+        "started_s": 18.428442916992935,
+        "ended_s": 20.095109583659603,
+        "interrupted": false
+      },
+      {
+        "id": "speech-2",
+        "line": {
+          "voice": "analyst",
+          "text": "The finish was low and driven across goal, forcing the keeper into a full dive before it went in.",
+          "evidence_ids": [
+            "v1-o1",
+            "v1-o2"
+          ],
+          "research_ids": []
+        },
+        "snapshot_version": 1,
+        "event_at_s": 3.5,
+        "started_s": 20.610682458005613,
+        "ended_s": 26.944015791338945,
+        "interrupted": false
+      }
+    ],
+    "trace": [
+      {
+        "event": "observation_started",
+        "at_s": 6.502498874993762,
+        "role": null,
+        "data": {
+          "cutoff_s": 6.5,
+          "frame_timestamps": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            3.5,
+            4.5,
+            5.5,
+            6.5
+          ]
+        }
+      },
+      {
+        "event": "observation_available",
+        "at_s": 15.999529416993028,
+        "role": null,
+        "data": {
+          "cutoff_s": 6.5,
+          "snapshot_version": 1,
+          "observations": [
+            {
+              "id": "v1-o1",
+              "at_s": 1.0,
+              "kind": "play",
+              "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "shooter",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "shot",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "goal_line_crossing",
+                  "keeper_contact"
+                ],
+                "support_at_s": [
+                  0.0,
+                  1.0,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 3.5,
+              "kind": "goal",
+              "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "scorer",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_in_net"
+                ],
+                "support_at_s": [
+                  2.0,
+                  3.0,
+                  3.5
+                ]
+              }
+            },
+            {
+              "id": "v1-o3",
+              "at_s": 5.5,
+              "kind": "celebration",
+              "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [],
+                "support_at_s": [
+                  5.5,
+                  6.5
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "event": "turn_started",
+        "at_s": 16.000663707993226,
+        "role": "caller",
+        "data": {
+          "snapshot_version": 1,
+          "cutoff_s": 6.5
+        }
+      },
+      {
+        "event": "agent_action",
+        "at_s": 6.5,
+        "role": "caller",
+        "data": {
+          "step": 1,
+          "action": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "Harry Kane scores for England!",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2"
+              ],
+              "research_ids": []
+            },
+            "reason": "A verified goal is shown and the scorer is directly resolved in the observations."
+          },
+          "usage": {
+            "input_tokens": 1199,
+            "output_tokens": 71,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00121875,
+            "latency_s": 2.4182375419914024
+          },
+          "model": "gpt-5.4-mini",
+          "timestamp_basis": "snapshot_cutoff"
+        }
+      },
+      {
+        "event": "speech_queued",
+        "at_s": 18.427984374997322,
+        "role": "caller",
+        "data": {
+          "snapshot_version": 1
+        }
+      },
+      {
+        "event": "turn_started",
+        "at_s": 18.428437166992808,
+        "role": "analyst",
+        "data": {
+          "snapshot_version": 1,
+          "cutoff_s": 6.5
+        }
+      },
+      {
+        "event": "speech_started",
+        "at_s": 18.4285590829968,
+        "role": "caller",
+        "data": {
+          "speech": {
+            "id": "speech-1",
+            "line": {
+              "voice": "caller",
+              "text": "Harry Kane scores for England!",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2"
+              ],
+              "research_ids": []
+            },
+            "snapshot_version": 1,
+            "event_at_s": 3.5,
+            "started_s": 18.428442916992935,
+            "ended_s": 20.095109583659603,
+            "interrupted": false
+          }
+        }
+      },
+      {
+        "event": "speech_ended",
+        "at_s": 20.098037957999622,
+        "role": "caller",
+        "data": {
+          "speech_id": "speech-1"
+        }
+      },
+      {
+        "event": "speech_queued",
+        "at_s": 20.610665917003644,
+        "role": "analyst",
+        "data": {
+          "snapshot_version": 1
+        }
+      },
+      {
+        "event": "speech_started",
+        "at_s": 20.610840916997404,
+        "role": "analyst",
+        "data": {
+          "speech": {
+            "id": "speech-2",
+            "line": {
+              "voice": "analyst",
+              "text": "The finish was low and driven across goal, forcing the keeper into a full dive before it went in.",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2"
+              ],
+              "research_ids": []
+            },
+            "snapshot_version": 1,
+            "event_at_s": 3.5,
+            "started_s": 20.610682458005613,
+            "ended_s": 26.944015791338945,
+            "interrupted": false
+          }
+        }
+      },
+      {
+        "event": "speech_ended",
+        "at_s": 26.946670125005767,
+        "role": "analyst",
+        "data": {
+          "speech_id": "speech-2"
+        }
+      }
+    ],
+    "metadata": {
+      "duration_s": 7,
+      "speech_timing": "simulated",
+      "speech_timing_method": "word_count",
+      "rate": 1.0,
+      "deadlines": "replay_seconds",
+      "max_inflight_observers": 1,
+      "max_inflight_roles": 2,
+      "source_clip": "clips/action-sources/england-france-penalties.mp4",
+      "source_start_s": 50.5,
+      "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+      "observer_audit": [
+        {
+          "frames_at_s": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            3.5,
+            4.5,
+            5.5,
+            6.5
+          ],
+          "cutoff_s": 6.5,
+          "source": "saved_vision",
+          "status": "complete",
+          "raw": {
+            "observations": [
+              {
+                "id": "v1-o1",
+                "at_s": 1.0,
+                "kind": "play",
+                "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "shooter",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "shot",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "goal_line_crossing",
+                    "keeper_contact"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                }
+              },
+              {
+                "id": "v1-o2",
+                "at_s": 3.5,
+                "kind": "goal",
+                "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "scorer",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net"
+                  ],
+                  "support_at_s": [
+                    2.0,
+                    3.0,
+                    3.5
+                  ]
+                }
+              },
+              {
+                "id": "v1-o3",
+                "at_s": 5.5,
+                "kind": "celebration",
+                "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    5.5,
+                    6.5
+                  ]
+                }
+              }
+            ]
+          },
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 1.0,
+              "kind": "play",
+              "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "shooter",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "shot",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "goal_line_crossing",
+                  "keeper_contact"
+                ],
+                "support_at_s": [
+                  0.0,
+                  1.0,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 3.5,
+              "kind": "goal",
+              "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "scorer",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_in_net"
+                ],
+                "support_at_s": [
+                  2.0,
+                  3.0,
+                  3.5
+                ]
+              }
+            },
+            {
+              "id": "v1-o3",
+              "at_s": 5.5,
+              "kind": "celebration",
+              "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [],
+                "support_at_s": [
+                  5.5,
+                  6.5
+                ]
+              }
+            }
+          ],
+          "identity_steps": [
+            {
+              "step": 1,
+              "action": {
+                "kind": "research_roster",
+                "identities": [],
+                "reason": "The observations only provide England home shirt number 9 and no roster context; to avoid inventing an identity from number alone, I need the prepared match squad roster lookup."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 921,
+                "output_tokens": 56,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00094275,
+                "latency_s": 2.239538750000065
+              },
+              "tool_result": {
+                "tool": "research_roster",
+                "squads": [
+                  {
+                    "id": "england-world-cup-2022-squad",
+                    "side": "home",
+                    "team": "England",
+                    "kit_colours": "white shirts, dark shorts",
+                    "players": [
+                      {
+                        "name": "Jordan Pickford",
+                        "number": 1
+                      },
+                      {
+                        "name": "Kyle Walker",
+                        "number": 2
+                      },
+                      {
+                        "name": "Luke Shaw",
+                        "number": 3
+                      },
+                      {
+                        "name": "Declan Rice",
+                        "number": 4
+                      },
+                      {
+                        "name": "John Stones",
+                        "number": 5
+                      },
+                      {
+                        "name": "Harry Maguire",
+                        "number": 6
+                      },
+                      {
+                        "name": "Jack Grealish",
+                        "number": 7
+                      },
+                      {
+                        "name": "Jordan Henderson",
+                        "number": 8
+                      },
+                      {
+                        "name": "Harry Kane",
+                        "number": 9
+                      },
+                      {
+                        "name": "Raheem Sterling",
+                        "number": 10
+                      },
+                      {
+                        "name": "Marcus Rashford",
+                        "number": 11
+                      },
+                      {
+                        "name": "Kieran Trippier",
+                        "number": 12
+                      },
+                      {
+                        "name": "Nick Pope",
+                        "number": 13
+                      },
+                      {
+                        "name": "Kalvin Phillips",
+                        "number": 14
+                      },
+                      {
+                        "name": "Eric Dier",
+                        "number": 15
+                      },
+                      {
+                        "name": "Conor Coady",
+                        "number": 16
+                      },
+                      {
+                        "name": "Bukayo Saka",
+                        "number": 17
+                      },
+                      {
+                        "name": "Trent Alexander-Arnold",
+                        "number": 18
+                      },
+                      {
+                        "name": "Mason Mount",
+                        "number": 19
+                      },
+                      {
+                        "name": "Phil Foden",
+                        "number": 20
+                      },
+                      {
+                        "name": "Ben White",
+                        "number": 21
+                      },
+                      {
+                        "name": "Jude Bellingham",
+                        "number": 22
+                      },
+                      {
+                        "name": "Aaron Ramsdale",
+                        "number": 23
+                      },
+                      {
+                        "name": "Callum Wilson",
+                        "number": 24
+                      },
+                      {
+                        "name": "James Maddison",
+                        "number": 25
+                      },
+                      {
+                        "name": "Conor Gallagher",
+                        "number": 26
+                      }
+                    ],
+                    "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+                    "source_date": "2022-11-14"
+                  }
+                ]
+              }
+            },
+            {
+              "step": 2,
+              "action": {
+                "kind": "identify",
+                "identities": [
+                  {
+                    "observation_id": "v1-o1",
+                    "squad_id": "england-world-cup-2022-squad",
+                    "player_name": "Harry Kane"
+                  },
+                  {
+                    "observation_id": "v1-o2",
+                    "squad_id": "england-world-cup-2022-squad",
+                    "player_name": "Harry Kane"
+                  }
+                ],
+                "reason": "England home side number 9 matches Harry Kane in the retrieved England World Cup 2022 squad, so the shot and goal scorer observations can be identified directly from the literal shirt number and side."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 1383,
+                "output_tokens": 120,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00157725,
+                "latency_s": 1.630132791993674
+              }
+            }
+          ],
+          "inspection": null,
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.0,
+            "latency_s": 9.492475334001938
+          },
+          "prior_visual_usage": {
+            "input_tokens": 6277,
+            "output_tokens": 463,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00679125,
+            "latency_s": 5.619254999997793
+          },
+          "prior_usage": {
+            "input_tokens": 2304,
+            "output_tokens": 176,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00252,
+            "latency_s": 9.492475334001938
+          },
+          "latency_basis": "replayed_saved_latency"
+        }
+      ],
+      "role_audit": [
+        {
+          "event": "agent_action",
+          "at_s": 6.5,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Harry Kane scores for England!",
+                "evidence_ids": [
+                  "v1-o1",
+                  "v1-o2"
+                ],
+                "research_ids": []
+              },
+              "reason": "A verified goal is shown and the scorer is directly resolved in the observations."
+            },
+            "usage": {
+              "input_tokens": 1199,
+              "output_tokens": 71,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00121875,
+              "latency_s": 2.4182375419914024
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        }
+      ],
+      "research": {
+        "fixture": "England v France, FIFA World Cup quarter-final, 10 December 2022",
+        "as_of": "2022-12-09",
+        "facts": [],
+        "squads": [
+          {
+            "id": "england-world-cup-2022-squad",
+            "side": "home",
+            "team": "England",
+            "kit_colours": "white shirts, dark shorts",
+            "players": [
+              {
+                "name": "Jordan Pickford",
+                "number": 1
+              },
+              {
+                "name": "Kyle Walker",
+                "number": 2
+              },
+              {
+                "name": "Luke Shaw",
+                "number": 3
+              },
+              {
+                "name": "Declan Rice",
+                "number": 4
+              },
+              {
+                "name": "John Stones",
+                "number": 5
+              },
+              {
+                "name": "Harry Maguire",
+                "number": 6
+              },
+              {
+                "name": "Jack Grealish",
+                "number": 7
+              },
+              {
+                "name": "Jordan Henderson",
+                "number": 8
+              },
+              {
+                "name": "Harry Kane",
+                "number": 9
+              },
+              {
+                "name": "Raheem Sterling",
+                "number": 10
+              },
+              {
+                "name": "Marcus Rashford",
+                "number": 11
+              },
+              {
+                "name": "Kieran Trippier",
+                "number": 12
+              },
+              {
+                "name": "Nick Pope",
+                "number": 13
+              },
+              {
+                "name": "Kalvin Phillips",
+                "number": 14
+              },
+              {
+                "name": "Eric Dier",
+                "number": 15
+              },
+              {
+                "name": "Conor Coady",
+                "number": 16
+              },
+              {
+                "name": "Bukayo Saka",
+                "number": 17
+              },
+              {
+                "name": "Trent Alexander-Arnold",
+                "number": 18
+              },
+              {
+                "name": "Mason Mount",
+                "number": 19
+              },
+              {
+                "name": "Phil Foden",
+                "number": 20
+              },
+              {
+                "name": "Ben White",
+                "number": 21
+              },
+              {
+                "name": "Jude Bellingham",
+                "number": 22
+              },
+              {
+                "name": "Aaron Ramsdale",
+                "number": 23
+              },
+              {
+                "name": "Callum Wilson",
+                "number": 24
+              },
+              {
+                "name": "James Maddison",
+                "number": 25
+              },
+              {
+                "name": "Conor Gallagher",
+                "number": 26
+              }
+            ],
+            "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+            "source_date": "2022-11-14"
+          }
+        ]
+      },
+      "research_audit": {
+        "source": "web_research",
+        "focus": "squads",
+        "prompt_sha256": "add004a7501a60f0ac5f4466923ee6a8d0743a8100640b16fea2fd90787da75a",
+        "model_called": true,
+        "model": "gpt-5.4-mini",
+        "usage": {
+          "input_tokens": 4977,
+          "output_tokens": 782,
+          "cache_read_tokens": 4608,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00759735,
+          "latency_s": 6.796543667005608
+        },
+        "source_contents_verified": false
+      },
+      "source_verification": {
+        "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+        "source_date": "2022-11-14",
+        "source_text_sha256": "9f6c13ad58fc09569e507e921faba19e7bf3726821847eb10b88d4bd9be2a475",
+        "matched_number_name_pairs": 26,
+        "source_review": "Coding-agent browser check of official page; roster entries unchanged.",
+        "retained_squads": [
+          "england-world-cup-2022-squad"
+        ],
+        "excluded_squads": [
+          {
+            "id": "france-world-cup-2022-squad",
+            "url": "https://www.fff.fr/article/8531-les-numeros-des-bleus.html",
+            "reason": "Source returned HTTP 403; content not independently verified."
+          }
+        ]
+      },
+      "observer_identity_mode": "agent",
+      "models": {
+        "researcher": "gpt-5.4-mini",
+        "observer": "saved:gpt-5.4-mini",
+        "identity": "saved:gpt-5.4-mini",
+        "caller": "gpt-5.4-mini",
+        "analyst": "saved:gpt-5.4-mini"
+      },
+      "role_prompt_sha256": {
+        "caller": "a6b8588fa8850836c4801cdd9d7b62621bc77016d9277cbbf026c9dd3440da34",
+        "analyst": "06d960ef567b78a96964f656c36d5d56e834d87f8668517887cc62faca2ff7e4"
+      },
+      "config": {
+        "batch_s": 7,
+        "rate": 1.0,
+        "turn_timeout_s": 12,
+        "observer_timeout_s": 30,
+        "max_age_s": 40,
+        "speech_words_per_second": 3.0,
+        "drain_s": 45,
+        "line_gap_s": 0.25,
+        "max_batch_frames": 8,
+        "max_context_observations": 64,
+        "fast_goal_calls": false
+      },
+      "speech_simulated": true,
+      "budget": {
+        "max_usd": 0.01,
+        "max_calls": 1,
+        "attempts": 1,
+        "reported_usd": 0.00121875,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "provenance": "Web-researched England roster verified against official page; exact same-run visual readings, model identity decisions and analyst text reused with recorded delays. One new caller turn after score-claim grounding change. No supplied roster fallback; simulated speech timing.",
+      "analyst_reuse": {
+        "source": "runs/replay/researched-identity-20261107-staged/penalty-replay.json",
+        "line_edited": false
+      }
+    }
+  },
+  "spend": {
+    "estimated_total_usd_including_search": 0.11288419999999999,
+    "generation_calls": 21,
+    "hosted_search_actions": 5,
+    "phases": [
+      {
+        "phase": "researched-identity-20261107",
+        "generation_calls": 1,
+        "max_generation_calls": 1,
+        "max_search_actions": 3,
+        "usage": {
+          "input_tokens": 13549,
+          "output_tokens": 986,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.01459875,
+          "latency_s": 9.68840662499133
+        },
+        "search_actions": 2,
+        "estimated_search_fees_usd": 0.02,
+        "token_and_search_estimate_usd": 0.03459875,
+        "hard_dollar_cap": false,
+        "note": "One deliberate research call; 4096 output-token and three hosted-tool limits. Token budget guard is unchanged; search-content tokens make a pre-call hard dollar cap unavailable here."
+      },
+      {
+        "phase": "researched-identity-20261107-squads",
+        "generation_calls": 1,
+        "max_generation_calls": 1,
+        "max_search_actions": 3,
+        "usage": {
+          "input_tokens": 4977,
+          "output_tokens": 782,
+          "cache_read_tokens": 4608,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00759735,
+          "latency_s": 6.796543667005608
+        },
+        "search_actions": 1,
+        "estimated_search_fees_usd": 0.01,
+        "token_and_search_estimate_usd": 0.01759735,
+        "hard_dollar_cap": false,
+        "note": "One deliberate research call; 4096 output-token and three hosted-tool limits. Token budget guard is unchanged; search-content tokens make a pre-call hard dollar cap unavailable here."
+      },
+      {
+        "phase": "researched-identity-20261107-england",
+        "generation_calls": 1,
+        "max_generation_calls": 1,
+        "max_search_actions": 3,
+        "usage": {
+          "input_tokens": 9267,
+          "output_tokens": 355,
+          "cache_read_tokens": 4608,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00889335,
+          "latency_s": 7.864205792007851
+        },
+        "search_actions": 2,
+        "estimated_search_fees_usd": 0.02,
+        "token_and_search_estimate_usd": 0.028893349999999998,
+        "hard_dollar_cap": false,
+        "note": "One deliberate research call; 4096 output-token and three hosted-tool limits. Token budget guard is unchanged; search-content tokens make a pre-call hard dollar cap unavailable here."
+      },
+      {
+        "phase": "researched-identity-20261107-squads-replay",
+        "max_usd": 0.05,
+        "max_calls": 4,
+        "attempts": 4,
+        "reported_usd": 0.0048277500000000004,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      {
+        "phase": "researched-identity-20261107-fresh-replay",
+        "max_usd": 0.05,
+        "max_calls": 6,
+        "attempts": 5,
+        "reported_usd": 0.010017749999999999,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      {
+        "phase": "researched-identity-20261107-continuity-replay",
+        "max_usd": 0.05,
+        "max_calls": 6,
+        "attempts": 4,
+        "reported_usd": 0.01061925,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      {
+        "phase": "researched-identity-20261107-staged-replay",
+        "max_usd": 0.02,
+        "max_calls": 4,
+        "attempts": 4,
+        "reported_usd": 0.0051112499999999995,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      {
+        "phase": "researched-identity-20261107-final-replay",
+        "max_usd": 0.01,
+        "max_calls": 1,
+        "attempts": 1,
+        "reported_usd": 0.00121875,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      }
+    ],
+    "pricing_source": "https://developers.openai.com/api/docs/pricing#built-in-tools"
+  },
+  "iterations": [
+    {
+      "phase": "broad research",
+      "accepted": false,
+      "reason": "Empty squads; later-dated sources also present. Rejected before use."
+    },
+    {
+      "phase": "squad-focused research",
+      "accepted": "England only after source review",
+      "reason": "All 26 entries match the official dated page. France source returned 403 and was excluded without rewriting roster entries."
+    },
+    {
+      "phase": "England-only search",
+      "accepted": false,
+      "reason": "Partial roster cited a general FIFA team page without independently verified publication date. Not used."
+    },
+    {
+      "phase": "researched context with saved vision",
+      "accepted": false,
+      "reason": "Analyst invented a keeper touch from an unsupported visual cue."
+    },
+    {
+      "phase": "fresh vision",
+      "accepted": false,
+      "reason": "Goal actor unresolved; only celebrant named."
+    },
+    {
+      "phase": "next fresh vision",
+      "accepted": false,
+      "reason": "Number read during the action, but initial identity action concatenated JSON. An experimental temporal-link change was reverted; strict same-action identity retained."
+    },
+    {
+      "phase": "stage-specific identity contract",
+      "accepted": false,
+      "reason": "Identity lookup/proposal succeeded. Caller falsely claimed England were ahead."
+    },
+    {
+      "phase": "caller score-grounding revision",
+      "accepted": true,
+      "reason": "Named goal call without invented lead/score state; analyst explains the observed finish without claiming a touch."
+    }
+  ],
+  "limits": [
+    "Source verification was performed by the coding agent via browser, not an autonomous production source verifier.",
+    "Only the verified England squad is supplied downstream. Squads are identity context, not a confirmed match XI.",
+    "Final replay reuses same-evaluation visual readings, model identity decisions and analyst text with recorded delays. Caller was regenerated; no words manually rewritten.",
+    "Camera-cut/replay labeling and source-event timing still need review; this is a single-clip handoff demonstration, not benchmark accuracy or real-time performance.",
+    "The separate missed-penalty control remains unresolved; no improvement claimed for it.",
+    "Research generation was call/output/search limited, not hard dollar capped. Token-budget protections remain unchanged for the replay calls."
+  ],
+  "research_attempts": [
+    {
+      "phase": "researched-identity-20261107",
+      "response_id": "resp_0fe4409e45d98c38006aefd88ea89087d2824fbdf63cc0546d",
+      "output_text": [
+        "{\"facts\":[{\"id\":\"fact1\",\"subject\":\"Fixture context\",\"text\":\"England and France met in the FIFA World Cup Qatar 2022 quarter-finals on 10 December 2022; FIFA\u2019s match listing and preview material place the match on Saturday, 10 December at Al Bayt Stadium, Al Khor.\",\"source_url\":\"https://www.plus.fifa.com/en/content/england-v-france-quarter-finals-fifa-world-cup-qatar-2022-full-match-replay/2a358b6d-8bf3-4cda-83f8-78c3d9a100a3\",\"source_date\":\"2022-12-10\"},{\"id\":\"fact2\",\"subject\":\"France recent form\",\"text\":\"France entered the quarter-final after beating Poland 3-1 in the round of 16 on 4 December 2022; FIFA\u2019s road-to-the-quarter-final page for France was published on 9 December 2022 and explicitly frames the path up to the England match.\",\"source_url\":\"https://www.fifa.com/en/watch/6liGkCnE6aS9EUaQSueUbf\",\"source_date\":\"2022-12-09\"},{\"id\":\"fact3\",\"subject\":\"England recent form\",\"text\":\"England entered the quarter-final after defeating Senegal in the round of 16; FIFA\u2019s England road-to-the-quarter-final item was published on 9 December 2022 and previews England\u2019s approach to the France tie.\",\"source_url\":\"https://www.fifa.com/en/watch/6VnaJGGoi78TFnfecJhPxA\",\"source_date\":\"2022-12-09\"},{\"id\":\"fact4\",\"subject\":\"France player matchup\",\"text\":\"France goalkeeper Hugo Lloris was set to earn a record 143rd cap in the match and his 18th World Cup appearance, according to FIFA\u2019s 9 December 2022 pre-match interview with Lloris.\",\"source_url\":\"https://www.fifa.com/en/articles/hugo-lloris-kylian-mbappe-france-harry-kane-kyle-walker-dider-deschamps-gareth-southgate-england-fifa-world-cup-qatar-2022\",\"source_date\":\"2022-12-09\"},{\"id\":\"fact5\",\"subject\":\"England player matchup\",\"text\":\"FIFA\u2019s 9 December 2022 match preview highlighted the key duel between Kylian Mbapp\u00e9 and Kyle Walker, and noted Jude Bellingham as one of England\u2019s standout players heading into the quarter-final.\",\"source_url\":\"https://www.fifa.com/en/articles/england-france-three-key-duels-mbappe-walker-southgate-deschamps-bellingham-tchouameni\",\"source_date\":\"2022-12-09\"},{\"id\":\"fact6\",\"subject\":\"Previous meetings\",\"text\":\"FIFA\u2019s historical World Cup meeting summary notes that England and France\u2019s 2022 quarter-final ended 2-1 to France, with Aurelien Tchouameni, Harry Kane and Olivier Giroud on the scoresheet; this can be used only as historical context, not as pre-match evidence.\",\"source_url\":\"https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/france-v-england-past-world-cup-encounters\",\"source_date\":\"2026-08-01\"}],\"squads\":[{\"id\":\"squad1\",\"side\":\"home\",\"team\":\"England\",\"kit_colours\":null,\"players\":[],\"source_url\":\"https://www.thefa.com/news/2022/dec/15/a-year-to-remember-at-sgp\",\"source_date\":\"2022-12-15\"},{\"id\":\"squad2\",\"side\":\"away\",\"team\":\"France\",\"kit_colours\":null,\"players\":[],\"source_url\":\"https://media.fff.fr/uploads/documents/ra22-23_selections-nationales.pdf\",\"source_date\":\"2022-12-15\"}]}"
+      ],
+      "search_actions": [
+        {
+          "type": "search",
+          "queries": [
+            "England France quarter-final 10 December 2022 FIFA World Cup official squad list England France December 2022 FIFA.com",
+            "England France preview December 2022 FIFA World Cup official stats FIFA.com"
+          ],
+          "query": "England France quarter-final 10 December 2022 FIFA World Cup official squad list England France December 2022 FIFA.com",
+          "sources": null
+        },
+        {
+          "type": "search",
+          "queries": [
+            "site:thefa.com England squad France FIFA World Cup quarter-final December 2022 squad numbers official",
+            "site:fff.fr France squad England FIFA World Cup quarter-final December 2022 squad numbers official",
+            "site:fifa.com France England December 2022 preview quarter-final official squad numbers"
+          ],
+          "query": "site:thefa.com England squad France FIFA World Cup quarter-final December 2022 squad numbers official",
+          "sources": null
+        }
+      ],
+      "error": {
+        "error": "LLMError",
+        "detail": "replay_researcher: unparseable output after $0.015 (status completed, 986 of 4096 output tokens): 2 validation errors for ResearchDraft\nsquads.0.players\n  List should have at least 1 item after validation, not 0 [type=too_short, input_value=[], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_short\nsquads.1.players\n  List should have at least 1 item after validation, not 0 [type=too_short, input_value=[], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_short"
+      },
+      "runtime_acceptance": false
+    },
+    {
+      "phase": "researched-identity-20261107-squads",
+      "response_id": "resp_026a5c603b290ec9006aefd8e9e83087d2816c6946ea9aec1c",
+      "output_text": [
+        "{\"facts\":[],\"squads\":[{\"id\":\"england-world-cup-2022-squad\",\"side\":\"home\",\"team\":\"England\",\"kit_colours\":\"white shirts, dark shorts\",\"players\":[{\"name\":\"Jordan Pickford\",\"number\":1},{\"name\":\"Kyle Walker\",\"number\":2},{\"name\":\"Luke Shaw\",\"number\":3},{\"name\":\"Declan Rice\",\"number\":4},{\"name\":\"John Stones\",\"number\":5},{\"name\":\"Harry Maguire\",\"number\":6},{\"name\":\"Jack Grealish\",\"number\":7},{\"name\":\"Jordan Henderson\",\"number\":8},{\"name\":\"Harry Kane\",\"number\":9},{\"name\":\"Raheem Sterling\",\"number\":10},{\"name\":\"Marcus Rashford\",\"number\":11},{\"name\":\"Kieran Trippier\",\"number\":12},{\"name\":\"Nick Pope\",\"number\":13},{\"name\":\"Kalvin Phillips\",\"number\":14},{\"name\":\"Eric Dier\",\"number\":15},{\"name\":\"Conor Coady\",\"number\":16},{\"name\":\"Bukayo Saka\",\"number\":17},{\"name\":\"Trent Alexander-Arnold\",\"number\":18},{\"name\":\"Mason Mount\",\"number\":19},{\"name\":\"Phil Foden\",\"number\":20},{\"name\":\"Ben White\",\"number\":21},{\"name\":\"Jude Bellingham\",\"number\":22},{\"name\":\"Aaron Ramsdale\",\"number\":23},{\"name\":\"Callum Wilson\",\"number\":24},{\"name\":\"James Maddison\",\"number\":25},{\"name\":\"Conor Gallagher\",\"number\":26}],\"source_url\":\"https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114\",\"source_date\":\"2022-11-14\"},{\"id\":\"france-world-cup-2022-squad\",\"side\":\"away\",\"team\":\"France\",\"kit_colours\":\"blue shirts, white shorts\",\"players\":[{\"name\":\"Hugo Lloris\",\"number\":1},{\"name\":\"Benjamin Pavard\",\"number\":2},{\"name\":\"Axel Disasi\",\"number\":3},{\"name\":\"Rapha\u00ebl Varane\",\"number\":4},{\"name\":\"Jules Kound\u00e9\",\"number\":5},{\"name\":\"Matteo Guendouzi\",\"number\":6},{\"name\":\"Antoine Griezmann\",\"number\":7},{\"name\":\"Aur\u00e9lien Tchouam\u00e9ni\",\"number\":8},{\"name\":\"Olivier Giroud\",\"number\":9},{\"name\":\"Kylian Mbapp\u00e9\",\"number\":10},{\"name\":\"Ousmane Demb\u00e9l\u00e9\",\"number\":11},{\"name\":\"Randal Kolo Muani\",\"number\":12},{\"name\":\"Wesley Fofana\",\"number\":13},{\"name\":\"Adrien Rabiot\",\"number\":14},{\"name\":\"Jordan Veretout\",\"number\":15},{\"name\":\"Steve Mandanda\",\"number\":16},{\"name\":\"William Saliba\",\"number\":17},{\"name\":\"Dayot Upamecano\",\"number\":18},{\"name\":\"Theo Hernandez\",\"number\":22},{\"name\":\"Alphonse Areola\",\"number\":23},{\"name\":\"Ibrahima Konat\u00e9\",\"number\":24},{\"name\":\"Eduardo Camavinga\",\"number\":25},{\"name\":\"Marcus Thuram\",\"number\":26}],\"source_url\":\"https://www.fff.fr/article/8531-les-numeros-des-bleus.html\",\"source_date\":\"2022-11-14\"}]}"
+      ],
+      "search_actions": [
+        {
+          "type": "search",
+          "queries": [
+            "England squad numbers FIFA World Cup 2022 official 9 December 2022 site:fifa.com OR site:englandfootball.com",
+            "France squad numbers FIFA World Cup 2022 official 9 December 2022 site:fifa.com OR site:fff.fr"
+          ],
+          "query": "England squad numbers FIFA World Cup 2022 official 9 December 2022 site:fifa.com OR site:englandfootball.com",
+          "sources": null
+        }
+      ],
+      "error": null,
+      "runtime_acceptance": "England entries only after source review"
+    },
+    {
+      "phase": "researched-identity-20261107-england",
+      "response_id": "resp_0036061847afb12b006aefd95dee9487d299a5328163dfb57b",
+      "output_text": [
+        "{\"facts\":[],\"squads\":[{\"id\":\"england-qatar2022-squad\",\"side\":\"home\",\"team\":\"England\",\"kit_colours\":null,\"players\":[{\"name\":\"Jordan Pickford\",\"number\":1},{\"name\":\"Kyle Walker\",\"number\":2},{\"name\":\"Luke Shaw\",\"number\":3},{\"name\":\"Declan Rice\",\"number\":4},{\"name\":\"John Stones\",\"number\":5},{\"name\":\"Mason Mount\",\"number\":19},{\"name\":\"Harry Kane\",\"number\":9},{\"name\":\"Bukayo Saka\",\"number\":17}],\"source_url\":\"https://www.fifa.com/en/tournaments/mens/worldcup/qatar2022/teams/england\",\"source_date\":\"2022-11-15\"}]}"
+      ],
+      "search_actions": [
+        {
+          "type": "search",
+          "queries": [
+            "site:fifa.com England squad numbers FIFA World Cup 2022 December 2022 official",
+            "site:thefa.com England FIFA World Cup 2022 squad numbers official December 2022"
+          ],
+          "query": "site:fifa.com England squad numbers FIFA World Cup 2022 December 2022 official",
+          "sources": null
+        },
+        {
+          "type": "open_page",
+          "url": "https://www.fifa.com/en/tournaments/mens/worldcup/qatar2022/teams/england"
+        },
+        {
+          "type": "search",
+          "queries": [
+            "site:fifa.com/en/tournaments/mens/worldcup/qatar2022/teams/england squad numbers England FIFA World Cup Qatar 2022",
+            "site:fifa.com England squad 2022 26 player numbers FIFA official list Harry Kane 9"
+          ],
+          "query": "site:fifa.com/en/tournaments/mens/worldcup/qatar2022/teams/england squad numbers England FIFA World Cup Qatar 2022",
+          "sources": null
+        },
+        {
+          "type": "open_page",
+          "url": null
+        }
+      ],
+      "error": null,
+      "runtime_acceptance": false
+    }
+  ],
+  "rejected_replays": [
+    {
+      "phase": "researched-identity-20261107-squads",
+      "accepted": false,
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 0.0,
+          "kind": "play",
+          "description": "England are awarded and taking a penalty kick; the ball is placed on the spot with the referee indicating the restart and players waiting around the area.",
+          "actor": null,
+          "action": {
+            "type": "penalty_kick",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "restart_setup",
+              "referee_signal",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              0.0,
+              1.0,
+              2.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 1.0,
+          "kind": "goal",
+          "description": "The penalty is struck low toward the left side and the ball crosses into the net despite the goalkeeper diving the other way.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 9,
+            "shirt_name": null,
+            "identity_source": "shirt_number",
+            "action_role": "shooter",
+            "resolved_name": "Harry Kane"
+          },
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_motion",
+              "goal_line_crossing",
+              "ball_in_net",
+              "keeper_contact"
+            ],
+            "support_at_s": [
+              1.0,
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o3",
+          "at_s": 3.0,
+          "kind": "celebration",
+          "description": "An England player runs away from goal celebrating after the equalising penalty goal; the scoreboard now shows 1-1.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              3.0,
+              3.5,
+              4.5,
+              5.5,
+              6.5
+            ]
+          }
+        }
+      ],
+      "speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "caller",
+            "text": "Harry Kane sends it low left, and England are level!",
+            "evidence_ids": [
+              "v1-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 1.0,
+          "started_s": 20.44165495800553,
+          "ended_s": 23.77498829133886,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "analyst",
+            "text": "The key detail is the low penalty finish into the left side, with the keeper diving the wrong way and only getting a touch as it went in.",
+            "evidence_ids": [
+              "v1-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 1.0,
+          "started_s": 24.02575450000586,
+          "ended_s": 33.359087833339196,
+          "interrupted": false
+        }
+      ],
+      "observer_audit": [
+        {
+          "frames_at_s": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            3.5,
+            4.5,
+            5.5,
+            6.5
+          ],
+          "cutoff_s": 6.5,
+          "source": "saved_visual_readings_then_fresh_identity",
+          "status": "complete",
+          "raw": {
+            "observations": [
+              {
+                "id": "v1-o1",
+                "at_s": 0.0,
+                "kind": "play",
+                "description": "England are awarded and taking a penalty kick; the ball is placed on the spot with the referee indicating the restart and players waiting around the area.",
+                "actor": null,
+                "action": {
+                  "type": "penalty_kick",
+                  "certainty": "confirmed",
+                  "ball_path": "ground",
+                  "cues": [
+                    "restart_setup",
+                    "referee_signal",
+                    "ball_on_ground"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                }
+              },
+              {
+                "id": "v1-o2",
+                "at_s": 1.0,
+                "kind": "goal",
+                "description": "The penalty is struck low toward the left side and the ball crosses into the net despite the goalkeeper diving the other way.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "shooter",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_motion",
+                    "goal_line_crossing",
+                    "ball_in_net",
+                    "keeper_contact"
+                  ],
+                  "support_at_s": [
+                    1.0,
+                    2.0,
+                    3.0
+                  ]
+                }
+              },
+              {
+                "id": "v1-o3",
+                "at_s": 3.0,
+                "kind": "celebration",
+                "description": "An England player runs away from goal celebrating after the equalising penalty goal; the scoreboard now shows 1-1.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    3.0,
+                    3.5,
+                    4.5,
+                    5.5,
+                    6.5
+                  ]
+                }
+              }
+            ]
+          },
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 0.0,
+              "kind": "play",
+              "description": "England are awarded and taking a penalty kick; the ball is placed on the spot with the referee indicating the restart and players waiting around the area.",
+              "actor": null,
+              "action": {
+                "type": "penalty_kick",
+                "certainty": "confirmed",
+                "ball_path": "ground",
+                "cues": [
+                  "restart_setup",
+                  "referee_signal",
+                  "ball_on_ground"
+                ],
+                "support_at_s": [
+                  0.0,
+                  1.0,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 1.0,
+              "kind": "goal",
+              "description": "The penalty is struck low toward the left side and the ball crosses into the net despite the goalkeeper diving the other way.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "shooter",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_motion",
+                  "goal_line_crossing",
+                  "ball_in_net",
+                  "keeper_contact"
+                ],
+                "support_at_s": [
+                  1.0,
+                  2.0,
+                  3.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o3",
+              "at_s": 3.0,
+              "kind": "celebration",
+              "description": "An England player runs away from goal celebrating after the equalising penalty goal; the scoreboard now shows 1-1.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [],
+                "support_at_s": [
+                  3.0,
+                  3.5,
+                  4.5,
+                  5.5,
+                  6.5
+                ]
+              }
+            }
+          ],
+          "identity_steps": [
+            {
+              "step": 1,
+              "action": {
+                "kind": "research_roster",
+                "identities": [],
+                "reason": "Need the prepared match roster to map the observed home shirt number 9 on the penalty shooter to the exact roster name before identifying."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 853,
+                "output_tokens": 48,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00085575,
+                "latency_s": 3.388398415991105
+              },
+              "tool_result": {
+                "tool": "research_roster",
+                "squads": [
+                  {
+                    "id": "england-world-cup-2022-squad",
+                    "side": "home",
+                    "team": "England",
+                    "kit_colours": "white shirts, dark shorts",
+                    "players": [
+                      {
+                        "name": "Jordan Pickford",
+                        "number": 1
+                      },
+                      {
+                        "name": "Kyle Walker",
+                        "number": 2
+                      },
+                      {
+                        "name": "Luke Shaw",
+                        "number": 3
+                      },
+                      {
+                        "name": "Declan Rice",
+                        "number": 4
+                      },
+                      {
+                        "name": "John Stones",
+                        "number": 5
+                      },
+                      {
+                        "name": "Harry Maguire",
+                        "number": 6
+                      },
+                      {
+                        "name": "Jack Grealish",
+                        "number": 7
+                      },
+                      {
+                        "name": "Jordan Henderson",
+                        "number": 8
+                      },
+                      {
+                        "name": "Harry Kane",
+                        "number": 9
+                      },
+                      {
+                        "name": "Raheem Sterling",
+                        "number": 10
+                      },
+                      {
+                        "name": "Marcus Rashford",
+                        "number": 11
+                      },
+                      {
+                        "name": "Kieran Trippier",
+                        "number": 12
+                      },
+                      {
+                        "name": "Nick Pope",
+                        "number": 13
+                      },
+                      {
+                        "name": "Kalvin Phillips",
+                        "number": 14
+                      },
+                      {
+                        "name": "Eric Dier",
+                        "number": 15
+                      },
+                      {
+                        "name": "Conor Coady",
+                        "number": 16
+                      },
+                      {
+                        "name": "Bukayo Saka",
+                        "number": 17
+                      },
+                      {
+                        "name": "Trent Alexander-Arnold",
+                        "number": 18
+                      },
+                      {
+                        "name": "Mason Mount",
+                        "number": 19
+                      },
+                      {
+                        "name": "Phil Foden",
+                        "number": 20
+                      },
+                      {
+                        "name": "Ben White",
+                        "number": 21
+                      },
+                      {
+                        "name": "Jude Bellingham",
+                        "number": 22
+                      },
+                      {
+                        "name": "Aaron Ramsdale",
+                        "number": 23
+                      },
+                      {
+                        "name": "Callum Wilson",
+                        "number": 24
+                      },
+                      {
+                        "name": "James Maddison",
+                        "number": 25
+                      },
+                      {
+                        "name": "Conor Gallagher",
+                        "number": 26
+                      }
+                    ],
+                    "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+                    "source_date": "2022-11-14"
+                  }
+                ]
+              }
+            },
+            {
+              "step": 2,
+              "action": {
+                "kind": "identify",
+                "identities": [
+                  {
+                    "observation_id": "v1-o2",
+                    "squad_id": "england-world-cup-2022-squad",
+                    "player_name": "Harry Kane"
+                  }
+                ],
+                "reason": "The observation explicitly gives home side, shirt number 9, and shooter role on England\u2019s penalty goal. The researched England squad maps number 9 to Harry Kane."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 1331,
+                "output_tokens": 84,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00137625,
+                "latency_s": 1.4366192080051405
+              }
+            }
+          ],
+          "inspection": {
+            "frame_at_s": 0.0,
+            "context_at_s": [
+              1.0,
+              2.0
+            ],
+            "left": 0.44,
+            "top": 0.28,
+            "right": 0.59,
+            "bottom": 0.72
+          },
+          "usage": {
+            "input_tokens": 2184,
+            "output_tokens": 132,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.002232,
+            "latency_s": 12.485429792010109
+          },
+          "prior_visual_usage": {
+            "input_tokens": 12788,
+            "output_tokens": 420,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.011481,
+            "latency_s": 7.656355500002974
+          }
+        }
+      ],
+      "budget": {
+        "max_usd": 0.05,
+        "max_calls": 4,
+        "attempts": 4,
+        "reported_usd": 0.0048277500000000004,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      }
+    },
+    {
+      "phase": "researched-identity-20261107-fresh",
+      "accepted": false,
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 1.0,
+          "kind": "goal",
+          "description": "The ball is struck low toward the left side of the goal and then appears inside the net as the goalkeeper dives across.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_motion",
+              "goal_line_crossing",
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              0.0,
+              1.0,
+              2.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 3.5,
+          "kind": "celebration",
+          "description": "An England player runs away from goal with arms outstretched after the score, celebrating.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 9,
+            "shirt_name": null,
+            "identity_source": "shirt_number",
+            "action_role": "visible_player",
+            "resolved_name": "Harry Kane"
+          },
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_motion"
+            ],
+            "support_at_s": [
+              3.5,
+              4.5,
+              5.5,
+              6.5
+            ]
+          }
+        }
+      ],
+      "speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "caller",
+            "text": "England have scored!",
+            "evidence_ids": [
+              "v1-o1"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 1.0,
+          "started_s": 15.806249291999848,
+          "ended_s": 16.806249291999848,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "analyst",
+            "text": "England\u2019s finish was low and early, skidding into the left side before the keeper could get across.",
+            "evidence_ids": [
+              "v1-o1"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 1.0,
+          "started_s": 17.846138499997323,
+          "ended_s": 23.51280516666399,
+          "interrupted": false
+        }
+      ],
+      "observer_audit": [
+        {
+          "cutoff_s": 6.5,
+          "frames_at_s": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            3.5,
+            4.5,
+            5.5,
+            6.5
+          ],
+          "inspection_mode": "optional",
+          "inspection_focus": "action",
+          "prompt_sha256": "395214be2dec1e052ffa3528c8c835b369be1b02b2c6ea046cf5cf346373e284",
+          "initial": {
+            "observations": [
+              {
+                "id": "0",
+                "at_s": 1.0,
+                "kind": "goal",
+                "description": "The ball is struck low toward the left side of the goal and then appears inside the net as the goalkeeper dives across.",
+                "actor": null,
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_motion",
+                    "goal_line_crossing",
+                    "ball_in_net"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                }
+              },
+              {
+                "id": "1",
+                "at_s": 3.5,
+                "kind": "celebration",
+                "description": "An England player runs away from goal with arms outstretched after the score, celebrating.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_motion"
+                  ],
+                  "support_at_s": [
+                    3.5,
+                    4.5,
+                    5.5,
+                    6.5
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "ball_path_downgrades": [
+            {
+              "id": "0",
+              "reported": "ground",
+              "accepted": "unknown",
+              "reason": "missing_corresponding_visual_cue"
+            }
+          ],
+          "inspection": null,
+          "inspection_status": "not_requested",
+          "status": "complete",
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 1.0,
+              "kind": "goal",
+              "description": "The ball is struck low toward the left side of the goal and then appears inside the net as the goalkeeper dives across.",
+              "actor": null,
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_motion",
+                  "goal_line_crossing",
+                  "ball_in_net"
+                ],
+                "support_at_s": [
+                  0.0,
+                  1.0,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 3.5,
+              "kind": "celebration",
+              "description": "An England player runs away from goal with arms outstretched after the score, celebrating.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "visible_player",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  3.5,
+                  4.5,
+                  5.5,
+                  6.5
+                ]
+              }
+            }
+          ],
+          "raw": {
+            "observations": [
+              {
+                "id": "0",
+                "at_s": 1.0,
+                "kind": "goal",
+                "description": "The ball is struck low toward the left side of the goal and then appears inside the net as the goalkeeper dives across.",
+                "actor": null,
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_motion",
+                    "goal_line_crossing",
+                    "ball_in_net"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                }
+              },
+              {
+                "id": "1",
+                "at_s": 3.5,
+                "kind": "celebration",
+                "description": "An England player runs away from goal with arms outstretched after the score, celebrating.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_motion"
+                  ],
+                  "support_at_s": [
+                    3.5,
+                    4.5,
+                    5.5,
+                    6.5
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "identity_steps": [
+            {
+              "step": 1,
+              "action": {
+                "kind": "research_roster",
+                "identities": [],
+                "reason": "Need the prepared match roster to match the visible home shirt number 9 to the exact squad name before proposing any identity."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 676,
+                "output_tokens": 46,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.000714,
+                "latency_s": 1.9709421250008745
+              },
+              "tool_result": {
+                "tool": "research_roster",
+                "squads": [
+                  {
+                    "id": "england-world-cup-2022-squad",
+                    "side": "home",
+                    "team": "England",
+                    "kit_colours": "white shirts, dark shorts",
+                    "players": [
+                      {
+                        "name": "Jordan Pickford",
+                        "number": 1
+                      },
+                      {
+                        "name": "Kyle Walker",
+                        "number": 2
+                      },
+                      {
+                        "name": "Luke Shaw",
+                        "number": 3
+                      },
+                      {
+                        "name": "Declan Rice",
+                        "number": 4
+                      },
+                      {
+                        "name": "John Stones",
+                        "number": 5
+                      },
+                      {
+                        "name": "Harry Maguire",
+                        "number": 6
+                      },
+                      {
+                        "name": "Jack Grealish",
+                        "number": 7
+                      },
+                      {
+                        "name": "Jordan Henderson",
+                        "number": 8
+                      },
+                      {
+                        "name": "Harry Kane",
+                        "number": 9
+                      },
+                      {
+                        "name": "Raheem Sterling",
+                        "number": 10
+                      },
+                      {
+                        "name": "Marcus Rashford",
+                        "number": 11
+                      },
+                      {
+                        "name": "Kieran Trippier",
+                        "number": 12
+                      },
+                      {
+                        "name": "Nick Pope",
+                        "number": 13
+                      },
+                      {
+                        "name": "Kalvin Phillips",
+                        "number": 14
+                      },
+                      {
+                        "name": "Eric Dier",
+                        "number": 15
+                      },
+                      {
+                        "name": "Conor Coady",
+                        "number": 16
+                      },
+                      {
+                        "name": "Bukayo Saka",
+                        "number": 17
+                      },
+                      {
+                        "name": "Trent Alexander-Arnold",
+                        "number": 18
+                      },
+                      {
+                        "name": "Mason Mount",
+                        "number": 19
+                      },
+                      {
+                        "name": "Phil Foden",
+                        "number": 20
+                      },
+                      {
+                        "name": "Ben White",
+                        "number": 21
+                      },
+                      {
+                        "name": "Jude Bellingham",
+                        "number": 22
+                      },
+                      {
+                        "name": "Aaron Ramsdale",
+                        "number": 23
+                      },
+                      {
+                        "name": "Callum Wilson",
+                        "number": 24
+                      },
+                      {
+                        "name": "James Maddison",
+                        "number": 25
+                      },
+                      {
+                        "name": "Conor Gallagher",
+                        "number": 26
+                      }
+                    ],
+                    "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+                    "source_date": "2022-11-14"
+                  }
+                ]
+              }
+            },
+            {
+              "step": 2,
+              "action": {
+                "kind": "identify",
+                "identities": [
+                  {
+                    "observation_id": "v1-o2",
+                    "squad_id": "england-world-cup-2022-squad",
+                    "player_name": "Harry Kane"
+                  }
+                ],
+                "reason": "The observation explicitly shows a home England player with shirt number 9. In the retrieved England World Cup 2022 squad, number 9 is Harry Kane, so this is a direct roster match."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 1154,
+                "output_tokens": 91,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.001275,
+                "latency_s": 1.3883139169920469
+              }
+            }
+          ],
+          "usage": {
+            "input_tokens": 7968,
+            "output_tokens": 363,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.0076095,
+            "latency_s": 7.7985369590023765
+          }
+        }
+      ],
+      "budget": {
+        "max_usd": 0.05,
+        "max_calls": 6,
+        "attempts": 5,
+        "reported_usd": 0.010017749999999999,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      }
+    },
+    {
+      "phase": "researched-identity-20261107-continuity",
+      "accepted": false,
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 1.0,
+          "kind": "play",
+          "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "goal_line_crossing",
+              "keeper_contact"
+            ],
+            "support_at_s": [
+              0.0,
+              1.0,
+              2.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 3.5,
+          "kind": "goal",
+          "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0,
+              3.5
+            ]
+          }
+        },
+        {
+          "id": "v1-o3",
+          "at_s": 5.5,
+          "kind": "celebration",
+          "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              5.5,
+              6.5
+            ]
+          }
+        }
+      ],
+      "speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "caller",
+            "text": "England have scored!",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 3.5,
+          "started_s": 13.75462570899981,
+          "ended_s": 14.75462570899981,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "analyst",
+            "text": "The finish was a low drive that slipped past the diving goalkeeper and into the net, with the ball clearly crossing the line.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 3.5,
+          "started_s": 15.3140046250046,
+          "ended_s": 22.980671291671268,
+          "interrupted": false
+        }
+      ],
+      "observer_audit": [
+        {
+          "cutoff_s": 6.5,
+          "frames_at_s": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            3.5,
+            4.5,
+            5.5,
+            6.5
+          ],
+          "inspection_mode": "optional",
+          "inspection_focus": "action",
+          "prompt_sha256": "9e8a9e7563f9307f3f9a3f2ce409ea1936eebae4c4e0b8cc1e58b7d60e6e517d",
+          "initial": {
+            "observations": [
+              {
+                "id": "obs1",
+                "at_s": 1.0,
+                "kind": "play",
+                "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "shooter",
+                  "identity_at_s": 1.0,
+                  "continuity_note": "Same attacker remains visible in the shot sequence from the run-up to the finish inside the same camera view.",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "shot",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "goal_line_crossing",
+                    "keeper_contact"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                }
+              },
+              {
+                "id": "obs2",
+                "at_s": 3.5,
+                "kind": "goal",
+                "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "scorer",
+                  "identity_at_s": 3.5,
+                  "continuity_note": "Same player is still continuously linked to the preceding shot sequence in the same camera shot.",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net"
+                  ],
+                  "support_at_s": [
+                    2.0,
+                    3.0,
+                    3.5
+                  ]
+                }
+              },
+              {
+                "id": "obs3",
+                "at_s": 5.5,
+                "kind": "celebration",
+                "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "identity_at_s": 5.5,
+                  "continuity_note": "Same player continues in the immediate post-goal celebration within the same uninterrupted view.",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    5.5,
+                    6.5
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "ball_path_downgrades": [
+            {
+              "id": "obs1",
+              "reported": "ground",
+              "accepted": "unknown",
+              "reason": "missing_corresponding_visual_cue"
+            },
+            {
+              "id": "obs2",
+              "reported": "ground",
+              "accepted": "unknown",
+              "reason": "missing_corresponding_visual_cue"
+            }
+          ],
+          "inspection": null,
+          "inspection_status": "not_requested",
+          "status": "complete",
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 1.0,
+              "kind": "play",
+              "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+              "actor": null,
+              "action": {
+                "type": "shot",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "goal_line_crossing",
+                  "keeper_contact"
+                ],
+                "support_at_s": [
+                  0.0,
+                  1.0,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 3.5,
+              "kind": "goal",
+              "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+              "actor": null,
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_in_net"
+                ],
+                "support_at_s": [
+                  2.0,
+                  3.0,
+                  3.5
+                ]
+              }
+            },
+            {
+              "id": "v1-o3",
+              "at_s": 5.5,
+              "kind": "celebration",
+              "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [],
+                "support_at_s": [
+                  5.5,
+                  6.5
+                ]
+              }
+            }
+          ],
+          "raw": {
+            "observations": [
+              {
+                "id": "obs1",
+                "at_s": 1.0,
+                "kind": "play",
+                "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "shooter",
+                  "identity_at_s": 1.0,
+                  "continuity_note": "Same attacker remains visible in the shot sequence from the run-up to the finish inside the same camera view.",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "shot",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "goal_line_crossing",
+                    "keeper_contact"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                }
+              },
+              {
+                "id": "obs2",
+                "at_s": 3.5,
+                "kind": "goal",
+                "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "scorer",
+                  "identity_at_s": 3.5,
+                  "continuity_note": "Same player is still continuously linked to the preceding shot sequence in the same camera shot.",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net"
+                  ],
+                  "support_at_s": [
+                    2.0,
+                    3.0,
+                    3.5
+                  ]
+                }
+              },
+              {
+                "id": "obs3",
+                "at_s": 5.5,
+                "kind": "celebration",
+                "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "identity_at_s": 5.5,
+                  "continuity_note": "Same player continues in the immediate post-goal celebration within the same uninterrupted view.",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    5.5,
+                    6.5
+                  ]
+                }
+              }
+            ],
+            "inspection": null
+          },
+          "identity_steps": [
+            {
+              "step": 1,
+              "error": "LLMError",
+              "detail": "replay_observer_identity: unparseable output after $0.001 (status completed, 125 of 512 output tokens): Extra data: line 1 column 263 (char 262)"
+            }
+          ],
+          "usage": {
+            "input_tokens": 6277,
+            "output_tokens": 463,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00679125,
+            "latency_s": 5.619254999997793
+          }
+        }
+      ],
+      "budget": {
+        "max_usd": 0.05,
+        "max_calls": 6,
+        "attempts": 4,
+        "reported_usd": 0.01061925,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      }
+    },
+    {
+      "phase": "researched-identity-20261107-staged",
+      "accepted": false,
+      "observations": [
+        {
+          "id": "v1-o1",
+          "at_s": 1.0,
+          "kind": "play",
+          "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 9,
+            "shirt_name": null,
+            "identity_source": "shirt_number",
+            "action_role": "shooter",
+            "resolved_name": "Harry Kane"
+          },
+          "action": {
+            "type": "shot",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "goal_line_crossing",
+              "keeper_contact"
+            ],
+            "support_at_s": [
+              0.0,
+              1.0,
+              2.0
+            ]
+          }
+        },
+        {
+          "id": "v1-o2",
+          "at_s": 3.5,
+          "kind": "goal",
+          "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+          "actor": {
+            "side": "home",
+            "shirt_number": 9,
+            "shirt_name": null,
+            "identity_source": "shirt_number",
+            "action_role": "scorer",
+            "resolved_name": "Harry Kane"
+          },
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0,
+              3.5
+            ]
+          }
+        },
+        {
+          "id": "v1-o3",
+          "at_s": 5.5,
+          "kind": "celebration",
+          "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              5.5,
+              6.5
+            ]
+          }
+        }
+      ],
+      "speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "caller",
+            "text": "Harry Kane buries it low, and England are ahead!",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 3.5,
+          "started_s": 17.396413333000964,
+          "ended_s": 20.396413333000964,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "analyst",
+            "text": "The finish was low and driven across goal, forcing the keeper into a full dive before it went in.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 3.5,
+          "started_s": 20.64774720800051,
+          "ended_s": 26.981080541333842,
+          "interrupted": false
+        }
+      ],
+      "observer_audit": [
+        {
+          "frames_at_s": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            3.5,
+            4.5,
+            5.5,
+            6.5
+          ],
+          "cutoff_s": 6.5,
+          "source": "saved_visual_readings_then_fresh_identity",
+          "status": "complete",
+          "raw": {
+            "observations": [
+              {
+                "id": "v1-o1",
+                "at_s": 1.0,
+                "kind": "play",
+                "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "shooter",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "shot",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_contact",
+                    "ball_motion",
+                    "goal_line_crossing",
+                    "keeper_contact"
+                  ],
+                  "support_at_s": [
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                }
+              },
+              {
+                "id": "v1-o2",
+                "at_s": 3.5,
+                "kind": "goal",
+                "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "scorer",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "goal",
+                  "certainty": "confirmed",
+                  "ball_path": "unknown",
+                  "cues": [
+                    "ball_in_net"
+                  ],
+                  "support_at_s": [
+                    2.0,
+                    3.0,
+                    3.5
+                  ]
+                }
+              },
+              {
+                "id": "v1-o3",
+                "at_s": 5.5,
+                "kind": "celebration",
+                "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+                "actor": {
+                  "side": "home",
+                  "shirt_number": 9,
+                  "shirt_name": null,
+                  "identity_source": "shirt_number",
+                  "action_role": "visible_player",
+                  "resolved_name": null
+                },
+                "action": {
+                  "type": "unknown",
+                  "certainty": "uncertain",
+                  "ball_path": "unknown",
+                  "cues": [],
+                  "support_at_s": [
+                    5.5,
+                    6.5
+                  ]
+                }
+              }
+            ]
+          },
+          "resolved": [
+            {
+              "id": "v1-o1",
+              "at_s": 1.0,
+              "kind": "play",
+              "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "shooter",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "shot",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "goal_line_crossing",
+                  "keeper_contact"
+                ],
+                "support_at_s": [
+                  0.0,
+                  1.0,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "v1-o2",
+              "at_s": 3.5,
+              "kind": "goal",
+              "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+              "actor": {
+                "side": "home",
+                "shirt_number": 9,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "scorer",
+                "resolved_name": "Harry Kane"
+              },
+              "action": {
+                "type": "goal",
+                "certainty": "confirmed",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_in_net"
+                ],
+                "support_at_s": [
+                  2.0,
+                  3.0,
+                  3.5
+                ]
+              }
+            },
+            {
+              "id": "v1-o3",
+              "at_s": 5.5,
+              "kind": "celebration",
+              "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [],
+                "support_at_s": [
+                  5.5,
+                  6.5
+                ]
+              }
+            }
+          ],
+          "identity_steps": [
+            {
+              "step": 1,
+              "action": {
+                "kind": "research_roster",
+                "identities": [],
+                "reason": "The observations only provide England home shirt number 9 and no roster context; to avoid inventing an identity from number alone, I need the prepared match squad roster lookup."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 921,
+                "output_tokens": 56,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00094275,
+                "latency_s": 2.239538750000065
+              },
+              "tool_result": {
+                "tool": "research_roster",
+                "squads": [
+                  {
+                    "id": "england-world-cup-2022-squad",
+                    "side": "home",
+                    "team": "England",
+                    "kit_colours": "white shirts, dark shorts",
+                    "players": [
+                      {
+                        "name": "Jordan Pickford",
+                        "number": 1
+                      },
+                      {
+                        "name": "Kyle Walker",
+                        "number": 2
+                      },
+                      {
+                        "name": "Luke Shaw",
+                        "number": 3
+                      },
+                      {
+                        "name": "Declan Rice",
+                        "number": 4
+                      },
+                      {
+                        "name": "John Stones",
+                        "number": 5
+                      },
+                      {
+                        "name": "Harry Maguire",
+                        "number": 6
+                      },
+                      {
+                        "name": "Jack Grealish",
+                        "number": 7
+                      },
+                      {
+                        "name": "Jordan Henderson",
+                        "number": 8
+                      },
+                      {
+                        "name": "Harry Kane",
+                        "number": 9
+                      },
+                      {
+                        "name": "Raheem Sterling",
+                        "number": 10
+                      },
+                      {
+                        "name": "Marcus Rashford",
+                        "number": 11
+                      },
+                      {
+                        "name": "Kieran Trippier",
+                        "number": 12
+                      },
+                      {
+                        "name": "Nick Pope",
+                        "number": 13
+                      },
+                      {
+                        "name": "Kalvin Phillips",
+                        "number": 14
+                      },
+                      {
+                        "name": "Eric Dier",
+                        "number": 15
+                      },
+                      {
+                        "name": "Conor Coady",
+                        "number": 16
+                      },
+                      {
+                        "name": "Bukayo Saka",
+                        "number": 17
+                      },
+                      {
+                        "name": "Trent Alexander-Arnold",
+                        "number": 18
+                      },
+                      {
+                        "name": "Mason Mount",
+                        "number": 19
+                      },
+                      {
+                        "name": "Phil Foden",
+                        "number": 20
+                      },
+                      {
+                        "name": "Ben White",
+                        "number": 21
+                      },
+                      {
+                        "name": "Jude Bellingham",
+                        "number": 22
+                      },
+                      {
+                        "name": "Aaron Ramsdale",
+                        "number": 23
+                      },
+                      {
+                        "name": "Callum Wilson",
+                        "number": 24
+                      },
+                      {
+                        "name": "James Maddison",
+                        "number": 25
+                      },
+                      {
+                        "name": "Conor Gallagher",
+                        "number": 26
+                      }
+                    ],
+                    "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+                    "source_date": "2022-11-14"
+                  }
+                ]
+              }
+            },
+            {
+              "step": 2,
+              "action": {
+                "kind": "identify",
+                "identities": [
+                  {
+                    "observation_id": "v1-o1",
+                    "squad_id": "england-world-cup-2022-squad",
+                    "player_name": "Harry Kane"
+                  },
+                  {
+                    "observation_id": "v1-o2",
+                    "squad_id": "england-world-cup-2022-squad",
+                    "player_name": "Harry Kane"
+                  }
+                ],
+                "reason": "England home side number 9 matches Harry Kane in the retrieved England World Cup 2022 squad, so the shot and goal scorer observations can be identified directly from the literal shirt number and side."
+              },
+              "model": "gpt-5.4-mini",
+              "usage": {
+                "input_tokens": 1383,
+                "output_tokens": 120,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00157725,
+                "latency_s": 1.630132791993674
+              }
+            }
+          ],
+          "inspection": null,
+          "usage": {
+            "input_tokens": 2304,
+            "output_tokens": 176,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00252,
+            "latency_s": 9.492475334001938
+          },
+          "prior_visual_usage": {
+            "input_tokens": 6277,
+            "output_tokens": 463,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00679125,
+            "latency_s": 5.619254999997793
+          }
+        }
+      ],
+      "budget": {
+        "max_usd": 0.02,
+        "max_calls": 4,
+        "attempts": 4,
+        "reported_usd": 0.0051112499999999995,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      }
+    }
+  ]
+}

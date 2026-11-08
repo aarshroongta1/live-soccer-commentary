@@ -71,6 +71,8 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--caller-model")
     parser.add_argument("--analyst-model")
     parser.add_argument("--research-model")
+    parser.add_argument("--research-focus", choices=["context", "squads"], default="context")
+    parser.add_argument("--research-side", choices=["both", "home", "away"], default="both")
     parser.add_argument("--reviewer-model", help="optional bounded reviewer inside role deadline")
     parser.add_argument(
         "--inspect-first",
@@ -277,6 +279,10 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     as_of=args.as_of,
                     model=args.research_model,
                     saved=saved,
+                    focus=args.research_focus,
+                    squad_sides=("home", "away")
+                    if args.research_side == "both"
+                    else (args.research_side,),
                 )
             research, research_audit = prepared.brief, prepared.audit
         observer = cached_observer or ReplayObserver(

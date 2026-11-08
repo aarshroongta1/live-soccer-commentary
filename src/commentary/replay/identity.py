@@ -53,6 +53,12 @@ class IdentityAction(BaseModel):
         return self
 
 
+class IdentityLookup(IdentityAction):
+    """The first turn can request context or abstain; it cannot propose names."""
+
+    kind: Literal["research_roster", "abstain"]
+
+
 def squad_context(
     research: ResearchBrief | None, pack: dict[str, Any] | None
 ) -> list[dict[str, Any]]:
@@ -126,12 +132,23 @@ async def identify_players(
     payload: dict[str, Any] = {"observations": raw, "tools": ["research_roster"]}
     presented: list[dict[str, Any]] = []
     for step in range(2):
+        payload["allowed_actions"] = (
+            ["research_roster", "abstain"] if step == 0 else ["identify", "abstain"]
+        )
+        stage = (
+            "\nThis is the lookup decision turn. Do not propose identities yet. "
+            "Return only the roster request or abstention; wait for the real tool result."
+            if step == 0
+            else "\nThe real roster tool result is supplied. "
+            "Return one identify or abstain action. "
+            "Do not request a tool or concatenate a request with the final answer."
+        )
         try:
             parsed = await backend.parse(
                 model=model,
-                system=IDENTITY_SYSTEM,
+                system=IDENTITY_SYSTEM + stage,
                 blocks=[text_block(json.dumps(payload))],
-                output_format=IdentityAction,
+                output_format=IdentityLookup if step == 0 else IdentityAction,
                 max_tokens=512,
                 tag="replay_observer_identity",
             )

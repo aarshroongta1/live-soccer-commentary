@@ -146,3 +146,11 @@ visual readings/commentary and recorded delays. Its provenance identifies that
 reuse and the supplied roster. Previous deterministic reports remain historical
 comparisons. Old identity caches cannot be reused as current agent-generated
 identities; changed research squads also invalidate cached vision.
+
+## Fresh researched context
+
+The [researched handoff check](RESEARCH_HANDOFF.md) now replaces the default demo's
+supplied roster with unchanged, source-checked output from the research agent.
+The observer requests that squad and proposes identities; the final caller names
+Harry Kane without inventing a match lead. The source page and lookup decisions
+are visible in the demo. Earlier supplied-roster checks above remain historical.

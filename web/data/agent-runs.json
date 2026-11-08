@@ -3,37 +3,42 @@
     "id": "named-penalty",
     "title": "Named penalty and analyst handoff",
     "videoPath": "/soccer-commentary/agent-penalty.mp4",
-    "summary": "The observer requests roster context and proposes Harry Kane for readable number 9. The caller and analyst give separate calls.",
-    "limitation": "The roster was supplied; the researcher was not run for this saved check. Recorded delays are preserved; this is not real-time commentary.",
+    "summary": "The researcher found England\u2019s official squad numbers. The observer uses that context to identify Harry Kane, then caller and analyst give separate calls.",
+    "limitation": "Only England\u2019s independently checked squad is used. Unverified opponent context was excluded. This saved replay preserves processing delays; it is not real-time commentary.",
     "source_duration_s": 7,
-    "duration_s": 29.196627792000072,
+    "duration_s": 26.946670125005767,
     "models": {
+      "researcher": "gpt-5.4-mini",
       "observer": "saved:gpt-5.4-mini",
       "identity": "saved:gpt-5.4-mini",
-      "caller": "saved:gpt-5.4-mini",
+      "caller": "gpt-5.4-mini",
       "analyst": "saved:gpt-5.4-mini"
     },
-    "research_used": false,
-    "inspection": {
-      "frame_at_s": 0.0,
-      "context_at_s": [
-        1.0,
-        2.0
-      ],
-      "left": 0.44,
-      "top": 0.28,
-      "right": 0.59,
-      "bottom": 0.72
+    "research_used": true,
+    "research": {
+      "fixture": "England v France, FIFA World Cup quarter-final, 10 December 2022",
+      "as_of": "2022-12-09",
+      "squads": [
+        {
+          "id": "england-world-cup-2022-squad",
+          "team": "England",
+          "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+          "source_date": "2022-11-14",
+          "player_count": 26
+        }
+      ]
     },
+    "inspection": null,
     "lines": [
       {
         "id": "speech-1",
         "role": "caller",
-        "text": "Harry Kane buries the penalty! England level at 1-1!",
-        "start_s": 19.942118874998414,
-        "end_s": 22.942118874998414,
+        "text": "Harry Kane scores for England!",
+        "start_s": 18.428442916992935,
+        "end_s": 20.095109583659603,
         "interrupted": false,
         "evidence_ids": [
+          "v1-o1",
           "v1-o2"
         ],
         "origin": "Model-generated text"
@@ -41,11 +46,12 @@
       {
         "id": "speech-2",
         "role": "analyst",
-        "text": "The penalty was driven low and out of the goalkeeper\u2019s reach, with the dive going the wrong way.",
-        "start_s": 23.19404308400408,
-        "end_s": 29.19404308400408,
+        "text": "The finish was low and driven across goal, forcing the keeper into a full dive before it went in.",
+        "start_s": 20.610682458005613,
+        "end_s": 26.944015791338945,
         "interrupted": false,
         "evidence_ids": [
+          "v1-o1",
           "v1-o2"
         ],
         "origin": "Model-generated text"
@@ -54,7 +60,7 @@
     "events": [
       {
         "id": "event-0",
-        "time_s": 6.502431792003335,
+        "time_s": 6.502498874993762,
         "kind": "observation_started",
         "title": "Observer starts",
         "role": null,
@@ -64,54 +70,32 @@
       },
       {
         "id": "event-1",
-        "time_s": 18.64987654199649,
+        "time_s": 15.999529416993028,
         "kind": "observation_available",
         "title": "Evidence available",
         "role": null,
         "detail": "3 observations released to the commentators.",
-        "source_at_s": 0.0,
+        "source_at_s": 1.0,
         "observations": [
           {
             "id": "v1-o1",
-            "at_s": 0.0,
+            "at_s": 1.0,
             "kind": "play",
-            "description": "England are awarded and taking a penalty kick; the ball is placed on the spot with the referee indicating the restart and players waiting around the area.",
+            "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
             "action": {
-              "type": "penalty_kick",
+              "type": "shot",
               "certainty": "confirmed",
-              "ball_path": "ground",
+              "ball_path": "unknown",
               "cues": [
-                "restart_setup",
-                "referee_signal",
-                "ball_on_ground"
+                "ball_contact",
+                "ball_motion",
+                "goal_line_crossing",
+                "keeper_contact"
               ],
               "support_at_s": [
                 0.0,
                 1.0,
                 2.0
-              ]
-            },
-            "actor": null
-          },
-          {
-            "id": "v1-o2",
-            "at_s": 1.0,
-            "kind": "goal",
-            "description": "The penalty is struck low toward the left side and the ball crosses into the net despite the goalkeeper diving the other way.",
-            "action": {
-              "type": "goal",
-              "certainty": "confirmed",
-              "ball_path": "unknown",
-              "cues": [
-                "ball_motion",
-                "goal_line_crossing",
-                "ball_in_net",
-                "keeper_contact"
-              ],
-              "support_at_s": [
-                1.0,
-                2.0,
-                3.0
               ]
             },
             "actor": {
@@ -124,21 +108,21 @@
             }
           },
           {
-            "id": "v1-o3",
-            "at_s": 3.0,
-            "kind": "celebration",
-            "description": "An England player runs away from goal celebrating after the equalising penalty goal; the scoreboard now shows 1-1.",
+            "id": "v1-o2",
+            "at_s": 3.5,
+            "kind": "goal",
+            "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
             "action": {
-              "type": "unknown",
-              "certainty": "uncertain",
+              "type": "goal",
+              "certainty": "confirmed",
               "ball_path": "unknown",
-              "cues": [],
+              "cues": [
+                "ball_in_net"
+              ],
               "support_at_s": [
+                2.0,
                 3.0,
-                3.5,
-                4.5,
-                5.5,
-                6.5
+                3.5
               ]
             },
             "actor": {
@@ -146,15 +130,32 @@
               "shirt_number": 9,
               "shirt_name": null,
               "identity_source": "shirt_number",
-              "action_role": "visible_player",
+              "action_role": "scorer",
               "resolved_name": "Harry Kane"
             }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 5.5,
+            "kind": "celebration",
+            "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [],
+              "support_at_s": [
+                5.5,
+                6.5
+              ]
+            },
+            "actor": null
           }
         ]
       },
       {
         "id": "event-2",
-        "time_s": 18.65026974999637,
+        "time_s": 16.000663707993226,
         "kind": "turn_started",
         "title": "Commentator starts",
         "role": "caller",
@@ -163,8 +164,8 @@
         "observations": []
       },
       {
-        "id": "event-4",
-        "time_s": 19.942111541997292,
+        "id": "event-5",
+        "time_s": 18.428437166992808,
         "kind": "turn_started",
         "title": "Commentator starts",
         "role": "analyst",
@@ -173,18 +174,18 @@
         "observations": []
       },
       {
-        "id": "event-5",
-        "time_s": 19.942371541998,
+        "id": "event-6",
+        "time_s": 18.4285590829968,
         "kind": "speech_started",
         "title": "Speech starts",
         "role": "caller",
-        "detail": "Harry Kane buries the penalty! England level at 1-1!",
+        "detail": "Harry Kane scores for England!",
         "source_at_s": null,
         "observations": []
       },
       {
         "id": "event-7",
-        "time_s": 22.945162417003303,
+        "time_s": 20.098037957999622,
         "kind": "speech_ended",
         "title": "Speech ends",
         "role": "caller",
@@ -193,18 +194,18 @@
         "observations": []
       },
       {
-        "id": "event-8",
-        "time_s": 23.194256292001228,
+        "id": "event-9",
+        "time_s": 20.610840916997404,
         "kind": "speech_started",
         "title": "Speech starts",
         "role": "analyst",
-        "detail": "The penalty was driven low and out of the goalkeeper\u2019s reach, with the dive going the wrong way.",
+        "detail": "The finish was low and driven across goal, forcing the keeper into a full dive before it went in.",
         "source_at_s": null,
         "observations": []
       },
       {
-        "id": "event-9",
-        "time_s": 29.196627792000072,
+        "id": "event-10",
+        "time_s": 26.946670125005767,
         "kind": "speech_ended",
         "title": "Speech ends",
         "role": "analyst",
@@ -217,31 +218,31 @@
       {
         "kind": "research_roster",
         "identities": [],
-        "reason": "Need the prepared match squads to match the visible shirt number 9 for England before proposing any identity."
+        "reason": "The observations only provide England home shirt number 9 and no roster context; to avoid inventing an identity from number alone, I need the prepared match squad roster lookup."
       },
       {
         "kind": "identify",
         "identities": [
           {
-            "observation_id": "v1-o2",
-            "squad_id": "supplied-home",
+            "observation_id": "v1-o1",
+            "squad_id": "england-world-cup-2022-squad",
             "player_name": "Harry Kane"
           },
           {
-            "observation_id": "v1-o3",
-            "squad_id": "supplied-home",
+            "observation_id": "v1-o2",
+            "squad_id": "england-world-cup-2022-squad",
             "player_name": "Harry Kane"
           }
         ],
-        "reason": "The roster lookup shows England home squad number 9 is Harry Kane. Observation v1-o2 explicitly identifies the home shooter as shirt number 9, and v1-o3 shows the same home number 9 celebrating after the goal, so both observations match Harry Kane."
+        "reason": "England home side number 9 matches Harry Kane in the retrieved England World Cup 2022 squad, so the shot and goal scorer observations can be identified directly from the literal shirt number and side."
       }
     ],
     "provenance": {
-      "path": "runs/replay/agent-owned-identity-20261107-r2/penalty-replay.json",
-      "sha256": "f01be4cd1224b96262b78e4cf3de3f318f592d50f1e47a7bede872f231a75596",
+      "path": "runs/replay/researched-identity-20261107-final/penalty-replay.json",
+      "sha256": "364d4dff0f9ed1aad92706b53c5a65aa3e4aa8d1c1b80725e5296ceea802e9d4",
       "speech_timing": "Simulated from word counts; no synthesized audio.",
       "edited": false,
-      "reuse_note": "Identity lookup/proposals are model-selected. Visual readings and commentary are reused model outputs with recorded delays. Exact words are unedited."
+      "reuse_note": "Fresh web-researched context and model-selected identity decisions. The final caller was regenerated; visual readings and analyst text are reused from the same evaluation with recorded delays. Exact words are unedited."
     }
   },
   {
@@ -258,6 +259,7 @@
       "analyst": "gpt-6-luna"
     },
     "research_used": false,
+    "research": null,
     "inspection": {
       "frame_at_s": 1.5,
       "context_at_s": [
@@ -428,6 +430,7 @@
       "analyst": "gpt-6-luna"
     },
     "research_used": false,
+    "research": null,
     "inspection": null,
     "lines": [
       {

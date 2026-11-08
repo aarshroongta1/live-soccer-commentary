@@ -8,7 +8,12 @@ from pydantic import ValidationError
 from commentary.llm.fake import ScriptedBackend
 from commentary.recorded_demo import Observation, ObservedActor
 from commentary.recorded_research import ResearchBrief, ResearchDraft, ResearchSquad, SquadPlayer
-from commentary.replay.identity import IdentityAction, IdentityProposal, identify_players
+from commentary.replay.identity import (
+    IdentityAction,
+    IdentityLookup,
+    IdentityProposal,
+    identify_players,
+)
 from commentary.replay.preparation import prepare_research
 
 
@@ -68,7 +73,7 @@ async def test_researcher_squad_reaches_observer_tool_with_its_citation() -> Non
     import json
 
     backend = ScriptedBackend()
-    backend.queue("replay_observer_identity", [IdentityAction(kind="research_roster"), propose()])
+    backend.queue("replay_observer_identity", [IdentityLookup(kind="research_roster"), propose()])
     observations, audit, _ = await identify(backend)
     assert observations[0].actor.resolved_name == "Harry Kane"
     first = json.loads(backend.calls[0].blocks[0]["text"])
@@ -80,7 +85,7 @@ async def test_researcher_squad_reaches_observer_tool_with_its_citation() -> Non
 
 async def test_agent_can_abstain_even_when_number_has_one_match() -> None:
     backend = ScriptedBackend()
-    backend.always("replay_observer_identity", IdentityAction(kind="abstain"))
+    backend.always("replay_observer_identity", IdentityLookup(kind="abstain"))
     observations, _, _ = await identify(backend)
     assert observations[0].actor is None
     assert len(backend.calls) == 1
@@ -97,7 +102,7 @@ async def test_agent_can_abstain_even_when_number_has_one_match() -> None:
 )
 async def test_wrong_proposal_is_rejected_without_substituting_correct_name(proposal) -> None:
     backend = ScriptedBackend()
-    backend.queue("replay_observer_identity", [IdentityAction(kind="research_roster"), proposal])
+    backend.queue("replay_observer_identity", [IdentityLookup(kind="research_roster"), proposal])
     observations, audit, _ = await identify(backend)
     assert observations[0].actor is None
     assert audit[-1]["rejected"]
@@ -122,7 +127,7 @@ async def test_duplicate_roster_number_and_wrong_team_are_rejected() -> None:
     ]:
         backend = ScriptedBackend()
         backend.queue(
-            "replay_observer_identity", [IdentityAction(kind="research_roster"), propose()]
+            "replay_observer_identity", [IdentityLookup(kind="research_roster"), propose()]
         )
         observations, _, _ = await identify(backend, research=research)
         assert observations[0].actor is None
@@ -133,7 +138,7 @@ async def test_celebrant_name_cannot_fill_unnamed_goal() -> None:
     backend.queue(
         "replay_observer_identity",
         [
-            IdentityAction(kind="research_roster"),
+            IdentityLookup(kind="research_roster"),
             IdentityAction(
                 kind="identify",
                 identities=[
@@ -158,7 +163,7 @@ async def test_celebrant_name_cannot_fill_unnamed_goal() -> None:
 
 async def test_tool_loops_and_failures_cannot_discard_visual_events() -> None:
     backend = ScriptedBackend()
-    backend.always("replay_observer_identity", IdentityAction(kind="research_roster"))
+    backend.always("replay_observer_identity", IdentityLookup(kind="research_roster"))
     observations, _, _ = await identify(backend)
     assert observations[0].description == seen().description
     assert observations[0].actor is None
@@ -209,3 +214,8 @@ async def test_research_team_context_reaches_vision_without_exposing_names() -> 
     }
     assert "Harry Kane" not in json.dumps(payload)
     assert team_names(None, research) == {"home": "England"}
+
+
+def test_lookup_turn_cannot_propose_a_name_before_context_arrives() -> None:
+    with pytest.raises(ValidationError):
+        IdentityLookup.model_validate(propose().model_dump())

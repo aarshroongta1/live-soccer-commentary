@@ -11,6 +11,7 @@ export type AgentRun = {
   source_duration_s: number;
   duration_s: number;
   research_used: boolean;
+  research?: { fixture: string; as_of: string; squads: { id: string; team: string; source_url: string; source_date: string; player_count: number }[] } | null;
   inspection: { frame_at_s: number; context_at_s: number[] } | null;
   lines: { id: string; role: string; text: string; start_s: number; end_s: number;
     interrupted: boolean; evidence_ids: string[]; origin: string }[];
@@ -72,6 +73,15 @@ function RunReview({ run }: { run: AgentRun }) {
   return (
     <>
       <p className="demo-run-summary">{run.summary}</p>
+      {run.research_used && run.research && <details className="demo-run-research">
+        <summary>Pre-match research and sources</summary>
+        <p>{run.research.fixture} · cutoff {run.research.as_of}</p>
+        <ul>{run.research.squads.map((squad) => <li key={squad.id}>
+          <strong>{squad.team}</strong> · {squad.player_count} squad entries · published {squad.source_date}
+          {" · "}<a href={squad.source_url} target="_blank" rel="noreferrer">Squad-number source</a>
+        </li>)}</ul>
+        <p>Squad context supports identification; it does not establish the match lineup or on-pitch events.</p>
+      </details>}
       <div className="demo-run-grid">
         <div>
           {run.src && !failed ? (
@@ -167,7 +177,7 @@ function RunReview({ run }: { run: AgentRun }) {
       </details>
       <p className="demo-run-limit"><strong>What to notice:</strong> {run.limitation}</p>
       {run.provenance.reuse_note && <p className="demo-run-caption">{run.provenance.reuse_note}</p>}
-      <p className="demo-run-caption">Unedited saved output. Text only; speech durations are simulated. Research was not used in this example. Browsing this run makes no model calls.</p>
+      <p className="demo-run-caption">Unedited saved output. Text only; speech durations are simulated. {run.research_used ? "Research context was prepared before replay." : "Research was not used in this example."} Browsing this run makes no model calls.</p>
     </>
   );
 }

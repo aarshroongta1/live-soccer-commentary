@@ -38,7 +38,10 @@ for that action. When narrating an action with a resolved actor, prefer their na
 a visible_player is not automatically the passer, shooter or scorer.
 A later named celebration does not identify an earlier scorer. Never infer
 a player from shirt colours, fame, team lists, or background statistics. Never invent goals,
-assists, score, intent, tactics, or future play. State uncertainty or abstain when unsupported.
+assists, score, intent, tactics, or future play. A goal alone does not establish a lead or
+equaliser. Say ahead, lead, level, equaliser, winner or comeback only when explicit supplied
+score evidence establishes that match state; otherwise omit it and call the goal itself.
+State uncertainty or abstain when unsupported.
 Typed actions include certainty and ball path. Do not upgrade uncertain labels into facts,
 or invent aerial/ground trajectories. An uncertain observation's description is a hypothesis,
 even when written as a declarative sentence. If using it, explicitly say the contact or
@@ -77,6 +80,8 @@ player_context, and research. Abstain if there is nothing useful to add."""
     "instead of repeating the scorer, score, or goal announcement. If the evidence only "
     "shows the finish, explain that finish rather than inventing a buildup. Avoid "
     "keeper-relative left/right or footedness unless directly established by the evidence. "
+    "Audit cue labels are not extra events: do not turn a tag into a goalkeeper touch, "
+    "save or deflection that the described sequence does not establish. "
     "Abstain if there is no new supported point."
     + "\nA recent goal and its buildup remain relevant during celebration. Use the supplied "
     "sequence to explain the move in 12–24 words, even if the latest frame is a celebration. "

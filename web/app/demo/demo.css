@@ -305,3 +305,8 @@
 }
 
 .demo-run-identity { display: block; margin-top: 4px; color: var(--demo-muted, #66666d); }
+
+.demo-run-research { margin: 16px 0; padding: 12px 0; border-block: 1px solid #e4e4e9; font-size: 13px; line-height: 1.65; }
+.demo-run-research summary { cursor: pointer; }
+.demo-run-research p, .demo-run-research ul { margin-top: 10px; }
+.demo-run-research a { color: #2444ff; text-decoration: underline; text-underline-offset: 3px; }

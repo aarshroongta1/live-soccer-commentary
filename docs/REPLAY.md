@@ -8,10 +8,12 @@ it does not synthesize or stream live audio yet.
 ## Responsibilities
 
 - **Researcher:** before replay, searches for up to six cited, dated player/team
-  facts, or loads a saved brief bound to the fixture and cutoff. Research is optional;
+  facts and up to two squad lists, or loads a saved brief bound to the fixture and
+  cutoff. Research is optional;
   source dates/URLs are structurally validated, not independently verified.
 - **Observer:** receives only available sampled frames. Readable action-linked
-  shirt details are resolved against a separately supplied roster. The speakers do
+  shirt details lead to a research-roster request and an agent identity proposal.
+  Code accepts/rejects the proposal without selecting a replacement. The speakers do
   not receive that roster as a way to guess identities. It can select one bounded
   `inspect_frame` crop of a supplied frame, then return its final observations.
   A failed or cancelled inspection preserves its request in the observer audit.
@@ -254,3 +256,9 @@ Inspect the raw and resolved
 observer audit before accepting a named call. A readable celebrant does not
 identify an earlier scorer. See [the identity checks](PLAYER_IDENTIFICATION.md)
 for current evidence and limitations.
+
+For identity-focused checks, `--research-focus squads` searches for dated tournament
+squad numbers rather than broad match previews; `--research-side home` can limit
+context to one side. The deliberate [fresh-research check](RESEARCH_HANDOFF.md)
+records search fees separately. Routine token-budgeted OpenAI replay still uses
+saved research; the hosted-tool budget guard is unchanged.

@@ -15,7 +15,7 @@ from commentary.llm.base import LLMError
 from commentary.llm.fake import ScriptedBackend
 from commentary.recorded_demo import Frame, ObservedActor
 from commentary.recorded_research import ResearchBrief, ResearchDraft
-from commentary.replay.identity import IdentityAction, IdentityProposal
+from commentary.replay.identity import IdentityAction, IdentityLookup, IdentityProposal
 from commentary.replay.preparation import (
     FrameInspection,
     ReplayObservation,
@@ -122,7 +122,7 @@ async def test_observer_requires_agent_identity_proposal_after_visual_reading() 
     backend.queue(
         "replay_observer_identity",
         [
-            IdentityAction(kind="research_roster"),
+            IdentityLookup(kind="research_roster"),
             IdentityAction(
                 kind="identify",
                 identities=[
@@ -504,7 +504,7 @@ async def test_identity_inspection_reads_before_python_resolves_roster(roster, e
     backend.queue(
         "replay_observer_identity",
         [
-            IdentityAction(kind="research_roster"),
+            IdentityLookup(kind="research_roster"),
             IdentityAction(
                 kind="identify",
                 identities=[
@@ -539,3 +539,82 @@ def test_crop_context_is_canonical_without_adding_frames(context, expected) -> N
 def test_invalid_crop_times_are_rejected(context) -> None:
     with pytest.raises(ValueError, match="finite and nonnegative"):
         FrameInspection(frame_at_s=3, context_at_s=context, left=0, top=0, right=1, bottom=1)
+
+
+async def test_squad_research_focus_is_bound_to_fixture_and_cutoff() -> None:
+    backend = SearchBackend()
+    backend.always("replay_researcher", ResearchDraft(facts=[], squads=[]))
+    result = await prepare_research(
+        backend, fixture="Green v Orange", as_of=date(2022, 12, 9), model="offline", focus="squads"
+    )
+    payload = json.loads(backend.calls[0].blocks[0]["text"])
+    assert payload == {
+        "fixture": "Green v Orange",
+        "as_of": "2022-12-09",
+        "focus": "squads",
+        "requested_sides": ["home", "away"],
+    }
+    assert result.audit["focus"] == "squads"
+    assert len(result.audit["prompt_sha256"]) == 64
+    assert result.brief.squads == []
+    assert backend.extra_params == {"sentinel": True}
+
+
+async def test_invalid_research_focus_does_not_call_model() -> None:
+    backend = SearchBackend()
+    with pytest.raises(ValueError, match="research focus"):
+        await prepare_research(
+            backend,
+            fixture="Green v Orange",
+            as_of=date(2022, 12, 9),
+            model="offline",
+            focus="other",
+        )
+    assert not backend.calls
+
+
+async def test_research_rejects_an_unrequested_team() -> None:
+    from commentary.recorded_research import ResearchSquad, SquadPlayer
+
+    backend = SearchBackend()
+    backend.always(
+        "replay_researcher",
+        ResearchDraft(
+            facts=[],
+            squads=[
+                ResearchSquad(
+                    id="home-squad",
+                    side="home",
+                    team="Green",
+                    players=[SquadPlayer(name="Player", number=9)],
+                    source_url="https://example.org/squad",
+                    source_date=date(2022, 11, 14),
+                )
+            ],
+        ),
+    )
+    with pytest.raises(ValueError, match="unrequested squad side"):
+        await prepare_research(
+            backend,
+            fixture="Green v Orange",
+            as_of=date(2022, 12, 9),
+            model="offline",
+            focus="squads",
+            squad_sides=("away",),
+        )
+    assert backend.extra_params == {"sentinel": True}
+
+
+@pytest.mark.parametrize("sides", [(), ("home", "home"), ("other",)])
+async def test_invalid_requested_sides_do_not_call_model(sides) -> None:
+    backend = SearchBackend()
+    with pytest.raises(ValueError, match="research squad sides"):
+        await prepare_research(
+            backend,
+            fixture="Green v Orange",
+            as_of=date(2022, 12, 9),
+            model="offline",
+            focus="squads",
+            squad_sides=sides,
+        )
+    assert not backend.calls
