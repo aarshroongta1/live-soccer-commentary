@@ -1,0 +1,54 @@
+src/commentary/replay/agents.py
+  s_aba8a8d5718a34::t_de62073aa4b419 261-262
+  s_aba8a8d5718a34::t_fc9b34d4c1221e 255-256,264-265,371-381,384
+  s_aba8a8d5718a34::t_453a7d9cdff044 251-254,257-260,263,266-268
+  s_aba8a8d5718a34::t_2bfa767ac20640 186-203,216
+scripts/synthesize_demo.py
+  s_aba8a8d5718a34::t_453a7d9cdff044 38-39,46-48,70,77,81-89
+examples/recorded-agent-demo/naturalness/candidate-plan.json
+  s_aba8a8d5718a34::t_fb0218f3fa8dd7 1-357
+examples/recorded-agent-demo/naturalness/README.md
+  s_aba8a8d5718a34::t_7bcd833593ee7a 1-29
+examples/recorded-agent-demo/naturalness/render-report.md
+  s_aba8a8d5718a34::t_2de8dab9413a96 1-24
+web/public/commentary-comparison.html
+  s_aba8a8d5718a34::t_2de8dab9413a96 1
+scripts/prepare_agent_demo.py
+  s_aba8a8d5718a34::t_60fd40833eedfa 130-135
+src/commentary/replay/recorded.py
+  s_aba8a8d5718a34::t_453a7d9cdff044 246,298-301
+  s_aba8a8d5718a34::t_284e7bb0238337 247
+tests/test_synthesize_demo.py
+  s_aba8a8d5718a34::t_2fa8d9dc766e56 208-210,231-241
+  s_aba8a8d5718a34::t_7943f56947948f 201-207,211-230,242-245
+  s_aba8a8d5718a34::t_90a630f346b555 184-189
+  s_aba8a8d5718a34::t_4efac1e067c4f8 190-200
+tests/test_recorded_agents.py
+  s_aba8a8d5718a34::t_4efac1e067c4f8 106-110,112,120-122,124-125
+  s_aba8a8d5718a34::t_90a630f346b555 102-105,113-119,123,126-132
+  s_aba8a8d5718a34::t_2fa8d9dc766e56 57-59
+  s_aba8a8d5718a34::t_60fd40833eedfa 111
+examples/recorded-agent-demo/naturalness/evaluation.json
+  s_aba8a8d5718a34::t_fb0218f3fa8dd7 1-226
+examples/recorded-agent-demo/naturalness/dialogue-trace.json
+  s_aba8a8d5718a34::t_fb0218f3fa8dd7 1-572
+docs/DEMO.md
+  s_aba8a8d5718a34::t_70e7e0a5073538 10-14,68-72
+  s_aba8a8d5718a34::t_37285de51d9b26 73-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "62610265ac0131d26bb4c351e7a37e8b2841fa8a",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
