@@ -1,0 +1,1668 @@
+{
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "An England attacker drives into the France box on the ground and is challenged by two defenders, with one sliding in from the side as the ball stays near the attacker's feet.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "The referee points toward the penalty spot after the challenge in the area, while players around the incident appeal with raised arms.",
+      "actor": null,
+      "action": {
+        "type": "penalty_awarded",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "referee_signal",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 9.0,
+      "kind": "play",
+      "description": "England's number 9 begins the penalty kick run-up from the spot with the referee beside the area and France's goalkeeper set on the goal line.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "penalty_kick",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "restart_setup",
+          "ball_on_ground",
+          "ball_contact"
+        ],
+        "support_at_s": [
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 10.0,
+      "kind": "goal",
+      "description": "The penalty is struck low into the left side of the goal as the goalkeeper dives the other way and the ball crosses the line into the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground",
+          "goal_line_crossing",
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          10.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 12.0,
+      "kind": "celebration",
+      "description": "England's number 9 runs away along the byline with arms out in celebration after scoring.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          12.0,
+          13.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 17.0,
+      "kind": "replay",
+      "description": "Replay: England's number 9 strikes the penalty with his right foot from the spot.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "penalty_kick",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 19.0,
+      "kind": "replay",
+      "description": "Replay: the ball rises into the goal after the penalty, visibly inside the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_motion",
+          "ball_flight",
+          "goal_line_crossing",
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    }
+  ],
+  "raw_observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "An England attacker drives into the France box on the ground and is challenged by two defenders, with one sliding in from the side as the ball stays near the attacker's feet.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "The referee points toward the penalty spot after the challenge in the area, while players around the incident appeal with raised arms.",
+      "actor": null,
+      "action": {
+        "type": "penalty_awarded",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "referee_signal",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 9.0,
+      "kind": "play",
+      "description": "England's number 9 begins the penalty kick run-up from the spot with the referee beside the area and France's goalkeeper set on the goal line.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "penalty_kick",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "restart_setup",
+          "ball_on_ground",
+          "ball_contact"
+        ],
+        "support_at_s": [
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 10.0,
+      "kind": "goal",
+      "description": "The penalty is struck low into the left side of the goal as the goalkeeper dives the other way and the ball crosses the line into the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground",
+          "goal_line_crossing",
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          10.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 12.0,
+      "kind": "celebration",
+      "description": "England's number 9 runs away along the byline with arms out in celebration after scoring.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "visible_player",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          12.0,
+          13.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 17.0,
+      "kind": "replay",
+      "description": "Replay: England's number 9 strikes the penalty with his right foot from the spot.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "penalty_kick",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 19.0,
+      "kind": "replay",
+      "description": "Replay: the ball rises into the goal after the penalty, visibly inside the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_motion",
+          "ball_flight",
+          "goal_line_crossing",
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-8",
+      "at_s": 20.0,
+      "kind": "play",
+      "description": "England restart with a free kick from the right channel, with players packed around the edge of the six-yard area awaiting the delivery.",
+      "actor": null,
+      "action": {
+        "type": "free_kick",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "restart_setup"
+        ],
+        "support_at_s": [
+          20.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-9",
+      "at_s": 21.0,
+      "kind": "play",
+      "description": "The free kick is delivered aerially from the right into the crowded penalty area.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "confirmed",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_motion",
+          "ball_flight"
+        ],
+        "support_at_s": [
+          21.0,
+          22.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-10",
+      "at_s": 23.0,
+      "kind": "play",
+      "description": "The dropping ball reaches the goalmouth and bounces inside the six-yard area toward the left side of goal, but no final touch or outcome is clearly visible in this batch.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          22.0,
+          23.0
+        ]
+      }
+    }
+  ],
+  "identity_steps": [
+    {
+      "step": 1,
+      "action": {
+        "identities": [],
+        "kind": "research_roster",
+        "reason": "The kit reading only gives shirt number 9 for England, so the prepared squad context is needed to resolve the player identity."
+      },
+      "model": "gpt-5.4-mini",
+      "usage": {
+        "input_tokens": 612,
+        "output_tokens": 43,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0006525,
+        "latency_s": 2.298659708001651
+      },
+      "tool_result": {
+        "tool": "research_roster",
+        "squads": [
+          {
+            "id": "england-world-cup-2022-squad",
+            "side": "home",
+            "team": "England",
+            "kit_colours": "white shirts, dark shorts",
+            "players": [
+              {
+                "name": "Jordan Pickford",
+                "number": 1
+              },
+              {
+                "name": "Kyle Walker",
+                "number": 2
+              },
+              {
+                "name": "Luke Shaw",
+                "number": 3
+              },
+              {
+                "name": "Declan Rice",
+                "number": 4
+              },
+              {
+                "name": "John Stones",
+                "number": 5
+              },
+              {
+                "name": "Harry Maguire",
+                "number": 6
+              },
+              {
+                "name": "Jack Grealish",
+                "number": 7
+              },
+              {
+                "name": "Jordan Henderson",
+                "number": 8
+              },
+              {
+                "name": "Harry Kane",
+                "number": 9
+              },
+              {
+                "name": "Raheem Sterling",
+                "number": 10
+              },
+              {
+                "name": "Marcus Rashford",
+                "number": 11
+              },
+              {
+                "name": "Kieran Trippier",
+                "number": 12
+              },
+              {
+                "name": "Nick Pope",
+                "number": 13
+              },
+              {
+                "name": "Kalvin Phillips",
+                "number": 14
+              },
+              {
+                "name": "Eric Dier",
+                "number": 15
+              },
+              {
+                "name": "Conor Coady",
+                "number": 16
+              },
+              {
+                "name": "Bukayo Saka",
+                "number": 17
+              },
+              {
+                "name": "Trent Alexander-Arnold",
+                "number": 18
+              },
+              {
+                "name": "Mason Mount",
+                "number": 19
+              },
+              {
+                "name": "Phil Foden",
+                "number": 20
+              },
+              {
+                "name": "Ben White",
+                "number": 21
+              },
+              {
+                "name": "Jude Bellingham",
+                "number": 22
+              },
+              {
+                "name": "Aaron Ramsdale",
+                "number": 23
+              },
+              {
+                "name": "Callum Wilson",
+                "number": 24
+              },
+              {
+                "name": "James Maddison",
+                "number": 25
+              },
+              {
+                "name": "Conor Gallagher",
+                "number": 26
+              }
+            ],
+            "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+            "source_date": "2022-11-14"
+          }
+        ]
+      },
+      "batch_evidence_ids": [
+        "recorded-3",
+        "recorded-4",
+        "recorded-5"
+      ]
+    },
+    {
+      "step": 2,
+      "action": {
+        "identities": [
+          {
+            "observation_id": "recorded-3",
+            "squad_id": "england-world-cup-2022-squad",
+            "player_name": "Harry Kane"
+          },
+          {
+            "observation_id": "recorded-4",
+            "squad_id": "england-world-cup-2022-squad",
+            "player_name": "Harry Kane"
+          }
+        ],
+        "kind": "identify",
+        "reason": "England home side number 9 matches the England 2022 squad roster, where number 9 is Harry Kane. The penalty shooter and scorer are the same observed number 9, so both observations identify Harry Kane."
+      },
+      "model": "gpt-5.4-mini",
+      "usage": {
+        "input_tokens": 1378,
+        "output_tokens": 124,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0015915,
+        "latency_s": 1.7093589580035768
+      },
+      "batch_evidence_ids": [
+        "recorded-3",
+        "recorded-4",
+        "recorded-5"
+      ]
+    },
+    {
+      "step": 1,
+      "action": {
+        "identities": [],
+        "kind": "research_roster",
+        "reason": "The kit readings only identify England\u2019s number 9, so the prepared squad roster is needed to map shirt number to player identity."
+      },
+      "model": "gpt-5.4-mini",
+      "usage": {
+        "input_tokens": 455,
+        "output_tokens": 44,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.00053925,
+        "latency_s": 1.7572258330037585
+      },
+      "tool_result": {
+        "tool": "research_roster",
+        "squads": [
+          {
+            "id": "england-world-cup-2022-squad",
+            "side": "home",
+            "team": "England",
+            "kit_colours": "white shirts, dark shorts",
+            "players": [
+              {
+                "name": "Jordan Pickford",
+                "number": 1
+              },
+              {
+                "name": "Kyle Walker",
+                "number": 2
+              },
+              {
+                "name": "Luke Shaw",
+                "number": 3
+              },
+              {
+                "name": "Declan Rice",
+                "number": 4
+              },
+              {
+                "name": "John Stones",
+                "number": 5
+              },
+              {
+                "name": "Harry Maguire",
+                "number": 6
+              },
+              {
+                "name": "Jack Grealish",
+                "number": 7
+              },
+              {
+                "name": "Jordan Henderson",
+                "number": 8
+              },
+              {
+                "name": "Harry Kane",
+                "number": 9
+              },
+              {
+                "name": "Raheem Sterling",
+                "number": 10
+              },
+              {
+                "name": "Marcus Rashford",
+                "number": 11
+              },
+              {
+                "name": "Kieran Trippier",
+                "number": 12
+              },
+              {
+                "name": "Nick Pope",
+                "number": 13
+              },
+              {
+                "name": "Kalvin Phillips",
+                "number": 14
+              },
+              {
+                "name": "Eric Dier",
+                "number": 15
+              },
+              {
+                "name": "Conor Coady",
+                "number": 16
+              },
+              {
+                "name": "Bukayo Saka",
+                "number": 17
+              },
+              {
+                "name": "Trent Alexander-Arnold",
+                "number": 18
+              },
+              {
+                "name": "Mason Mount",
+                "number": 19
+              },
+              {
+                "name": "Phil Foden",
+                "number": 20
+              },
+              {
+                "name": "Ben White",
+                "number": 21
+              },
+              {
+                "name": "Jude Bellingham",
+                "number": 22
+              },
+              {
+                "name": "Aaron Ramsdale",
+                "number": 23
+              },
+              {
+                "name": "Callum Wilson",
+                "number": 24
+              },
+              {
+                "name": "James Maddison",
+                "number": 25
+              },
+              {
+                "name": "Conor Gallagher",
+                "number": 26
+              }
+            ],
+            "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+            "source_date": "2022-11-14"
+          }
+        ]
+      },
+      "batch_evidence_ids": [
+        "recorded-6",
+        "recorded-7"
+      ]
+    },
+    {
+      "step": 2,
+      "action": {
+        "identities": [
+          {
+            "observation_id": "recorded-6",
+            "squad_id": "england-world-cup-2022-squad",
+            "player_name": "Harry Kane"
+          },
+          {
+            "observation_id": "recorded-7",
+            "squad_id": "england-world-cup-2022-squad",
+            "player_name": "Harry Kane"
+          }
+        ],
+        "kind": "identify",
+        "reason": "The observations explicitly identify England home number 9 as the shooter and scorer, and the researched roster maps England number 9 to Harry Kane."
+      },
+      "model": "gpt-5.4-mini",
+      "usage": {
+        "input_tokens": 197,
+        "output_tokens": 109,
+        "cache_read_tokens": 1024,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.00071505,
+        "latency_s": 1.948217791999923
+      },
+      "batch_evidence_ids": [
+        "recorded-6",
+        "recorded-7"
+      ]
+    }
+  ],
+  "vision_usage": {
+    "input_tokens": 14481,
+    "output_tokens": 1040,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0518025,
+    "latency_s": 15.385340749999159
+  },
+  "identity_usage": {
+    "input_tokens": 1773,
+    "output_tokens": 44,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.00152775,
+    "latency_s": 1.555471542000305
+  },
+  "generation_duration_s": 19.039129500000854,
+  "normalizations": [
+    {
+      "id": "obs5",
+      "field": "action.certainty",
+      "from": "confirmed",
+      "to": "uncertain",
+      "reason": "unknown scene action cannot be confirmed"
+    }
+  ],
+  "model": "gpt-5.4-2026-03-05",
+  "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+  "research": {
+    "fixture": "England v France, FIFA World Cup quarter-final, 10 December 2022",
+    "as_of": "2022-12-09",
+    "facts": [],
+    "squads": [
+      {
+        "id": "england-world-cup-2022-squad",
+        "side": "home",
+        "team": "England",
+        "kit_colours": "white shirts, dark shorts",
+        "players": [
+          {
+            "name": "Jordan Pickford",
+            "number": 1
+          },
+          {
+            "name": "Kyle Walker",
+            "number": 2
+          },
+          {
+            "name": "Luke Shaw",
+            "number": 3
+          },
+          {
+            "name": "Declan Rice",
+            "number": 4
+          },
+          {
+            "name": "John Stones",
+            "number": 5
+          },
+          {
+            "name": "Harry Maguire",
+            "number": 6
+          },
+          {
+            "name": "Jack Grealish",
+            "number": 7
+          },
+          {
+            "name": "Jordan Henderson",
+            "number": 8
+          },
+          {
+            "name": "Harry Kane",
+            "number": 9
+          },
+          {
+            "name": "Raheem Sterling",
+            "number": 10
+          },
+          {
+            "name": "Marcus Rashford",
+            "number": 11
+          },
+          {
+            "name": "Kieran Trippier",
+            "number": 12
+          },
+          {
+            "name": "Nick Pope",
+            "number": 13
+          },
+          {
+            "name": "Kalvin Phillips",
+            "number": 14
+          },
+          {
+            "name": "Eric Dier",
+            "number": 15
+          },
+          {
+            "name": "Conor Coady",
+            "number": 16
+          },
+          {
+            "name": "Bukayo Saka",
+            "number": 17
+          },
+          {
+            "name": "Trent Alexander-Arnold",
+            "number": 18
+          },
+          {
+            "name": "Mason Mount",
+            "number": 19
+          },
+          {
+            "name": "Phil Foden",
+            "number": 20
+          },
+          {
+            "name": "Ben White",
+            "number": 21
+          },
+          {
+            "name": "Jude Bellingham",
+            "number": 22
+          },
+          {
+            "name": "Aaron Ramsdale",
+            "number": 23
+          },
+          {
+            "name": "Callum Wilson",
+            "number": 24
+          },
+          {
+            "name": "James Maddison",
+            "number": 25
+          },
+          {
+            "name": "Conor Gallagher",
+            "number": 26
+          }
+        ],
+        "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+        "source_date": "2022-11-14"
+      }
+    ]
+  },
+  "source": {
+    "path": "clips/action-sources/england-france-penalties.mp4",
+    "start_s": 42,
+    "duration_s": 20,
+    "sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12"
+  },
+  "budget": {
+    "max_usd": 0.02,
+    "max_calls": 12,
+    "attempts": 8,
+    "reported_usd": 0.009922499999999999,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "dialogue": {
+    "lines": [
+      {
+        "id": "line-1",
+        "at_s": 1.0,
+        "voice": "caller",
+        "text": "England driving in!",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-2",
+        "at_s": 3.0,
+        "voice": "caller",
+        "text": "Penalty England!",
+        "evidence_ids": [
+          "recorded-2"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-3",
+        "at_s": 4.119,
+        "voice": "analyst",
+        "text": "The challenge drew the referee\u2019s penalty signal in the box.",
+        "evidence_ids": [
+          "recorded-2"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-4",
+        "at_s": 10.0,
+        "voice": "caller",
+        "text": "Kane scores the penalty!",
+        "evidence_ids": [
+          "recorded-4"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-5",
+        "at_s": 11.888,
+        "voice": "analyst",
+        "text": "Kane\u2019s low penalty beats the diving keeper into the left side.",
+        "evidence_ids": [
+          "recorded-4"
+        ],
+        "research_ids": []
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "source_at_s": 1.0,
+        "word_budget": 4,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 1,
+          "cutoff_s": 1.0,
+          "line": {
+            "voice": "caller",
+            "text": "England driving in!",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported action fits the caller's short delivery and uses only confirmed visual evidence.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 1.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "England driving in!",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported action fits the caller's short delivery and uses only confirmed visual evidence."
+                },
+                "usage": {
+                  "input_tokens": 1017,
+                  "output_tokens": 65,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00105525,
+                  "latency_s": 3.069172167000943
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 3.0749245830011205
+      },
+      {
+        "role": "caller",
+        "source_at_s": 3.0,
+        "word_budget": 9,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 2,
+          "cutoff_s": 3.0,
+          "line": {
+            "voice": "caller",
+            "text": "Penalty England!",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed immediate action fits the caller role and avoids repeating the prior line.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 3.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Penalty England!",
+                    "evidence_ids": [
+                      "recorded-2"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Confirmed immediate action fits the caller role and avoids repeating the prior line."
+                },
+                "usage": {
+                  "input_tokens": 1130,
+                  "output_tokens": 62,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0011265,
+                  "latency_s": 1.5876521250029327
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 4.665942791994894
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 4.11923076923077,
+        "word_budget": 13,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 2,
+          "cutoff_s": 4.11923076923077,
+          "line": {
+            "voice": "analyst",
+            "text": "The challenge drew the referee\u2019s penalty signal in the box.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported explanation of the confirmed referee signal without adding unsupported score or contact details.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 4.11923076923077,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "The challenge drew the referee\u2019s penalty signal in the box.",
+                    "evidence_ids": [
+                      "recorded-2"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Supported explanation of the confirmed referee signal without adding unsupported score or contact details."
+                },
+                "usage": {
+                  "input_tokens": 1210,
+                  "output_tokens": 72,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0012315,
+                  "latency_s": 1.8288017919985577
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 6.4990408750018105
+      },
+      {
+        "role": "caller",
+        "source_at_s": 10.0,
+        "word_budget": 9,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 4,
+          "cutoff_s": 10.0,
+          "line": {
+            "voice": "caller",
+            "text": "Kane scores the penalty!",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed goal from the penalty, with resolved scorer.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 10.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Kane scores the penalty!",
+                    "evidence_ids": [
+                      "recorded-4"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Confirmed goal from the penalty, with resolved scorer."
+                },
+                "usage": {
+                  "input_tokens": 1301,
+                  "output_tokens": 61,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00125025,
+                  "latency_s": 1.8224209590043756
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 8.325651166996977
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 11.888461538461538,
+        "word_budget": 13,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 4,
+          "cutoff_s": 11.888461538461538,
+          "line": {
+            "voice": "analyst",
+            "text": "Kane\u2019s low penalty beats the diving keeper into the left side.",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed goal detail fits the analyst role and stays within the word limit.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 11.888461538461538,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "Kane\u2019s low penalty beats the diving keeper into the left side.",
+                    "evidence_ids": [
+                      "recorded-4"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Confirmed goal detail fits the analyst role and stays within the word limit."
+                },
+                "usage": {
+                  "input_tokens": 1384,
+                  "output_tokens": 73,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0013665,
+                  "latency_s": 1.941046040999936
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 10.270872332999716
+      },
+      {
+        "role": "caller",
+        "source_at_s": 16.46923076923077,
+        "word_budget": 8,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 5,
+          "cutoff_s": 16.46923076923077,
+          "line": null,
+          "reason": "Already announced the confirmed goal; no new supported immediate action fits the caller\u2019s short, non-repetitive limit.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 16.46923076923077,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "abstain",
+                  "tool": null,
+                  "line": null,
+                  "reason": "Already announced the confirmed goal; no new supported immediate action fits the caller\u2019s short, non-repetitive limit."
+                },
+                "usage": {
+                  "input_tokens": 1358,
+                  "output_tokens": 49,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.001239,
+                  "latency_s": 1.5314537919985014
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 11.807991249996121
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 16.46923076923077,
+        "word_budget": 8,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 5,
+          "cutoff_s": 16.46923076923077,
+          "line": {
+            "voice": "analyst",
+            "text": "The referee\u2019s signal confirms the penalty award.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported short analyst explanation based on confirmed evidence.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 16.46923076923077,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "The referee\u2019s signal confirms the penalty award.",
+                    "evidence_ids": [
+                      "recorded-2"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Supported short analyst explanation based on confirmed evidence."
+                },
+                "usage": {
+                  "input_tokens": 1497,
+                  "output_tokens": 63,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00140625,
+                  "latency_s": 1.5618454169962206
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "rejected": "speaker already covered this evidence",
+        "generation_elapsed_s": 13.376475791999837
+      },
+      {
+        "role": "caller",
+        "source_at_s": 17.0,
+        "word_budget": 6,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 6,
+          "cutoff_s": 17.0,
+          "line": null,
+          "reason": "The confirmed goal was already announced, and the only new visible action is a replay, so there is no fresh supported caller line to add.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 17.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "abstain",
+                  "tool": null,
+                  "line": null,
+                  "reason": "The confirmed goal was already announced, and the only new visible action is a replay, so there is no fresh supported caller line to add."
+                },
+                "usage": {
+                  "input_tokens": 1339,
+                  "output_tokens": 54,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00124725,
+                  "latency_s": 1.575131165998755
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 14.957339542001137
+      }
+    ],
+    "preparation_duration_s": 14.95745375000115,
+    "source_duration_s": 20,
+    "words": 30,
+    "timing": "Source-video seconds; word-count estimates until audio is measured."
+  },
+  "role_audit": [
+    {
+      "event": "agent_action",
+      "at_s": 1.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "England driving in!",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported action fits the caller's short delivery and uses only confirmed visual evidence."
+        },
+        "usage": {
+          "input_tokens": 1017,
+          "output_tokens": 65,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00105525,
+          "latency_s": 3.069172167000943
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 3.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Penalty England!",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed immediate action fits the caller role and avoids repeating the prior line."
+        },
+        "usage": {
+          "input_tokens": 1130,
+          "output_tokens": 62,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0011265,
+          "latency_s": 1.5876521250029327
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 4.11923076923077,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "The challenge drew the referee\u2019s penalty signal in the box.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported explanation of the confirmed referee signal without adding unsupported score or contact details."
+        },
+        "usage": {
+          "input_tokens": 1210,
+          "output_tokens": 72,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0012315,
+          "latency_s": 1.8288017919985577
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 10.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Kane scores the penalty!",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed goal from the penalty, with resolved scorer."
+        },
+        "usage": {
+          "input_tokens": 1301,
+          "output_tokens": 61,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00125025,
+          "latency_s": 1.8224209590043756
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 11.888461538461538,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "Kane\u2019s low penalty beats the diving keeper into the left side.",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed goal detail fits the analyst role and stays within the word limit."
+        },
+        "usage": {
+          "input_tokens": 1384,
+          "output_tokens": 73,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0013665,
+          "latency_s": 1.941046040999936
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 16.46923076923077,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "abstain",
+          "tool": null,
+          "line": null,
+          "reason": "Already announced the confirmed goal; no new supported immediate action fits the caller\u2019s short, non-repetitive limit."
+        },
+        "usage": {
+          "input_tokens": 1358,
+          "output_tokens": 49,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.001239,
+          "latency_s": 1.5314537919985014
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 16.46923076923077,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "The referee\u2019s signal confirms the penalty award.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported short analyst explanation based on confirmed evidence."
+        },
+        "usage": {
+          "input_tokens": 1497,
+          "output_tokens": 63,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00140625,
+          "latency_s": 1.5618454169962206
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 17.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "abstain",
+          "tool": null,
+          "line": null,
+          "reason": "The confirmed goal was already announced, and the only new visible action is a replay, so there is no fresh supported caller line to add."
+        },
+        "usage": {
+          "input_tokens": 1339,
+          "output_tokens": 54,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00124725,
+          "latency_s": 1.575131165998755
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    }
+  ],
+  "generation_elapsed_s": 32.94338316700305,
+  "vision_reuse": {
+    "source": "runs/recorded-agents/penalty-full-20261108-context-r2/result.json",
+    "observation_context_duration_s": 24,
+    "words_edited": false
+  },
+  "final_preparation_elapsed_s": 19.530638416996226,
+  "dialogue_reuse_source": "runs/recorded-agents/penalty-full-20261108-final-r2/result.json"
+}

@@ -1,0 +1,47 @@
+{
+  "model": "eleven_flash_v2_5",
+  "settings_source": "saved ElevenLabs voice settings; no request overrides",
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "text": "England driving in!",
+      "credit_headers": {
+        "character-cost": "10"
+      }
+    },
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "text": "Penalty England!",
+      "credit_headers": {
+        "character-cost": "8"
+      }
+    },
+    {
+      "id": "line-3",
+      "voice": "analyst",
+      "text": "The challenge drew the referee\u2019s penalty signal in the box.",
+      "credit_headers": {
+        "character-cost": "30"
+      }
+    },
+    {
+      "id": "line-4",
+      "voice": "caller",
+      "text": "Kane scores the penalty!",
+      "credit_headers": {
+        "character-cost": "12"
+      }
+    },
+    {
+      "id": "line-5",
+      "voice": "analyst",
+      "text": "Kane\u2019s low penalty beats the diving keeper into the left side.",
+      "credit_headers": {
+        "character-cost": "31"
+      }
+    }
+  ],
+  "total_credits": 91
+}

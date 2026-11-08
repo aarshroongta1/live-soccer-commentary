@@ -93,7 +93,7 @@ function RunReview({ run }: { run: AgentRun }) {
             <p className="demo-missing">Source video isn’t available here. The saved trace and text still work.</p>
           )}
           <p className="demo-run-caption">
-            Muted source footage · {seconds(run.source_duration_s)}
+            Source video · {seconds(sourceTime)} / {seconds(run.source_duration_s)} · muted
             {frame !== null && ` · Viewing evidence at ${seconds(frame)}`}
           </p>
           <div className="demo-run-controls">
@@ -109,12 +109,12 @@ function RunReview({ run }: { run: AgentRun }) {
             <button type="button" onClick={() => seek(0)}>Reset</button>
           </div>
           <label className="demo-run-clock">
-            <span>Run clock <output>{seconds(cursor)} / {seconds(run.duration_s)}</output></span>
+            <span>Execution trace clock <output>{seconds(cursor)} / {seconds(run.duration_s)}</output></span>
             <input type="range" min={0} max={run.duration_s} step={0.05} value={cursor}
               onChange={(event) => seek(Number(event.target.value))}
-              aria-label="Seek saved run time" />
+              aria-label="Seek execution trace time" />
           </label>
-          <p className="demo-run-caption">The run clock continues after the source clip ends. Processing delays are preserved.</p>
+          <p className="demo-run-caption">Execution time includes model waits and queueing. The source video clock stops at the end of the footage.</p>
           <div className="demo-run-dialogue" aria-label="Saved commentary text">
             <h3>Commentary text</h3>
             {lines.length === 0 && <p>No call yet. Use “Show result” to skip the processing wait.</p>}
@@ -188,7 +188,7 @@ export default function AgentRuns({ runs }: { runs: AgentRun[] }) {
   return (
     <section className="demo-agent-runs" id="agent-runs" aria-labelledby="agent-runs-title">
       <h2 id="agent-runs-title">Inside the agents</h2>
-      <p className="demo-section-intro">Inspect actual saved runs from the multi-agent prototype. These are separate from the edited, voiced showcase above.</p>
+      <p className="demo-section-intro">Inspect saved execution traces from the multi-agent prototype. Their clocks include processing waits; use the video duration to judge how much football is shown.</p>
       <label className="demo-picker"><span className="demo-sr-only">Select an automatic agent run</span>
         <select value={activeId} onChange={(event) => setActiveId(event.target.value)}>
           {runs.map((run) => <option value={run.id} key={run.id}>{run.title}</option>)}

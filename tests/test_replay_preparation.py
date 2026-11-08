@@ -618,3 +618,31 @@ async def test_invalid_requested_sides_do_not_call_model(sides) -> None:
             squad_sides=sides,
         )
     assert not backend.calls
+
+
+async def test_observer_history_is_past_context_without_actor_identity() -> None:
+    backend = ScriptedBackend()
+
+    def answer(blocks, schema):
+        payload = json.loads(blocks[0]["text"])
+        at = payload["available_frame_timestamps"][-1]
+        return ReplayObserverResult(
+            observations=[
+                observation(
+                    id="event",
+                    at_s=at,
+                    kind="play",
+                    description="The ball moves forward.",
+                )
+            ]
+        )
+
+    backend.register("replay_observer", answer)
+    observer = ReplayObserver(backend, model="offline")
+    await observer([Frame(1, b"frame")], 1)
+    await observer([Frame(3, b"frame")], 3)
+    context = json.loads(backend.calls[1].blocks[0]["text"])["earlier_observations"]
+    assert [item["at_s"] for item in context] == [1]
+    assert "actor" not in context[0]
+    await observer([Frame(0.5, b"frame")], 0.5)
+    assert json.loads(backend.calls[2].blocks[0]["text"])["earlier_observations"] == []

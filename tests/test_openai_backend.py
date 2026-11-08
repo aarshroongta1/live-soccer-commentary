@@ -189,3 +189,23 @@ def test_openai_factory_reads_structural_validation_timeout(
     assert explicit._client.timeout == pytest.approx(6.0)
     assert str(explicit._client.base_url).startswith("https://openai.example/v1")
     assert explicit._client.max_retries == 0
+
+
+def test_response_callback_retains_failed_structured_output() -> None:
+    raw = _response("not valid JSON")
+    captured = []
+    backend = OpenAIBackend(
+        _Client(raw), response_callback=lambda response, tag: captured.append((response, tag))
+    )  # type: ignore[arg-type]
+    with pytest.raises(LLMError, match="unparseable"):
+        asyncio.run(
+            backend.parse(
+                model="gpt-5.4-mini",
+                system="Read evidence.",
+                blocks=[text_block("look")],
+                output_format=BoardRead,
+                tag="audit",
+            )
+        )
+    assert captured == [(raw, "audit")]
+    assert backend.total.output_tokens > 0

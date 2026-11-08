@@ -39,6 +39,7 @@ class RuntimeSnapshot(BaseModel):
     research: ResearchBrief | None = None
     recent_lines: list[SpeechLine] = Field(default_factory=list)
     teams: dict[str, str] = Field(default_factory=dict)
+    speech_budget_words: int | None = Field(default=None, ge=1, le=60)
 
     @model_validator(mode="after")
     def visible_evidence(self) -> RuntimeSnapshot:

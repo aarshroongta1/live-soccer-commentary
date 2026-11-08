@@ -194,6 +194,7 @@ class RoleAgents:
             "recent_lines": [item.model_dump(mode="json") for item in snapshot.recent_lines[-6:]],
             "allowed_tools": self._tools(state["role"]),
             "remaining_actions": self.max_steps - state["steps"],
+            "speech_budget_words": snapshot.speech_budget_words,
             "tool_results": state["tool_results"],
             "draft": state["line"].model_dump(mode="json") if state["line"] else None,
             "review_feedback": state["feedback"],
@@ -210,9 +211,36 @@ class RoleAgents:
         return [*state["trace"], record]
 
     async def _act(self, state: _TurnState, role: Role) -> dict[str, Any]:
+        system = CALLER_SYSTEM if role == "caller" else ANALYST_SYSTEM
+        limit = state["snapshot"].speech_budget_words
+        if limit is not None:
+            duty = (
+                "CALLER: describe the immediate supported action. Cite visual evidence only; "
+                "no research citations. Do not repeat an announcement already made."
+                if role == "caller"
+                else "ANALYST: add one new supported explanation; do not echo the caller. "
+                "Say on the replay only when the cited observation kind is replay; recorded "
+                "preparation does not itself mean replay footage. Explain a supported cause "
+                "or consequence rather than just saying what the referee or player did. "
+                "Do not invent keeper contact, score, intent or buildup. "
+                "Cite visual evidence and/or relevant research."
+            )
+            system = (
+                COMMON_SYSTEM
+                + "\n"
+                + duty
+                + f"\nRecorded delivery: ONE short sentence, at most {limit} words. "
+                "This limit replaces the usual longer delivery. Use one short clause; "
+                "no filler. Use fewer words than the limit. For five words or fewer, "
+                "use a compact action phrase rather than a complete sentence. "
+                "Keep grammatical articles; choose a simpler phrase "
+                "rather than telegraphic English. "
+                "Caller: use natural excitement and punctuation for confirmed big moments. "
+                "Abstain if there is no useful supported point that fits."
+            )
         parsed = await self.backend.parse(
             model=self.caller_model if role == "caller" else self.analyst_model,
-            system=CALLER_SYSTEM if role == "caller" else ANALYST_SYSTEM,
+            system=system,
             blocks=[text_block(json.dumps(self._payload(state), separators=(",", ":")))],
             output_format=AgentAction,
             max_tokens=1536,
@@ -243,6 +271,9 @@ class RoleAgents:
 
     @staticmethod
     def _validate_line(line: SpeechLine, state: _TurnState) -> None:
+        limit = state["snapshot"].speech_budget_words
+        if limit is not None and len(line.text.split()) > limit:
+            raise ValueError("agent line exceeds recorded speech budget")
         if line.voice != state["role"]:
             raise ValueError("agent line has the wrong voice")
         if any(item not in state["visible_evidence"] for item in line.evidence_ids):

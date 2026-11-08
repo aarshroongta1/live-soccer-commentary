@@ -1,5 +1,12 @@
 # Recorded commentary
 
+The `/demo` page now leads with a [prepared 20-second agent conversation](../examples/recorded-agent-demo/README.md)
+with five generated lines and two custom voices. Its player uses source-video time.
+The older saved execution traces include processing waits and are labelled separately.
+The five curated showcases retain their edited scripts. Use
+`scripts/prepare_agent_demo.py` for the bounded multi-agent recorded workflow;
+the generation commands below describe the separate original script workflow.
+
 Generate a script from your own soccer clip, review it, then render speech and
 captions. Run these commands from the repository root after the
 [setup steps](../README.md#generate-your-own-commentary). Rendering needs FFmpeg with subtitle

@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-08",
+  "scope": "One 20-second prepared recorded sequence; not a 15-clip benchmark result.",
+  "models": {
+    "vision": "gpt-5.4-2026-03-05",
+    "development_and_speakers": "gpt-5.4-mini",
+    "speech": "eleven_flash_v2_5"
+  },
+  "runs": [
+    {
+      "run": "penalty-full-20261108",
+      "attempts": 24,
+      "reported_usd": 0.056647499999999996,
+      "outcome": "Rejected: short-window observer misread replays and teams; long speech rejected."
+    },
+    {
+      "run": "penalty-full-20261108-r2",
+      "attempts": 15,
+      "reported_usd": 0.05045625,
+      "outcome": "Rejected: kit/history context still confused replay with new goal."
+    },
+    {
+      "run": "penalty-full-20261108-context-r2",
+      "attempts": 10,
+      "reported_usd": 0.06414750000000001,
+      "outcome": "Full-sequence vision retained; identity proposal overflow prevented names."
+    },
+    {
+      "run": "penalty-full-20261108-final",
+      "attempts": 9,
+      "reported_usd": 0.010400249999999998,
+      "outcome": "Rejected: concatenated identity lookup output; caller omitted name."
+    },
+    {
+      "run": "penalty-full-20261108-final-r2",
+      "attempts": 11,
+      "reported_usd": 0.0119988,
+      "outcome": "Identity lookup fixed; rejected repeated analyst evidence."
+    },
+    {
+      "run": "penalty-full-20261108-delivery",
+      "attempts": 8,
+      "reported_usd": 0.009922499999999999,
+      "outcome": "Accepted: five lines, named penalty, both roles, measured on-cue speech."
+    }
+  ],
+  "known_reported_model_usd": 0.2035728,
+  "additional_failed_pass": {
+    "run": "penalty-full-20261108-context",
+    "attempts": 1,
+    "approximate_usd": 0.051,
+    "note": "Structured scene certainty validation failed. Exact provider usage not retained; estimate from terminal only."
+  },
+  "elevenlabs_credits": 91,
+  "limitations": [
+    "Recorded full-context vision, not a live causal vision pass.",
+    "One example; no claim of general recognition improvement.",
+    "Audio timing measured; subjective voice quality not rated.",
+    "Reused existing cited research; no training, fine-tuning, or RL."
+  ]
+}

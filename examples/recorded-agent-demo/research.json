@@ -1,0 +1,121 @@
+{
+  "fixture": "England v France, FIFA World Cup quarter-final, 10 December 2022",
+  "as_of": "2022-12-09",
+  "facts": [],
+  "squads": [
+    {
+      "id": "england-world-cup-2022-squad",
+      "side": "home",
+      "team": "England",
+      "kit_colours": "white shirts, dark shorts",
+      "players": [
+        {
+          "name": "Jordan Pickford",
+          "number": 1
+        },
+        {
+          "name": "Kyle Walker",
+          "number": 2
+        },
+        {
+          "name": "Luke Shaw",
+          "number": 3
+        },
+        {
+          "name": "Declan Rice",
+          "number": 4
+        },
+        {
+          "name": "John Stones",
+          "number": 5
+        },
+        {
+          "name": "Harry Maguire",
+          "number": 6
+        },
+        {
+          "name": "Jack Grealish",
+          "number": 7
+        },
+        {
+          "name": "Jordan Henderson",
+          "number": 8
+        },
+        {
+          "name": "Harry Kane",
+          "number": 9
+        },
+        {
+          "name": "Raheem Sterling",
+          "number": 10
+        },
+        {
+          "name": "Marcus Rashford",
+          "number": 11
+        },
+        {
+          "name": "Kieran Trippier",
+          "number": 12
+        },
+        {
+          "name": "Nick Pope",
+          "number": 13
+        },
+        {
+          "name": "Kalvin Phillips",
+          "number": 14
+        },
+        {
+          "name": "Eric Dier",
+          "number": 15
+        },
+        {
+          "name": "Conor Coady",
+          "number": 16
+        },
+        {
+          "name": "Bukayo Saka",
+          "number": 17
+        },
+        {
+          "name": "Trent Alexander-Arnold",
+          "number": 18
+        },
+        {
+          "name": "Mason Mount",
+          "number": 19
+        },
+        {
+          "name": "Phil Foden",
+          "number": 20
+        },
+        {
+          "name": "Ben White",
+          "number": 21
+        },
+        {
+          "name": "Jude Bellingham",
+          "number": 22
+        },
+        {
+          "name": "Aaron Ramsdale",
+          "number": 23
+        },
+        {
+          "name": "Callum Wilson",
+          "number": 24
+        },
+        {
+          "name": "James Maddison",
+          "number": 25
+        },
+        {
+          "name": "Conor Gallagher",
+          "number": 26
+        }
+      ],
+      "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+      "source_date": "2022-11-14"
+    }
+  ]
+}

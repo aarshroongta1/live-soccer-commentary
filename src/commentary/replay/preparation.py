@@ -78,7 +78,12 @@ REPLAY_OBSERVER_SYSTEM = """Observe only the currently available football images
 most three chronological, concrete observations, using exact CURRENT batch timestamps.
 Before selecting observations, compare the ball and participants across frames: contact,
 movement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,
-restart, or referee decision over routine circulation or repeated reactions. Empty output
+restart, or referee decision over repeated reactions. Keep an early clear on-ball action
+when it precedes the decisive incident, rather than describing only the aftermath.
+Use the supplied team/kit mapping to distinguish attackers from defenders and keeper.
+Earlier observations are context, not new frame evidence: use them to notice a repeated
+incident from another angle. A replay of an already seen goal is not another live goal.
+Empty output
 is better than several unknown observations describing the same people gesturing.
 Choose scene kind carefully. A referee decision and players protesting are play, not
 celebration. A close camera angle is not by itself a replay. Label replay only with visible
@@ -377,6 +382,7 @@ class ReplayObserver:
             self.visual_pack = {"teams": teams}
         self.audit: list[dict[str, Any]] = []
         self._batches = 0
+        self._history: list[Observation] = []
 
     async def __call__(self, frames: list[Frame], cutoff_s: float) -> list[Observation]:
         StreamingCommentator._validate_frames(frames, cutoff_s)
@@ -386,6 +392,11 @@ class ReplayObserver:
             "batch_end_s": frames[-1].at_s,
             "available_frame_timestamps": [frame.at_s for frame in frames],
             "pack": self.visual_pack,
+            "earlier_observations": [
+                item.model_dump(mode="json", exclude={"actor"})
+                for item in self._history[-6:]
+                if item.at_s < frames[0].at_s
+            ],
         }
         blocks = [text_block(json.dumps(payload))]
         for frame in frames:
@@ -531,6 +542,7 @@ class ReplayObserver:
             )
             usage = usage + identity_usage
             audit["identity_steps"] = identity_audit
+            self._history.extend(resolved)
             audit.update(status="complete", resolved=[o.model_dump(mode="json") for o in resolved])
             return resolved
         except BaseException as exc:

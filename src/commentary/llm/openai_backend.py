@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+from collections.abc import Callable
 from dataclasses import replace
 from typing import Any, TypeVar
 
@@ -74,6 +75,7 @@ class OpenAIBackend:
         base_url: str | None = None,
         budget: RunBudget | None = None,
         default_effort: str | None = None,
+        response_callback: Callable[[Any, str], None] | None = None,
     ) -> None:
         if client is not None:
             self._client = client
@@ -87,6 +89,7 @@ class OpenAIBackend:
         self._lock = asyncio.Lock()
         self.budget = budget
         self.default_effort = default_effort
+        self.response_callback = response_callback
         # Scoped callers such as recorded research may attach Responses-only
         # parameters (for example, web search) for one request.
         self.extra_params: dict[str, Any] = {}
@@ -152,6 +155,9 @@ class OpenAIBackend:
             and _value(response, "usage") is not None
         ):
             await self.budget.settle(reservation, usage.cost_usd)
+
+        if self.response_callback is not None:
+            self.response_callback(response, tag)
 
         status = _value(response, "status")
         if status == "incomplete":

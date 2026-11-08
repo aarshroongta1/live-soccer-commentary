@@ -1,0 +1,43 @@
+{
+  "id": "prepared-penalty",
+  "title": "England vs France \u00b7 penalty sequence",
+  "videoPath": "/soccer-commentary/prepared-penalty-agents.mp4",
+  "duration_s": 20,
+  "lines": [
+    {
+      "at_s": 1.0,
+      "voice": "caller",
+      "text": "England driving in!"
+    },
+    {
+      "at_s": 3.0,
+      "voice": "caller",
+      "text": "Penalty England!"
+    },
+    {
+      "at_s": 4.12,
+      "voice": "analyst",
+      "text": "The challenge drew the referee\u2019s penalty signal in the box."
+    },
+    {
+      "at_s": 10.0,
+      "voice": "caller",
+      "text": "Kane scores the penalty!"
+    },
+    {
+      "at_s": 11.89,
+      "voice": "analyst",
+      "text": "Kane\u2019s low penalty beats the diving keeper into the left side."
+    }
+  ],
+  "provenance": {
+    "plan": "examples/recorded-agent-demo/penalty-plan.json",
+    "trace": "web/public/soccer-commentary/prepared-penalty.trace.json",
+    "words_edited": false,
+    "preparation_mode": "Recorded clip prepared before playback; per-turn evidence is filtered to its source time.",
+    "speech": "Five measured ElevenLabs segments using saved custom voice settings.",
+    "credits": 91,
+    "source_start_s": 42
+  },
+  "tracePath": "/soccer-commentary/prepared-penalty.trace.json"
+}

@@ -430,7 +430,7 @@ def captions_ass(
         label = (
             "RECORDED DEMO • EDITED COMMENTARY"
             if editorial_reference
-            else "RECORDED DEMO • CLAUDE + LANGGRAPH"
+            else "RECORDED DEMO • PREPARED COMMENTARY"
         )
         rows.append(
             f"Dialogue: 0,{_ass_timestamp(0.0)},{_ass_timestamp(duration_s)},Label,,0,0,0,," + label

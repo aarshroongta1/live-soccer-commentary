@@ -1,0 +1,10 @@
+{
+  "home": {
+    "name": "England",
+    "kit_colours": "white shirts with navy shoulders and navy shorts"
+  },
+  "away": {
+    "name": "France",
+    "kit_colours": "navy shirts with white shorts and red socks"
+  }
+}

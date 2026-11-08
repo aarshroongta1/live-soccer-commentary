@@ -466,7 +466,7 @@ def test_captions_escape_text_and_add_plan_recorded_label() -> None:
 
     ass = render_demo.captions_ass(timeline, duration_s=5.0, recorded_label=True)
 
-    assert "RECORDED DEMO • CLAUDE + LANGGRAPH" in ass
+    assert "RECORDED DEMO • PREPARED COMMENTARY" in ass
     assert "ANALYST: A \\{literal\\} line" in ass
     assert "0:00:01.00" in ass and "0:00:03.00" in ass
 

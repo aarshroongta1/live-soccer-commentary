@@ -14,7 +14,7 @@ export type DemoClip = {
 const timestamp = (seconds: number) =>
   `0:${Math.floor(seconds).toString().padStart(2, "0")}`;
 
-function ClipPlayer({ clip }: { clip: DemoClip }) {
+function ClipPlayer({ clip, note }: { clip: DemoClip; note?: string }) {
   const video = useRef<HTMLVideoElement>(null);
   const pendingSeek = useRef<number | null>(null);
   const [selected, setSelected] = useState(0);
@@ -35,6 +35,12 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
           ref={video}
           src={clip.src!}
           controls
+          data-commentary-player
+          onPlay={(event) => {
+            document.querySelectorAll<HTMLVideoElement>("video[data-commentary-player]").forEach((player) => {
+              if (player !== event.currentTarget) player.pause();
+            });
+          }}
           playsInline
           preload="metadata"
           aria-label={`${clip.title} with AI commentary`}
@@ -66,8 +72,7 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
       )}
 
       <p className="demo-tech">
-        Two-voice commentary with synchronized captions. These recorded scripts
-        are reviewed and edited before voicing.
+        {note ?? "Two-voice commentary with synchronized captions. These recorded scripts are reviewed and edited before voicing."}
       </p>
 
       <details className="demo-transcript" open={!available}>
@@ -100,7 +105,7 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
   );
 }
 
-export default function DemoExperience({ clips, runs }: { clips: DemoClip[]; runs: AgentRun[] }) {
+export default function DemoExperience({ clips, runs, prepared }: { clips: DemoClip[]; runs: AgentRun[]; prepared: DemoClip & { duration_s: number; tracePath: string } }) {
   const [activeId, setActiveId] = useState(clips[0].id);
   const active = clips.find((clip) => clip.id === activeId)!;
 
@@ -119,9 +124,19 @@ export default function DemoExperience({ clips, runs }: { clips: DemoClip[]; run
         </nav>
         <header className="demo-heading">
           <h1>AI football commentary</h1>
-          <p>Five reviewed, two-voice clips. A look inside the agents that generate commentary.</p>
-          <a href="#agent-runs">Inspect automatic agent runs</a>
+          <p>A prepared agent conversation, five curated clips, and the decisions behind them.</p>
+          <a href="#prepared-demo">Watch the prepared demo</a>{" · "}<a href="#agent-runs">Inspect execution traces</a>
         </header>
+        <section className="demo-prepared" id="prepared-demo" aria-labelledby="prepared-title">
+          <h2 id="prepared-title">Prepared agent commentary</h2>
+          <p className="demo-prepared-meta">{prepared.duration_s} seconds of football · {prepared.lines.length} calls · 2 custom voices</p>
+          <ClipPlayer clip={prepared} note="The agents prepare the conversation before playback. This player runs on video time; processing waits are kept in the separate preparation trace. The model-written words are unchanged." />
+          <details className="demo-prepared-method">
+            <summary>How this sequence was prepared</summary>
+            <p>Cited pre-match context, one full-sequence vision pass, agent roster lookups, then independent caller and analyst turns. Timing checks keep each line after its supporting evidence. ElevenLabs renders the two custom voices; captions use measured audio durations.</p>
+            <p><a href={prepared.tracePath} download>Download the preparation trace</a></p>
+          </details>
+        </section>
         <h2 className="demo-showcase-title">Curated showcase</h2>
         <label className="demo-picker">
           <span className="demo-sr-only">Select a video</span>

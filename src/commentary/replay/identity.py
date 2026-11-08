@@ -7,7 +7,7 @@ it checks the proposal's citations and consistency with the raw visual reading.
 from __future__ import annotations
 
 import json
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -53,10 +53,11 @@ class IdentityAction(BaseModel):
         return self
 
 
-class IdentityLookup(IdentityAction):
+class IdentityLookup(BaseModel):
     """The first turn can request context or abstain; it cannot propose names."""
 
     kind: Literal["research_roster", "abstain"]
+    reason: str = Field(default="", max_length=300)
 
 
 def squad_context(
@@ -146,7 +147,14 @@ async def identify_players(
         try:
             parsed = await backend.parse(
                 model=model,
-                system=IDENTITY_SYSTEM + stage,
+                system=(
+                    "Return exactly ONE JSON object: choose research_roster or abstain, "
+                    "with a short reason. Decide only whether the raw kit readings need "
+                    "the prepared squad context. Do not identify any player yet, output "
+                    "a proposal, or simulate a tool result. Wait for the application."
+                    if step == 0
+                    else IDENTITY_SYSTEM + stage
+                ),
                 blocks=[text_block(json.dumps(payload))],
                 output_format=IdentityLookup if step == 0 else IdentityAction,
                 max_tokens=512,
@@ -156,10 +164,10 @@ async def identify_players(
             audit.append({"step": step + 1, "error": type(exc).__name__, "detail": str(exc)})
             return cleared, audit, usage
         usage = usage + parsed.usage
-        action = parsed.value
+        action = cast(IdentityLookup | IdentityAction, parsed.value)
         row = {
             "step": step + 1,
-            "action": action.model_dump(mode="json"),
+            "action": {"identities": [], **action.model_dump(mode="json")},
             "model": parsed.model,
             "usage": parsed.usage.__dict__,
         }
