@@ -1,0 +1,572 @@
+{
+  "dialogue": {
+    "lines": [
+      {
+        "id": "line-1",
+        "at_s": 1.0,
+        "voice": "caller",
+        "text": "England drive on.",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-2",
+        "at_s": 3.0,
+        "voice": "caller",
+        "text": "Penalty to England! They've got the big decision.",
+        "evidence_ids": [
+          "recorded-2"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-3",
+        "at_s": 10.0,
+        "voice": "caller",
+        "text": "Harry Kane scores for England! Cool as you like.",
+        "evidence_ids": [
+          "recorded-4"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-4",
+        "at_s": 14.662,
+        "voice": "analyst",
+        "text": "He sends the keeper the wrong way, keeping it low and precise.",
+        "evidence_ids": [
+          "recorded-4"
+        ],
+        "research_ids": []
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "source_at_s": 1.0,
+        "word_budget": 4,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 1,
+          "cutoff_s": 1.0,
+          "line": {
+            "voice": "caller",
+            "text": "England drive on.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate confirmed action is an England attacker dribbling into the box under challenge; no player identity is resolved, and a brief live call fits the 4-word budget.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 1.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "England drive on.",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate confirmed action is an England attacker dribbling into the box under challenge; no player identity is resolved, and a brief live call fits the 4-word budget."
+                },
+                "usage": {
+                  "input_tokens": 1178,
+                  "output_tokens": 82,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.004175,
+                  "latency_s": 2.7547198749962263
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            },
+            {
+              "event": "draft_review",
+              "at_s": 1.0,
+              "role": "caller",
+              "data": {
+                "accepted": true,
+                "feedback": "Accepted.",
+                "usage": {
+                  "input_tokens": 414,
+                  "output_tokens": 24,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0004185,
+                  "latency_s": 1.8156139999991865
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 4.578563666000264
+      },
+      {
+        "role": "caller",
+        "source_at_s": 3.0,
+        "word_budget": 17,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 2,
+          "cutoff_s": 3.0,
+          "line": {
+            "voice": "caller",
+            "text": "Penalty to England! They've got the big decision.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "The referee's penalty award is confirmed and is the newest immediate action. No player identity is resolved.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 3.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Penalty to England! They've got the big decision.",
+                    "evidence_ids": [
+                      "recorded-2"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "The referee's penalty award is confirmed and is the newest immediate action. No player identity is resolved."
+                },
+                "usage": {
+                  "input_tokens": 1317,
+                  "output_tokens": 74,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0044025,
+                  "latency_s": 2.043192500001169
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            },
+            {
+              "event": "draft_review",
+              "at_s": 3.0,
+              "role": "caller",
+              "data": {
+                "accepted": true,
+                "feedback": "Good concise reaction to the referee\u2019s decision. Keep it natural and avoid adding explanation or extra detail beyond the penalty call.",
+                "usage": {
+                  "input_tokens": 559,
+                  "output_tokens": 40,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00059925,
+                  "latency_s": 1.2218974159986828
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 7.850734291001572
+      },
+      {
+        "role": "caller",
+        "source_at_s": 10.0,
+        "word_budget": 18,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 4,
+          "cutoff_s": 10.0,
+          "line": {
+            "voice": "caller",
+            "text": "Harry Kane scores for England! Cool as you like.",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction after the confirmed goal, using the verified scorer\u2019s name and avoiding repeated penalty-award narration.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 10.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Harry Kane scores for England! Cool as you like.",
+                    "evidence_ids": [
+                      "recorded-4"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported scoring reaction after the confirmed goal, using the verified scorer\u2019s name and avoiding repeated penalty-award narration."
+                },
+                "usage": {
+                  "input_tokens": 1469,
+                  "output_tokens": 78,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0048425,
+                  "latency_s": 1.9698013329980313
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            },
+            {
+              "event": "draft_review",
+              "at_s": 10.0,
+              "role": "caller",
+              "data": {
+                "accepted": true,
+                "feedback": "Accept. Natural immediate scoring reaction, correctly uses the verified scorer, and does not overdescribe the finish.",
+                "usage": {
+                  "input_tokens": 712,
+                  "output_tokens": 37,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0007005,
+                  "latency_s": 1.3528809579947847
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 11.179715208003472
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 14.661538461538461,
+        "word_budget": 12,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 5,
+          "cutoff_s": 14.661538461538461,
+          "line": {
+            "voice": "analyst",
+            "text": "He sends the keeper the wrong way, keeping it low and precise.",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Add a concise supported explanation of why the penalty resulted in a goal, without repeating the caller or inventing context.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 14.661538461538461,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "He sends the keeper the wrong way, keeping it low and precise.",
+                    "evidence_ids": [
+                      "recorded-4"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Add a concise supported explanation of why the penalty resulted in a goal, without repeating the caller or inventing context."
+                },
+                "usage": {
+                  "input_tokens": 1593,
+                  "output_tokens": 82,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0052125,
+                  "latency_s": 2.086293458
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            },
+            {
+              "event": "draft_review",
+              "at_s": 14.661538461538461,
+              "role": "analyst",
+              "data": {
+                "accepted": true,
+                "feedback": "Good paraphrase of the confirmed goal. Keep it as a concise post-goal reaction and avoid adding any extra specifics beyond the low finish and keeper beaten.",
+                "usage": {
+                  "input_tokens": 791,
+                  "output_tokens": 47,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00080475,
+                  "latency_s": 1.4392306250010733
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 14.711059833003674
+      }
+    ],
+    "preparation_duration_s": 14.711071707999508,
+    "source_duration_s": 20,
+    "words": 32,
+    "timing": "Source-video seconds; word-count estimates until audio is measured."
+  },
+  "budget": {
+    "max_usd": 0.06,
+    "max_calls": 12,
+    "attempts": 8,
+    "reported_usd": 0.0211555,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "role_audit": [
+    {
+      "event": "agent_action",
+      "at_s": 1.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "England drive on.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate confirmed action is an England attacker dribbling into the box under challenge; no player identity is resolved, and a brief live call fits the 4-word budget."
+        },
+        "usage": {
+          "input_tokens": 1178,
+          "output_tokens": 82,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.004175,
+          "latency_s": 2.7547198749962263
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "draft_review",
+      "at_s": 1.0,
+      "role": "caller",
+      "data": {
+        "accepted": true,
+        "feedback": "Accepted.",
+        "usage": {
+          "input_tokens": 414,
+          "output_tokens": 24,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0004185,
+          "latency_s": 1.8156139999991865
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 3.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Penalty to England! They've got the big decision.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "The referee's penalty award is confirmed and is the newest immediate action. No player identity is resolved."
+        },
+        "usage": {
+          "input_tokens": 1317,
+          "output_tokens": 74,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0044025,
+          "latency_s": 2.043192500001169
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "draft_review",
+      "at_s": 3.0,
+      "role": "caller",
+      "data": {
+        "accepted": true,
+        "feedback": "Good concise reaction to the referee\u2019s decision. Keep it natural and avoid adding explanation or extra detail beyond the penalty call.",
+        "usage": {
+          "input_tokens": 559,
+          "output_tokens": 40,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00059925,
+          "latency_s": 1.2218974159986828
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 10.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Harry Kane scores for England! Cool as you like.",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction after the confirmed goal, using the verified scorer\u2019s name and avoiding repeated penalty-award narration."
+        },
+        "usage": {
+          "input_tokens": 1469,
+          "output_tokens": 78,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0048425,
+          "latency_s": 1.9698013329980313
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "draft_review",
+      "at_s": 10.0,
+      "role": "caller",
+      "data": {
+        "accepted": true,
+        "feedback": "Accept. Natural immediate scoring reaction, correctly uses the verified scorer, and does not overdescribe the finish.",
+        "usage": {
+          "input_tokens": 712,
+          "output_tokens": 37,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0007005,
+          "latency_s": 1.3528809579947847
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 14.661538461538461,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "He sends the keeper the wrong way, keeping it low and precise.",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Add a concise supported explanation of why the penalty resulted in a goal, without repeating the caller or inventing context."
+        },
+        "usage": {
+          "input_tokens": 1593,
+          "output_tokens": 82,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0052125,
+          "latency_s": 2.086293458
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "draft_review",
+      "at_s": 14.661538461538461,
+      "role": "analyst",
+      "data": {
+        "accepted": true,
+        "feedback": "Good paraphrase of the confirmed goal. Keep it as a concise post-goal reaction and avoid adding any extra specifics beyond the low finish and keeper beaten.",
+        "usage": {
+          "input_tokens": 791,
+          "output_tokens": 47,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00080475,
+          "latency_s": 1.4392306250010733
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "date": "2026-11-08",
+  "scope": "One existing penalty clip; no new vision/research calls.",
+  "evaluation": "Subjective user feedback rejected the earlier demo across writing, timing and voice. This candidate is not yet accepted.",
+  "drafts": [
+    {
+      "run": "penalty-natural-v2",
+      "budget": {
+        "max_usd": 0.04,
+        "max_calls": 12,
+        "attempts": 4,
+        "reported_usd": 0.00536775,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 1.0,
+          "voice": "caller",
+          "text": "Into the box now!",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 3.0,
+          "voice": "caller",
+          "text": "England\u2019s into the area, and the referee points to the spot!",
+          "evidence_ids": [
+            "recorded-2"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 10.0,
+          "voice": "caller",
+          "text": "Kane steps up... and buries it low! England have their penalty goal.",
+          "evidence_ids": [
+            "recorded-3",
+            "recorded-4"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-4",
+          "at_s": 15.815,
+          "voice": "analyst",
+          "text": "Low to the left, and the keeper\u2019s wrong-footed.",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        }
+      ],
+      "status": "rejected_text_draft"
+    },
+    {
+      "run": "penalty-natural-v3",
+      "budget": {
+        "max_usd": 0.04,
+        "max_calls": 20,
+        "attempts": 7,
+        "reported_usd": 0.0073245,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 3.0,
+          "voice": "caller",
+          "text": "Penalty England! The referee points straight to the spot after the challenge in the box.",
+          "evidence_ids": [
+            "recorded-2"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 10.0,
+          "voice": "caller",
+          "text": "Harry Kane sends it low into the left corner!",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 14.662,
+          "voice": "analyst",
+          "text": "Kane kept it low, and the keeper went the wrong way.",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        }
+      ],
+      "status": "rejected_text_draft"
+    },
+    {
+      "run": "penalty-natural-quality-v1",
+      "budget": {
+        "max_usd": 0.12,
+        "max_calls": 14,
+        "attempts": 8,
+        "reported_usd": 0.020881,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 1.0,
+          "voice": "caller",
+          "text": "England drive on.",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 3.0,
+          "voice": "caller",
+          "text": "Penalty to England! The referee points straight to the spot.",
+          "evidence_ids": [
+            "recorded-2"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 10.0,
+          "voice": "caller",
+          "text": "Harry Kane scores the penalty, low into the left corner.",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-4",
+          "at_s": 15.046,
+          "voice": "analyst",
+          "text": "Kane sends the keeper the wrong way, so it's comfortable.",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        }
+      ],
+      "status": "rejected_text_draft"
+    },
+    {
+      "run": "penalty-natural-quality-v2",
+      "budget": {
+        "max_usd": 0.06,
+        "max_calls": 12,
+        "attempts": 8,
+        "reported_usd": 0.0211555,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 1.0,
+          "voice": "caller",
+          "text": "England drive on.",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 3.0,
+          "voice": "caller",
+          "text": "Penalty to England! They've got the big decision.",
+          "evidence_ids": [
+            "recorded-2"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 10.0,
+          "voice": "caller",
+          "text": "Harry Kane scores for England! Cool as you like.",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-4",
+          "at_s": 14.662,
+          "voice": "analyst",
+          "text": "He sends the keeper the wrong way, keeping it low and precise.",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        }
+      ],
+      "status": "listening_candidate"
+    }
+  ],
+  "reported_model_usd": 0.05472875,
+  "speech_credits": 87,
+  "speech_model": "eleven_flash_v2_5",
+  "speech_settings": "Saved custom voices, no overrides; same-voice preceding/following text supplied."
+}

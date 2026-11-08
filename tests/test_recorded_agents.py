@@ -54,7 +54,9 @@ async def test_recorded_custom_roles_cannot_bypass_contracts(mode) -> None:
             cutoff_s=view.cutoff_s,
             line=SpeechLine(
                 voice=("analyst" if role == "caller" else "caller") if mode == "voice" else role,
-                text="word " * 20 if mode == "word_budget" else "The ball moves forward.",
+                text="word " * (view.speech_budget_words + 1)
+                if mode == "word_budget"
+                else "The ball moves forward.",
                 evidence_ids=["future"] if mode == "future" else ["early"],
             ),
         )
@@ -95,6 +97,37 @@ async def test_abstaining_twice_does_not_loop_on_the_same_snapshot() -> None:
     result = await prepare_dialogue(run, [event("early", 0, [0])], duration_s=12)
     assert len(seen) == 2
     assert result["lines"] == []
+
+
+async def test_analyst_gets_space_after_a_major_call_and_room_for_a_response() -> None:
+    from commentary.replay.recorded import ready_at
+
+    goal = Observation(
+        id="goal",
+        at_s=0,
+        kind="goal",
+        description="The ball crosses the line.",
+        action=FootballAction(
+            type="goal", certainty="confirmed", cues=["ball_in_net"], support_at_s=[0]
+        ),
+    )
+    snapshots = []
+
+    async def run(role, view):
+        snapshots.append(view)
+        assert ready_at(goal) <= view.cutoff_s
+        return TurnResult(
+            role=role,
+            snapshot_version=view.version,
+            cutoff_s=view.cutoff_s,
+            line=SpeechLine(voice=role, text="He's scored!", evidence_ids=["goal"])
+            if role == "caller"
+            else None,
+        )
+
+    await prepare_dialogue(run, [goal], duration_s=20, max_turns=2)
+    assert snapshots[1].cutoff_s >= 2 / 2.6 + 1.2
+    assert snapshots[1].speech_budget_words == 28
 
 
 def test_unknown_celebration_tag_is_weakened_without_promoting_a_goal() -> None:

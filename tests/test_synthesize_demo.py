@@ -181,3 +181,65 @@ def test_synthesis_rejects_identical_voice_ids(tmp_path: Path) -> None:
                 "same",
             ]
         )
+
+
+def test_character_limit_rejects_before_credentials_or_requests(tmp_path: Path) -> None:
+    source = tmp_path / "plan.json"
+    plan(source)
+    with pytest.raises(synthesize_demo.RenderError, match="character limit"):
+        synthesize_demo.main(
+            [
+                "--plan",
+                str(source),
+                "--out-dir",
+                str(tmp_path / "audio"),
+                "--max-characters",
+                "1",
+                "--spend",
+            ]
+        )
+
+
+def test_speech_context_contains_only_the_same_voice(tmp_path, monkeypatch) -> None:
+    source = tmp_path / "plan.json"
+    plan(source)
+    data = json.loads(source.read_text())
+    data["source"]["duration_s"] = 10
+    data["lines"].append(
+        {**data["lines"][0], "id": "caller-2", "at_s": 4, "text": "Next caller words."}
+    )
+    source.write_text(json.dumps(data))
+    requests = []
+
+    class Client:
+        def __init__(self, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def post(self, url, **kwargs):
+            requests.append(kwargs["json"])
+            return SimpleNamespace(content=b"audio", headers={}, raise_for_status=lambda: None)
+
+    monkeypatch.setitem(sys.modules, "httpx", SimpleNamespace(Client=Client))
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "test")
+    monkeypatch.setattr(synthesize_demo.dotenv, "load_dotenv", lambda: None)
+    synthesize_demo.main(
+        [
+            "--plan",
+            str(source),
+            "--out-dir",
+            str(tmp_path / "audio"),
+            "--model",
+            "eleven_multilingual_v2",
+            "--spend",
+        ]
+    )
+    assert requests[0]["next_text"] == "Next caller words."
+    assert requests[2]["previous_text"] == "Exact caller words."
+    assert "previous_text" not in requests[1] and "next_text" not in requests[1]
+    assert all(item["model_id"] == "eleven_multilingual_v2" for item in requests)

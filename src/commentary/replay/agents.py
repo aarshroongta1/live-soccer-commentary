@@ -183,6 +183,24 @@ class RoleAgents:
 
     def _payload(self, state: _TurnState) -> dict[str, Any]:
         snapshot = state["snapshot"]
+        broadcast_cue = None
+        if snapshot.speech_budget_words is not None and snapshot.observations:
+            newest = snapshot.observations[-1]
+            if state["role"] == "caller" and newest.kind == "goal":
+                broadcast_cue = (
+                    "The ball is already in. Give the immediate scoring reaction, led by "
+                    "the verified name if available. Let the reaction land. Leave the "
+                    "placement and mechanics for the analyst; avoid a neutral report sentence."
+                )
+            elif (
+                state["role"] == "caller"
+                and newest.action
+                and newest.action.type in {"penalty_awarded", "red_card"}
+            ):
+                broadcast_cue = (
+                    "React to the referee's decision and its consequence for the team. "
+                    "The viewer can see the gesture; do not explain the pointing or card display."
+                )
         return {
             "role": state["role"],
             "snapshot_version": snapshot.version,
@@ -195,6 +213,7 @@ class RoleAgents:
             "allowed_tools": self._tools(state["role"]),
             "remaining_actions": self.max_steps - state["steps"],
             "speech_budget_words": snapshot.speech_budget_words,
+            "broadcast_cue": broadcast_cue,
             "tool_results": state["tool_results"],
             "draft": state["line"].model_dump(mode="json") if state["line"] else None,
             "review_feedback": state["feedback"],
@@ -229,14 +248,24 @@ class RoleAgents:
                 COMMON_SYSTEM
                 + "\n"
                 + duty
-                + f"\nRecorded delivery: ONE short sentence, at most {limit} words. "
-                "This limit replaces the usual longer delivery. Use one short clause; "
-                "no filler. Use fewer words than the limit. For five words or fewer, "
-                "use a compact action phrase rather than a complete sentence. "
-                "Keep grammatical articles; choose a simpler phrase "
-                "rather than telegraphic English. "
-                "Caller: use natural excitement and punctuation for confirmed big moments. "
-                "Abstain if there is no useful supported point that fits."
+                + f"\nRecorded broadcast: at most {limit} words; this is a ceiling, not a target. "
+                "Speak to a viewer watching alongside you. The observations are private notes, "
+                "not a script to paraphrase. Use spoken English, contractions, and varied rhythm. "
+                "Short connected phrases or two sentences are welcome. Keep grammatical articles. "
+                "Caller: call what is happening NOW. If the outcome is already visible, "
+                "react to it directly; do not rewind to a run-up or approach in that line. "
+                "Use a verified player's name naturally. Let a major moment sound bigger than "
+                "an ordinary pass, without shouting every line or adding unsupported stakes. "
+                "Analyst: respond to the caller's actual words like a colleague. Add one useful "
+                "detail a viewer could appreciate; avoid a textbook explanation of an obvious "
+                "referee signal, camera direction, or a literal recap of the goal. "
+                "A conversational "
+                "opening is fine when it leads to a new point; avoid stock praise. "
+                "Prefer familiar football idiom over invented phrases or event taxonomies. "
+                "Do not say evidence, confirms, or low confidence as audit language. "
+                "Never manufacture tactics or intent to sound insightful. "
+                "Abstain when the evidence gives you nothing worthwhile to say. "
+                "Do not include stage directions, audio tags, or speaker labels in spoken text."
             )
         parsed = await self.backend.parse(
             model=self.caller_model if role == "caller" else self.analyst_model,
@@ -339,9 +368,20 @@ class RoleAgents:
 
     async def _review(self, state: _TurnState) -> dict[str, Any]:
         assert self.reviewer_model is not None
+        system = REVIEW_SYSTEM
+        if state["snapshot"].speech_budget_words is not None:
+            system += (
+                "\nThis is a recorded broadcast draft. Also reject unnatural English, "
+                "event-label prose, obvious descriptions dressed up as analysis, and "
+                "retelling a run-up after the goal is already visible at the cutoff. "
+                "A short excited reaction can be useful without introducing a new fact. "
+                "An analyst must add something worth hearing and respond naturally to "
+                "the preceding call. Do not demand statistics or tactical speculation. "
+                "Give one specific rewrite instruction; never loosen evidence rules."
+            )
         parsed = await self.backend.parse(
             model=self.reviewer_model,
-            system=REVIEW_SYSTEM,
+            system=system,
             blocks=[text_block(json.dumps(self._payload(state), separators=(",", ":")))],
             output_format=ReviewResult,
             max_tokens=768,

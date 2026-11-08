@@ -35,12 +35,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--spend", action="store_true")
     parser.add_argument("--caller-voice")
     parser.add_argument("--analyst-voice")
+    parser.add_argument("--model", default=MODEL)
+    parser.add_argument("--max-characters", type=int, default=5000)
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     plan = read_plan(args.plan)
+    characters = sum(len(line.text) for line in plan.lines)
+    if args.max_characters < 1 or characters > args.max_characters:
+        raise RenderError("plan exceeds synthesis character limit")
     if args.spend:
         dotenv.load_dotenv()
     caller = args.caller_voice or voice("CALLER", CALLER_VOICE)
@@ -62,18 +67,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     args.out_dir.mkdir(parents=True)
     manifest: dict[str, str] = {}
     audit: dict[str, object] = {
-        "model": MODEL,
+        "model": args.model,
         "settings_source": "saved ElevenLabs voice settings; no request overrides",
         "lines": [],
     }
     manifest_path = args.out_dir / "manifest.json"
     audit_path = args.out_dir / "synthesis-audit.json"
     with httpx.Client(timeout=60) as client:
-        for line in plan.lines:
+        for index, line in enumerate(plan.lines):
             if Path(line.id).name != line.id:
                 raise RenderError(f"line ID cannot contain a path: {line.id!r}")
             speaker = analyst if line.voice == "analyst" else caller
-            request = {"text": line.text, "model_id": MODEL}
+            request = {"text": line.text, "model_id": args.model}
+            # Stitch the performance of each voice without feeding the other
+            # commentator's words into that voice's acoustic context.
+            previous = [item.text for item in plan.lines[:index] if item.voice == line.voice]
+            following = [item.text for item in plan.lines[index + 1 :] if item.voice == line.voice]
+            if previous:
+                request["previous_text"] = " ".join(previous[-2:])
+            if following:
+                request["next_text"] = " ".join(following[:2])
             response = client.post(
                 f"https://api.elevenlabs.io/v1/text-to-speech/{speaker}?output_format=mp3_44100_128",
                 headers={"xi-api-key": api_key, "accept": "audio/mpeg"},

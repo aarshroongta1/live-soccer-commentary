@@ -127,7 +127,12 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         report.update(observed)
         (args.out_dir / "observations.json").write_text(json.dumps(report, indent=2) + "\n")
         agents = RoleAgents(
-            backend, args.speaker_model, args.speaker_model, max_steps=1, max_revisions=0
+            backend,
+            args.speaker_model,
+            args.speaker_model,
+            reviewer_model=args.speaker_model,
+            max_steps=3,
+            max_revisions=1,
         )
         report["dialogue"] = await prepare_dialogue(
             agents.run,

@@ -7,6 +7,11 @@ The five curated showcases retain their edited scripts. Use
 `scripts/prepare_agent_demo.py` for the bounded multi-agent recorded workflow;
 the generation commands below describe the separate original script workflow.
 
+Recorded preparation uses a draft reviewer with at most one revision per turn.
+It checks broadcast phrasing and whether the analyst contributes something useful,
+as well as factual grounding. This is a draft aid; passing it does not establish
+that the commentary sounds good. Listening review remains necessary.
+
 Generate a script from your own soccer clip, review it, then render speech and
 captions. Run these commands from the repository root after the
 [setup steps](../README.md#generate-your-own-commentary). Rendering needs FFmpeg with subtitle
@@ -59,6 +64,13 @@ This is also a dry run until `--spend` is added. Pass the resulting
 `--manifest runs/demo/audio/manifest.json` to the renderer to use that speech.
 On other platforms, use this option or supply your own manifest mapping line IDs
 to audio file paths. Existing audio can be reused without new synthesis.
+
+The speech helper supplies preceding/following text from the same voice for
+[continuity](https://elevenlabs.io/docs/api-reference/text-to-speech/convert) while
+preserving the exact spoken words and saved voice settings.
+`--max-characters` rejects oversized plans before any request (default 5,000).
+`--model` selects a speech model for a deliberate comparison; the default remains
+`eleven_flash_v2_5`. Each plan line makes one request with no automatic retries.
 
 ## View the result
 

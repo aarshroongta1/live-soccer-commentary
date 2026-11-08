@@ -243,8 +243,8 @@ async def prepare_dialogue(
             default=duration_s,
         )
         available = min(duration_s, next_goal) - cursor - 0.35
-        limit = min(9 if role == "caller" else 13, math.floor(available * 2.6))
-        if limit < (4 if role == "caller" else 8):
+        limit = min(18 if role == "caller" else 28, math.floor(available * 2.6))
+        if limit < (1 if role == "caller" else 8):
             cursor = next((at for at in frontiers if at > cursor), duration_s)
             continue
         view = RuntimeSnapshot(
@@ -295,7 +295,10 @@ async def prepare_dialogue(
                 validate_plan_parts(ordered, [*lines, line], duration_s, research=research)
                 lines.append(line)
                 recent.append(result.line)
-                cursor += len(line.text.split()) / 2.6 + 0.35
+                # Let a major call land before asking the analyst to respond.
+                # This is a preparation estimate; the renderer still measures audio.
+                pause_s = 1.2 if role == "caller" and urgent else 0.35
+                cursor += len(line.text.split()) / 2.6 + pause_s
                 last_role = role
         except BudgetExceeded:
             row["rejected"] = "model budget exhausted"
