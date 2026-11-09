@@ -38,3 +38,17 @@ Paid execution saves `report.json`, per-arm provider responses and drafts, and
 Review candidates against source video with the rubric; the runner does not assign
 semantic quality or declare an empty transcript acceptable. All 15 cases remain
 in the report and blind export, including missing or failed arms.
+
+## Paid trial preparation
+
+The [trial report](../../docs/TEXT_EVALUATION_TRIAL.md) records the paid experiment.
+`prepared-inputs.json` includes the original seven bundles plus five in
+`generated-inputs/`. These preserve model perception errors, including the false
+goal in cross-header; they are not approved references. `preparation-results.json`
+records all 15 cases and the three failed preparations.
+
+Use `--inputs examples/text-comparison/prepared-inputs.json` for a free inventory
+of these 12 bundles. `scripts/prepare_text_inputs.py` can perform a free preparation
+inventory or, with explicit `--spend`, attempt each missing clip once under a shared
+dollar/call cap. Do not run it simply to repeat the already-recorded failed checks.
+The current text adapter is v4; the suite pilot used v2, as the trial report explains.

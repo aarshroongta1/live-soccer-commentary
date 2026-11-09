@@ -1,0 +1,89 @@
+{
+  "source_sha256": "ca47b5d0dbecb5ad593a0135e85289e62073117804d6ba2ba55db45386cc132f",
+  "source_start_s": 37.0,
+  "duration_s": 6.5,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 2.7857142857142856,
+      "kind": "play",
+      "description": "A red-shirted player near the right edge of the box closes onto a loose ball rolling along the ground.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          2.7857142857142856,
+          3.7142857142857144
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 3.7142857142857144,
+      "kind": "play",
+      "description": "The same red player reaches the ball and swings a foot through it, sending it onward from the touchline area.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.7142857142857144,
+          4.642857142857143
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 4.642857142857143,
+      "kind": "play",
+      "description": "A white-shirted player with number 10 arrives to challenge while the ball continues away along the ground near the sideline.",
+      "actor": null,
+      "action": {
+        "type": "interception",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_motion",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          4.642857142857143,
+          5.571428571428571
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 5.571428571428571,
+      "kind": "play",
+      "description": "Players slow and look toward the sideline as the ball has gone out of the immediate contest area.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_motion"
+        ],
+        "support_at_s": [
+          5.571428571428571
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

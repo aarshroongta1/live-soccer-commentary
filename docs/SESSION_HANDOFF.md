@@ -7,48 +7,59 @@ files_modified: []
 
 # Commentary project handoff
 
-## Update: text evaluation resumed, 9 November 2026
+## Update: text evaluation trial completed, 9 November 2026
 
-The user explicitly skipped voice and authorized work on text evaluation. Voice,
-audio generation and deployment remain paused. The current deliverables are
-[the text-only rubric/comparison protocol](TEXT_EVALUATION.md) and an
-[unscored 15-case review worksheet](../examples/evaluation-results/text-review-v1.json).
-The evaluation docs and saved reports were inspected without paid calls. All 15
-references remain unreviewed with empty commentary arrays; no new semantic scores
-or baseline-versus-agent quality result is claimed.
+The user skipped voice, resumed text development, and asked for autonomous small
+steps with progress updates. **Paid experiments with an explicit total cap of $1
+or less are authorized; ask before anything above $1.** Do not split a larger
+experiment to bypass this limit. This supersedes the older blanket paid pause and
+the pending $1.20 question. Voice, audio generation and deployment remain paused.
+The spending rule is also recorded in AGENTS.md.
 
-The user then requested continued autonomous work with progress updates and no
-permission checks for small steps. The bounded text comparison is implemented in
-`scripts/compare_text.py` and `src/commentary/replay/text_comparison.py`. It compares
-an explicitly adapted short-clip joint writer with the existing caller/analyst
-role loops, both using the full shared evidence pool and common support-aware
-placement. This is offline text planning, not causal replay. Original demo paths
-are unchanged. Provider retries and the agent reviewer are disabled; each arm has
-a $0.03/eight-call cap and at most one validation repair. Blind review JSON hides
-architecture/model/cost; its mapping is separate. Default mode makes no model call.
+Read [the text trial](TEXT_EVALUATION_TRIAL.md) and its
+[complete record](../examples/evaluation-results/text-comparison-20261109.json)
+next. The experiment's combined maximum was $1; reported token cost was
+**$0.17030795**, with no unsettled reservations. There were 77 call attempts using
+gpt-5.4-mini and one deliberate perception-only check using gpt-5.4-2026-03-05.
+No TTS, fresh research, training, deployment or push occurred.
 
-Seven historical inputs are frozen in `examples/text-comparison/` with provenance;
-eight cases are explicitly missing. Their known perception errors are preserved.
-Legacy deterministic free-kick identities are removed, not promoted to accepted
-agent-owned names. A dry run verified all seven source hashes/windows. The coding
-agent inspected 12-frame contact sheets for all 15 clips and recorded provisional
-reference notes in the worksheet. In particular, red-card timing and the penalty's
-later celebration angle need reference review. No source reference was promoted
-or silently corrected; candidate scores remain pending.
+The shared-input text comparison is implemented in `scripts/compare_text.py` and
+`src/commentary/replay/text_comparison.py`. `scripts/prepare_text_inputs.py` can
+reuse saved inputs or make one bounded perception attempt per missing case. These
+are offline full-context paths, not causal live measurements. Original demo paths
+remain unchanged. Default modes make no paid calls; paid branches require --spend.
 
-Validation after this work: **365 offline tests passed**, Ruff and mypy passed.
-Twenty new comparison tests include scripted end-to-end execution of the paid
-branch, budget stops, repair limits, rejected/partial outputs and reference
-isolation. No new paid calls, audio, deployment or push occurred.
+The v2 suite pilot had 12 usable perception inputs, 3 perception failures, 5/24
+structurally complete writer arms and 19 failed arms. All 15 cases remain in the
+report. Caller uncertainty validation differed between arms in that pilot; do not
+use its completion counts as architecture superiority evidence. v3 aligned the
+caller uncertainty/replay gate. v4 adds exact remaining-word feedback and stops
+repeated caller requests after analyst abstention when there is no newer evidence.
+A final paid dribble check produced only Goal! from both arms: it fits the supplied
+timing, but omits the sequence and supplies no analysis. No full suite was rerun.
 
-An asynchronous question asks whether the handoff's paid-experiment pause can be
-lifted for a text-only run capped at $1.20 total (including missing perception,
-existing small model, no TTS). It is pending, not approved. Do not treat elapsed
-time or this requested cap as permission. Continue offline work freely; generating
-the actual model comparison and filling missing model perception depend on that
-answer. Quality review must follow generation; tests/dry runs are not quality wins.
-This update supersedes the blanket text-work pause below, while preserving the
-voice pause and historical findings.
+Both completed cross/header outputs falsely announced a goal because the shared
+observer fabricated a confirmed goal with line/net cue tags. Coding-agent source
+review contradicted that outcome. The larger existing model also invented a goal
+with the same prompt/source/window/sampler, so no production model default changed.
+There is **no demonstrated multi-agent quality advantage and no accepted candidate**.
+
+Seven historical inputs remain in examples/text-comparison/inputs.json. A separate
+prepared-inputs.json includes five new bundles (12 total); their perception errors
+are preserved, not corrected from labels. Corner, foul-decision and offside remain
+failed. The 15-case worksheet now contains integration outcomes and limited agent
+semantic review, explicitly not independent human approval. Original reference
+labels remain unreviewed. Local ignored runs retain raw providers, traces and media;
+portable summaries, inputs, hashes and failures are committed.
+
+Final validation: **370 offline tests passed**, Ruff and mypy passed. Regression tests use
+scripted providers only. Next priority is false-goal perception and excessive late
+support using existing inspection tools, then the three failed perception cases.
+Do not feed target outcomes into runtime prompts, promote fabricated cue tags, or
+claim timing-only passes establish good commentary.
+
+This update supersedes older text-work status below while preserving the voice
+pause and historical findings.
 
 Read this first in a new session. This snapshot supersedes older status prose
 where it conflicts with the recent recorded-demo work. The user requested this

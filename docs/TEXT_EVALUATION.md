@@ -3,7 +3,11 @@
 Version 1, 9 November 2026. Scope: the 15 windows in
 [action-suite.json](../examples/action-suite.json), 112.5 seconds. Voice, TTS,
 pronunciation and listening quality are excluded. This document defines a protocol;
-it does not report a completed comparison or an accepted quality level.
+it does not itself report a completed comparison or an accepted quality level.
+
+The [first paid trial](TEXT_EVALUATION_TRIAL.md) is now recorded. It found major
+timing and perception failures and establishes no multi-agent quality advantage.
+The current comparison adapter is v4; earlier v1–v3 trial outputs are preserved.
 
 ## What the saved evidence establishes
 
@@ -135,7 +139,8 @@ into a weighted score that can hide factual failures.
    insufficient allowance is reported, never silently increased. Shared perception
    preparation is separately costed and requires a separate explicit budget if
    missing. No fresh research, TTS, provider retries or automatic reruns. These are
-   proposed caps, not authorization to spend in this session.
+   proposed caps. The user authorizes experiments at $1 or less and requires
+   approval above $1; include every phase in the total before starting.
 4. **Control corrections.** Disable provider retries; allow at most one explicitly
    logged validation repair in each arm, inside its cap. Disable optional agent
    reviewer, deterministic fast-goal shortcuts and manual wording edits in the
@@ -171,12 +176,13 @@ do not acquire more data for this comparison.
 the shared-input runner and blind JSON review export. Default mode inventories
 all 15 cases and validates supplied bundles, source hashes/windows and schemas
 without creating a model client. Explicit `--spend --model MODEL_ID` opts into
-generation, with hard $0.03/eight-call limits per arm, no provider retries,
+generation, with hard $0.03/eight-call limits per arm by default
+(`--per-arm-max-usd` may lower the dollar cap), no provider retries,
 1,024 output tokens per call by default, and reasoning effort `none`. Every
 response, rejected draft, repair, partial output and failure remains in the audit.
 The paid branch is also exercised end to end with a scripted provider in tests.
 
-The runner's version is **short-clips-v1**, an explicitly adapted baseline rather
+The runner's version is **short-clips-v4**, an explicitly adapted baseline rather
 than unchanged historical output. The old joint schema requires 7–12 lines and
 three substantial analyst turns, which cannot reasonably fit five-second clips.
 The comparison permits 0–7 lines, optional analysis and one validation repair in
@@ -204,7 +210,8 @@ sparse-label unmatched detections into proven false positives. Preserve original
 outputs and use a clearly identified adapter if adding a common scorecard.
 
 Seven historical perception bundles and their provenance are saved in
-[text-comparison](../examples/text-comparison/README.md). Eight cases lack cached
-inputs in that selection and remain explicit missing rows. This is not a newly
+[text-comparison](../examples/text-comparison/README.md). The later paid preparation
+added five usable bundles; `prepared-inputs.json` contains 12 inputs, while corner,
+foul-decision and offside remain explicit failures. This is not a newly
 generated or quality-approved perception baseline. Recognition prompt changes
 and GEPA follow measured failures; neither is required to run this comparison.

@@ -1,0 +1,112 @@
+{
+  "status": "incomplete",
+  "model": "gpt-5.4-mini",
+  "paid": true,
+  "max_usd": 0.24,
+  "max_calls": 8,
+  "suite_sha256": "640543d324267529c8c4c20d6ada28dd5295885ba56ed1e48d936b99a9c75793",
+  "cases": [
+    {
+      "case_id": "buildup",
+      "status": "generated",
+      "observations": 4,
+      "bundle_sha256": "d2af0bc8d87955341c45cd4106cefdb1d7a196ad449147f83e728d3e6d259ebf"
+    },
+    {
+      "case_id": "dribble",
+      "status": "reused",
+      "bundle_sha256": "be403ab04c122eea88e8a6479d30d44c1cdc829756cc84d93c93aa6e2972cbed"
+    },
+    {
+      "case_id": "tackle",
+      "status": "reused",
+      "bundle_sha256": "8050f18fc05fd6adbd73f746b69c384c4152ad538eb2b637a550cdf3dbd94281"
+    },
+    {
+      "case_id": "interception",
+      "status": "generated",
+      "observations": 4,
+      "bundle_sha256": "6a2c46ce63b9ecb7b3e98d018925f40abad2f41f63f58b6b7e4851b7f89c44fd"
+    },
+    {
+      "case_id": "cross-header",
+      "status": "generated",
+      "observations": 5,
+      "bundle_sha256": "c90aee808e5a585915c382ec5e262dbcfc18cb454cc401f2ab035b808327958c"
+    },
+    {
+      "case_id": "save",
+      "status": "reused",
+      "bundle_sha256": "5098161cc6a3a5bed4ba38c24de0399cd6641903ad297f9422c6274354f9647a"
+    },
+    {
+      "case_id": "miss",
+      "status": "generated",
+      "observations": 4,
+      "bundle_sha256": "57f58eb63b9889baa874c60f3f2d70322bcd9e2f5ca3ca1b1024e7f5c4d4fb31"
+    },
+    {
+      "case_id": "goal",
+      "status": "reused",
+      "bundle_sha256": "8f3c8215b16405d4347778b84d09911d9bc01735cd5f593b67ae165c97145320"
+    },
+    {
+      "case_id": "corner",
+      "status": "failed",
+      "error": {
+        "type": "LLMError",
+        "message": "recorded_observer: unparseable output after $0.007 (status completed, 667 of 3072 output tokens): 1 validation error for RecordedObservations\nobservations.5\n  Value error, confirmed goals must be live goals or replay footage [type=value_error, input_value={'id': 'obs6', 'at_s': 4....at_s': [4.6875, 5.625]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      }
+    },
+    {
+      "case_id": "free-kick",
+      "status": "reused",
+      "bundle_sha256": "cc63392006ec2a357d49afb244581967328475b283bc015dfa32664bfe02018c"
+    },
+    {
+      "case_id": "penalty",
+      "status": "reused",
+      "bundle_sha256": "da11fc13c1c554ded99608ba6cff66cb2af6b3ea1854a51dc40f3d7e9337ac5f"
+    },
+    {
+      "case_id": "throw-in",
+      "status": "generated",
+      "observations": 3,
+      "bundle_sha256": "cd17ca603044897bd15eb8f64dce52773f8c45cf47bbd2b4dcdf8e154f6eae26"
+    },
+    {
+      "case_id": "foul-decision",
+      "status": "failed",
+      "error": {
+        "type": "ValueError",
+        "message": "recorded observations must cite chronological supplied frames"
+      }
+    },
+    {
+      "case_id": "card",
+      "status": "reused",
+      "bundle_sha256": "3080bb4b9fae5a0531b307ac69a6cf8b34ceef02b4a29c83e7e316a07bdf87b7"
+    },
+    {
+      "case_id": "offside",
+      "status": "failed",
+      "error": {
+        "type": "LLMError",
+        "message": "recorded_observer: unparseable output after $0.005 (status completed, 225 of 3072 output tokens): 1 validation error for RecordedObservations\nobservations.0.action\n  Value error, confirmed offside needs direct event-specific evidence [type=value_error, input_value={'type': 'offside', 'cert..._at_s': [0.0, 1.0, 4.0]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      }
+    }
+  ],
+  "runtime_audio": false,
+  "research_calls": false,
+  "scope": "One full-context vision pass per missing clip; no new identities without saved squads.",
+  "budget": {
+    "max_usd": 0.24,
+    "max_calls": 8,
+    "attempts": 8,
+    "reported_usd": 0.04670325,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  }
+}

@@ -173,7 +173,7 @@ async def test_agents_receive_full_evidence_pool_without_reference_or_source_nam
     assert first["planned_at_s"] == 0
     assert "reference" not in first
     assert "source_sha256" not in first
-    assert "short-clips-v1" in fake.calls[0].system
+    assert "short-clips-v4" in fake.calls[0].system
     assert result["lines"][0]["at_s"] == 3
     assert not any("review" in call.tag for call in fake.calls)
 
@@ -335,16 +335,12 @@ async def test_cli_executes_both_arms_and_exports_all_cases_with_scripted_provid
     monkeypatch.setattr(openai, "AsyncOpenAI", Client)
     monkeypatch.setattr(provider_module, "OpenAIBackend", provider)
     inputs = tmp_path / "inputs.json"
-    inputs.write_text(
-        json.dumps(
-            [
-                {
-                    "case_id": "penalty",
-                    "bundle": str(Path("examples/text-comparison/inputs/penalty.json").resolve()),
-                }
-            ]
-        )
-    )
+    inputs.write_text("[]\n")
+    rows = [
+        {"case_id": c["id"], "status": "ready" if c["id"] == "penalty" else "missing_input"}
+        for c in json.loads(Path("examples/action-suite.json").read_text())["clips"]
+    ]
+    monkeypatch.setattr(module, "inventory", lambda *_: (rows, {"penalty": bundle()}))
     report = await module.run(
         argparse.Namespace(
             inputs=inputs,
@@ -364,3 +360,61 @@ async def test_cli_executes_both_arms_and_exports_all_cases_with_scripted_provid
     assert len(clients) == 2
     assert len(json.loads((tmp_path / "output/blind/review.json").read_text())) == 15
     assert report["reported_usd"] == 0
+
+
+def test_joint_adapter_removes_conflicting_long_clip_requirements():
+    from commentary.replay.text_comparison import SHORT_JOINT_SYSTEM
+
+    assert "three distinct" not in SHORT_JOINT_SYSTEM
+    assert "60/40" not in SHORT_JOINT_SYSTEM
+    assert "At least one analyst line must cite" not in SHORT_JOINT_SYSTEM
+    assert "single short correct caller line" in SHORT_JOINT_SYSTEM
+
+
+async def test_agent_word_budget_uses_remaining_clip_time():
+    fake = ScriptedBackend()
+    fake.always(
+        "replay_caller",
+        AgentAction(
+            kind="speak",
+            line=SpeechLine(
+                voice="caller",
+                text="Forward they go.",
+                evidence_ids=["event-1"],
+            ),
+        ),
+    )
+    fake.always("replay_analyst", AgentAction(kind="abstain"))
+    await run_arm(bundle(), adapter(fake), "agents")
+    payload = json.loads(fake.calls_tagged("replay_analyst")[0].text)
+    assert payload["evidence_ready_at_s"]["event-1"] == 3
+    assert payload["speech_budget_words"] == 11  # 8s - (3s + 1s of words + .3s gap)
+    assert payload["planned_at_s"] == 4.3
+
+
+def test_late_evidence_rejection_reports_exact_remaining_words():
+    data = bundle()
+    data.duration_s = 3.5
+    draft = ScriptLine(at_s=0, voice="caller", text="It’s in!", evidence_ids=["event-1"])
+    with pytest.raises(ValueError, match="Only 1 words fit at 3.000s"):
+        place_lines([draft], data)
+
+
+async def test_caller_is_not_requested_again_after_analyst_abstains_without_new_evidence():
+    fake = ScriptedBackend()
+    fake.always(
+        "replay_caller",
+        AgentAction(
+            kind="speak",
+            line=SpeechLine(
+                voice="caller",
+                text="Forward they go.",
+                evidence_ids=["event-1"],
+            ),
+        ),
+    )
+    fake.always("replay_analyst", AgentAction(kind="abstain", reason="No new point."))
+    result = await run_arm(bundle(), adapter(fake), "agents")
+    assert result["status"] == "complete"
+    assert [c.tag for c in fake.calls] == ["replay_caller", "replay_analyst"]
+    assert len(result["lines"]) == 1

@@ -1,0 +1,2637 @@
+{
+  "id": "text-comparison-20261109",
+  "status": "completed_with_failures_no_quality_win",
+  "authorized_experiment_limit_usd": 1.0,
+  "planned_maximum_usd": 1.0,
+  "model": "gpt-5.4-mini",
+  "tts": false,
+  "research_calls": false,
+  "training": false,
+  "phases": [
+    {
+      "id": "penalty-smoke",
+      "maximum_usd": 0.06,
+      "reported_usd": 0.008303849999999998,
+      "unsettled_reservations_usd": 0,
+      "artifact": "runs/text-comparison-v1/penalty-smoke/report.json",
+      "outcome": "Both arms failed short-window timing. Agent partial caller line retained. No quality win claimed.",
+      "artifact_sha256": "fda07466223be76b91e25585fab2df8dccb24f37a723f1ee859d9952faa13865",
+      "call_attempts": 5
+    },
+    {
+      "id": "missing-perception",
+      "maximum_usd": 0.24,
+      "artifact": "runs/text-comparison-v1/prepared/preparation.json",
+      "status": "incomplete",
+      "reported_usd": 0.04670325,
+      "calls": 8,
+      "failed_case_ids": [
+        "corner",
+        "foul-decision",
+        "offside"
+      ],
+      "artifact_sha256": "fc3798dcde669ca526e9e91740d847534aee9644ec2e273b27f98e86e21d039b",
+      "call_attempts": 8
+    },
+    {
+      "id": "fixed-suite-text",
+      "maximum_usd": 0.48,
+      "per_arm_maximum_usd": 0.02,
+      "artifact": "runs/text-comparison-v1/full-suite/report.json",
+      "status": "completed_with_failures",
+      "reported_usd": 0.07767345,
+      "protocol": "short-clips-v2",
+      "valid_arms": 5,
+      "artifact_sha256": "dd57d35482fb4bf94c74da17ba6cbf94efb6957e9e53f025bbf8c8fc25f67ef4",
+      "call_attempts": 50
+    },
+    {
+      "id": "timing-followup",
+      "maximum_usd": 0.08,
+      "artifact": "runs/text-comparison-v1/timing-followup/report.json",
+      "status": "completed_with_failures",
+      "cases": [
+        "dribble",
+        "goal"
+      ],
+      "protocol": "short-clips-v3",
+      "change": "Explicit per-evidence word allowances; equal caller uncertainty/replay gates. Same saved perception and existing model.",
+      "reported_usd": 0.01562535,
+      "valid_arms": 0,
+      "artifact_sha256": "6592dd5d8399c34d3edc8490d1086b6581695a5e17083f67275d84e83434bb38",
+      "call_attempts": 10
+    },
+    {
+      "id": "final-timing-check",
+      "maximum_usd": 0.04,
+      "artifact": "runs/text-comparison-v1/final-timing-check/report.json",
+      "status": "targeted_pairs_completed",
+      "cases": [
+        "dribble"
+      ],
+      "protocol": "short-clips-v4",
+      "change": "Exact remaining-word validation feedback and no repeat caller request after analyst abstention without new evidence.",
+      "reported_usd": 0.00591705,
+      "valid_arms": 2,
+      "outcome": "Both writers fit a single Goal! call; this omits the dribble and is not a full quality pass.",
+      "artifact_sha256": "3886e080c2491bcc45d1ad4aa7dfe311cab70033f48d50be6f80aa797abc9420",
+      "call_attempts": 4
+    },
+    {
+      "id": "cross-header-vision-check",
+      "maximum_usd": 0.1,
+      "artifact": "runs/text-comparison-v1/vision-check/report.json",
+      "status": "complete",
+      "model": "gpt-5.4-2026-03-05",
+      "change": "Deliberate perception-only model comparison, identical recorded prompt, sampled frames, output allowance and reasoning effort. No writer rerun or production default change.",
+      "reported_usd": 0.016085,
+      "outcome": "The larger model also falsely labels a goal; no recognition improvement on this clip.",
+      "artifact_sha256": "8d15edee73d23230f1a096d788e31ec6879d720eba57b7b96029fa8a61bdb0a6",
+      "call_attempts": 1
+    }
+  ],
+  "limits": [
+    "15 existing development clips; unreviewed sparse labels.",
+    "Full-context recorded text planning; not causal live commentary.",
+    "Seven historical perception bundles plus eight one-attempt perception fills. Shared perception is identical within each writer pair; no recognition improvement comparison.",
+    "Short-clips-v2 removes conflicting long-clip turn quotas and supplies explicit timing budgets after the v1 smoke failure. It is an adapted baseline.",
+    "Reviewer disabled; zero provider retries; no paid regression tests."
+  ],
+  "reported_usd": 0.17030795,
+  "unsettled_reservations_usd": 0,
+  "review": {
+    "reviewer_kind": "coding_agent",
+    "human_reviewed": false,
+    "method": "Limited source-frame and text review; not an independent blind human study. No model judge used.",
+    "completed_pairs_reviewed": [
+      "cross-header",
+      "penalty"
+    ],
+    "additional_partial_pair_reviewed": [
+      "card"
+    ],
+    "findings": [
+      {
+        "case_id": "cross-header",
+        "verdict": "neither",
+        "critical_failure": "Both structurally complete candidates announce a goal that the footage does not establish; independent source inspection shows the keeper continuing play and no goal outcome.",
+        "evidence": "Local source clip-relative 6, 7, 8, 9 second frames; draft reference also labels a cross/header chance, not a goal.",
+        "root_cause": "Shared observer hallucinated a confirmed goal and fabricated line/net cue tags. Both writers trusted it."
+      },
+      {
+        "case_id": "penalty",
+        "verdict": "no_system_winner",
+        "finding": "Both completed outputs correctly call Kane and the low scored penalty. This single short example does not establish useful analyst contribution or general dialogue quality."
+      },
+      {
+        "case_id": "card",
+        "verdict": "not_comparable",
+        "finding": "One completed candidate correctly says Red card!; the other arm failed. A valid line is not a blind quality win against a missing artifact."
+      }
+    ],
+    "acceptance": "No whole-suite candidate accepted; unresolved labels and execution/grounding failures remain."
+  },
+  "case_results": [
+    {
+      "case_id": "buildup",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-4 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-4 ends after clip duration",
+            "line line-4 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.00313155,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "835c1c131e36fb6e3299389fc1447f3596e0e14677b354b13274d1a77b1538ed",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/buildup/joint/result.json",
+          "artifact_sha256": "e1d3d3b0cb41f3d4919916a426a174f97e496efe778171ac4e2de61afce93c2d",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1765,
+                "output_tokens": 159,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00203925,
+                "latency_s": 2.7124842920020455
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 336,
+                "output_tokens": 159,
+                "cache_read_tokens": 1664,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0010923,
+                "latency_s": 1.406938583997544
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 6.0,
+                "voice": "caller",
+                "text": "White pokes it away.",
+                "evidence_ids": [
+                  "recorded-1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 9.0,
+                "voice": "analyst",
+                "text": "That break stops the striped attack and flips momentum.",
+                "evidence_ids": [
+                  "recorded-1",
+                  "recorded-2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 10.0,
+                "voice": "caller",
+                "text": "Striped recover now.",
+                "evidence_ids": [
+                  "recorded-2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 13.0,
+                "voice": "caller",
+                "text": "She drives on right.",
+                "evidence_ids": [
+                  "recorded-3",
+                  "recorded-4"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "caller cannot announce uncertain actions or replay footage"
+          },
+          "validation_failures": [
+            "caller cannot announce uncertain actions or replay footage",
+            "caller cannot announce uncertain actions or replay footage"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0035527500000000004,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "835c1c131e36fb6e3299389fc1447f3596e0e14677b354b13274d1a77b1538ed",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/buildup/agents/result.json",
+          "artifact_sha256": "0e9addc72599a0e215bdbec16954ca2012d28f3a9997be8f4b80e79633af0648",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "4db39ab470b01d1aa4f346f903b83a157730f4d4397784a4b9d368361854a56d",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1828,
+                "output_tokens": 85,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0017535,
+                "latency_s": 1.764472916998784
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "4db39ab470b01d1aa4f346f903b83a157730f4d4397784a4b9d368361854a56d",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1835,
+                "output_tokens": 94,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00179925,
+                "latency_s": 2.5116224169905763
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "The white defender pokes it away there, and the striped side are straight back onto the loose ball",
+              "evidence_ids": [
+                "recorded-1",
+                "recorded-2"
+              ],
+              "research_ids": []
+            },
+            "reason": "Supported by the confirmed regain and ground pass; avoids announcing the uncertain tackle as certain or replaying beyond the immediate action."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "dribble",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-3 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-3 ends after clip duration",
+            "line line-3 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0029817,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "4dedfa150da2e3b48294ce47fe8cc4004e369deaddd294d19fe59aed87e754e6",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/dribble/joint/result.json",
+          "artifact_sha256": "6bba552df7bfcf709c065fcf354666c8b781c411f83ff0e92b842ca7e4c554e2",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1641,
+                "output_tokens": 153,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00191925,
+                "latency_s": 1.67936062499939
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 333,
+                "output_tokens": 155,
+                "cache_read_tokens": 1536,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00106245,
+                "latency_s": 1.5423799159907503
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 2.5,
+                "voice": "caller",
+                "text": "Barcelona drives in!",
+                "evidence_ids": [
+                  "v1-o1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 3.5,
+                "voice": "caller",
+                "text": "Shot!",
+                "evidence_ids": [
+                  "v1-o2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.5,
+                "voice": "caller",
+                "text": "Goal! It\u2019s in!",
+                "evidence_ids": [
+                  "v1-o3"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 5.0,
+                "voice": "analyst",
+                "text": "Left-footed, across the keeper, and past him.",
+                "evidence_ids": [
+                  "v1-o2",
+                  "v1-o3"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-1 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-1 ends after clip duration",
+            "line line-1 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0034642500000000003,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "4dedfa150da2e3b48294ce47fe8cc4004e369deaddd294d19fe59aed87e754e6",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/dribble/agents/result.json",
+          "artifact_sha256": "50726efa750f5564540bcb255366c68a8c88cebfb8a7e56ecf01bb3d90d5cdbc",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1784,
+                "output_tokens": 97,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0017745,
+                "latency_s": 1.8633433330105618
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1791,
+                "output_tokens": 77,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00168975,
+                "latency_s": 2.3491242920135846
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "It\u2019s in! Barcelona have the breakthrough, low into the far corner",
+              "evidence_ids": [
+                "v1-o3"
+              ],
+              "research_ids": []
+            },
+            "reason": "Immediate supported scoring reaction within the clip; no player name is available from the supplied evidence."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "tackle",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-3 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-3 ends after clip duration",
+            "line line-3 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0026022,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "ad74b8000e5c539915bce8764451a7d7a98752a3f8d24e6c7e25ba0418e5c992",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/tackle/joint/result.json",
+          "artifact_sha256": "8a7009083230ba4820f2438fae779579730f3c958fe4fb051054f8be7cd3a5ed",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1640,
+                "output_tokens": 117,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0017565,
+                "latency_s": 2.2148702499980573
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 284,
+                "output_tokens": 115,
+                "cache_read_tokens": 1536,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0008457,
+                "latency_s": 1.450420374996611
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 2.0,
+                "voice": "caller",
+                "text": "Navy drive inside!",
+                "evidence_ids": [
+                  "v1-o1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 3.5,
+                "voice": "analyst",
+                "text": "That low shot forces the keeper down quickly.",
+                "evidence_ids": [
+                  "v1-o2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 5.5,
+                "voice": "caller",
+                "text": "Scramble in there!",
+                "evidence_ids": [
+                  "v1-o3"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "caller cannot announce uncertain actions or replay footage"
+          },
+          "validation_failures": [
+            "caller cannot announce uncertain actions or replay footage",
+            "caller cannot announce uncertain actions or replay footage"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0033517499999999997,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "ad74b8000e5c539915bce8764451a7d7a98752a3f8d24e6c7e25ba0418e5c992",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/tackle/agents/result.json",
+          "artifact_sha256": "03dc4bba9b60c14cb66638f4a9e25d01533a14a40d5752d3ecc5b456a6632aa8",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "9a4876bacf2219187c7eeb691d10e87dcca2bdfe13a891d19206532cceda6e7a",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1727,
+                "output_tokens": 81,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00165975,
+                "latency_s": 2.142004250010359
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "9a4876bacf2219187c7eeb691d10e87dcca2bdfe13a891d19206532cceda6e7a",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1734,
+                "output_tokens": 87,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.001692,
+                "latency_s": 2.035483542000293
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "The navy attacker drives into the box and shoots low, but the keeper gets down to it",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2"
+              ],
+              "research_ids": []
+            },
+            "reason": "Supported by the confirmed carry and the shot with goalkeeper contact; keeps uncertainty out of the line."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "interception",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-2 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-2 ends after clip duration",
+            "line line-2 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0025398,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "9b971bc6e4965a2451c16371d0c8d68768e924dd77451beb3290b6199575e52d",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/interception/joint/result.json",
+          "artifact_sha256": "1d2903dad872009d370fccc16ab9c8e34400b32a2a1b9fed67d025bf9cd30c36",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1793,
+                "output_tokens": 96,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00177675,
+                "latency_s": 1.4504740840056911
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 281,
+                "output_tokens": 95,
+                "cache_read_tokens": 1664,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0007630499999999999,
+                "latency_s": 1.225736833002884
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 2.7857142857142856,
+                "voice": "caller",
+                "text": "Red closes on the loose ball.",
+                "evidence_ids": [
+                  "recorded-1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 3.7142857142857144,
+                "voice": "analyst",
+                "text": "That touch keeps it moving down the flank.",
+                "evidence_ids": [
+                  "recorded-2"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-1 ends after clip duration"
+          },
+          "validation_failures": [
+            "caller cannot announce uncertain actions or replay footage",
+            "line line-1 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 3,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 3,
+            "reported_usd": 0.005145,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "9b971bc6e4965a2451c16371d0c8d68768e924dd77451beb3290b6199575e52d",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/interception/agents/result.json",
+          "artifact_sha256": "396483c89424b20e4183b2d3e8e707e7c25d46fb46fff9acef7c32724a29a855",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1861,
+                "output_tokens": 73,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00172425,
+                "latency_s": 1.6477903750055702
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1868,
+                "output_tokens": 45,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0016035,
+                "latency_s": 1.525013874997967
+              }
+            },
+            {
+              "tag": "replay_analyst",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "b6e7e455ff5ed3fdee48e78f50d92e07638ede52fd1fac2afeaed753d72329a9",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1913,
+                "output_tokens": 85,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00181725,
+                "latency_s": 2.129581083994708
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "analyst",
+              "text": "The move breaks down near the sideline, with the ball running out of the immediate contest area",
+              "evidence_ids": [
+                "recorded-4"
+              ],
+              "research_ids": []
+            },
+            "reason": "A supported consequence is visible and does not require inventing a foul, turnover, or player identity."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "cross-header",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "complete",
+          "lines": [
+            {
+              "id": "line-1",
+              "at_s": 3.0,
+              "voice": "caller",
+              "text": "Blue whip it in!",
+              "evidence_ids": [
+                "recorded-1"
+              ],
+              "research_ids": []
+            },
+            {
+              "id": "line-2",
+              "at_s": 6.0,
+              "voice": "caller",
+              "text": "Driven across goal!",
+              "evidence_ids": [
+                "recorded-3"
+              ],
+              "research_ids": []
+            },
+            {
+              "id": "line-3",
+              "at_s": 7.3,
+              "voice": "caller",
+              "text": "Goal! It\u2019s in!",
+              "evidence_ids": [
+                "recorded-4"
+              ],
+              "research_ids": []
+            }
+          ],
+          "variant": "short-clips-v2",
+          "validation_failures": [
+            "line line-4 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0029223,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "36ac19f2dbd801ef5ee334577d7ba08960ce7dbe73524da3db13dd82d472be93",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/cross-header/joint/result.json",
+          "artifact_sha256": "09c48f967e25e535dcb40bf90bf275fb378dd8bc3643ebdca025aaed69f6988f",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1838,
+                "output_tokens": 142,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0020175,
+                "latency_s": 2.0163139999931445
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 398,
+                "output_tokens": 107,
+                "cache_read_tokens": 1664,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0009048,
+                "latency_s": 1.450730458003818
+              }
+            }
+          ]
+        },
+        {
+          "arm": "agents",
+          "status": "complete",
+          "lines": [
+            {
+              "id": "line-1",
+              "at_s": 7.0,
+              "voice": "caller",
+              "text": "Low ball across the box... and it\u2019s in!",
+              "evidence_ids": [
+                "recorded-3",
+                "recorded-4"
+              ],
+              "research_ids": []
+            }
+          ],
+          "variant": "short-clips-v2",
+          "validation_failures": [],
+          "repairs": 0,
+          "model_calls": 1,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 1,
+            "reported_usd": 0.0017745,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "36ac19f2dbd801ef5ee334577d7ba08960ce7dbe73524da3db13dd82d472be93",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/cross-header/agents/result.json",
+          "artifact_sha256": "5a336ff45baa32a8e4e37bcbdb1abbb3a6970d96a7eda534197a7b2ce6e23008",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "4db39ab470b01d1aa4f346f903b83a157730f4d4397784a4b9d368361854a56d",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1886,
+                "output_tokens": 80,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0017745,
+                "latency_s": 1.7194967919931514
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "save",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-2 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-2 ends after clip duration",
+            "line line-2 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0027426,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "a6678dc1ae27ef01fa20cbaf308e0e833846fb102b311bd9a80763d38c0dd675",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/save/joint/result.json",
+          "artifact_sha256": "89a7ddfbaa711723c3ee70b1b219c18bcc002e4f420534c62f794f427e440054",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1628,
+                "output_tokens": 156,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.001923,
+                "latency_s": 1.5400644580076914
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 448,
+                "output_tokens": 84,
+                "cache_read_tokens": 1408,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0008196,
+                "latency_s": 1.4153861670056358
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 4.5,
+                "voice": "caller",
+                "text": "Driven across!",
+                "evidence_ids": [
+                  "v1-o1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 5.5,
+                "voice": "analyst",
+                "text": "Excellent low save, cutting out the close-range danger.",
+                "evidence_ids": [
+                  "v1-o2"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-1 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-1 ends after clip duration",
+            "line line-1 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0033292499999999997,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "a6678dc1ae27ef01fa20cbaf308e0e833846fb102b311bd9a80763d38c0dd675",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/save/agents/result.json",
+          "artifact_sha256": "f0cbf7cdaf3199ba8d1f92470b2f854e7181313069ed5a6e5ed844588fec7adc",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "76a0e2ce35a7ddec0584a88a66bbde83f3fd2dceb429acc4a2852a90768847b2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1718,
+                "output_tokens": 82,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0016575,
+                "latency_s": 1.7068878340069205
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "76a0e2ce35a7ddec0584a88a66bbde83f3fd2dceb429acc4a2852a90768847b2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1725,
+                "output_tokens": 84,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00167175,
+                "latency_s": 1.7962817079969682
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "Low ball whipped across goal, and the keeper gets down to turn it away!",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2"
+              ],
+              "research_ids": []
+            },
+            "reason": "Confirmed cross and save are visible; keep it immediate and avoid unsupported scorer or outcome claims."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "miss",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-3 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-3 ends after clip duration",
+            "line line-3 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.00295095,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "62c23e45f564df973bf38a8cb7f7cc2ba11c3dfba1eb045cd3195003b7660e02",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/miss/joint/result.json",
+          "artifact_sha256": "355255cd0190c40bf605118a3bb840c5ee9e965963d98506fd6af06669622823",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1725,
+                "output_tokens": 155,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00199125,
+                "latency_s": 1.6408863750111777
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 418,
+                "output_tokens": 118,
+                "cache_read_tokens": 1536,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0009597000000000001,
+                "latency_s": 1.6017593750002561
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 1.0,
+                "voice": "caller",
+                "text": "England over the ball.",
+                "evidence_ids": [
+                  "recorded-1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 3.0,
+                "voice": "caller",
+                "text": "Goal! It's in!",
+                "evidence_ids": [
+                  "recorded-3"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.0,
+                "voice": "analyst",
+                "text": "That free kick beats the keeper, and England know it.",
+                "evidence_ids": [
+                  "recorded-2",
+                  "recorded-3"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-1 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-1 ends after clip duration",
+            "line line-1 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.00340875,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "62c23e45f564df973bf38a8cb7f7cc2ba11c3dfba1eb045cd3195003b7660e02",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/miss/agents/result.json",
+          "artifact_sha256": "27f151bcb946e2a85f97b90b8072bb8e701c247316c7114f30c41d5f483abfe6",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "afae1e0211d3ff753f877b1b6c934830ce2cfcc36c2f8beb1cf5caf3f115928c",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1795,
+                "output_tokens": 74,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00167925,
+                "latency_s": 2.5482055000029504
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "afae1e0211d3ff753f877b1b6c934830ce2cfcc36c2f8beb1cf5caf3f115928c",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1802,
+                "output_tokens": 84,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0017295,
+                "latency_s": 1.824818499997491
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "England\u2019s free kick... struck, and it\u2019s in the net!",
+              "evidence_ids": [
+                "recorded-1",
+                "recorded-2",
+                "recorded-3"
+              ],
+              "research_ids": []
+            },
+            "reason": "Supports the immediate confirmed action and keeps within the clip timing and word budget."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "goal",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-3 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-3 ends after clip duration",
+            "line line-3 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0028626,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "9b599a3401cf2d7c9450e96d6d17f0151fc76884bc12d53558972ea7b5fc2d43",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/goal/joint/result.json",
+          "artifact_sha256": "b32f2353014ed7236daf5db68b3766f2029e09b1efef816f7b3293865c474605",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1621,
+                "output_tokens": 153,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00190425,
+                "latency_s": 2.0356558339990443
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 441,
+                "output_tokens": 116,
+                "cache_read_tokens": 1408,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0009583500000000001,
+                "latency_s": 1.6298564590106253
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 1.0,
+                "voice": "caller",
+                "text": "Whipped in!",
+                "evidence_ids": [
+                  "v1-o1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 2.5,
+                "voice": "analyst",
+                "text": "Bodies everywhere, and the scramble stays alive.",
+                "evidence_ids": [
+                  "v1-o2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 3.5,
+                "voice": "caller",
+                "text": "Goal! It's in!",
+                "evidence_ids": [
+                  "v1-o3"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-1 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-1 ends after clip duration",
+            "line line-1 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0033367500000000003,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "9b599a3401cf2d7c9450e96d6d17f0151fc76884bc12d53558972ea7b5fc2d43",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/goal/agents/result.json",
+          "artifact_sha256": "b2c5aabe5dd76c1258196357b3bb6ddf99c710c5ffb321afbf9c4441e4452c29",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1765,
+                "output_tokens": 77,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00167025,
+                "latency_s": 1.9066417919966625
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1772,
+                "output_tokens": 75,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0016665,
+                "latency_s": 2.274764707995928
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "It's in! The ball\u2019s bundled home in the scramble",
+              "evidence_ids": [
+                "v1-o3"
+              ],
+              "research_ids": []
+            },
+            "reason": "Immediate supported scoring reaction to the confirmed goal, without inventing scorer identity or extra match state."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "corner",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "missing_input",
+          "lines": [],
+          "raw_artifact": null,
+          "call_summary": []
+        },
+        {
+          "arm": "agents",
+          "status": "missing_input",
+          "lines": [],
+          "raw_artifact": null,
+          "call_summary": []
+        }
+      ]
+    },
+    {
+      "case_id": "free-kick",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-2 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-2 ends after clip duration",
+            "line line-2 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0033695999999999995,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "093160cb1b916a500e753e39bfc67d3eff3cb2db3b1971de400cf2d7bb5d8d5c",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/free-kick/joint/result.json",
+          "artifact_sha256": "d1c6716007918a54a6245e9c7d799da5ab78514382e221ef23ddfc9d5f88588c",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1616,
+                "output_tokens": 160,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.001932,
+                "latency_s": 1.8968719999975292
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 444,
+                "output_tokens": 222,
+                "cache_read_tokens": 1408,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0014375999999999998,
+                "latency_s": 1.8901634590001777
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 4.0,
+                "voice": "caller",
+                "text": "Goal! It's in!",
+                "evidence_ids": [
+                  "v1-o1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.3,
+                "voice": "analyst",
+                "text": "Portugal finish the move cleanly.",
+                "evidence_ids": [
+                  "v1-o1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.6,
+                "voice": "caller",
+                "text": "And he spreads his arms!",
+                "evidence_ids": [
+                  "v1-o2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.9,
+                "voice": "analyst",
+                "text": "That celebration follows the aerial goal.",
+                "evidence_ids": [
+                  "v1-o1",
+                  "v1-o2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 5.2,
+                "voice": "caller",
+                "text": "Still roaring!",
+                "evidence_ids": [
+                  "v1-o3"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 5.5,
+                "voice": "analyst",
+                "text": "Portugal stay on the front foot.",
+                "evidence_ids": [
+                  "v1-o3"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-1 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-1 ends after clip duration",
+            "line line-1 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.00326025,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "093160cb1b916a500e753e39bfc67d3eff3cb2db3b1971de400cf2d7bb5d8d5c",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/free-kick/agents/result.json",
+          "artifact_sha256": "41258f7a0d4f5e782be2ef91b4309a8f5ba3fbfde8950b6d3e0d18d30252ca14",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "0f2179fee043a6b96babd5163d8615a116c24dba34fb3d7fbee248e793e87499",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1705,
+                "output_tokens": 80,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00163875,
+                "latency_s": 1.839334082993446
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "0f2179fee043a6b96babd5163d8615a116c24dba34fb3d7fbee248e793e87499",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1712,
+                "output_tokens": 75,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0016215,
+                "latency_s": 1.6228540830052225
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "It\u2019s in! The ball\u2019s in the net and Portugal are celebrating",
+              "evidence_ids": [
+                "v1-o1"
+              ],
+              "research_ids": []
+            },
+            "reason": "Supported goal with immediate visible reaction; avoids naming the celebrant from uncertain identity."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "penalty",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "complete",
+          "lines": [
+            {
+              "id": "line-1",
+              "at_s": 2.0,
+              "voice": "caller",
+              "text": "Kane drills it low!",
+              "evidence_ids": [
+                "v1-o1"
+              ],
+              "research_ids": []
+            },
+            {
+              "id": "line-2",
+              "at_s": 3.633333333333333,
+              "voice": "caller",
+              "text": "Goal! Kane buries it!",
+              "evidence_ids": [
+                "v1-o2"
+              ],
+              "research_ids": []
+            }
+          ],
+          "variant": "short-clips-v2",
+          "validation_failures": [
+            "line line-3 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0025272,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "b0d00d75dc01f140bad6b316ac254dad9b69f5f50498359bb85bbf745df7e9dc",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/penalty/joint/result.json",
+          "artifact_sha256": "dcf9b393ca182144ba1c2c7bba85e02d3f962a5ff6fd48944ad2aaf0cd53da68",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1677,
+                "output_tokens": 119,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00179325,
+                "latency_s": 1.8275693340110593
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 327,
+                "output_tokens": 83,
+                "cache_read_tokens": 1536,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00073395,
+                "latency_s": 1.3256915410020156
+              }
+            }
+          ]
+        },
+        {
+          "arm": "agents",
+          "status": "complete",
+          "lines": [
+            {
+              "id": "line-1",
+              "at_s": 3.5,
+              "voice": "caller",
+              "text": "Harry Kane drives it low and it\u2019s in!",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2"
+              ],
+              "research_ids": []
+            }
+          ],
+          "variant": "short-clips-v2",
+          "validation_failures": [
+            "agent line exceeds recorded speech budget"
+          ],
+          "repairs": 1,
+          "model_calls": 4,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 4,
+            "reported_usd": 0.006572249999999999,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "b0d00d75dc01f140bad6b316ac254dad9b69f5f50498359bb85bbf745df7e9dc",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/penalty/agents/result.json",
+          "artifact_sha256": "a8cd6cdbf7774c6cc62d64e4124d96e38577c07cead576046ac558b4cf81d40a",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "9a4876bacf2219187c7eeb691d10e87dcca2bdfe13a891d19206532cceda6e7a",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1754,
+                "output_tokens": 71,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.001635,
+                "latency_s": 1.6969562919985037
+              }
+            },
+            {
+              "tag": "replay_analyst",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "a9ab5719b8522feb6301da702d033bec1a43754a7ba048b34acdd4452b21f6d0",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1850,
+                "output_tokens": 78,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0017385,
+                "latency_s": 1.9349113750067772
+              }
+            },
+            {
+              "tag": "replay_analyst",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "a9ab5719b8522feb6301da702d033bec1a43754a7ba048b34acdd4452b21f6d0",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1855,
+                "output_tokens": 50,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00161625,
+                "latency_s": 2.0393185410066508
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "fd8bd5bc294ff6356f40568c3cc4b47c3f1ec3384aace8e761c0c7c3e796700c",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1798,
+                "output_tokens": 52,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0015825,
+                "latency_s": 1.627067708002869
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "throw-in",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-2 ends after clip duration"
+          },
+          "validation_failures": [
+            "line line-2 ends after clip duration",
+            "line line-2 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0032097,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "b693b70ca3e8e1836b9ac933e046ed2a56e2a31ed5084adbfc5623d37a88a6a9",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/throw-in/joint/result.json",
+          "artifact_sha256": "a5760c1e019d2e47fa294185e2709e58690217c3da511629b5828faa978db126",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1684,
+                "output_tokens": 170,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.002028,
+                "latency_s": 1.68047295800352
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 390,
+                "output_tokens": 172,
+                "cache_read_tokens": 1536,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0011817,
+                "latency_s": 1.6901063340046676
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "lines": [
+              {
+                "at_s": 3.7142857142857144,
+                "voice": "caller",
+                "text": "Cross swung in!",
+                "evidence_ids": [
+                  "recorded-1"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 4.642857142857143,
+                "voice": "analyst",
+                "text": "That ball drops into a packed six-yard battle.",
+                "evidence_ids": [
+                  "recorded-2"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 5.571428571428571,
+                "voice": "caller",
+                "text": "Goal! It's in!",
+                "evidence_ids": [
+                  "recorded-3"
+                ],
+                "research_ids": []
+              },
+              {
+                "at_s": 5.571428571428571,
+                "voice": "analyst",
+                "text": "The scramble finally turns the ball over the line.",
+                "evidence_ids": [
+                  "recorded-3"
+                ],
+                "research_ids": []
+              }
+            ]
+          }
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "caller cannot announce uncertain actions or replay footage"
+          },
+          "validation_failures": [
+            "caller cannot announce uncertain actions or replay footage",
+            "caller cannot announce uncertain actions or replay footage"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.0034537500000000002,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "b693b70ca3e8e1836b9ac933e046ed2a56e2a31ed5084adbfc5623d37a88a6a9",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/throw-in/agents/result.json",
+          "artifact_sha256": "f085873589d0556c78b0f4f456706851801ce76646417f62e83ce0331ecf56b1",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1774,
+                "output_tokens": 100,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0017805,
+                "latency_s": 2.2630735830025515
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "953c501e46ba4dc2447a1ccd73f5b92be55f0cf8938a4f4b9e3a166852e07446",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1781,
+                "output_tokens": 75,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00167325,
+                "latency_s": 2.0502781249961117
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "Into the box, and a red-and-white header back toward goal...",
+              "evidence_ids": [
+                "recorded-2"
+              ],
+              "research_ids": []
+            },
+            "reason": "Supported immediate action, using only visible evidence and keeping uncertainty about the outcome implicit."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "foul-decision",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "missing_input",
+          "lines": [],
+          "raw_artifact": null,
+          "call_summary": []
+        },
+        {
+          "arm": "agents",
+          "status": "missing_input",
+          "lines": [],
+          "raw_artifact": null,
+          "call_summary": []
+        }
+      ]
+    },
+    {
+      "case_id": "card",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "complete",
+          "lines": [
+            {
+              "id": "line-1",
+              "at_s": 2.0,
+              "voice": "caller",
+              "text": "Red card!",
+              "evidence_ids": [
+                "v1-o1"
+              ],
+              "research_ids": []
+            }
+          ],
+          "variant": "short-clips-v2",
+          "validation_failures": [
+            "line line-2 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.00207075,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "fe91feca31597ad0b3154d4c5de7e470d0b0c9e350e01844bc62e892404efe0b",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/card/joint/result.json",
+          "artifact_sha256": "304521a8efeab34e794e8431164b33118f5b2e5ae05a547b2b92857bf9d2b694",
+          "call_summary": [
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1496,
+                "output_tokens": 85,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0015045,
+                "latency_s": 1.5645758329919772
+              }
+            },
+            {
+              "tag": "comparison_joint",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "74e705f98b2b50a2d43be4650beeb2a3423e2c63c1752d2a7a1cf10f9cc5f4d2",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 357,
+                "output_tokens": 45,
+                "cache_read_tokens": 1280,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00056625,
+                "latency_s": 1.21306608300074
+              }
+            }
+          ]
+        },
+        {
+          "arm": "agents",
+          "status": "failed",
+          "lines": [],
+          "variant": "short-clips-v2",
+          "error": {
+            "type": "ValueError",
+            "message": "line line-1 ends after clip duration"
+          },
+          "validation_failures": [
+            "caller cannot announce uncertain actions or replay footage",
+            "line line-1 ends after clip duration"
+          ],
+          "repairs": 1,
+          "model_calls": 2,
+          "budget": {
+            "max_usd": 0.02,
+            "max_calls": 8,
+            "attempts": 2,
+            "reported_usd": 0.00311325,
+            "unsettled_reservations_usd": 0,
+            "unsettled_requests": 0,
+            "basis": "counted input + maximum output at standard token rates, 25% margin",
+            "hosted_tools_allowed": false
+          },
+          "input_sha256": "fe91feca31597ad0b3154d4c5de7e470d0b0c9e350e01844bc62e892404efe0b",
+          "raw_artifact": "runs/text-comparison-v1/full-suite/card/agents/result.json",
+          "artifact_sha256": "0f58cae28208049acb778f9ec1872f291b8f980d2ab01592fd70b0a0800f5c70",
+          "call_summary": [
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "afae1e0211d3ff753f877b1b6c934830ce2cfcc36c2f8beb1cf5caf3f115928c",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1607,
+                "output_tokens": 75,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.00154275,
+                "latency_s": 1.8662933750019874
+              }
+            },
+            {
+              "tag": "replay_caller",
+              "model": "gpt-5.4-mini",
+              "returned_model": "gpt-5.4-mini",
+              "system_sha256": "afae1e0211d3ff753f877b1b6c934830ce2cfcc36c2f8beb1cf5caf3f115928c",
+              "max_tokens": 1024,
+              "effort": "none",
+              "status": "returned",
+              "usage": {
+                "input_tokens": 1614,
+                "output_tokens": 80,
+                "cache_read_tokens": 0,
+                "cache_write_tokens": 0,
+                "cost_usd": 0.0015705,
+                "latency_s": 1.6317643329966813
+              }
+            }
+          ],
+          "last_rejected_output": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "A red card\u2019s out, and the protests are boiling over",
+              "evidence_ids": [
+                "v1-o1"
+              ],
+              "research_ids": []
+            },
+            "reason": "Immediate supported action is the confirmed red card; the later protest is still visible and can be mentioned without speculating."
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "offside",
+      "protocol": "short-clips-v2",
+      "arms": [
+        {
+          "arm": "joint",
+          "status": "missing_input",
+          "lines": [],
+          "raw_artifact": null,
+          "call_summary": []
+        },
+        {
+          "arm": "agents",
+          "status": "missing_input",
+          "lines": [],
+          "raw_artifact": null,
+          "call_summary": []
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "selected_cases": 15,
+    "usable_perception_inputs": 12,
+    "perception_failures": 3,
+    "attempted_writer_arms": 24,
+    "structurally_complete_writer_arms": 5,
+    "failed_writer_arms": 19,
+    "missing_writer_arms": 6,
+    "pairs_with_both_arms_structurally_complete": 2,
+    "known_false_goal_pairs": 1,
+    "quality_advantage_demonstrated": false,
+    "requested_models": [
+      "gpt-5.4-mini",
+      "gpt-5.4-2026-03-05"
+    ],
+    "returned_writer_models": [
+      "gpt-5.4-mini"
+    ],
+    "model_call_attempts": 78
+  },
+  "limitations": [
+    "All 15 clips are development cases with unreviewed sparse labels; related match windows are not independent.",
+    "The v2 suite pilot had asymmetric caller uncertainty validation; v4 now applies the same gate to both arms. Do not use v2 completion counts as an architecture superiority comparison.",
+    "v3 and v4 are targeted development follow-ups, not held-out improvements or suite reruns.",
+    "Both arms returning Goal! in the final dribble check is a timing fit, not complete dribble/shot/goal coverage or useful analysis.",
+    "The larger-model vision check used the identical system prompt, source hash/window and sampler parameters. Initial baseline frame hashes were not retained independently; reconstructed frame identity is an inference.",
+    "One sample per model/configuration; no general accuracy or statistical significance claim.",
+    "Reported cost uses provider token usage and local pricing; not a reconciled invoice. No TTS, fresh research or training."
+  ],
+  "vision_check": {
+    "scope": "Deliberate perception-only model comparison on one existing failure; not a full-suite quality claim.",
+    "model": "gpt-5.4-2026-03-05",
+    "baseline_model": "gpt-5.4-mini",
+    "source_sha256": "1ae57eeb2a804107e434614840a6761e08122c073bd6def42fbe5f39986b2cb9",
+    "start_s": 3,
+    "duration_s": 10,
+    "frames": [
+      {
+        "at_s": 0.0,
+        "sha256": "e185ba2cabb29fb02078a0b973347a77aa91c5275929e36702c66803e8a84d40"
+      },
+      {
+        "at_s": 1.0,
+        "sha256": "eaccbf57e3f3a44b496be13691ed27434830ccc3527a9f17a0d23bd963b7a71b"
+      },
+      {
+        "at_s": 2.0,
+        "sha256": "711c9fc045884714e464958fbc7b69371a5e4b1e74b42041dd46f25e7f4b3372"
+      },
+      {
+        "at_s": 3.0,
+        "sha256": "a1d3cb192dacaa96aaa76d88bb597c37df377c6618d7e9a08af2f93970da3d25"
+      },
+      {
+        "at_s": 4.0,
+        "sha256": "ac042b2a78aebdf3aa93b4fc2c28bf9cda9fbf63e3dd91c5393bf1a4b9ca938e"
+      },
+      {
+        "at_s": 5.0,
+        "sha256": "679e63561b550e769a676419e9c68d1ef5f387ecb744f40ab372673af757918b"
+      },
+      {
+        "at_s": 6.0,
+        "sha256": "4c69d1a4d0d5330c8e6400f8e5be49068dcc04cb2fc942090e5171f71ce5cc0c"
+      },
+      {
+        "at_s": 7.0,
+        "sha256": "c6d01b9a2fef9f3b96beac058d559104d9424a8d0aa6d26a3f7c532658e3c81e"
+      },
+      {
+        "at_s": 8.0,
+        "sha256": "b5c1a098d393b074a3510edced0026f5152adce782632ff5705fd14f262ce896"
+      },
+      {
+        "at_s": 9.0,
+        "sha256": "d86020dc5342de35a3f64c50f3d355edc3e8783cfb715218b07d47c2b0e53719"
+      }
+    ],
+    "runtime_labels": false,
+    "tts": false,
+    "status": "complete",
+    "identical_system": true,
+    "budget": {
+      "max_usd": 0.1,
+      "max_calls": 1,
+      "attempts": 1,
+      "reported_usd": 0.016085,
+      "unsettled_reservations_usd": 0,
+      "unsettled_requests": 0,
+      "basis": "counted input + maximum output at standard token rates, 25% margin",
+      "hosted_tools_allowed": false
+    },
+    "larger_model_observations": [
+      {
+        "id": "recorded-1",
+        "at_s": 2.0,
+        "kind": "play",
+        "description": "France work the ball along the right edge of the box, playing a grounded pass inward from the touchline area.",
+        "actor": null,
+        "action": {
+          "type": "pass",
+          "certainty": "confirmed",
+          "ball_path": "ground",
+          "cues": [
+            "ball_contact",
+            "ball_motion",
+            "ball_on_ground"
+          ],
+          "support_at_s": [
+            2.0
+          ]
+        }
+      },
+      {
+        "id": "recorded-2",
+        "at_s": 3.0,
+        "kind": "play",
+        "description": "A French attacker reaches the byline under pressure from two Jamaica defenders and drives the ball across the face of goal from the right side.",
+        "actor": null,
+        "action": {
+          "type": "cross",
+          "certainty": "confirmed",
+          "ball_path": "ground",
+          "cues": [
+            "ball_contact",
+            "ball_motion",
+            "ball_on_ground",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            3.0,
+            4.0
+          ]
+        }
+      },
+      {
+        "id": "recorded-3",
+        "at_s": 6.0,
+        "kind": "goal",
+        "description": "The low cross runs through the crowded six-yard area and the ball crosses the goal line into the left side of the net.",
+        "actor": null,
+        "action": {
+          "type": "goal",
+          "certainty": "confirmed",
+          "ball_path": "ground",
+          "cues": [
+            "ball_motion",
+            "ball_on_ground",
+            "goal_line_crossing",
+            "ball_in_net"
+          ],
+          "support_at_s": [
+            5.0,
+            6.0,
+            7.0
+          ]
+        }
+      }
+    ],
+    "mini_observations": [
+      {
+        "id": "recorded-1",
+        "at_s": 2.0,
+        "kind": "play",
+        "description": "A blue-shirted attacker on the right side sends the ball into the penalty area toward a cluster of players.",
+        "actor": null,
+        "action": {
+          "type": "cross",
+          "certainty": "confirmed",
+          "ball_path": "unknown",
+          "cues": [
+            "ball_motion"
+          ],
+          "support_at_s": [
+            2.0,
+            3.0
+          ]
+        }
+      },
+      {
+        "id": "recorded-2",
+        "at_s": 3.0,
+        "kind": "play",
+        "description": "Near the right edge of the box, the ball is challenged and deflects onward through a crowd of players.",
+        "actor": null,
+        "action": {
+          "type": "interception",
+          "certainty": "uncertain",
+          "ball_path": "unknown",
+          "cues": [
+            "ball_motion",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            3.0,
+            4.0
+          ]
+        }
+      },
+      {
+        "id": "recorded-3",
+        "at_s": 5.0,
+        "kind": "play",
+        "description": "The ball is driven across the face of goal from the right side, skimming through the six-yard area in front of the keeper.",
+        "actor": null,
+        "action": {
+          "type": "cross",
+          "certainty": "confirmed",
+          "ball_path": "ground",
+          "cues": [
+            "ball_motion",
+            "ball_on_ground"
+          ],
+          "support_at_s": [
+            5.0,
+            6.0
+          ]
+        }
+      },
+      {
+        "id": "recorded-4",
+        "at_s": 6.0,
+        "kind": "goal",
+        "description": "The ball crosses into the left side of the net, with the goalkeeper unable to keep it out.",
+        "actor": null,
+        "action": {
+          "type": "goal",
+          "certainty": "confirmed",
+          "ball_path": "unknown",
+          "cues": [
+            "ball_in_net",
+            "goal_line_crossing"
+          ],
+          "support_at_s": [
+            6.0,
+            7.0
+          ]
+        }
+      },
+      {
+        "id": "recorded-5",
+        "at_s": 7.0,
+        "kind": "celebration",
+        "description": "Players in blue and black converge in the goalmouth after the ball has gone in, while the goalkeeper stands near the line.",
+        "actor": null,
+        "action": {
+          "type": "unknown",
+          "certainty": "uncertain",
+          "ball_path": "unknown",
+          "cues": [
+            "ball_in_net"
+          ],
+          "support_at_s": [
+            7.0,
+            8.0
+          ]
+        }
+      }
+    ]
+  }
+}

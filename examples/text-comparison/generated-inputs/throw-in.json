@@ -1,0 +1,69 @@
+{
+  "source_sha256": "7399eba14fa41915efba8c6b3aadac19a1886d7ecd6aa38f24633e4c293b9441",
+  "source_start_s": 23.0,
+  "duration_s": 6.5,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 2.7857142857142856,
+      "kind": "play",
+      "description": "A red-and-white player on the right edge of the box swings in a lofted delivery toward the crowded goal area.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "uncertain",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_contact",
+          "ball_flight"
+        ],
+        "support_at_s": [
+          2.7857142857142856,
+          3.7142857142857144
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 3.7142857142857144,
+      "kind": "play",
+      "description": "Inside the area, an attacker and defenders converge under the dropping ball and a red-and-white player gets the next headed touch toward goal.",
+      "actor": null,
+      "action": {
+        "type": "header",
+        "certainty": "uncertain",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_flight",
+          "ball_contact",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          3.7142857142857144,
+          4.642857142857143
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.571428571428571,
+      "kind": "play",
+      "description": "At the near post, the goalkeeper and several players bunch together as the ball is forced across the goalmouth, but the final contact and outcome are not clear from the frame.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "player_challenge",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          5.571428571428571
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

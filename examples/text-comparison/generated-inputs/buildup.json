@@ -1,0 +1,94 @@
+{
+  "source_sha256": "fde153afd6fe81eae352f5f2f2947293b1e3ba75f11ce72e73b6016892e8652c",
+  "source_start_s": 24.0,
+  "duration_s": 15.0,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "A white-shirted defender moves in on the striped ball carrier near the right side of the pitch and pokes the ball away, breaking up the attack.",
+      "actor": null,
+      "action": {
+        "type": "tackle",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          4.0,
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 8.0,
+      "kind": "play",
+      "description": "The striped team regains the loose ball and starts a short ground pass into the middle-right channel.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          8.0,
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 10.0,
+      "kind": "play",
+      "description": "A striped midfielder collects the rolling ball near the right edge of the center circle and carries it a few steps while under pressure.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          10.0,
+          11.0,
+          12.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 13.0,
+      "kind": "play",
+      "description": "The striped player on the right keeps possession with the ball at her feet, shaping to move it onward as nearby white-shirted defenders hold their line.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          13.0,
+          14.0
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

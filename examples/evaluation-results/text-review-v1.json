@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "text-review-v1",
   "created_on": "2026-11-09",
-  "status": "reference_agent_triage_candidates_unscored",
+  "status": "integration_pilot_with_limited_agent_semantic_review",
   "runtime_input": false,
   "voice_in_scope": false,
   "rubric": "docs/TEXT_EVALUATION.md",
@@ -13,7 +13,8 @@
     "Draft events and checks are copied from references, not newly verified.",
     "Null means pending or unknown, never pass. Scores require independent video review.",
     "This file and all reference labels must stay outside runtime agent inputs.",
-    "Contact-sheet triage does not resolve exact contact/timing or make labels human-approved; original references are unchanged."
+    "Contact-sheet triage does not resolve exact contact/timing or make labels human-approved; original references are unchanged.",
+    "Candidates are the v2 integration pilot, with a documented caller-validation asymmetry. Targeted later versions are separate in the trial report, not substituted into these rows."
   ],
   "candidate_review_template": {
     "blind_id": null,
@@ -109,12 +110,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/buildup/joint/result.json",
+          "artifact_sha256": "e1d3d3b0cb41f3d4919916a426a174f97e496efe778171ac4e2de61afce93c2d",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.00313155,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-4 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/buildup/agents/result.json",
+          "artifact_sha256": "0e9addc72599a0e215bdbec16954ca2012d28f3a9997be8f4b80e79633af0648",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0035527500000000004,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "caller cannot announce uncertain actions or replay footage"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -200,12 +280,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/dribble/joint/result.json",
+          "artifact_sha256": "6bba552df7bfcf709c065fcf354666c8b781c411f83ff0e92b842ca7e4c554e2",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0029817,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-3 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/dribble/agents/result.json",
+          "artifact_sha256": "50726efa750f5564540bcb255366c68a8c88cebfb8a7e56ecf01bb3d90d5cdbc",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0034642500000000003,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-1 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -272,12 +431,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/tackle/joint/result.json",
+          "artifact_sha256": "8a7009083230ba4820f2438fae779579730f3c958fe4fb051054f8be7cd3a5ed",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0026022,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-3 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/tackle/agents/result.json",
+          "artifact_sha256": "03dc4bba9b60c14cb66638f4a9e25d01533a14a40d5752d3ecc5b456a6632aa8",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0033517499999999997,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "caller cannot announce uncertain actions or replay footage"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -345,12 +583,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/interception/joint/result.json",
+          "artifact_sha256": "1d2903dad872009d370fccc16ab9c8e34400b32a2a1b9fed67d025bf9cd30c36",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0025398,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-2 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/interception/agents/result.json",
+          "artifact_sha256": "396483c89424b20e4183b2d3e8e707e7c25d46fb46fff9acef7c32724a29a855",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.005145,
+          "model_calls": 3,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-1 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -417,12 +734,99 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/cross-header/joint/result.json",
+          "artifact_sha256": "09c48f967e25e535dcb40bf90bf275fb378dd8bc3643ebdca025aaed69f6988f",
+          "status": "complete",
+          "gate_failures": [
+            "invented_goal"
+          ],
+          "ratings": {
+            "recognition": 0,
+            "naming": null,
+            "grounded_meaning": 0,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": "Announces a goal in a headed chance with no scored outcome.",
+            "naming": null,
+            "grounded_meaning": "Shared perception fabricated goal-line/net cues; source review contradicts the goal claim.",
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [
+            {
+              "claim": "A goal was scored.",
+              "status": "contradicted",
+              "evidence": "Clip-relative 6,7,8,9-second source frames; keeper continues play.",
+              "reason": "No scored-goal outcome is established; see TEXT_EVALUATION_TRIAL.md."
+            }
+          ],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0029223,
+          "model_calls": 2,
+          "execution_failures": [],
+          "acceptance": "failed_critical_factual_gate",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/cross-header/agents/result.json",
+          "artifact_sha256": "5a336ff45baa32a8e4e37bcbdb1abbb3a6970d96a7eda534197a7b2ce6e23008",
+          "status": "complete",
+          "gate_failures": [
+            "invented_goal"
+          ],
+          "ratings": {
+            "recognition": 0,
+            "naming": null,
+            "grounded_meaning": 0,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": "Announces a goal in a headed chance with no scored outcome.",
+            "naming": null,
+            "grounded_meaning": "Shared perception fabricated goal-line/net cues; source review contradicts the goal claim.",
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [
+            {
+              "claim": "A goal was scored.",
+              "status": "contradicted",
+              "evidence": "Clip-relative 6,7,8,9-second source frames; keeper continues play.",
+              "reason": "No scored-goal outcome is established; see TEXT_EVALUATION_TRIAL.md."
+            }
+          ],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0017745,
+          "model_calls": 1,
+          "execution_failures": [],
+          "acceptance": "failed_critical_factual_gate",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "limited_agent_source_review",
         "blind_mapping_file": null,
-        "preference": null,
-        "reason": null
+        "preference": "neither",
+        "reason": "Both invent a goal; no architecture winner."
       }
     },
     {
@@ -500,12 +904,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/save/joint/result.json",
+          "artifact_sha256": "89a7ddfbaa711723c3ee70b1b219c18bcc002e4f420534c62f794f427e440054",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0027426,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-2 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/save/agents/result.json",
+          "artifact_sha256": "f0cbf7cdaf3199ba8d1f92470b2f854e7181313069ed5a6e5ed844588fec7adc",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0033292499999999997,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-1 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -563,12 +1046,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/miss/joint/result.json",
+          "artifact_sha256": "355255cd0190c40bf605118a3bb840c5ee9e965963d98506fd6af06669622823",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.00295095,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-3 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/miss/agents/result.json",
+          "artifact_sha256": "27f151bcb946e2a85f97b90b8072bb8e701c247316c7114f30c41d5f483abfe6",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.00340875,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-1 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -626,12 +1188,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/goal/joint/result.json",
+          "artifact_sha256": "b32f2353014ed7236daf5db68b3766f2029e09b1efef816f7b3293865c474605",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0028626,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-3 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/goal/agents/result.json",
+          "artifact_sha256": "b2c5aabe5dd76c1258196357b3bb6ddf99c710c5ffb321afbf9c4441e4452c29",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0033367500000000003,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-1 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -699,12 +1340,81 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": null,
+          "artifact_sha256": null,
+          "status": "missing_input",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": null,
+          "model_calls": null,
+          "execution_failures": [],
+          "acceptance": "blocked_missing_perception",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": null,
+          "artifact_sha256": null,
+          "status": "missing_input",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": null,
+          "model_calls": null,
+          "execution_failures": [],
+          "acceptance": "blocked_missing_perception",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -781,12 +1491,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/free-kick/joint/result.json",
+          "artifact_sha256": "d1c6716007918a54a6245e9c7d799da5ab78514382e221ef23ddfc9d5f88588c",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0033695999999999995,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-2 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/free-kick/agents/result.json",
+          "artifact_sha256": "41258f7a0d4f5e782be2ef91b4309a8f5ba3fbfde8950b6d3e0d18d30252ca14",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.00326025,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-1 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -864,12 +1653,95 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/penalty/joint/result.json",
+          "artifact_sha256": "dcf9b393ca182144ba1c2c7bba85e02d3f962a5ff6fd48944ad2aaf0cd53da68",
+          "status": "complete",
+          "gate_failures": [],
+          "ratings": {
+            "recognition": 2,
+            "naming": 2,
+            "grounded_meaning": 2,
+            "text_timing": 2,
+            "useful_analysis": null,
+            "dialogue_coherence": 2
+          },
+          "rating_reasons": {
+            "recognition": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "naming": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "grounded_meaning": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "text_timing": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "useful_analysis": "Not scored: eligibility and useful-analysis assessment require detailed reference review; no analyst contribution demonstrated.",
+            "dialogue_coherence": "Provisional coding-agent review of the named low scored penalty; not independent human approval."
+          },
+          "claims": [
+            {
+              "claim": "Kane scores a low penalty for England.",
+              "status": "supported",
+              "evidence": "Source window and saved action-linked identity/researched squad.",
+              "reason": "Matches the visible finish and accepted observation identity; no lead/equaliser claim is made."
+            }
+          ],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0025272,
+          "model_calls": 2,
+          "execution_failures": [],
+          "acceptance": "not_accepted_pending_reference_and_quality_review",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/penalty/agents/result.json",
+          "artifact_sha256": "a8cd6cdbf7774c6cc62d64e4124d96e38577c07cead576046ac558b4cf81d40a",
+          "status": "complete",
+          "gate_failures": [],
+          "ratings": {
+            "recognition": 2,
+            "naming": 2,
+            "grounded_meaning": 2,
+            "text_timing": 2,
+            "useful_analysis": null,
+            "dialogue_coherence": 2
+          },
+          "rating_reasons": {
+            "recognition": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "naming": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "grounded_meaning": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "text_timing": "Provisional coding-agent review of the named low scored penalty; not independent human approval.",
+            "useful_analysis": "Not scored: eligibility and useful-analysis assessment require detailed reference review; no analyst contribution demonstrated.",
+            "dialogue_coherence": "Provisional coding-agent review of the named low scored penalty; not independent human approval."
+          },
+          "claims": [
+            {
+              "claim": "Kane scores a low penalty for England.",
+              "status": "supported",
+              "evidence": "Source window and saved action-linked identity/researched squad.",
+              "reason": "Matches the visible finish and accepted observation identity; no lead/equaliser claim is made."
+            }
+          ],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.006572249999999999,
+          "model_calls": 4,
+          "execution_failures": [],
+          "acceptance": "not_accepted_pending_reference_and_quality_review",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "limited_agent_source_review",
         "blind_mapping_file": null,
-        "preference": null,
-        "reason": null
+        "preference": "no_system_winner",
+        "reason": "Both basic calls are correct; one short clip does not establish dialogue or analysis quality."
       }
     },
     {
@@ -927,12 +1799,91 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/throw-in/joint/result.json",
+          "artifact_sha256": "a5760c1e019d2e47fa294185e2709e58690217c3da511629b5828faa978db126",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0032097,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-2 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/throw-in/agents/result.json",
+          "artifact_sha256": "f085873589d0556c78b0f4f456706851801ce76646417f62e83ce0331ecf56b1",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.0034537500000000002,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "caller cannot announce uncertain actions or replay footage"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -1000,12 +1951,81 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": null,
+          "artifact_sha256": null,
+          "status": "missing_input",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": null,
+          "model_calls": null,
+          "execution_failures": [],
+          "acceptance": "blocked_missing_perception",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": null,
+          "artifact_sha256": null,
+          "status": "missing_input",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": null,
+          "model_calls": null,
+          "execution_failures": [],
+          "acceptance": "blocked_missing_perception",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     },
     {
@@ -1064,12 +2084,86 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/card/joint/result.json",
+          "artifact_sha256": "304521a8efeab34e794e8431164b33118f5b2e5ae05a547b2b92857bf9d2b694",
+          "status": "complete",
+          "gate_failures": [],
+          "ratings": {
+            "recognition": 2,
+            "naming": null,
+            "grounded_meaning": 2,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": "Visible raised red card; no dismissal reason invented.",
+            "naming": null,
+            "grounded_meaning": "The short Red card! call matches the visible decision.",
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.00207075,
+          "model_calls": 2,
+          "execution_failures": [],
+          "acceptance": "not_accepted_pending_reference_and_quality_review",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": "runs/text-comparison-v1/full-suite/card/agents/result.json",
+          "artifact_sha256": "0f58cae28208049acb778f9ec1872f291b8f980d2ab01592fd70b0a0800f5c70",
+          "status": "failed",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": 0.00311325,
+          "model_calls": 2,
+          "execution_failures": [
+            {
+              "type": "ValueError",
+              "message": "line line-1 ends after clip duration"
+            }
+          ],
+          "acceptance": "blocked_execution_failure",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "not_comparable",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "Only one arm completed; no valid quality pair."
       }
     },
     {
@@ -1127,12 +2221,81 @@
           "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
         }
       },
-      "candidates": [],
+      "candidates": [
+        {
+          "blind_id": null,
+          "artifact": null,
+          "artifact_sha256": null,
+          "status": "missing_input",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": null,
+          "model_calls": null,
+          "execution_failures": [],
+          "acceptance": "blocked_missing_perception",
+          "arm": "joint",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        },
+        {
+          "blind_id": null,
+          "artifact": null,
+          "artifact_sha256": null,
+          "status": "missing_input",
+          "gate_failures": null,
+          "ratings": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "rating_reasons": {
+            "recognition": null,
+            "naming": null,
+            "grounded_meaning": null,
+            "text_timing": null,
+            "useful_analysis": null,
+            "dialogue_coherence": null
+          },
+          "claims": [],
+          "must_call_covered_ids": null,
+          "missed_readable_identities": null,
+          "correct_identity_abstentions": null,
+          "actual_cost_usd": null,
+          "model_calls": null,
+          "execution_failures": [],
+          "acceptance": "blocked_missing_perception",
+          "arm": "agents",
+          "reviewer_kind": "agent",
+          "human_reviewed": false
+        }
+      ],
       "pairwise_review": {
-        "status": "pending",
+        "status": "blocked_incomplete_outputs",
         "blind_mapping_file": null,
         "preference": null,
-        "reason": null
+        "reason": "No complete paired artifact for semantic preference review."
       }
     }
   ]

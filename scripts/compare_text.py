@@ -18,6 +18,7 @@ from typing import Any
 from commentary.llm.budget import RunBudget
 from commentary.replay.evaluation import EvaluationCase
 from commentary.replay.text_comparison import (
+    VARIANT,
     AuditedTextBackend,
     TextComparisonInput,
     digest,
@@ -78,10 +79,13 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
     rows, bundles = inventory(args.inputs, args.suite)
     if args.spend and not args.model:
         raise ValueError("paid execution requires an explicit --model")
+    per_arm_usd = getattr(args, "per_arm_max_usd", 0.03)
+    if not 0 < per_arm_usd <= 0.03:
+        raise ValueError("per-arm budget must be positive and at most $0.03")
     args.out_dir.mkdir(parents=True, exist_ok=False)
     report: dict[str, Any] = {
         "status": "running",
-        "protocol": "short-clips-v1",
+        "protocol": VARIANT,
         "mode": "offline_full_context",
         "paid": args.spend,
         "suite_sha256": hashlib.sha256(args.suite.read_bytes()).hexdigest(),
@@ -89,9 +93,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "model": args.model,
         "effort": "none",
         "max_output_tokens": args.max_tokens,
-        "per_arm_max_usd": 0.03,
+        "per_arm_max_usd": per_arm_usd,
         "per_arm_max_calls": 8,
-        "maximum_usd": len(bundles) * 2 * 0.03,
+        "maximum_usd": len(bundles) * 2 * per_arm_usd,
         "inventory": rows,
         "pairs": [],
         "quality_review": "pending",
@@ -120,7 +124,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                     continue
                 arm_dir = args.out_dir / case_id / arm
                 arm_dir.mkdir(parents=True)
-                budget = RunBudget(max_usd=0.03, max_calls=8)
+                budget = RunBudget(max_usd=per_arm_usd, max_calls=8)
                 raw_count = 0
 
                 def capture(response: Any, tag: str, target: Path = arm_dir) -> None:
@@ -191,6 +195,7 @@ def main() -> None:
     parser.add_argument(
         "--max-tokens", type=int, default=1024, help="128–2048; same cap per call in both arms"
     )
+    parser.add_argument("--per-arm-max-usd", type=float, default=0.03)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--spend", action="store_true")
     args = parser.parse_args()

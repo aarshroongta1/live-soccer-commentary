@@ -6,6 +6,8 @@
 
 # Model spend
 
+- Paid experiments with a total cap of $1 or less are authorized; ask before any
+  experiment above $1. Do not split a larger experiment to bypass this limit.
 - Use scripted backends for regression tests; do not make paid calls in tests.
 - Use cheaper models for development smoke tests, with short inputs and explicit
   dollar/call limits. Keep retries, fresh web research, and TTS out of routine tests.

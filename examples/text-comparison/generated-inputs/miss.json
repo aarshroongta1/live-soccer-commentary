@@ -1,0 +1,85 @@
+{
+  "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+  "source_start_s": 103.0,
+  "duration_s": 5.0,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 0.0,
+      "kind": "play",
+      "description": "England have a set-piece free kick just outside the penalty area; the ball is placed on the grass and the referee stands nearby as players line up in the box.",
+      "actor": null,
+      "action": {
+        "type": "free_kick",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "restart_setup",
+          "ball_on_ground",
+          "referee_signal"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "The England taker in white number 9 begins the run-up and strikes the stationary ball from the free kick.",
+      "actor": null,
+      "action": {
+        "type": "free_kick",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 3.0,
+      "kind": "goal",
+      "description": "The ball reaches the goalmouth and is visible inside the net as the goalkeeper lies on the ground after the attempt.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "keeper_contact"
+        ],
+        "support_at_s": [
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 4.0,
+      "kind": "celebration",
+      "description": "An England player in white with a captain's armband celebrates by kissing the badge on his shirt.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          4.0
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

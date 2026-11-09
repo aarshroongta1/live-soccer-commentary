@@ -1,0 +1,107 @@
+{
+  "source_sha256": "1ae57eeb2a804107e434614840a6761e08122c073bd6def42fbe5f39986b2cb9",
+  "source_start_s": 3.0,
+  "duration_s": 10.0,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "A blue-shirted attacker on the right side sends the ball into the penalty area toward a cluster of players.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_motion"
+        ],
+        "support_at_s": [
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 3.0,
+      "kind": "play",
+      "description": "Near the right edge of the box, the ball is challenged and deflects onward through a crowd of players.",
+      "actor": null,
+      "action": {
+        "type": "interception",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_motion",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "The ball is driven across the face of goal from the right side, skimming through the six-yard area in front of the keeper.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 6.0,
+      "kind": "goal",
+      "description": "The ball crosses into the left side of the net, with the goalkeeper unable to keep it out.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 7.0,
+      "kind": "celebration",
+      "description": "Players in blue and black converge in the goalmouth after the ball has gone in, while the goalkeeper stands near the line.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}
