@@ -7,6 +7,22 @@ files_modified: []
 
 # Commentary project handoff
 
+## Current priority: finish the portfolio project
+
+The user explicitly reframed the goal: put this project on their resume, have a
+few demo clips, and be able to discuss building and evaluating multi-agent
+systems. Optimize remaining work for that finish line. Open-ended false-goal
+investigation is no longer the active objective. Existing failures are useful
+case-study evidence; fixing every development clip is not a release requirement.
+
+Prioritize selected demos, an understandable architecture explanation, a concise
+honest evaluation story, and resume/interview material. Distinguish curated scripts
+from unedited automatic outputs and recorded preparation from causal replay.
+Voice work remains excluded. The $1 experiment authorization still applies, but
+further experiments should serve a specific portfolio deliverable. The concrete
+finish scope is being discussed; no new model calls or runtime changes were made
+for this reframing.
+
 ## Latest: false-goal investigation, 9 November 2026
 
 The user asked whether the reason behind false goals can be diagnosed. The
