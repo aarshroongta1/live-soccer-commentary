@@ -7,6 +7,34 @@ files_modified: []
 
 # Commentary project handoff
 
+## Latest: false-goal investigation, 9 November 2026
+
+The user asked whether the reason behind false goals can be diagnosed. The
+[focused investigation](FALSE_GOAL_INVESTIGATION.md) and
+[raw diagnostic record](../examples/evaluation-results/false-goal-investigation-20261109.json)
+now separate confirmed propagation mechanisms from unproven visual causes.
+Source JPEGs matched saved hashes; source is 640x360 and baseline sampling is
+1fps. Two planned samples each tested the original input, neutral wording,
+2fps, and added goalmouth magnifications. Doubling frames and magnifying did not
+remove the false goal. Neutral wording was inconsistent; schema-rejected raw
+responses still contained goal claims and must not count as abstentions.
+
+A neutral ball-localization task marked the ball ambiguous in all three disputed
+frames, while event narration confidently placed it inside the net. This supports
+poorly calibrated visual interpretation. The confirmed system weakness is that
+self-generated goal/line/net tags satisfy structural validation without independent
+pixel verification, so both writers trust the same false event. Narrative completion
+is an inference from outputs, not proven access to a model's internal reasoning.
+
+No runtime fix was made: there is no verified single prompt/sampling adjustment
+that fixes this failure. Future verification/abstention logic needs real-goal as
+well as false-goal controls. Diagnostic harness: scripts/investigate_false_goals.py;
+free audit by default, explicit --spend, no labels/expected outcome in runtime.
+Nine small-model call attempts cost $0.0348588 under a combined $0.27 maximum;
+no unsettled reservations, TTS, new footage, training or deployment. Validation:
+372 offline tests passed, Ruff and mypy passed. Voice remains excluded and the
+standing authorization for experiments at $1 or less still applies.
+
 ## Update: text evaluation trial completed, 9 November 2026
 
 The user skipped voice, resumed text development, and asked for autonomous small

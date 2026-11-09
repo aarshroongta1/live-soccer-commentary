@@ -1,0 +1,2309 @@
+{
+  "id": "false-goal-investigation-20261109",
+  "status": "diagnosis_with_concerns_no_runtime_fix",
+  "scope": "One existing development clip. Controlled observer ablations and neutral object-localization check. Not a general accuracy estimate.",
+  "authorized_maximum_usd": 0.27,
+  "reported_usd": 0.0348588,
+  "unsettled_reservations_usd": 0,
+  "model": "gpt-5.4-mini",
+  "model_call_attempts": 9,
+  "source_sha256": "1ae57eeb2a804107e434614840a6761e08122c073bd6def42fbe5f39986b2cb9",
+  "source_start_s": 3,
+  "duration_s": 10,
+  "source_dimensions": [
+    640,
+    360
+  ],
+  "source_fps": 29.97002997002997,
+  "baseline_sample_fps": 1,
+  "baseline_frame_hashes_match_saved_larger_model_run": true,
+  "frames": {
+    "1": [
+      {
+        "at_s": 0.0,
+        "sha256": "e185ba2cabb29fb02078a0b973347a77aa91c5275929e36702c66803e8a84d40"
+      },
+      {
+        "at_s": 1.0,
+        "sha256": "eaccbf57e3f3a44b496be13691ed27434830ccc3527a9f17a0d23bd963b7a71b"
+      },
+      {
+        "at_s": 2.0,
+        "sha256": "711c9fc045884714e464958fbc7b69371a5e4b1e74b42041dd46f25e7f4b3372"
+      },
+      {
+        "at_s": 3.0,
+        "sha256": "a1d3cb192dacaa96aaa76d88bb597c37df377c6618d7e9a08af2f93970da3d25"
+      },
+      {
+        "at_s": 4.0,
+        "sha256": "ac042b2a78aebdf3aa93b4fc2c28bf9cda9fbf63e3dd91c5393bf1a4b9ca938e"
+      },
+      {
+        "at_s": 5.0,
+        "sha256": "679e63561b550e769a676419e9c68d1ef5f387ecb744f40ab372673af757918b"
+      },
+      {
+        "at_s": 6.0,
+        "sha256": "4c69d1a4d0d5330c8e6400f8e5be49068dcc04cb2fc942090e5171f71ce5cc0c"
+      },
+      {
+        "at_s": 7.0,
+        "sha256": "c6d01b9a2fef9f3b96beac058d559104d9424a8d0aa6d26a3f7c532658e3c81e"
+      },
+      {
+        "at_s": 8.0,
+        "sha256": "b5c1a098d393b074a3510edced0026f5152adce782632ff5705fd14f262ce896"
+      },
+      {
+        "at_s": 9.0,
+        "sha256": "d86020dc5342de35a3f64c50f3d355edc3e8783cfb715218b07d47c2b0e53719"
+      }
+    ],
+    "2": [
+      {
+        "at_s": 0.0,
+        "sha256": "e185ba2cabb29fb02078a0b973347a77aa91c5275929e36702c66803e8a84d40"
+      },
+      {
+        "at_s": 0.5,
+        "sha256": "c185994b8f7ccb85ed36b2df3dafbb6281242a087cd247dc1a44a4cef33233ee"
+      },
+      {
+        "at_s": 1.0,
+        "sha256": "eaccbf57e3f3a44b496be13691ed27434830ccc3527a9f17a0d23bd963b7a71b"
+      },
+      {
+        "at_s": 1.5,
+        "sha256": "daf308a95a113f60eaa387cb15aed548fb30c8cabf2ddb1b6e2e6f6e1d20d621"
+      },
+      {
+        "at_s": 2.0,
+        "sha256": "711c9fc045884714e464958fbc7b69371a5e4b1e74b42041dd46f25e7f4b3372"
+      },
+      {
+        "at_s": 2.5,
+        "sha256": "ad62173cced16a4983cc2ea8599734bfc4a76a1c8ad9b20d88bc6606129be5e0"
+      },
+      {
+        "at_s": 3.0,
+        "sha256": "a1d3cb192dacaa96aaa76d88bb597c37df377c6618d7e9a08af2f93970da3d25"
+      },
+      {
+        "at_s": 3.5,
+        "sha256": "f969e2891008050221c6821805322bfb9a4bc78dbfd61a6e29dab25dcf8a0e3f"
+      },
+      {
+        "at_s": 4.0,
+        "sha256": "ac042b2a78aebdf3aa93b4fc2c28bf9cda9fbf63e3dd91c5393bf1a4b9ca938e"
+      },
+      {
+        "at_s": 4.5,
+        "sha256": "8e10acffffe91edbb7fe9c259ce8f9283ba0487af4eaf34c99a1f13441c45b30"
+      },
+      {
+        "at_s": 5.0,
+        "sha256": "679e63561b550e769a676419e9c68d1ef5f387ecb744f40ab372673af757918b"
+      },
+      {
+        "at_s": 5.5,
+        "sha256": "65628edb2fdd9d6417b02457841c44c34cc2668ac1bc661c73298aa12dc249db"
+      },
+      {
+        "at_s": 6.0,
+        "sha256": "4c69d1a4d0d5330c8e6400f8e5be49068dcc04cb2fc942090e5171f71ce5cc0c"
+      },
+      {
+        "at_s": 6.5,
+        "sha256": "b801c2e9fedbfbad22bbb7dfebd478a16c22814da569144b04519efd656fc7ee"
+      },
+      {
+        "at_s": 7.0,
+        "sha256": "c6d01b9a2fef9f3b96beac058d559104d9424a8d0aa6d26a3f7c532658e3c81e"
+      },
+      {
+        "at_s": 7.5,
+        "sha256": "a4d3d6ab84df47b5dd1280751e211b1462cfc4c7268d4106f450093b1a979d6f"
+      },
+      {
+        "at_s": 8.0,
+        "sha256": "b5c1a098d393b074a3510edced0026f5152adce782632ff5705fd14f262ce896"
+      },
+      {
+        "at_s": 8.5,
+        "sha256": "9bce924d1c894e12185b685521b9c10261c1a855ae93a45d3ea8ed0be8ed5a02"
+      },
+      {
+        "at_s": 9.0,
+        "sha256": "d86020dc5342de35a3f64c50f3d355edc3e8783cfb715218b07d47c2b0e53719"
+      },
+      {
+        "at_s": 9.5,
+        "sha256": "f14330d9c3e0f33c6404c1400ef7f188a6bd049768761e614380f6b010a093dc"
+      }
+    ]
+  },
+  "trials": [
+    {
+      "condition": "baseline",
+      "repeat": 1,
+      "status": "complete",
+      "observations": [
+        {
+          "id": "recorded-1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A blue-shirted attacker on the right side sends a lofted ball into the penalty area toward the crowded far-post zone.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Near the far side of the six-yard area, a blue attacker and a black-shirted defender contest the dropping ball, and it is nudged back across goal.",
+          "actor": null,
+          "action": {
+            "type": "dribble",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_contact",
+              "player_challenge",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-3",
+          "at_s": 4.0,
+          "kind": "play",
+          "description": "The ball is driven low across the face of goal from the right toward the left-post area, with players converging in front of the keeper.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              4.0,
+              5.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-4",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "At the left side of the goalmouth, the ball is redirected toward the goal line in a crowded scramble.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_motion",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-5",
+          "at_s": 6.0,
+          "kind": "goal",
+          "description": "The ball is clearly inside the net at the left side of the goal after the scramble.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-6",
+          "at_s": 7.0,
+          "kind": "celebration",
+          "description": "Blue-shirted players raise their arms and begin to celebrate in front of the goal.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              7.0,
+              8.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-7",
+          "at_s": 8.0,
+          "kind": "play",
+          "description": "The white-shirted goalkeeper collects the ball near the left side of the six-yard box after the ball has gone in and steps forward with it.",
+          "actor": null,
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              8.0,
+              9.0
+            ]
+          }
+        }
+      ],
+      "goal_count": 1,
+      "usage": {
+        "input_tokens": 74,
+        "output_tokens": 621,
+        "cache_read_tokens": 4608,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0031956,
+        "latency_s": 4.679954207997071
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 1,
+        "reported_usd": 0.0031956,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 1,
+      "raw_observations": [
+        {
+          "id": "obs1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A blue-shirted attacker on the right side sends a lofted ball into the penalty area toward the crowded far-post zone.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "obs2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Near the far side of the six-yard area, a blue attacker and a black-shirted defender contest the dropping ball, and it is nudged back across goal.",
+          "actor": null,
+          "action": {
+            "type": "dribble",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "player_challenge",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "obs3",
+          "at_s": 4.0,
+          "kind": "play",
+          "description": "The ball is driven low across the face of goal from the right toward the left-post area, with players converging in front of the keeper.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              4.0,
+              5.0
+            ]
+          }
+        },
+        {
+          "id": "obs4",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "At the left side of the goalmouth, the ball is redirected toward the goal line in a crowded scramble.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_motion",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "obs5",
+          "at_s": 6.0,
+          "kind": "goal",
+          "description": "The ball is clearly inside the net at the left side of the goal after the scramble.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "obs6",
+          "at_s": 7.0,
+          "kind": "celebration",
+          "description": "Blue-shirted players raise their arms and begin to celebrate in front of the goal.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              7.0,
+              8.0
+            ]
+          }
+        },
+        {
+          "id": "obs7",
+          "at_s": 8.0,
+          "kind": "play",
+          "description": "The white-shirted goalkeeper collects the ball near the left side of the six-yard box after the ball has gone in and steps forward with it.",
+          "actor": null,
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              8.0,
+              9.0
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0baeb2aab02220ee515f1c9ec3bd6637fcca596ec7318af8da0521c50d9e183f",
+        "blocks_sha256": "b6ebb60cff8b29ac95dd6dc2d490744c1180e239f408123ad1f5bb6a4a11623c",
+        "image_count": 10,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/baseline-1/providers.json",
+      "raw_provider_sha256": "a22dd3669456971a2ba1aa543f411116da5a56b13335366b6a3ff33784e508e6"
+    },
+    {
+      "condition": "neutral_word",
+      "repeat": 1,
+      "status": "complete",
+      "observations": [
+        {
+          "id": "recorded-1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A lofted ball is played into the right side of the penalty area as blue and black shirts converge under pressure.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_flight",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Near the right edge of the box, a blue attacker and a black defender challenge for the ball, with the ball knocked loose toward the center of goal.",
+          "actor": null,
+          "action": {
+            "type": "tackle",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "player_challenge",
+              "ball_motion",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-3",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "A low ball travels across the six-yard area toward the far side of goal, with players and the keeper reacting in front of the net.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_motion",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-4",
+          "at_s": 6.0,
+          "kind": "play",
+          "description": "At the goalmouth, the white-clad goalkeeper gets down and makes contact with the ball to stop it near the line.",
+          "actor": null,
+          "action": {
+            "type": "save",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "keeper_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-5",
+          "at_s": 8.0,
+          "kind": "play",
+          "description": "The ball is loose in front of the goalmouth with attackers and defenders jostling after the save; no clear new shot is visible.",
+          "actor": null,
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_on_ground",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              8.0,
+              9.0
+            ]
+          }
+        }
+      ],
+      "goal_count": 0,
+      "usage": {
+        "input_tokens": 4682,
+        "output_tokens": 498,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0057525,
+        "latency_s": 2.892772249993868
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 2,
+        "reported_usd": 0.0089481,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 0,
+      "raw_observations": [
+        {
+          "id": "0",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A lofted ball is played into the right side of the penalty area as blue and black shirts converge under pressure.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_flight",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "1",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Near the right edge of the box, a blue attacker and a black defender challenge for the ball, with the ball knocked loose toward the center of goal.",
+          "actor": null,
+          "action": {
+            "type": "tackle",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "player_challenge",
+              "ball_motion",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "2",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "A low ball travels across the six-yard area toward the far side of goal, with players and the keeper reacting in front of the net.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_motion",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "3",
+          "at_s": 6.0,
+          "kind": "play",
+          "description": "At the goalmouth, the white-clad goalkeeper gets down and makes contact with the ball to stop it near the line.",
+          "actor": {
+            "side": "home",
+            "shirt_number": null,
+            "shirt_name": null,
+            "identity_source": "graphic",
+            "action_role": "visible_player",
+            "resolved_name": null
+          },
+          "action": {
+            "type": "save",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "keeper_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "4",
+          "at_s": 8.0,
+          "kind": "play",
+          "description": "The ball is loose in front of the goalmouth with attackers and defenders jostling after the save; no clear new shot is visible.",
+          "actor": null,
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_on_ground",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              8.0,
+              9.0
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded football sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0b8d9e17bff812f106a396f1ff0dc68036dbd29ac11c8625ab633e1abb126847",
+        "blocks_sha256": "b6ebb60cff8b29ac95dd6dc2d490744c1180e239f408123ad1f5bb6a4a11623c",
+        "image_count": 10,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/neutral_word-1/providers.json",
+      "raw_provider_sha256": "86eb57cbaba66c741001b525cd72ad55ad3ff63f5c3936338b2b9c5d6607de33"
+    },
+    {
+      "condition": "dense",
+      "repeat": 1,
+      "status": "complete",
+      "observations": [
+        {
+          "id": "recorded-1",
+          "at_s": 2.5,
+          "kind": "play",
+          "description": "A blue attacker near the right edge of the box receives and nudges the ball forward under pressure as black-shirted defenders close down.",
+          "actor": null,
+          "action": {
+            "type": "carry",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              2.5,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-2",
+          "at_s": 3.5,
+          "kind": "play",
+          "description": "The ball is played across the top of the six-yard area from the right side, with defenders and the goalkeeper shifting toward the near-post danger area.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              3.5,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-3",
+          "at_s": 5.5,
+          "kind": "goal",
+          "description": "The ball crosses the goal line into the left side of the net as the goalkeeper cannot stop it.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.5,
+              6.0,
+              6.5
+            ]
+          }
+        },
+        {
+          "id": "recorded-4",
+          "at_s": 6.5,
+          "kind": "celebration",
+          "description": "Blue players begin to celebrate in front of the goal while black-shirted defenders remain inside the box.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              6.5,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-5",
+          "at_s": 7.5,
+          "kind": "replay",
+          "description": "The camera holds on the goalmouth with the ball already in the net and players reacting, showing the finished outcome rather than new live play.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              7.5,
+              8.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-6",
+          "at_s": 8.5,
+          "kind": "play",
+          "description": "A goalkeeper in white collects the ball near the left side of the six-yard box after the goal has been scored.",
+          "actor": null,
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              8.5,
+              9.0,
+              9.5
+            ]
+          }
+        }
+      ],
+      "goal_count": 1,
+      "usage": {
+        "input_tokens": 7702,
+        "output_tokens": 601,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.008481,
+        "latency_s": 3.7813500829943223
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 3,
+        "reported_usd": 0.017429100000000003,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 1,
+      "raw_observations": [
+        {
+          "id": "obs1",
+          "at_s": 2.5,
+          "kind": "play",
+          "description": "A blue attacker near the right edge of the box receives and nudges the ball forward under pressure as black-shirted defenders close down.",
+          "actor": {
+            "side": "home",
+            "shirt_number": null,
+            "shirt_name": null,
+            "identity_source": "graphic",
+            "action_role": "ball_carrier",
+            "resolved_name": null
+          },
+          "action": {
+            "type": "carry",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              2.5,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "obs2",
+          "at_s": 3.5,
+          "kind": "play",
+          "description": "The ball is played across the top of the six-yard area from the right side, with defenders and the goalkeeper shifting toward the near-post danger area.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              3.5,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "obs3",
+          "at_s": 5.5,
+          "kind": "goal",
+          "description": "The ball crosses the goal line into the left side of the net as the goalkeeper cannot stop it.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.5,
+              6.0,
+              6.5
+            ]
+          }
+        },
+        {
+          "id": "obs4",
+          "at_s": 6.5,
+          "kind": "celebration",
+          "description": "Blue players begin to celebrate in front of the goal while black-shirted defenders remain inside the box.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              6.5,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "obs5",
+          "at_s": 7.5,
+          "kind": "replay",
+          "description": "The camera holds on the goalmouth with the ball already in the net and players reacting, showing the finished outcome rather than new live play.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              7.5,
+              8.0
+            ]
+          }
+        },
+        {
+          "id": "obs6",
+          "at_s": 8.5,
+          "kind": "play",
+          "description": "A goalkeeper in white collects the ball near the left side of the six-yard box after the goal has been scored.",
+          "actor": {
+            "side": "away",
+            "shirt_number": null,
+            "shirt_name": null,
+            "identity_source": "graphic",
+            "action_role": "ball_carrier",
+            "resolved_name": null
+          },
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              8.5,
+              9.0,
+              9.5
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0baeb2aab02220ee515f1c9ec3bd6637fcca596ec7318af8da0521c50d9e183f",
+        "blocks_sha256": "feeb25d892f4af0090810d719e698e2e6b8b40979be5831db5f2fccc594cf2f1",
+        "image_count": 20,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/dense-1/providers.json",
+      "raw_provider_sha256": "c13d62c1e68b3090a2725361c930b07f99858049af49a5651effbbd543ea4f1e"
+    },
+    {
+      "condition": "magnified",
+      "repeat": 1,
+      "status": "complete",
+      "observations": [
+        {
+          "id": "recorded-1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "Aerial ball is played into the penalty area from the right side, dropping toward a crowd of attackers and defenders.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_motion",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Players converge near the right edge of the six-yard box as the ball is challenged and redirected toward goal.",
+          "actor": null,
+          "action": {
+            "type": "header",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-3",
+          "at_s": 5.0,
+          "kind": "goal",
+          "description": "The ball is seen crossing inside the goal at the left side netting, with the keeper too late to stop it.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-4",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "The goalkeeper reacts and moves left across the goalmouth as the ball has already gone beyond him.",
+          "actor": null,
+          "action": {
+            "type": "save",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "keeper_contact",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-5",
+          "at_s": 7.0,
+          "kind": "celebration",
+          "description": "Attackers near the goal begin celebrating while defenders remain clustered in the six-yard box.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              7.0,
+              8.0
+            ]
+          }
+        }
+      ],
+      "goal_count": 1,
+      "usage": {
+        "input_tokens": 1496,
+        "output_tokens": 434,
+        "cache_read_tokens": 4608,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0034205999999999998,
+        "latency_s": 2.7692538330011303
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 4,
+        "reported_usd": 0.020849700000000002,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 1,
+      "raw_observations": [
+        {
+          "id": "obs1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "Aerial ball is played into the penalty area from the right side, dropping toward a crowd of attackers and defenders.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_motion",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "obs2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Players converge near the right edge of the six-yard box as the ball is challenged and redirected toward goal.",
+          "actor": null,
+          "action": {
+            "type": "header",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "obs3",
+          "at_s": 5.0,
+          "kind": "goal",
+          "description": "The ball is seen crossing inside the goal at the left side netting, with the keeper too late to stop it.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "obs4",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "The goalkeeper reacts and moves left across the goalmouth as the ball has already gone beyond him.",
+          "actor": null,
+          "action": {
+            "type": "save",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "keeper_contact",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "obs5",
+          "at_s": 7.0,
+          "kind": "celebration",
+          "description": "Attackers near the goal begin celebrating while defenders remain clustered in the six-yard box.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              7.0,
+              8.0
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0baeb2aab02220ee515f1c9ec3bd6637fcca596ec7318af8da0521c50d9e183f",
+        "blocks_sha256": "e5bcc548160769b9b95d4c214da0bb95cec60064812305dc2a2e98917510f4d5",
+        "image_count": 13,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/magnified-1/providers.json",
+      "raw_provider_sha256": "3c57ffa151507b6c14ef710fd3b76fcf4663e6b91cb888bdb0c1a8dfd6fcd5e9"
+    },
+    {
+      "condition": "baseline",
+      "repeat": 2,
+      "status": "failed",
+      "error": {
+        "type": "LLMError",
+        "message": "recorded_observer: unparseable output after $0.003 (status completed, 565 of 3072 output tokens): 1 validation error for RecordedObservations\nobservations.3\n  Value error, confirmed goals must be live goals or replay footage [type=value_error, input_value={'id': 'obs4', 'at_s': 6....port_at_s': [6.0, 7.0]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 5,
+        "reported_usd": 0.023793300000000003,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 1,
+      "raw_observations": [
+        {
+          "id": "obs1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A blue-shirted attacker on the right side sends the ball back into the penalty area as defenders step toward the delivery.",
+          "actor": {
+            "side": "away",
+            "shirt_number": null,
+            "shirt_name": null,
+            "identity_source": "graphic",
+            "action_role": "passer",
+            "resolved_name": null
+          },
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "obs2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Near the right edge of the box, a blue attacker and a black defender converge on the dropping ball and the ball is nudged onward toward the center.",
+          "actor": null,
+          "action": {
+            "type": "tackle",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "player_challenge",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "obs3",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "A close-range attempt is driven toward goal from inside the box, with the ball traveling across the face of the goal toward the far side.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "obs4",
+          "at_s": 6.0,
+          "kind": "play",
+          "description": "The ball reaches the goalmouth and crosses the line into the net, with the goalkeeper unable to prevent it.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "obs5",
+          "at_s": 7.0,
+          "kind": "celebration",
+          "description": "Blue-shirted players inside the box raise their arms and turn away from goal after the ball has gone in.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [],
+            "support_at_s": [
+              7.0,
+              8.0
+            ]
+          }
+        },
+        {
+          "id": "obs6",
+          "at_s": 9.0,
+          "kind": "play",
+          "description": "The goalkeeper in white has the ball at his feet near the six-yard area while nearby players slow their movement after the goal.",
+          "actor": null,
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              9.0
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0baeb2aab02220ee515f1c9ec3bd6637fcca596ec7318af8da0521c50d9e183f",
+        "blocks_sha256": "b6ebb60cff8b29ac95dd6dc2d490744c1180e239f408123ad1f5bb6a4a11623c",
+        "image_count": 10,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/baseline-2/providers.json",
+      "raw_provider_sha256": "06cbbe0d019201d2098d798e1083d9ee51af74b14a998d3860c15d690a0bac55"
+    },
+    {
+      "condition": "neutral_word",
+      "repeat": 2,
+      "status": "failed",
+      "error": {
+        "type": "LLMError",
+        "message": "recorded_observer: unparseable output after $0.002 (status completed, 447 of 3072 output tokens): 1 validation error for RecordedObservations\nobservations.2\n  Value error, confirmed goals must be live goals or replay footage [type=value_error, input_value={'id': '2', 'at_s': 5.0, ...port_at_s': [5.0, 6.0]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 6,
+        "reported_usd": 0.026205900000000004,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 1,
+      "raw_observations": [
+        {
+          "id": "0",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "Aerial ball is played into the left side of the penalty area and the defensive line starts to collapse toward it.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_flight",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "1",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "Two players challenge for the dropping ball near the left edge of the six-yard area; the ball is nudged goalward in the scramble.",
+          "actor": null,
+          "action": {
+            "type": "tackle",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "player_challenge",
+              "ball_contact",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "2",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "The ball reaches the goalmouth and goes across the line into the left side of the net.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "3",
+          "at_s": 6.0,
+          "kind": "celebration",
+          "description": "Players in blue turn away from goal while the white-clad goalkeeper remains inside the six-yard box after the ball has gone in.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "4",
+          "at_s": 8.0,
+          "kind": "play",
+          "description": "The goalkeeper gathers the ball near the left side of the goalmouth as defenders and attackers stop their runs around him.",
+          "actor": null,
+          "action": {
+            "type": "ball_recovery",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              8.0,
+              9.0
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded football sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0b8d9e17bff812f106a396f1ff0dc68036dbd29ac11c8625ab633e1abb126847",
+        "blocks_sha256": "b6ebb60cff8b29ac95dd6dc2d490744c1180e239f408123ad1f5bb6a4a11623c",
+        "image_count": 10,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/neutral_word-2/providers.json",
+      "raw_provider_sha256": "0b120a1b19ed0be72bb43201c1dd1e87f465d49a1a13f6d0206c106d1fa09319"
+    },
+    {
+      "condition": "dense",
+      "repeat": 2,
+      "status": "complete",
+      "observations": [
+        {
+          "id": "recorded-1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A blue attacker on the right side of the box sends a grounded ball across the area toward the crowded near-post side.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              2.0,
+              2.5
+            ]
+          }
+        },
+        {
+          "id": "recorded-2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "The cross reaches a cluster of players near the left side of the six-yard box and is challenged immediately, with the ball staying in play in the congested area.",
+          "actor": null,
+          "action": {
+            "type": "tackle",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_motion",
+              "player_challenge",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              3.0,
+              3.5
+            ]
+          }
+        },
+        {
+          "id": "recorded-3",
+          "at_s": 4.0,
+          "kind": "play",
+          "description": "The ball is redirected toward goal from close range in the scramble, rising into the goalmouth area as defenders and the goalkeeper react.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              4.0,
+              4.5
+            ]
+          }
+        },
+        {
+          "id": "recorded-4",
+          "at_s": 5.5,
+          "kind": "goal",
+          "description": "The ball is visible inside the net at the left side of the goal after the close-range scramble.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.5,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-5",
+          "at_s": 7.0,
+          "kind": "celebration",
+          "description": "Players in blue begin to celebrate near the goalmouth while the white-clad goalkeeper remains near the line.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              7.0,
+              7.5
+            ]
+          }
+        },
+        {
+          "id": "recorded-6",
+          "at_s": 8.5,
+          "kind": "play",
+          "description": "The goalkeeper in white controls the ball at his feet inside the six-yard box after the goal has been scored.",
+          "actor": null,
+          "action": {
+            "type": "carry",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              8.5,
+              9.0,
+              9.5
+            ]
+          }
+        }
+      ],
+      "goal_count": 1,
+      "usage": {
+        "input_tokens": 278,
+        "output_tokens": 579,
+        "cache_read_tokens": 7424,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0033708,
+        "latency_s": 3.7742721250106115
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 7,
+        "reported_usd": 0.029576700000000004,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 1,
+      "raw_observations": [
+        {
+          "id": "obs1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A blue attacker on the right side of the box sends a grounded ball across the area toward the crowded near-post side.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              2.0,
+              2.5
+            ]
+          }
+        },
+        {
+          "id": "obs2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "The cross reaches a cluster of players near the left side of the six-yard box and is challenged immediately, with the ball staying in play in the congested area.",
+          "actor": null,
+          "action": {
+            "type": "tackle",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_motion",
+              "player_challenge",
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              3.0,
+              3.5
+            ]
+          }
+        },
+        {
+          "id": "obs3",
+          "at_s": 4.0,
+          "kind": "play",
+          "description": "The ball is redirected toward goal from close range in the scramble, rising into the goalmouth area as defenders and the goalkeeper react.",
+          "actor": null,
+          "action": {
+            "type": "shot",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_contact",
+              "ball_motion",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              4.0,
+              4.5
+            ]
+          }
+        },
+        {
+          "id": "obs4",
+          "at_s": 5.5,
+          "kind": "goal",
+          "description": "The ball is visible inside the net at the left side of the goal after the close-range scramble.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.5,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "obs5",
+          "at_s": 7.0,
+          "kind": "celebration",
+          "description": "Players in blue begin to celebrate near the goalmouth while the white-clad goalkeeper remains near the line.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              7.0,
+              7.5
+            ]
+          }
+        },
+        {
+          "id": "obs6",
+          "at_s": 8.5,
+          "kind": "play",
+          "description": "The goalkeeper in white controls the ball at his feet inside the six-yard box after the goal has been scored.",
+          "actor": {
+            "side": "home",
+            "shirt_number": null,
+            "shirt_name": null,
+            "identity_source": "graphic",
+            "action_role": "ball_carrier",
+            "resolved_name": null
+          },
+          "action": {
+            "type": "carry",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_contact",
+              "ball_on_ground",
+              "ball_motion"
+            ],
+            "support_at_s": [
+              8.5,
+              9.0,
+              9.5
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0baeb2aab02220ee515f1c9ec3bd6637fcca596ec7318af8da0521c50d9e183f",
+        "blocks_sha256": "feeb25d892f4af0090810d719e698e2e6b8b40979be5831db5f2fccc594cf2f1",
+        "image_count": 20,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/dense-2/providers.json",
+      "raw_provider_sha256": "8df5e4f9cd8c7fdf4fdbea6cba956d459539a4a3197b6b5399d6dd75ee037be7"
+    },
+    {
+      "condition": "magnified",
+      "repeat": 2,
+      "status": "complete",
+      "observations": [
+        {
+          "id": "recorded-1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A blue-shirted attacker on the right side sends a lofted ball toward the penalty area.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_motion",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "The ball drops into a crowded area near the left side of the six-yard box, with defenders and attackers converging on it.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_flight",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-3",
+          "at_s": 5.0,
+          "kind": "goal",
+          "description": "The ball is visibly inside the left side of the net after the attacking move, indicating a goal.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-4",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "The goalkeeper reacts inside the goalmouth as the ball has already crossed into the net area.",
+          "actor": null,
+          "action": {
+            "type": "save",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "keeper_contact"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-5",
+          "at_s": 6.0,
+          "kind": "celebration",
+          "description": "Players in blue begin celebrating near the six-yard box while defenders remain clustered in front of goal.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-6",
+          "at_s": 7.0,
+          "kind": "play",
+          "description": "The goalkeeper stands near the goal line as players in front of him remain jostled and the ball stays in the goal area.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              7.0,
+              8.0
+            ]
+          }
+        },
+        {
+          "id": "recorded-7",
+          "at_s": 9.0,
+          "kind": "replay",
+          "description": "A post-goal view shows the goalkeeper collecting the ball near the goalmouth while players around the six-yard box settle.",
+          "actor": null,
+          "action": {
+            "type": "goal_kick",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              9.0
+            ]
+          }
+        }
+      ],
+      "goal_count": 1,
+      "usage": {
+        "input_tokens": 216,
+        "output_tokens": 596,
+        "cache_read_tokens": 5888,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0032856,
+        "latency_s": 3.3510753750015283
+      },
+      "budget_after": {
+        "max_usd": 0.25,
+        "max_calls": 8,
+        "attempts": 8,
+        "reported_usd": 0.032862300000000004,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "raw_goal_claim_count": 1,
+      "raw_observations": [
+        {
+          "id": "obs1",
+          "at_s": 2.0,
+          "kind": "play",
+          "description": "A blue-shirted attacker on the right side sends a lofted ball toward the penalty area.",
+          "actor": null,
+          "action": {
+            "type": "cross",
+            "certainty": "confirmed",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_motion",
+              "ball_flight"
+            ],
+            "support_at_s": [
+              2.0,
+              3.0
+            ]
+          }
+        },
+        {
+          "id": "obs2",
+          "at_s": 3.0,
+          "kind": "play",
+          "description": "The ball drops into a crowded area near the left side of the six-yard box, with defenders and attackers converging on it.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "aerial",
+            "cues": [
+              "ball_flight",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              3.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "id": "obs3",
+          "at_s": 5.0,
+          "kind": "goal",
+          "description": "The ball is visibly inside the left side of the net after the attacking move, indicating a goal.",
+          "actor": null,
+          "action": {
+            "type": "goal",
+            "certainty": "confirmed",
+            "ball_path": "ground",
+            "cues": [
+              "ball_in_net",
+              "goal_line_crossing"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "obs4",
+          "at_s": 5.0,
+          "kind": "play",
+          "description": "The goalkeeper reacts inside the goalmouth as the ball has already crossed into the net area.",
+          "actor": null,
+          "action": {
+            "type": "save",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "keeper_contact"
+            ],
+            "support_at_s": [
+              5.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "id": "obs5",
+          "at_s": 6.0,
+          "kind": "celebration",
+          "description": "Players in blue begin celebrating near the six-yard box while defenders remain clustered in front of goal.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net"
+            ],
+            "support_at_s": [
+              6.0,
+              7.0
+            ]
+          }
+        },
+        {
+          "id": "obs6",
+          "at_s": 7.0,
+          "kind": "play",
+          "description": "The goalkeeper stands near the goal line as players in front of him remain jostled and the ball stays in the goal area.",
+          "actor": null,
+          "action": {
+            "type": "unknown",
+            "certainty": "uncertain",
+            "ball_path": "unknown",
+            "cues": [
+              "ball_in_net",
+              "player_challenge"
+            ],
+            "support_at_s": [
+              7.0,
+              8.0
+            ]
+          }
+        },
+        {
+          "id": "obs7",
+          "at_s": 9.0,
+          "kind": "replay",
+          "description": "A post-goal view shows the goalkeeper collecting the ball near the goalmouth while players around the six-yard box settle.",
+          "actor": null,
+          "action": {
+            "type": "goal_kick",
+            "certainty": "uncertain",
+            "ball_path": "ground",
+            "cues": [
+              "ball_on_ground"
+            ],
+            "support_at_s": [
+              9.0
+            ]
+          }
+        }
+      ],
+      "request_audit": {
+        "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+        "system_sha256": "0baeb2aab02220ee515f1c9ec3bd6637fcca596ec7318af8da0521c50d9e183f",
+        "blocks_sha256": "e5bcc548160769b9b95d4c214da0bb95cec60064812305dc2a2e98917510f4d5",
+        "image_count": 13,
+        "max_tokens": 3072,
+        "effort": "none"
+      },
+      "raw_provider_path": "runs/false-goal-investigation/ablations/magnified-2/providers.json",
+      "raw_provider_sha256": "18f111bc54f6b5e86b54c3627d3e27a37723caf55a8e8843e569d660d0a79b1f"
+    }
+  ],
+  "localization": {
+    "scope": "Neutral object-localization diagnostic, no previous model claim or expected outcome supplied.",
+    "model": "gpt-5.4-mini",
+    "system": "Locate visible objects in football images. Return only observations, never an inferred match outcome. For each exact supplied timestamp, locate the MATCH ball center in normalized full-image coordinates if distinguishable. If not distinguishable, use match_ball=null and ambiguous or not_visible. Do not substitute a spare ball, shoe, painted marking, or advertising. Briefly describe the directly visible ball/player/goal-frame configuration. Do not fill missing ball positions from a plausible football story.",
+    "schema": {
+      "$defs": {
+        "LocatedFrame": {
+          "properties": {
+            "at_s": {
+              "enum": [
+                5.0,
+                6.0,
+                7.0
+              ],
+              "title": "At S",
+              "type": "number"
+            },
+            "match_ball": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Point"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ball_visibility": {
+              "enum": [
+                "clear",
+                "ambiguous",
+                "not_visible"
+              ],
+              "title": "Ball Visibility",
+              "type": "string"
+            },
+            "visible_objects": {
+              "title": "Visible Objects",
+              "type": "string"
+            }
+          },
+          "required": [
+            "at_s",
+            "match_ball",
+            "ball_visibility",
+            "visible_objects"
+          ],
+          "title": "LocatedFrame",
+          "type": "object"
+        },
+        "Point": {
+          "properties": {
+            "x": {
+              "maximum": 1,
+              "minimum": 0,
+              "title": "X",
+              "type": "number"
+            },
+            "y": {
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Y",
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "title": "Point",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "frames": {
+          "items": {
+            "$ref": "#/$defs/LocatedFrame"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "title": "Frames",
+          "type": "array"
+        }
+      },
+      "required": [
+        "frames"
+      ],
+      "title": "Locations",
+      "type": "object"
+    },
+    "frames": [
+      {
+        "at_s": 5.0,
+        "sha256": "679e63561b550e769a676419e9c68d1ef5f387ecb744f40ab372673af757918b"
+      },
+      {
+        "at_s": 6.0,
+        "sha256": "4c69d1a4d0d5330c8e6400f8e5be49068dcc04cb2fc942090e5171f71ce5cc0c"
+      },
+      {
+        "at_s": 7.0,
+        "sha256": "c6d01b9a2fef9f3b96beac058d559104d9424a8d0aa6d26a3f7c532658e3c81e"
+      }
+    ],
+    "max_usd": 0.02,
+    "status": "complete",
+    "result": {
+      "frames": [
+        {
+          "at_s": 5.0,
+          "match_ball": {
+            "x": 0.825,
+            "y": 0.286
+          },
+          "ball_visibility": "ambiguous",
+          "visible_objects": "Goalmouth on left with goalkeeper near the line; several defenders in black and attackers in blue crowded in the six-yard box; the ball is a small, blurred white spot near the upper-right side of the penalty area, close to the byline and far-side crowding."
+        },
+        {
+          "at_s": 6.0,
+          "match_ball": {
+            "x": 0.679,
+            "y": 0.161
+          },
+          "ball_visibility": "ambiguous",
+          "visible_objects": "Ball is high near the far-side touchline above the penalty area, with multiple players underneath and the goalkeeper positioned left of center in the goalmouth; the scene shows a crowded cross or clearance near the far post area."
+        },
+        {
+          "at_s": 7.0,
+          "match_ball": {
+            "x": 0.692,
+            "y": 0.162
+          },
+          "ball_visibility": "ambiguous",
+          "visible_objects": "Ball remains near the far-side edge of the box, high above the clustered players; the goalkeeper stands in front of the left goal, while defenders and attackers are packed around the near-post/six-yard area."
+        }
+      ]
+    },
+    "budget": {
+      "max_usd": 0.02,
+      "max_calls": 1,
+      "attempts": 1,
+      "reported_usd": 0.0019965,
+      "unsettled_reservations_usd": 0,
+      "unsettled_requests": 0,
+      "basis": "counted input + maximum output at standard token rates, 25% margin",
+      "hosted_tools_allowed": false
+    }
+  },
+  "findings": {
+    "confirmed": [
+      "The false goal exists in the original observer response, before normalization, identity resolution or speaker calls.",
+      "Reconstructed baseline JPEGs match the saved larger-model input hashes exactly; no stale-file/timestamp-shift explanation was found.",
+      "Pydantic checks cue names and timestamps, not whether the image contains the asserted visual cue. A fabricated ball_in_net tag is accepted if structurally consistent.",
+      "Two-fps sampling and supplied goalmouth magnifications each retained raw goal claims in both samples.",
+      "Neutral object localization marked all three disputed frames ambiguous, yet event narration confidently asserted a goal using those frames."
+    ],
+    "inferences": [
+      "The observer is overcommitting to a scoring narrative despite ambiguous ball evidence, then interpreting later goalkeeper recovery and player reactions within that story.",
+      "Low source detail likely makes physical interpretation harder, but improved temporal density and magnification did not isolate a sufficient remedy."
+    ],
+    "unresolved": [
+      "The neutral-word condition avoided a goal once, but its second raw response still claimed one and failed schema validation. Two samples cannot establish a causal wording effect.",
+      "Model localization statements are additional predictions, not ground truth or access to internal reasoning.",
+      "No independently verified ball trajectory or reliable goal-proof mechanism was implemented in this investigation."
+    ]
+  },
+  "runtime_changed": false,
+  "training": false,
+  "tts": false,
+  "reference_labels_in_runtime": false
+}
