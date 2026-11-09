@@ -9,6 +9,26 @@ files_modified: []
 
 ## Current priority: bounded portfolio polish — completed locally
 
+Latest addition: the automatic penalty demo now has a **Before / After** switch.
+Both versions are exact saved model output from the two bounded polish attempts,
+with identical source, observations and research, and the same requested model.
+Before, the optional reviewer rejected even “Kane scores!” twice and withheld the
+caller’s goal turn; after disabling that reviewer, the caller announces the goal
+and the analyst follows. Observed calls were 17 → 9 and reported token cost
+$0.01796 → $0.00871. Both retained 33 words; after starts later (3s vs 1s).
+This is one development pair with uncontrolled wording variation, not the earliest
+system baseline, a full-suite improvement result or an independent naturalness
+rating. The 15-clip pilot preceded this focused reviewer diagnosis. Existing
+citation, permission and timing checks remain. No new paid calls or word edits.
+
+Artifacts: examples/portfolio-demo/{before-plan,before-trace,iteration}.json,
+web/data/iteration-demo.json, and public before captions/render metadata/trace
+plus the downloadable comparison record. The before MP4 is a fourth local media
+asset for the same featured clip; there are still three featured clips. Added
+scripted regression coverage reproduces the supported-goal suppression with the
+same draft and snapshot, and verifies matched inputs and exact saved output.
+
+
 The user chose **Bounded demo polish**: finish a resume-ready project with a few
 clips and a clear building/evaluation story. Open-ended recognition research is
 not the active objective. The focused local `/` and `/demo` pages now select:
@@ -45,7 +65,7 @@ TTS or model calls. The README and docs/PORTFOLIO.md describe the focused local
 release; docs/PORTFOLIO_CASE_STUDY.md provides architecture decisions, limitations,
 resume bullets and interview talking points.
 
-Validation: **377 offline tests passed**, targeted script checks passed after the
+Validation: **380 offline tests passed**, targeted script checks passed after the
 final audit-metadata change, Ruff and mypy passed, web lint/build passed. gstack
 browser checks at desktop and 375px confirmed three clips, correct durations,
 transcript seeks, old-player pause on switching, trace/evaluation downloads,

@@ -1,0 +1,43 @@
+{
+  "id": "penalty-reviewer-iteration-v1",
+  "scope": "Matched single development pair. Focused demo evaluation after the 15-clip integration pilot; not a claim that the pilot measured this reviewer change.",
+  "source_inputs_identical": true,
+  "input_hashes": {
+    "source": "582c2e960d2493622f0196ed72bb58d91c20843cf4679ec62fd11efbd31da234",
+    "observations": "f1d10997e0b8182e7404d9d881df6a469d7f64c19208820d206dedf832bfa234",
+    "raw_observations": "ae2a0a76c23a54dcfd15aa3b01a068d841fb7392aa9197a225f45fb6b51179ba",
+    "research": "4658147680f15e518cbd9c207eff03de553ce14d237f00db69beebb8f6cf98ba"
+  },
+  "requested_model": "gpt-5.4-mini",
+  "provider_retries": 0,
+  "word_edits": false,
+  "change": "Optional draft reviewer enabled in before, disabled in after. Existing deterministic citation, permission and timing checks retained.",
+  "before": {
+    "plan": "examples/portfolio-demo/before-plan.json",
+    "trace": "examples/portfolio-demo/before-trace.json",
+    "calls": 17,
+    "cost_usd": 0.017958750000000002,
+    "caller_goal_call": false,
+    "analyst_after_caller_goal": false,
+    "words": 33,
+    "first_call_s": 1.0
+  },
+  "after": {
+    "plan": "examples/portfolio-demo/penalty-plan.json",
+    "trace": "examples/portfolio-demo/penalty-trace.json",
+    "calls": 9,
+    "cost_usd": 0.0087087,
+    "caller_goal_call": true,
+    "analyst_after_caller_goal": true,
+    "words": 33,
+    "first_call_s": 3.0
+  },
+  "rejected_draft": "Kane scores!",
+  "reviewer_feedback": "Use a shorter live reaction: keep the verified scorer and the immediate goal call, but drop the report-style wording and any explanation of the finish.",
+  "tradeoffs": [
+    "After also rejects an early oversized draft and starts at 3s rather than 1s. It does not improve every coverage dimension.",
+    "The second run generates different words; stochastic variation is uncontrolled. Do not attribute all wording or cost differences solely to the reviewer setting.",
+    "This is not the earliest system output or a full-suite before/after benchmark. It is the first and second attempt in the bounded portfolio polish.",
+    "No naturalness preference from an independent human reviewer is claimed."
+  ]
+}

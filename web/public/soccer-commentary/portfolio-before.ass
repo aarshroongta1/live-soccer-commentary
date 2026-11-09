@@ -1,0 +1,18 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1280
+PlayResY: 720
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Caption,Arial,48,&H00FFFFFF,&H00FFFFFF,&H00201C18,&HC0201C18,0,0,0,0,100,100,0,0,3,10,0,2,70,70,32,1
+Style: Label,Arial,17,&H00FFFFFF,&H00FFFFFF,&H00201C18,&H80201C18,0,0,0,0,100,100,0,0,3,6,0,8,20,20,15,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:20.00,Label,,0,0,0,,Before iteration | optional reviewer enabled | recorded clip
+Dialogue: 0,0:00:01.00,0:00:02.54,Caption,,0,0,0,,Caller: Into the box, England!
+Dialogue: 0,0:00:03.00,0:00:06.46,Caption,,0,0,0,,Caller: Penalty England! The referee points straight to the spot
+Dialogue: 0,0:00:09.00,0:00:09.92,Caption,,0,0,0,,Caller: Kane...
+Dialogue: 0,0:00:10.00,0:00:17.31,Caption,,0,0,0,,Analyst: Kane sends the keeper the wrong way and slots it low into the left corner, a composed penalty finish.

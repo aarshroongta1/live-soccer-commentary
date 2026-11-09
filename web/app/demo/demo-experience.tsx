@@ -25,6 +25,17 @@ type Preparation = {
   turns: { role: string; at_s: number; status: string; detail: string }[];
 };
 
+export type Iteration = {
+  title: string;
+  summary: string;
+  scope: string;
+  before: { clip: DemoClip; preparation: Preparation };
+  measurements: { label: string; before: string; after: string }[];
+  rejectedDraft: string;
+  reviewerFeedback: string;
+  limitation: string;
+};
+
 const timestamp = (seconds: number) => `0:${Math.floor(seconds).toString().padStart(2, "0")}`;
 
 function ClipPlayer({ clip }: { clip: DemoClip }) {
@@ -99,11 +110,15 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
   );
 }
 
-export default function DemoExperience({ clips, runs, preparation }: {
-  clips: DemoClip[]; runs: AgentRun[]; preparation: Preparation;
+export default function DemoExperience({ clips, runs, preparation, iteration }: {
+  clips: DemoClip[]; runs: AgentRun[]; preparation: Preparation; iteration: Iteration;
 }) {
   const [activeId, setActiveId] = useState(clips[0].id);
   const active = clips.find((clip) => clip.id === activeId)!;
+  const [version, setVersion] = useState<"before" | "after">("after");
+  const showBefore = active.kind === "automatic" && version === "before";
+  const displayed = showBefore ? iteration.before.clip : active;
+  const visiblePreparation = showBefore ? iteration.before.preparation : preparation;
   return (
     <main className="demo-page">
       <div className="demo-content">
@@ -132,27 +147,54 @@ export default function DemoExperience({ clips, runs, preparation }: {
               </button>
             ))}
           </div>
-          <ClipPlayer key={active.id} clip={active} />
+          {active.kind === "automatic" && (
+            <section className="demo-iteration" aria-labelledby="iteration-title">
+              <h3 id="iteration-title">{iteration.title}</h3>
+              <p>{iteration.scope}</p>
+              <div className="demo-version-controls" role="group" aria-label="Compare automatic versions">
+                <button type="button" aria-pressed={version === "before"} onClick={() => setVersion("before")}>Before: reviewer enabled</button>
+                <button type="button" aria-pressed={version === "after"} onClick={() => setVersion("after")}>After: reviewer disabled</button>
+              </div>
+            </section>
+          )}
+          <ClipPlayer key={displayed.id} clip={displayed} />
+          {active.kind === "automatic" && (
+            <details className="demo-iteration-result" open>
+              <summary>What changed after evaluating the first attempt?</summary>
+              <p>{iteration.summary}</p>
+              <div className="demo-iteration-evidence">
+                <div><h4>A valid draft was rejected</h4>
+                  <blockquote>{iteration.rejectedDraft}</blockquote>
+                  <p>The reviewer still asked for a shorter reaction. The caller’s turn was dropped after its rewrite allowance was exhausted. Deterministic evidence, permission and timing checks remain enabled in the after run.</p>
+                </div>
+                <table><caption>Observed in this matched development pair</caption><thead><tr><th scope="col">Measure</th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
+                  <tbody>{iteration.measurements.map((row) => <tr key={row.label}><th scope="row">{row.label}</th><td>{row.before}</td><td>{row.after}</td></tr>)}</tbody>
+                </table>
+              </div>
+              <p className="demo-comparison-limit">{iteration.limitation}</p>
+              <a href="/soccer-commentary/portfolio-iteration.json" download>Download the comparison record and input hashes</a>
+            </details>
+          )}
           {active.kind === "automatic" && (
             <details className="demo-method">
               <summary>Inspect this agent run</summary>
               <div className="demo-method-grid">
                 <div>
                   <h3>From evidence to dialogue</h3>
-                  <ul>{preparation.method.map((step) => <li key={step}>{step}</li>)}</ul>
-                  <p>{preparation.generation.calls} new model calls · ${preparation.generation.cost_usd.toFixed(4)} in reported token cost · {preparation.generation.rejected_turns} rejected draft</p>
+                  <ul>{visiblePreparation.method.map((step) => <li key={step}>{step}</li>)}</ul>
+                  <p>{visiblePreparation.generation.calls} new model calls · ${visiblePreparation.generation.cost_usd.toFixed(4)} in reported token cost · {visiblePreparation.generation.rejected_turns} turn(s) rejected by checks</p>
                   <p>Saved vision and research costs are excluded. This is selected development output.</p>
-                  <a href={preparation.tracePath} download>Download the complete preparation trace</a>
+                  <a href={visiblePreparation.tracePath} download>Download the complete preparation trace</a>
                 </div>
                 <div>
                   <h3>Source-time turns</h3>
-                  <ol className="demo-turns">{preparation.turns.map((turn, i) => (
+                  <ol className="demo-turns">{visiblePreparation.turns.map((turn, i) => (
                     <li key={i}><time>{timestamp(turn.at_s)}</time><div><strong>{turn.role} · {turn.status}</strong><p>{turn.detail}</p></div></li>
                   ))}</ol>
                 </div>
               </div>
               <details className="demo-evidence"><summary>Visual observations used by the agents</summary>
-                <ul>{preparation.observations.map((event) => <li key={event.id}><time>{timestamp(event.at_s)}</time> {event.description}</li>)}</ul>
+                <ul>{visiblePreparation.observations.map((event) => <li key={event.id}><time>{timestamp(event.at_s)}</time> {event.description}</li>)}</ul>
               </details>
             </details>
           )}

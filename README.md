@@ -26,7 +26,10 @@ Open http://127.0.0.1:3000/demo. Browsing clips and traces makes no model calls.
 
 These three videos are silent and captioned. The two edited showcases are labelled;
 they are not untouched multi-agent output. The automatic example is prepared
-before playback and is not a demonstration of live speech latency.
+before playback and is not a demonstration of live speech latency. Its before/after
+switch shows a matched development iteration: an optional reviewer suppressed a
+supported caller goal draft; disabling it restored the caller/analyst handoff.
+Both outputs are unedited, with input hashes, costs and trade-offs retained.
 
 Media is local and git-ignored. Without it, the transcripts and traces still work;
 see [media setup](docs/PORTFOLIO.md). The separate

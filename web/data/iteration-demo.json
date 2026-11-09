@@ -1,0 +1,164 @@
+{
+  "title": "A goal call restored after evaluation",
+  "summary": "The optional reviewer rejected a supported \u201cKane scores!\u201d draft. Disabling it restored the caller\u2019s reaction and a later analyst response in this development pair.",
+  "scope": "Same 20-second clip, same model, identical visual evidence and research. Both outputs are unedited. This focused comparison followed the 15-clip pilot.",
+  "before": {
+    "clip": {
+      "id": "portfolio-before",
+      "title": "England vs France \u2014 first attempt",
+      "subtitle": "Reviewer enabled",
+      "videoPath": "/soccer-commentary/portfolio-before.mp4",
+      "posterPath": "/soccer-commentary/portfolio-penalty.jpg",
+      "duration_s": 20,
+      "kind": "automatic",
+      "note": "First attempt in the bounded demo polish, with the optional reviewer enabled. Exact generated words on saved perception; prepared before playback.",
+      "lines": [
+        {
+          "at_s": 1.0,
+          "voice": "caller",
+          "text": "Into the box, England!"
+        },
+        {
+          "at_s": 3.0,
+          "voice": "caller",
+          "text": "Penalty England! The referee points straight to the spot"
+        },
+        {
+          "at_s": 9.0,
+          "voice": "caller",
+          "text": "Kane..."
+        },
+        {
+          "at_s": 10.0,
+          "voice": "analyst",
+          "text": "Kane sends the keeper the wrong way and slots it low into the left corner, a composed penalty finish."
+        }
+      ]
+    },
+    "preparation": {
+      "tracePath": "/soccer-commentary/portfolio-before.trace.json",
+      "method": [
+        "Same saved perception, resolved identities and dated squad context as the selected after run.",
+        "The optional reviewer rejects the caller\u2019s supported goal draft twice.",
+        "The caller\u2019s goal turn is dropped; the analyst announces the finish instead.",
+        "Exact generated words are retained. No voice synthesis or manual script rewrite."
+      ],
+      "generation": {
+        "model": "gpt-5.4-mini",
+        "calls": 17,
+        "cost_usd": 0.017958750000000002,
+        "rejected_turns": 1
+      },
+      "observations": [
+        {
+          "id": "recorded-1",
+          "at_s": 1.0,
+          "description": "An England attacker drives into the France box on the ground and is challenged by two defenders, with one sliding in from the side as the ball stays near the attacker's feet."
+        },
+        {
+          "id": "recorded-2",
+          "at_s": 2.0,
+          "description": "The referee points toward the penalty spot after the challenge in the area, while players around the incident appeal with raised arms."
+        },
+        {
+          "id": "recorded-3",
+          "at_s": 9.0,
+          "description": "England's number 9 begins the penalty kick run-up from the spot with the referee beside the area and France's goalkeeper set on the goal line."
+        },
+        {
+          "id": "recorded-4",
+          "at_s": 10.0,
+          "description": "The penalty is struck low into the left side of the goal as the goalkeeper dives the other way and the ball crosses the line into the net."
+        },
+        {
+          "id": "recorded-5",
+          "at_s": 12.0,
+          "description": "England's number 9 runs away along the byline with arms out in celebration after scoring."
+        },
+        {
+          "id": "recorded-6",
+          "at_s": 17.0,
+          "description": "Replay: England's number 9 strikes the penalty with his right foot from the spot."
+        },
+        {
+          "id": "recorded-7",
+          "at_s": 19.0,
+          "description": "Replay: the ball rises into the goal after the penalty, visibly inside the net."
+        }
+      ],
+      "turns": [
+        {
+          "role": "caller",
+          "at_s": 1.0,
+          "status": "spoken",
+          "detail": "Supported immediate action is an England dribble into the France box under challenge."
+        },
+        {
+          "role": "caller",
+          "at_s": 3.0,
+          "status": "spoken",
+          "detail": "Immediate supported reaction to the referee's decision and consequence, without adding unsupported stakes."
+        },
+        {
+          "role": "caller",
+          "at_s": 9.0,
+          "status": "spoken",
+          "detail": "The penalty run-up is in progress and the shooter is identified."
+        },
+        {
+          "role": "caller",
+          "at_s": 10.0,
+          "status": "withheld by reviewer",
+          "detail": "review rejected draft; revision budget exhausted"
+        },
+        {
+          "role": "analyst",
+          "at_s": 10.0,
+          "status": "spoken",
+          "detail": "Supported goal description with named scorer and visible outcome."
+        },
+        {
+          "role": "caller",
+          "at_s": 17.657692307692308,
+          "status": "rejected",
+          "detail": "caller cannot announce uncertain actions or replay footage"
+        }
+      ]
+    }
+  },
+  "measurements": [
+    {
+      "label": "Caller announces the goal",
+      "before": "No",
+      "after": "Yes"
+    },
+    {
+      "label": "Analyst responds after caller\u2019s goal",
+      "before": "No",
+      "after": "Yes"
+    },
+    {
+      "label": "New model calls",
+      "before": "17",
+      "after": "9"
+    },
+    {
+      "label": "Reported token cost",
+      "before": "$0.0180",
+      "after": "$0.0087"
+    },
+    {
+      "label": "Retained words",
+      "before": "33",
+      "after": "33"
+    },
+    {
+      "label": "First call",
+      "before": "1.0s",
+      "after": "3.0s"
+    }
+  ],
+  "rejectedDraft": "Kane scores!",
+  "reviewerFeedback": "Use a shorter live reaction: keep the verified scorer and the immediate goal call, but drop the report-style wording and any explanation of the finish.",
+  "limitation": "One development pair, with no independent naturalness rating. The after run starts later and does not improve every coverage dimension. Word and cost differences include uncontrolled model variation."
+}

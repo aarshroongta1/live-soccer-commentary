@@ -383,3 +383,50 @@ async def test_rejected_paid_action_keeps_usage_and_response_in_public_audit() -
     assert record.data["model"] == "caller-model"
     assert record.data["usage"]["cost_usd"] == 0.004
     assert record.data["action"]["line"]["evidence_ids"] == ["unknown"]
+
+
+async def test_reviewer_can_suppress_same_supported_goal_draft_that_direct_path_preserves() -> None:
+    """Replay the observed false-negative critic with fixed inputs and responses."""
+    view = RuntimeSnapshot(
+        version=1,
+        cutoff_s=10,
+        speech_budget_words=18,
+        observations=[
+            Observation(
+                id="goal",
+                at_s=10,
+                kind="goal",
+                description="The ball is visibly in the net.",
+                action=FootballAction(
+                    type="goal", certainty="confirmed", cues=["ball_in_net"], support_at_s=[10]
+                ),
+            )
+        ],
+    )
+    draft = AgentAction(
+        kind="speak",
+        line=SpeechLine(
+            voice="caller",
+            text="It's in!",
+            evidence_ids=["goal"],
+        ),
+    )
+    reviewed = ScriptedBackend()
+    reviewed.always("replay_caller", draft)
+    reviewed.always(
+        "replay_reviewer",
+        ReviewResult(
+            accepted=False,
+            feedback="Use a shorter live reaction.",
+        ),
+    )
+    blocked = await RoleAgents(
+        reviewed, "scripted", "scripted", reviewer_model="scripted", max_revisions=1
+    ).run("caller", view)
+    direct = ScriptedBackend()
+    direct.always("replay_caller", draft)
+    kept = await RoleAgents(direct, "scripted", "scripted").run("caller", view)
+    assert blocked.line is None
+    assert "revision budget exhausted" in blocked.reason
+    assert kept.line == draft.line
+    assert len(reviewed.calls) == 4 and len(direct.calls) == 1

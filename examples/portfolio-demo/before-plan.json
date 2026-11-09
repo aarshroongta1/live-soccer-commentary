@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "england-france-penalties.mp4",
+    "start_s": 42.0,
+    "duration_s": 20.0
+  },
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "An England attacker drives into the France box on the ground and is challenged by two defenders, with one sliding in from the side as the ball stays near the attacker's feet.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "The referee points toward the penalty spot after the challenge in the area, while players around the incident appeal with raised arms.",
+      "actor": null,
+      "action": {
+        "type": "penalty_awarded",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "referee_signal",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 9.0,
+      "kind": "play",
+      "description": "England's number 9 begins the penalty kick run-up from the spot with the referee beside the area and France's goalkeeper set on the goal line.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "penalty_kick",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "restart_setup",
+          "ball_on_ground",
+          "ball_contact"
+        ],
+        "support_at_s": [
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 10.0,
+      "kind": "goal",
+      "description": "The penalty is struck low into the left side of the goal as the goalkeeper dives the other way and the ball crosses the line into the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground",
+          "goal_line_crossing",
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          10.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 12.0,
+      "kind": "celebration",
+      "description": "England's number 9 runs away along the byline with arms out in celebration after scoring.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          12.0,
+          13.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 17.0,
+      "kind": "replay",
+      "description": "Replay: England's number 9 strikes the penalty with his right foot from the spot.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "penalty_kick",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 19.0,
+      "kind": "replay",
+      "description": "Replay: the ball rises into the goal after the penalty, visibly inside the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_motion",
+          "ball_flight",
+          "goal_line_crossing",
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 1.0,
+      "voice": "caller",
+      "text": "Into the box, England!",
+      "evidence_ids": [
+        "recorded-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-2",
+      "at_s": 3.0,
+      "voice": "caller",
+      "text": "Penalty England! The referee points straight to the spot",
+      "evidence_ids": [
+        "recorded-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-3",
+      "at_s": 9.0,
+      "voice": "caller",
+      "text": "Kane...",
+      "evidence_ids": [
+        "recorded-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-4",
+      "at_s": 10.0,
+      "voice": "analyst",
+      "text": "Kane sends the keeper the wrong way and slots it low into the left corner, a composed penalty finish.",
+      "evidence_ids": [
+        "recorded-4"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "examples/portfolio-demo/before-trace.json",
+    "cost": 0.017958750000000002,
+    "models": {
+      "observer": "reused; see vision_origin",
+      "caller": "gpt-5.4-mini",
+      "analyst": "gpt-5.4-mini"
+    },
+    "research": {
+      "fixture": "England v France, FIFA World Cup quarter-final, 10 December 2022",
+      "as_of": "2022-12-09",
+      "facts": [],
+      "squads": [
+        {
+          "id": "england-world-cup-2022-squad",
+          "side": "home",
+          "team": "England",
+          "kit_colours": "white shirts, dark shorts",
+          "players": [
+            {
+              "name": "Jordan Pickford",
+              "number": 1
+            },
+            {
+              "name": "Kyle Walker",
+              "number": 2
+            },
+            {
+              "name": "Luke Shaw",
+              "number": 3
+            },
+            {
+              "name": "Declan Rice",
+              "number": 4
+            },
+            {
+              "name": "John Stones",
+              "number": 5
+            },
+            {
+              "name": "Harry Maguire",
+              "number": 6
+            },
+            {
+              "name": "Jack Grealish",
+              "number": 7
+            },
+            {
+              "name": "Jordan Henderson",
+              "number": 8
+            },
+            {
+              "name": "Harry Kane",
+              "number": 9
+            },
+            {
+              "name": "Raheem Sterling",
+              "number": 10
+            },
+            {
+              "name": "Marcus Rashford",
+              "number": 11
+            },
+            {
+              "name": "Kieran Trippier",
+              "number": 12
+            },
+            {
+              "name": "Nick Pope",
+              "number": 13
+            },
+            {
+              "name": "Kalvin Phillips",
+              "number": 14
+            },
+            {
+              "name": "Eric Dier",
+              "number": 15
+            },
+            {
+              "name": "Conor Coady",
+              "number": 16
+            },
+            {
+              "name": "Bukayo Saka",
+              "number": 17
+            },
+            {
+              "name": "Trent Alexander-Arnold",
+              "number": 18
+            },
+            {
+              "name": "Mason Mount",
+              "number": 19
+            },
+            {
+              "name": "Phil Foden",
+              "number": 20
+            },
+            {
+              "name": "Ben White",
+              "number": 21
+            },
+            {
+              "name": "Jude Bellingham",
+              "number": 22
+            },
+            {
+              "name": "Aaron Ramsdale",
+              "number": 23
+            },
+            {
+              "name": "Callum Wilson",
+              "number": 24
+            },
+            {
+              "name": "James Maddison",
+              "number": 25
+            },
+            {
+              "name": "Conor Gallagher",
+              "number": 26
+            }
+          ],
+          "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+          "source_date": "2022-11-14"
+        }
+      ]
+    },
+    "words_edited": false,
+    "reviewer_enabled": true,
+    "vision_origin": "examples/recorded-agent-demo/continuity/candidate-plan.json"
+  }
+}

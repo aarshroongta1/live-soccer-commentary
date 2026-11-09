@@ -22,3 +22,12 @@ Render a silent captioned clip with scripts/render_text_demo.py. Local MP4s are
 ignored; plans, transcripts, traces and render tooling are retained. See
 [the portfolio guide](../../docs/PORTFOLIO.md) and
 [the case study](../../docs/PORTFOLIO_CASE_STUDY.md).
+
+## Matched before/after iteration
+
+`before-plan.json` and `before-trace.json` retain attempt one. `iteration.json`
+records matched-input hashes, the reviewer intervention, observed role/cost changes
+and limitations. The local player can switch both source-timed captioned versions.
+This is a focused development case following the 15-clip pilot, not the earliest
+system baseline or a claim that every output dimension improved. No additional
+model calls were made to package the comparison.

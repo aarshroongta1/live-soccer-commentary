@@ -8,8 +8,12 @@ The local `/` and `/demo` pages lead with three selected, silent captioned clips
 | Arsenal vs Norwich team goal | 28s | Existing manually reviewed and edited showcase. |
 | Argentina vs France counterattack | 28s | Existing manually reviewed and edited showcase. |
 
-The automatic example includes transcript seeking, source-time turns, rejected
-turns, visual observations and a downloadable preparation trace. The other two
+The automatic example includes a before/after switch, transcript seeking, source-time
+turns, rejected drafts, visual observations and downloadable preparation traces.
+Both versions use identical saved evidence; the focused iteration restored the
+caller’s goal announcement after an optional reviewer blocked it. The comparison
+reports observed cost/call changes and the later first call, without claiming
+general naturalness improvement. The other two
 illustrate the intended presentation and are labelled **Edited showcase**.
 The page explains the agent roles, evaluation findings and recorded/live limits.
 Saved causal replay runs remain in an expandable section.
@@ -33,7 +37,8 @@ player selects two of them alongside the automatic example.
 ## Automatic example
 
 Durable artifacts are in [examples/portfolio-demo](../examples/portfolio-demo/):
-`penalty-plan.json`, `penalty-trace.json` and `selection.json`.
+`penalty-plan.json`, `penalty-trace.json`, `before-plan.json`, `before-trace.json`,
+`iteration.json` and `selection.json`.
 The source is seconds 42–62 of the existing England–France footage. The model
 receives saved visual readings and pre-match context, never evaluation labels or
 an earlier commentary script. Roster lookups are rerun; the observer proposes
@@ -79,5 +84,6 @@ FFmpeg `-map 0:v:0 -c:v copy -an`. The original voiced media remains unchanged.
 `web/data/portfolio-demo.json` supplies the automatic transcript and run summary;
 `web/data/demo-clips.json` retains all five edited showcase transcripts. Optional
 remote sources can be configured with `PORTFOLIO_PENALTY_VIDEO_URL`,
-`PORTFOLIO_ARSENAL_VIDEO_URL` and `PORTFOLIO_ARGENTINA_VIDEO_URL`. A fresh clone
+`PORTFOLIO_ARSENAL_VIDEO_URL`, `PORTFOLIO_ARGENTINA_VIDEO_URL` and
+`PORTFOLIO_BEFORE_VIDEO_URL`. A fresh clone
 without media displays its transcripts and missing-media guidance.
