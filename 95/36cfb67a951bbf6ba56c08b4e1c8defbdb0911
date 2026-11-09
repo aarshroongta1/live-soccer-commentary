@@ -1,0 +1,84 @@
+tests/test_prepare_agent_demo.py
+  s_5122a6b523b341::t_7550b859585782 95-96
+  s_5122a6b523b341::t_c4714ae9416d02 92-94
+  s_5122a6b523b341::t_8c8025099cd8a0 97-98
+  s_c61538d1d875af::t_f15cd9cbf0bfbb 66-91
+web/public/soccer-commentary/portfolio-penalty.render.json
+  s_5122a6b523b341::t_07cc3fedb63f82 7-8
+  s_c61538d1d875af::t_b69462548691bf 1-6,9-44
+examples/portfolio-demo/media-manifest.json
+  s_5122a6b523b341::t_07cc3fedb63f82 1-32
+web/app/demo/architecture.tsx
+  s_c61538d1d875af::t_e17f2748e25d64 6,28-29
+web/app/demo/page.tsx
+  s_c61538d1d875af::t_30c023efdf6185 5-8,11-30
+web/app/demo/demo.css
+  s_c61538d1d875af::t_e17f2748e25d64 320-323,328-408
+  s_5122a6b523b341::t_068913c9dbdffb 324-327
+web/app/layout.tsx
+  s_c61538d1d875af::t_30c023efdf6185 21,23,25-26
+examples/portfolio-demo/penalty-plan.json
+  s_c61538d1d875af::t_a2431157574f4f 228-359
+  s_5122a6b523b341::t_1db19c321eb2c2 1-227,360-361
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_2d4ba845422566 10-63
+tests/test_text_demo_render.py
+  s_5122a6b523b341::t_eeb1e8bc938af0 22
+  s_5122a6b523b341::t_d138d3ee1cbcb4 1-21,23-58
+web/app/demo/demo-experience.tsx
+  s_c61538d1d875af::t_e17f2748e25d64 172
+  s_c61538d1d875af::t_30c023efdf6185 11,13-16,20-30,33,39,43-79,81-82,89,91,97-98,102-104,111-112,117-121,123-126,128-132,134-160,162-171,173-179
+  s_5122a6b523b341::t_45c5b7343585c4 115-116
+scripts/render_text_demo.py
+  s_c61538d1d875af::t_d6b31162c7b91f 1-24,46-59,62-145
+  s_5122a6b523b341::t_df000b61258578 25-45,60-61
+README.md
+  s_5122a6b523b341::t_0bb463f2f616eb 1,3-6,8-10,12,14-47,49-53,55-59,61,63-66,68-72,74-78,80-83,85,87,90-93,96,103-106,108-111
+scripts/prepare_agent_demo.py
+  s_5122a6b523b341::t_a928fcc6933e14 44-46,137,139
+  s_5122a6b523b341::t_7550b859585782 80,160,166
+docs/PORTFOLIO.md
+  s_c61538d1d875af::t_d5a0cb4c64390d 3-17,20-21,24-47,49-52,54-72,74-77,79-83
+docs/PORTFOLIO_CASE_STUDY.md
+  s_c61538d1d875af::t_47c83a67357243 1-95
+examples/portfolio-demo/README.md
+  s_c61538d1d875af::t_d6ea9efb04b9b5 1-24
+examples/portfolio-demo/penalty-trace.json
+  s_c61538d1d875af::t_397a03c0aa7655 1-1300
+examples/portfolio-demo/selection.json
+  s_c61538d1d875af::t_529f7ea4effa9f 1-641
+web/.env.example
+  s_c61538d1d875af::t_da7a4acac233b2 11-15
+web/data/portfolio-demo.json
+  s_c61538d1d875af::t_c32036a01a96f9 1-116
+web/public/soccer-commentary/evaluation-notes.txt
+  s_c61538d1d875af::t_4d66ffaff0bf10 1-86
+web/public/soccer-commentary/portfolio-penalty.ass
+  s_c61538d1d875af::t_263d0e1347be9e 1-18
+web/public/soccer-commentary/portfolio-penalty.trace.json
+  s_c61538d1d875af::t_6e560f120e85a9 1-1300
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9536cfb67a951bbf6ba56c08b4e1c8defbdb0911",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
