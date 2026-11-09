@@ -1,0 +1,20 @@
+docs/SESSION_HANDOFF.md
+  s_aba8a8d5718a34::t_f96f50b2c63d89 1-226,234-319
+  s_aba8a8d5718a34::t_b53b4b847ad863 227-233
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "08774d4fa3d48ff1050960d94f0a273b96467c1f",
+  "prompts": {},
+  "sessions": {
+    "s_aba8a8d5718a34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1b2a9-bc4b-7bb1-8531-28c720b1ef46",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
