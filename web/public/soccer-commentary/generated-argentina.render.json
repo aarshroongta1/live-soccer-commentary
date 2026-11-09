@@ -1,0 +1,39 @@
+{
+  "source": "clips/demo-sources/argentina-france-dimaria.mp4",
+  "source_start_s": 20.0,
+  "duration_s": 20.0,
+  "source_sha256": "5ee52be809d60caf3655bcd95d4a9ce2fb0e8ac0bb808924e5a6e25df4553f24",
+  "plan": "examples/portfolio-demo/release/argentina-plan.json",
+  "plan_sha256": "69c1390811bb9841a07261f6f8ebe9a4ec1417b5981792e376fa7fc16f5d6a20",
+  "output": "web/public/soccer-commentary/generated-argentina.mp4",
+  "output_sha256": "f419c9d388112b24ac87d595f389e9305b90fe3e3e180a3d73581127dabe268f",
+  "audio": false,
+  "tts_calls": 0,
+  "words_edited": true,
+  "source_time_edits": true,
+  "edit_record": "examples/portfolio-demo/release/argentina-edits.json",
+  "caption_timing": "Source cues with estimated reading time; not speech latency.",
+  "lines": [
+    {
+      "id": "line-2",
+      "at_s": 7.581,
+      "end_s": 9.081,
+      "voice": "caller",
+      "text": "Argentina drives forward"
+    },
+    {
+      "id": "line-3",
+      "at_s": 11.0,
+      "end_s": 12.538461538461538,
+      "voice": "caller",
+      "text": "It\u2019s in for Argentina!"
+    },
+    {
+      "id": "line-4",
+      "at_s": 13.738,
+      "end_s": 18.353384615384613,
+      "voice": "analyst",
+      "text": "That far-post touch is the key, steering it beyond the keeper\u2019s reach"
+    }
+  ]
+}

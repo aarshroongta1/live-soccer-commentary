@@ -1,0 +1,225 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "argentina-france-dimaria.mp4",
+    "start_s": 12.0,
+    "duration_s": 28.0
+  },
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Argentina regain control near the left side of midfield as a white-and-blue player closes down and pokes the ball forward under pressure.",
+      "actor": null,
+      "action": {
+        "type": "interception",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 12.0,
+      "kind": "play",
+      "description": "Argentina’s number 9 accelerates onto the loose ball and carries it upfield through the center-right channel with France retreating.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          12.0,
+          13.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 16.0,
+      "kind": "play",
+      "description": "The ball is played low into the French penalty area from the right, with the goalkeeper moving across his goal and several defenders converging.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          16.0,
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 17.0,
+      "kind": "play",
+      "description": "An Argentina attacker reaches the delivery at the far side of the six-yard area and redirects it first time toward goal.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          17.0,
+          18.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 18.0,
+      "kind": "goal",
+      "description": "The ball goes into the net at the far post as the French goalkeeper is beaten and ends up on the ground.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing",
+          "keeper_contact"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 21.0,
+      "kind": "celebration",
+      "description": "Argentina’s number 11 runs away in celebration after the goal, arms spread and mouth open.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          21.0,
+          22.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 25.0,
+      "kind": "celebration",
+      "description": "A wide crowd shot shows Argentina supporters jumping and hugging in celebration.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          25.0,
+          26.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-8",
+      "at_s": 27.0,
+      "kind": "play",
+      "description": "The French goalkeeper appears in close-up after the goal, looking frustrated as play has stopped.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          27.0
+        ]
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 6.0,
+      "voice": "analyst",
+      "text": "Argentina’s regain comes from pressure in midfield; the poke forward under contact keeps the move alive, though the exact challenge is a bit messy.",
+      "evidence_ids": [
+        "recorded-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-2",
+      "at_s": 15.581,
+      "voice": "caller",
+      "text": "Argentina’s number 9 drives forward",
+      "evidence_ids": [
+        "recorded-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-3",
+      "at_s": 19.0,
+      "voice": "caller",
+      "text": "It’s in for Argentina!",
+      "evidence_ids": [
+        "recorded-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-4",
+      "at_s": 21.738,
+      "voice": "analyst",
+      "text": "That far-post touch is the key, steering it beyond the keeper’s reach",
+      "evidence_ids": [
+        "recorded-4",
+        "recorded-5"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "runs/portfolio-release/argentina-1/result.json",
+    "cost": 0.034704,
+    "models": {
+      "observer": "gpt-5.4-mini",
+      "caller": "gpt-5.4-mini",
+      "analyst": "gpt-5.4-mini"
+    },
+    "research": {
+      "fixture": "Argentina v France",
+      "as_of": "2022-12-17",
+      "facts": [],
+      "squads": []
+    },
+    "words_edited": false,
+    "reviewer_enabled": false
+  }
+}

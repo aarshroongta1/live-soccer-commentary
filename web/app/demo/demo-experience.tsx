@@ -12,13 +12,17 @@ export type DemoClip = {
   src: string | null;
   poster: string | null;
   duration_s: number;
-  kind: "automatic" | "curated";
+  kind: "automatic" | "lightly-edited" | "curated";
   note: string;
   lines: { at_s: number; voice: string; text: string }[];
 };
 
 type Preparation = {
   tracePath: string;
+  editPath?: string;
+  editSummary?: string[];
+  costNote?: string;
+  turnTimeNote?: string;
   method: string[];
   generation: { model: string; calls: number; cost_usd: number; rejected_turns: number };
   observations: { id: string; at_s: number; description: string }[];
@@ -110,15 +114,16 @@ function ClipPlayer({ clip }: { clip: DemoClip }) {
   );
 }
 
-export default function DemoExperience({ clips, runs, preparation, iteration }: {
-  clips: DemoClip[]; runs: AgentRun[]; preparation: Preparation; iteration: Iteration;
+export default function DemoExperience({ clips, runs, preparations, iteration }: {
+  clips: DemoClip[]; runs: AgentRun[]; preparations: Record<string, Preparation>; iteration: Iteration;
 }) {
   const [activeId, setActiveId] = useState(clips[0].id);
   const active = clips.find((clip) => clip.id === activeId)!;
   const [version, setVersion] = useState<"before" | "after">("after");
-  const showBefore = active.kind === "automatic" && version === "before";
+  const hasIteration = active.id === "portfolio-penalty";
+  const showBefore = hasIteration && version === "before";
   const displayed = showBefore ? iteration.before.clip : active;
-  const visiblePreparation = showBefore ? iteration.before.preparation : preparation;
+  const visiblePreparation = showBefore ? iteration.before.preparation : preparations[active.id];
   return (
     <main className="demo-page">
       <div className="demo-content">
@@ -128,11 +133,12 @@ export default function DemoExperience({ clips, runs, preparation, iteration }: 
         </nav>
         <header className="demo-heading">
           <h1>Football commentary, built with agents.</h1>
-          <p>Independent AI agents watch, research, call and explain the play.</p>
+          <p>A visual observer supplies evidence. A caller reacts; an analyst explains. Code controls their turns.</p>
           <nav className="demo-section-nav" aria-label="On this page">
             <a href="#demos">Watch the demos</a>
             <a href="#demo-architecture-title">How it works</a>
             <a href="#evaluation">What I evaluated</a>
+            <a href="/soccer-commentary/demo-walkthrough.txt" download>Demo walkthrough</a>
           </nav>
         </header>
 
@@ -142,12 +148,12 @@ export default function DemoExperience({ clips, runs, preparation, iteration }: 
             {clips.map((clip) => (
               <button key={clip.id} type="button" aria-pressed={clip.id === activeId}
                 onClick={() => setActiveId(clip.id)}>
-                <span className={`demo-kind demo-kind-${clip.kind}`}>{clip.kind === "automatic" ? "Automatic dialogue" : "Edited showcase"}</span>
+                <span className={`demo-kind demo-kind-${clip.kind}`}>{clip.kind === "automatic" ? "Unedited AI text" : clip.kind === "lightly-edited" ? "Lightly edited AI" : "Edited showcase"}</span>
                 <strong>{clip.title}</strong><span>{clip.subtitle}</span>
               </button>
             ))}
           </div>
-          {active.kind === "automatic" && (
+          {hasIteration && (
             <section className="demo-iteration" aria-labelledby="iteration-title">
               <h3 id="iteration-title">{iteration.title}</h3>
               <p>{iteration.scope}</p>
@@ -158,7 +164,7 @@ export default function DemoExperience({ clips, runs, preparation, iteration }: 
             </section>
           )}
           <ClipPlayer key={displayed.id} clip={displayed} />
-          {active.kind === "automatic" && (
+          {hasIteration && (
             <details className="demo-iteration-result" open>
               <summary>What changed after evaluating the first attempt?</summary>
               <p>{iteration.summary}</p>
@@ -175,7 +181,14 @@ export default function DemoExperience({ clips, runs, preparation, iteration }: 
               <a href="/soccer-commentary/portfolio-iteration.json" download>Download the comparison record and input hashes</a>
             </details>
           )}
-          {active.kind === "automatic" && (
+          {visiblePreparation.editSummary && (
+            <details className="demo-method">
+              <summary>See the exact light edits</summary>
+              <ul>{visiblePreparation.editSummary.map((edit) => <li key={edit}>{edit}</li>)}</ul>
+              <a href={visiblePreparation.editPath} download>Download the edit record</a>
+            </details>
+          )}
+          {visiblePreparation && (
             <details className="demo-method">
               <summary>Inspect this agent run</summary>
               <div className="demo-method-grid">
@@ -183,11 +196,12 @@ export default function DemoExperience({ clips, runs, preparation, iteration }: 
                   <h3>From evidence to dialogue</h3>
                   <ul>{visiblePreparation.method.map((step) => <li key={step}>{step}</li>)}</ul>
                   <p>{visiblePreparation.generation.calls} new model calls · ${visiblePreparation.generation.cost_usd.toFixed(4)} in reported token cost · {visiblePreparation.generation.rejected_turns} turn(s) rejected by checks</p>
-                  <p>Saved vision and research costs are excluded. This is selected development output.</p>
+                  <p>{visiblePreparation.costNote ?? "Saved vision and research costs are excluded. This is selected development output."}</p>
                   <a href={visiblePreparation.tracePath} download>Download the complete preparation trace</a>
                 </div>
                 <div>
                   <h3>Source-time turns</h3>
+                  {visiblePreparation.turnTimeNote && <p>{visiblePreparation.turnTimeNote}</p>}
                   <ol className="demo-turns">{visiblePreparation.turns.map((turn, i) => (
                     <li key={i}><time>{timestamp(turn.at_s)}</time><div><strong>{turn.role} · {turn.status}</strong><p>{turn.detail}</p></div></li>
                   ))}</ol>
@@ -210,8 +224,9 @@ export default function DemoExperience({ clips, runs, preparation, iteration }: 
             <div><h3>A useful failure</h3><p>A false visual goal reached both writers through shared evidence. Valid citations alone could not establish factual correctness. A larger model repeated the error.</p></div>
             <div><h3>An honest comparison</h3><p>The text pilot had 12 usable inputs and only 5 of 24 writer attempts passed structural checks. It demonstrated no multi-agent quality advantage. A later timing fix fit a short call, but omitted the buildup.</p></div>
           </div>
-          <p className="demo-evaluation-limit">These are development findings with draft labels, not a held-out accuracy benchmark. The edited showcases above illustrate the intended presentation; the automatic example shows actual generated wording.</p>
+          <p className="demo-evaluation-limit">These are development findings with draft labels, not a held-out accuracy benchmark. The featured clips use model-generated wording with disclosed source cuts and light edits. Selection is editorial; these examples are not an accuracy score.</p>
           <a href="/soccer-commentary/evaluation-notes.txt" target="_blank" rel="noreferrer">Read the evaluation notes</a>
+          <p><a href="/soccer-commentary/portfolio-release.json" download>Download all four fresh-run attempts and costs</a></p>
         </section>
 
         <details className="demo-replay-details"><summary>Explore the causal replay prototype</summary>

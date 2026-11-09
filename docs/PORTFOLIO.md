@@ -5,16 +5,16 @@ The local `/` and `/demo` pages lead with three selected, silent captioned clips
 | Clip | Length | Provenance |
 | --- | --- | --- |
 | England vs France penalty | 20s | New automatic caller/analyst dialogue on saved vision and cited squad research. Exact generated words. |
-| Arsenal vs Norwich team goal | 28s | Existing manually reviewed and edited showcase. |
-| Argentina vs France counterattack | 28s | Existing manually reviewed and edited showcase. |
+| Arsenal vs Norwich | 18s | Fresh vision and generated caller/analyst dialogue. Exact retained words; source cut and one analyst caption retimed. |
+| Argentina vs France | 20s | Fresh vision and generated caller/analyst dialogue. Source cut and one unsupported identity phrase removed. |
 
 The automatic example includes a before/after switch, transcript seeking, source-time
 turns, rejected drafts, visual observations and downloadable preparation traces.
 Both versions use identical saved evidence; the focused iteration restored the
 caller’s goal announcement after an optional reviewer blocked it. The comparison
 reports observed cost/call changes and the later first call, without claiming
-general naturalness improvement. The other two
-illustrate the intended presentation and are labelled **Edited showcase**.
+general naturalness improvement. The other two are labelled **Lightly edited AI**,
+with source cuts, exact edit records, and the original preparation traces available.
 The page explains the agent roles, evaluation findings and recorded/live limits.
 Saved causal replay runs remain in an expandable section.
 
@@ -31,8 +31,13 @@ adding public media. Browsing clips and traces makes no model calls.
 The separate integrated portfolio page at
 `https://www.aarshroongta.com/projects/soccer-commentary` lives in the
 `personal-website` repository. These local changes do not update or deploy that
-page. The five older curated plans and videos remain available; the focused
-player selects two of them alongside the automatic example.
+page. The five older curated plans and videos remain archived; the focused
+player now uses three conversations with generated wording.
+
+[The demo walkthrough](DEMO_WALKTHROUGH.md) gives a two-minute presentation, a
+small code-reading route, interview questions and a resume bullet.
+[The fresh-run record](../examples/portfolio-demo/release/README.md) documents all
+four attempts, the $0.27827 reported spend, and the editorial changes.
 
 ## Automatic example
 
@@ -64,8 +69,8 @@ architecture decisions, evaluation findings and interview talking points.
 Media remains local and git-ignored. Expected player files are:
 
 - `web/public/soccer-commentary/portfolio-penalty.mp4`
-- `web/public/soccer-commentary/portfolio-arsenal-norwich.mp4`
-- `web/public/soccer-commentary/portfolio-argentina-france.mp4`
+- `web/public/soccer-commentary/generated-arsenal.mp4`
+- `web/public/soccer-commentary/generated-argentina.mp4`
 
 The automatic clip is rendered without audio, TTS or model calls:
 
@@ -78,11 +83,12 @@ uv run python scripts/render_text_demo.py \
 
 The script refuses to overwrite outputs. Captions preserve source cues and exact
 words; display intervals use estimated reading time and are not speech latency.
-The curated player copies remove audio from the existing captioned videos with
-FFmpeg `-map 0:v:0 -c:v copy -an`. The original voiced media remains unchanged.
+The new Arsenal and Argentina clips use the same renderer with their edited plans;
+reproduction commands are in the release record. Original curated media remains archived.
 
 `web/data/portfolio-demo.json` supplies the automatic transcript and run summary;
-`web/data/demo-clips.json` retains all five edited showcase transcripts. Optional
+`web/data/featured-demos.json` supplies the new lightly edited examples;
+`web/data/demo-clips.json` retains all five archived showcase transcripts. Optional
 remote sources can be configured with `PORTFOLIO_PENALTY_VIDEO_URL`,
 `PORTFOLIO_ARSENAL_VIDEO_URL`, `PORTFOLIO_ARGENTINA_VIDEO_URL` and
 `PORTFOLIO_BEFORE_VIDEO_URL`. A fresh clone

@@ -122,7 +122,9 @@ def render(plan_path: Path, clip: Path, output: Path, label: str) -> dict:
         "output_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "audio": False,
         "tts_calls": 0,
-        "words_edited": False,
+        "words_edited": bool(plan.metadata.get("words_edited", False)),
+        "source_time_edits": bool(plan.metadata.get("source_time_edits", False)),
+        "edit_record": plan.metadata.get("edit_record"),
         "caption_timing": "Source cues with estimated reading time; not speech latency.",
         "lines": intervals,
     }

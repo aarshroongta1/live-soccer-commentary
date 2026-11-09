@@ -5,6 +5,7 @@ asyncio, Pydantic, OpenCV and Next.js**. A visual observer and pre-match researc
 supply context to separate caller and analyst agents. Bounded tools, evidence
 contracts and a deterministic coordinator keep their decisions inspectable.
 
+[Demo walkthrough](docs/DEMO_WALKTHROUGH.md) ·
 [Portfolio case study](docs/PORTFOLIO_CASE_STUDY.md) ·
 [Demo setup](docs/PORTFOLIO.md) ·
 [Evaluation findings](docs/TEXT_EVALUATION_TRIAL.md)
@@ -21,15 +22,18 @@ Open http://127.0.0.1:3000/demo. Browsing clips and traces makes no model calls.
 | Example | What it shows |
 | --- | --- |
 | England vs France, 20s | Automatic caller/analyst dialogue using saved perception and cited squad context. Exact generated words, source-time turns and rejected drafts are inspectable. |
-| Arsenal vs Norwich, 28s | An edited showcase of a team goal, with caller bursts and analyst responses. |
-| Argentina vs France, 28s | An edited showcase of a counterattack and finish. |
+| Arsenal vs Norwich, 18s | Fresh vision and generated dialogue. Exact retained words; one source cut and analyst-caption retiming. |
+| Argentina vs France, 20s | Fresh vision and generated dialogue. Source cut and one unsupported shirt-number phrase removed. |
 
-These three videos are silent and captioned. The two edited showcases are labelled;
-they are not untouched multi-agent output. The automatic example is prepared
-before playback and is not a demonstration of live speech latency. Its before/after
+These three videos are silent and captioned. The two new examples disclose their
+light edits and preserve the raw output; the older heavily rewritten showcases are
+not featured. All dialogue is prepared
+before playback and is not a demonstration of live speech latency. The England before/after
 switch shows a matched development iteration: an optional reviewer suppressed a
 supported caller goal draft; disabling it restored the caller/analyst handoff.
-Both outputs are unedited, with input hashes, costs and trade-offs retained.
+Both England outputs are unedited, with input hashes, costs and trade-offs retained.
+The four fresh Arsenal/Argentina attempts cost $0.27827 in reported tokens under an
+$0.80 cap; failures are preserved in [the release record](examples/portfolio-demo/release/README.md).
 
 Media is local and git-ignored. Without it, the transcripts and traces still work;
 see [media setup](docs/PORTFOLIO.md). The separate

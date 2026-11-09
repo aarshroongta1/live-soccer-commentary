@@ -1,0 +1,10 @@
+{
+  "home": {
+    "name": "Arsenal",
+    "kit_colours": "red shirts with white sleeves, white shorts"
+  },
+  "away": {
+    "name": "Norwich City",
+    "kit_colours": "yellow shirts, green shorts"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "id": "argentina-release-edits",
+  "raw_plan": "examples/portfolio-demo/release/argentina-raw-plan.json",
+  "featured_plan": "examples/portfolio-demo/release/argentina-plan.json",
+  "source_before": {
+    "basename": "argentina-france-dimaria.mp4",
+    "start_s": 12.0,
+    "duration_s": 28.0
+  },
+  "source_after": {
+    "basename": "argentina-france-dimaria.mp4",
+    "start_s": 20.0,
+    "duration_s": 20
+  },
+  "changes": [
+    {
+      "line_id": "line-2",
+      "type": "text_deletion",
+      "before": "Argentina’s number 9 drives forward",
+      "after": "Argentina drives forward",
+      "reason": "Remove unsupported shirt-number identity; add no action or explanation."
+    }
+  ],
+  "lines_outside_selected_window": [
+    {
+      "id": "line-1",
+      "at_s": 6.0,
+      "voice": "analyst",
+      "text": "Argentina’s regain comes from pressure in midfield; the poke forward under contact keeps the move alive, though the exact challenge is a bit messy.",
+      "evidence_ids": [
+        "recorded-1"
+      ],
+      "research_ids": []
+    }
+  ],
+  "new_football_claims_added": false,
+  "retained_line_count": 3,
+  "selected_raw_words": 21,
+  "featured_words": 19,
+  "note": "Footage selection and caption timing are editorial. Vision saw the full original 28 seconds. Raw observations are not corrected to match the source review."
+}

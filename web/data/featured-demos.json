@@ -1,0 +1,324 @@
+[
+  {
+    "id": "generated-arsenal",
+    "title": "Arsenal vs Norwich",
+    "subtitle": "Carry, finish and replay",
+    "kind": "lightly-edited",
+    "videoPath": "/soccer-commentary/generated-arsenal.mp4",
+    "posterPath": "/soccer-commentary/generated-arsenal.jpg",
+    "duration_s": 18,
+    "lines": [
+      {
+        "at_s": 2.0,
+        "voice": "caller",
+        "text": "Arsenal’s left-sided attacker carries it toward the box, Norwich backpedalling"
+      },
+      {
+        "at_s": 8.0,
+        "voice": "caller",
+        "text": "And Arsenal’s number 7 finishes it!"
+      },
+      {
+        "at_s": 11.508,
+        "voice": "analyst",
+        "text": "That low finish has beaten the diving keeper and found the far side of the net"
+      }
+    ],
+    "note": "Generated from fresh frames. Exact model words; footage trimmed to one incident and the analyst caption moved earlier.",
+    "tracePath": "/soccer-commentary/generated-arsenal.trace.json",
+    "editPath": "/soccer-commentary/generated-arsenal.edits.json",
+    "edits": {
+      "id": "arsenal-release-edits",
+      "raw_plan": "examples/portfolio-demo/release/arsenal-raw-plan.json",
+      "featured_plan": "examples/portfolio-demo/release/arsenal-plan.json",
+      "source_before": {
+        "basename": "arsenal-team-goals.mp4",
+        "start_s": 89.0,
+        "duration_s": 28.0
+      },
+      "source_after": {
+        "basename": "arsenal-team-goals.mp4",
+        "start_s": 89.0,
+        "duration_s": 18
+      },
+      "changes": [
+        {
+          "line_id": "line-3",
+          "type": "caption_retime",
+          "before_s": 17.0,
+          "after_s": 11.508,
+          "reason": "Move the existing explanation after the goal call and before the source cut; cited evidence is already available."
+        }
+      ],
+      "lines_outside_selected_window": [
+        {
+          "id": "line-4",
+          "at_s": 24.0,
+          "voice": "caller",
+          "text": "And Arsenal’s number 7 has scored again!",
+          "evidence_ids": [
+            "recorded-9"
+          ],
+          "research_ids": []
+        }
+      ],
+      "new_football_claims_added": false,
+      "retained_line_count": 3,
+      "selected_raw_words": 32,
+      "featured_words": 32,
+      "note": "Footage selection and caption timing are editorial. Vision saw the full original 28 seconds. Raw observations are not corrected to match the source review."
+    },
+    "method": [
+      "Fresh full-context vision sampled 28 source frames at 1 fps. Dialogue was prepared before playback.",
+      "Only team names and kit colours were supplied; no prior script, evaluation labels, roster or research facts.",
+      "Separate caller and analyst agents generated the dialogue. The optional reviewer was off.",
+      "The featured window and caption edits are recorded below; the complete original attempt is downloadable."
+    ],
+    "generation": {
+      "model": "observer: gpt-5.4-2026-03-05; speakers: gpt-5.4-mini",
+      "calls": 8,
+      "cost_usd": 0.11029900000000001,
+      "rejected_turns": 3
+    },
+    "costNote": "Cost includes fresh vision and dialogue for this selected attempt. All four attempts are recorded in the release report.",
+    "observations": [
+      {
+        "id": "recorded-1",
+        "at_s": 1.0,
+        "description": "Arsenal's left-sided attacker carries the ball along the ground toward the outside of the penalty area with Norwich defenders retreating."
+      },
+      {
+        "id": "recorded-2",
+        "at_s": 4.0,
+        "description": "An Arsenal attacker in the left channel nudges a short grounded pass inside toward a teammate at the top-left edge of the box."
+      },
+      {
+        "id": "recorded-3",
+        "at_s": 5.0,
+        "description": "Arsenal number 7 receives and dribbles diagonally between converging Norwich defenders just outside the penalty area."
+      },
+      {
+        "id": "recorded-4",
+        "at_s": 7.0,
+        "description": "Arsenal number 7 shoots low from inside the box after breaking through the defensive line, sending the ball past the diving goalkeeper."
+      },
+      {
+        "id": "recorded-5",
+        "at_s": 8.0,
+        "description": "The shot from Arsenal number 7 finishes in the net at the far side of goal."
+      },
+      {
+        "id": "recorded-6",
+        "at_s": 10.0,
+        "description": "Replay from a closer angle shows Arsenal number 7 driving at a Norwich defender down the left edge of the area."
+      },
+      {
+        "id": "recorded-7",
+        "at_s": 15.0,
+        "description": "Replay from behind the goal shows the grounded shot rolling beyond the goalkeeper toward the open net."
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "at_s": 2.0,
+        "status": "retained draft",
+        "detail": "Immediate supported action only; no unsupported name or outcome."
+      },
+      {
+        "role": "caller",
+        "at_s": 6.1961538461538455,
+        "status": "rejected",
+        "detail": "agent line exceeds recorded speech budget"
+      },
+      {
+        "role": "caller",
+        "at_s": 8.0,
+        "status": "retained draft",
+        "detail": "The ball is already in the net, so a brief scoring reaction is supported."
+      },
+      {
+        "role": "analyst",
+        "at_s": 11.507692307692308,
+        "status": "rejected",
+        "detail": "agent line exceeds recorded speech budget"
+      },
+      {
+        "role": "caller",
+        "at_s": 11.507692307692308,
+        "status": "rejected",
+        "detail": "caller cannot announce uncertain actions or replay footage"
+      },
+      {
+        "role": "analyst",
+        "at_s": 17.0,
+        "status": "retained draft",
+        "detail": "Supported by the shot and goal observations; adds one concise consequence without inventing score or tactics."
+      },
+      {
+        "role": "caller",
+        "at_s": 24.0,
+        "status": "retained draft",
+        "detail": "Immediate scoring reaction to the confirmed goal, within the word limit, without adding unsupported details."
+      }
+    ],
+    "turnTimeNote": "Turn timestamps below refer to the original 28-second generation window; the featured source crop is recorded in the edit log.",
+    "editSummary": [
+      "The model saw source seconds 89–117. The featured video ends at 107s, before the compilation switches to another incident.",
+      "All three retained lines use the exact model words. The analyst caption moves from 17.000s to 11.508s, after its cited evidence is available.",
+      "A later goal call is outside the selected footage and is omitted. The complete 28-second output remains in the raw trace."
+    ]
+  },
+  {
+    "id": "generated-argentina",
+    "title": "Argentina vs France",
+    "subtitle": "An attack and far-post finish",
+    "kind": "lightly-edited",
+    "videoPath": "/soccer-commentary/generated-argentina.mp4",
+    "posterPath": "/soccer-commentary/generated-argentina.jpg",
+    "duration_s": 20,
+    "lines": [
+      {
+        "at_s": 7.581,
+        "voice": "caller",
+        "text": "Argentina drives forward"
+      },
+      {
+        "at_s": 11.0,
+        "voice": "caller",
+        "text": "It’s in for Argentina!"
+      },
+      {
+        "at_s": 13.738,
+        "voice": "analyst",
+        "text": "That far-post touch is the key, steering it beyond the keeper’s reach"
+      }
+    ],
+    "note": "Generated from fresh frames. Selected final 20 seconds; removed “’s number 9” from one line. No new football claims added.",
+    "tracePath": "/soccer-commentary/generated-argentina.trace.json",
+    "editPath": "/soccer-commentary/generated-argentina.edits.json",
+    "edits": {
+      "id": "argentina-release-edits",
+      "raw_plan": "examples/portfolio-demo/release/argentina-raw-plan.json",
+      "featured_plan": "examples/portfolio-demo/release/argentina-plan.json",
+      "source_before": {
+        "basename": "argentina-france-dimaria.mp4",
+        "start_s": 12.0,
+        "duration_s": 28.0
+      },
+      "source_after": {
+        "basename": "argentina-france-dimaria.mp4",
+        "start_s": 20.0,
+        "duration_s": 20
+      },
+      "changes": [
+        {
+          "line_id": "line-2",
+          "type": "text_deletion",
+          "before": "Argentina’s number 9 drives forward",
+          "after": "Argentina drives forward",
+          "reason": "Remove unsupported shirt-number identity; add no action or explanation."
+        }
+      ],
+      "lines_outside_selected_window": [
+        {
+          "id": "line-1",
+          "at_s": 6.0,
+          "voice": "analyst",
+          "text": "Argentina’s regain comes from pressure in midfield; the poke forward under contact keeps the move alive, though the exact challenge is a bit messy.",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        }
+      ],
+      "new_football_claims_added": false,
+      "retained_line_count": 3,
+      "selected_raw_words": 21,
+      "featured_words": 19,
+      "note": "Footage selection and caption timing are editorial. Vision saw the full original 28 seconds. Raw observations are not corrected to match the source review."
+    },
+    "method": [
+      "Fresh full-context vision sampled 28 source frames at 1 fps. Dialogue was prepared before playback.",
+      "Only team names and kit colours were supplied; no prior script, evaluation labels, roster or research facts.",
+      "Separate caller and analyst agents generated the dialogue. The optional reviewer was off.",
+      "The featured window and caption edits are recorded below; the complete original attempt is downloadable."
+    ],
+    "generation": {
+      "model": "observer: gpt-5.4-mini; speakers: gpt-5.4-mini",
+      "calls": 5,
+      "cost_usd": 0.034704,
+      "rejected_turns": 0
+    },
+    "costNote": "Cost includes fresh vision and dialogue for this selected attempt. All four attempts are recorded in the release report.",
+    "observations": [
+      {
+        "id": "recorded-2",
+        "at_s": 4.0,
+        "description": "Argentina’s number 9 accelerates onto the loose ball and carries it upfield through the center-right channel with France retreating."
+      },
+      {
+        "id": "recorded-3",
+        "at_s": 8.0,
+        "description": "The ball is played low into the French penalty area from the right, with the goalkeeper moving across his goal and several defenders converging."
+      },
+      {
+        "id": "recorded-4",
+        "at_s": 9.0,
+        "description": "An Argentina attacker reaches the delivery at the far side of the six-yard area and redirects it first time toward goal."
+      },
+      {
+        "id": "recorded-5",
+        "at_s": 10.0,
+        "description": "The ball goes into the net at the far post as the French goalkeeper is beaten and ends up on the ground."
+      },
+      {
+        "id": "recorded-6",
+        "at_s": 13.0,
+        "description": "Argentina’s number 11 runs away in celebration after the goal, arms spread and mouth open."
+      },
+      {
+        "id": "recorded-7",
+        "at_s": 17.0,
+        "description": "A wide crowd shot shows Argentina supporters jumping and hugging in celebration."
+      },
+      {
+        "id": "recorded-8",
+        "at_s": 19.0,
+        "description": "The French goalkeeper appears in close-up after the goal, looking frustrated as play has stopped."
+      }
+    ],
+    "turns": [
+      {
+        "role": "analyst",
+        "at_s": 6.0,
+        "status": "retained draft",
+        "detail": "Supported explanation of the observed interception-like action without overclaiming identity or outcome."
+      },
+      {
+        "role": "caller",
+        "at_s": 15.58076923076923,
+        "status": "retained draft",
+        "detail": "Immediate supported action from the newest confirmed observation."
+      },
+      {
+        "role": "caller",
+        "at_s": 19.0,
+        "status": "retained draft",
+        "detail": "Immediate scoring reaction to the confirmed goal, within the broadcast cue and word limit."
+      },
+      {
+        "role": "analyst",
+        "at_s": 21.73846153846154,
+        "status": "retained draft",
+        "detail": "Add one supported explanation of the goal without naming an unresolved scorer."
+      }
+    ],
+    "turnTimeNote": "Turn timestamps below refer to the original 28-second generation window; the featured source crop is recorded in the edit log.",
+    "editSummary": [
+      "The model saw source seconds 12–40. The featured video selects 20–40s; an earlier analyst line falls outside this window.",
+      "“Argentina’s number 9 drives forward” becomes “Argentina drives forward”. Only the unsupported identity phrase is removed.",
+      "All other retained words are unchanged. Caption cues are shifted by the 8-second source cut; no new action, name or explanation is added."
+    ]
+  }
+]

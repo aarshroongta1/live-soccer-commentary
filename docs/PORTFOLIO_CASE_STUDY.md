@@ -8,8 +8,10 @@ bounded context tools, speak or abstain. A deterministic coordinator controls
 clock visibility, deadlines, turn-taking and stale results. Saved traces make
 agent decisions and failures inspectable.
 
-The demo contains one automatic conversation and two labelled edited showcases.
-The automatic conversation is prepared on saved perception before playback;
+The demo contains three conversations using model-generated text: an unedited
+England example on saved perception, plus fresh Arsenal and Argentina runs with
+disclosed light edits. The [walkthrough](DEMO_WALKTHROUGH.md) gives a short demo
+script, code-reading route and resume bullet. All conversations are prepared before playback;
 causal replay is a separate prototype with simulated speech occupancy. Voice work
 is outside the current finishing scope.
 
@@ -74,6 +76,20 @@ improvement. The later run also loses the early call; model-wording variation is
 uncontrolled. The defensible result is restored role separation on this matched
 case, with lower observed calls and cost. Independent naturalness and factual
 accuracy gains across the suite remain unproven.
+
+## Finishing without rewriting the model output
+
+The two new examples use fresh frames and separate caller/analyst agents, with no
+prior script or target labels. Four attempts cost $0.27827 in reported tokens under
+an $0.80 cap; all attempts, including one schema failure, remain in the
+[release record](../examples/portfolio-demo/release/README.md).
+
+Arsenal selects one 18-second incident, preserves every retained word, and moves
+one analyst cue earlier after its evidence is available. Argentina selects the
+final 20 seconds, omits an earlier analyst line outside that crop, and removes
+“’s number 9” from one caller line. No new football facts or explanations are added.
+These are editorial cuts with explicit diffs, not a fully automatic quality result.
+The older heavily rewritten showcases are no longer featured.
 
 ## What evaluation taught me
 

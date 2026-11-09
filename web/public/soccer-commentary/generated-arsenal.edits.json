@@ -1,0 +1,41 @@
+{
+  "id": "arsenal-release-edits",
+  "raw_plan": "examples/portfolio-demo/release/arsenal-raw-plan.json",
+  "featured_plan": "examples/portfolio-demo/release/arsenal-plan.json",
+  "source_before": {
+    "basename": "arsenal-team-goals.mp4",
+    "start_s": 89.0,
+    "duration_s": 28.0
+  },
+  "source_after": {
+    "basename": "arsenal-team-goals.mp4",
+    "start_s": 89.0,
+    "duration_s": 18
+  },
+  "changes": [
+    {
+      "line_id": "line-3",
+      "type": "caption_retime",
+      "before_s": 17.0,
+      "after_s": 11.508,
+      "reason": "Move the existing explanation after the goal call and before the source cut; cited evidence is already available."
+    }
+  ],
+  "lines_outside_selected_window": [
+    {
+      "id": "line-4",
+      "at_s": 24.0,
+      "voice": "caller",
+      "text": "And Arsenal’s number 7 has scored again!",
+      "evidence_ids": [
+        "recorded-9"
+      ],
+      "research_ids": []
+    }
+  ],
+  "new_football_claims_added": false,
+  "retained_line_count": 3,
+  "selected_raw_words": 32,
+  "featured_words": 32,
+  "note": "Footage selection and caption timing are editorial. Vision saw the full original 28 seconds. Raw observations are not corrected to match the source review."
+}

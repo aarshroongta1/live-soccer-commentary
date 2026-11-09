@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import savedRuns from "@/data/agent-runs.json";
-import catalog from "@/data/demo-clips.json";
+import featured from "@/data/featured-demos.json";
 import prepared from "@/data/portfolio-demo.json";
 import iterationData from "@/data/iteration-demo.json";
 import DemoExperience, { type DemoClip } from "./demo-experience";
@@ -15,18 +15,15 @@ export default function DemoPage() {
     src: process.env.PORTFOLIO_PENALTY_VIDEO_URL || localMedia(prepared.videoPath),
     poster: localMedia(prepared.posterPath),
   }];
-  for (const id of ["arsenal-norwich", "argentina-france"]) {
-    const clip = catalog.find((item) => item.id === id)!;
+  for (const clip of featured) {
     clips.push({
       ...clip,
-      kind: "curated",
-      title: id === "arsenal-norwich" ? "Arsenal vs Norwich" : "Argentina vs France",
-      subtitle: id === "arsenal-norwich" ? "A one-touch team goal" : "A counterattack in the final",
-      src: process.env[`PORTFOLIO_${id === "arsenal-norwich" ? "ARSENAL" : "ARGENTINA"}_VIDEO_URL`] || localMedia(`/soccer-commentary/portfolio-${id}.mp4`),
-      poster: localMedia(`/soccer-commentary/portfolio-${id}.jpg`),
-      note: "Manually reviewed and edited showcase. Captions preserve the retained script; this is not unedited multi-agent output.",
+      kind: "lightly-edited",
+      src: process.env[`PORTFOLIO_${clip.id === "generated-arsenal" ? "ARSENAL" : "ARGENTINA"}_VIDEO_URL`] || localMedia(clip.videoPath),
+      poster: localMedia(clip.posterPath),
     });
   }
+  const preparations = Object.fromEntries([prepared, ...featured].map((clip) => [clip.id, clip]));
   const runs = savedRuns.map((run) => ({ ...run, src: localMedia(run.videoPath) }));
   const iteration = {
     ...iterationData,
@@ -40,5 +37,5 @@ export default function DemoPage() {
       },
     },
   };
-  return <DemoExperience clips={clips} runs={runs} preparation={prepared} iteration={iteration} />;
+  return <DemoExperience clips={clips} runs={runs} preparations={preparations} iteration={iteration} />;
 }

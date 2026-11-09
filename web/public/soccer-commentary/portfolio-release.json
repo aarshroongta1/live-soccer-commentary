@@ -1,0 +1,212 @@
+{
+  "id": "bounded-demo-release-20261109",
+  "max_total_usd": 0.8,
+  "reported_total_usd": 0.27827,
+  "unsettled_reservations_usd": 0,
+  "attempt_count": 4,
+  "attempts": [
+    {
+      "id": "arsenal-1",
+      "selected": false,
+      "observer_model": "gpt-5.4-mini",
+      "speaker_model": "gpt-5.4-mini",
+      "budget": {
+        "max_usd": 0.2,
+        "max_calls": 24,
+        "attempts": 6,
+        "reported_usd": 0.036462,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "error": null,
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 2.0,
+          "voice": "caller",
+          "text": "Arsenal probing on the left, just outside the box, Norwich packed in behind",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 9.0,
+          "voice": "analyst",
+          "text": "That low effort through traffic had the keeper scrambling, and the ball’s still beaten him at the near side",
+          "evidence_ids": [
+            "recorded-4",
+            "recorded-5",
+            "recorded-6"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 16.658,
+          "voice": "caller",
+          "text": "It’s in! Arsenal have scored, the ball nestled in the net at the near post",
+          "evidence_ids": [
+            "recorded-6"
+          ],
+          "research_ids": []
+        }
+      ],
+      "trace": "examples/portfolio-demo/release/arsenal-1-trace.json"
+    },
+    {
+      "id": "arsenal-2",
+      "selected": true,
+      "observer_model": "gpt-5.4-2026-03-05",
+      "speaker_model": "gpt-5.4-mini",
+      "budget": {
+        "max_usd": 0.2,
+        "max_calls": 24,
+        "attempts": 8,
+        "reported_usd": 0.11029900000000001,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "error": null,
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 2.0,
+          "voice": "caller",
+          "text": "Arsenal’s left-sided attacker carries it toward the box, Norwich backpedalling",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 8.0,
+          "voice": "caller",
+          "text": "And Arsenal’s number 7 finishes it!",
+          "evidence_ids": [
+            "recorded-5"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 17.0,
+          "voice": "analyst",
+          "text": "That low finish has beaten the diving keeper and found the far side of the net",
+          "evidence_ids": [
+            "recorded-4",
+            "recorded-5"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-4",
+          "at_s": 24.0,
+          "voice": "caller",
+          "text": "And Arsenal’s number 7 has scored again!",
+          "evidence_ids": [
+            "recorded-9"
+          ],
+          "research_ids": []
+        }
+      ],
+      "trace": "examples/portfolio-demo/release/arsenal-2-trace.json"
+    },
+    {
+      "id": "argentina-1",
+      "selected": true,
+      "observer_model": "gpt-5.4-mini",
+      "speaker_model": "gpt-5.4-mini",
+      "budget": {
+        "max_usd": 0.2,
+        "max_calls": 24,
+        "attempts": 5,
+        "reported_usd": 0.034704,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "error": null,
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 6.0,
+          "voice": "analyst",
+          "text": "Argentina’s regain comes from pressure in midfield; the poke forward under contact keeps the move alive, though the exact challenge is a bit messy.",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 15.581,
+          "voice": "caller",
+          "text": "Argentina’s number 9 drives forward",
+          "evidence_ids": [
+            "recorded-2"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 19.0,
+          "voice": "caller",
+          "text": "It’s in for Argentina!",
+          "evidence_ids": [
+            "recorded-5"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-4",
+          "at_s": 21.738,
+          "voice": "analyst",
+          "text": "That far-post touch is the key, steering it beyond the keeper’s reach",
+          "evidence_ids": [
+            "recorded-4",
+            "recorded-5"
+          ],
+          "research_ids": []
+        }
+      ],
+      "trace": "examples/portfolio-demo/release/argentina-1-trace.json"
+    },
+    {
+      "id": "argentina-2",
+      "selected": false,
+      "observer_model": "gpt-5.4-2026-03-05",
+      "speaker_model": "gpt-5.4-mini",
+      "budget": {
+        "max_usd": 0.2,
+        "max_calls": 24,
+        "attempts": 1,
+        "reported_usd": 0.096805,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "error": {
+        "type": "LLMError",
+        "message": "recorded_observer: unparseable output after $0.097 (status completed, 727 of 3072 output tokens): 1 validation error for RecordedObservations\nobservations.5.action.cues\n  List should have at most 4 items after validation, not 5 [type=too_long, input_value=['ball_contact', 'ball_mo...rossing', 'ball_in_net'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_long"
+      },
+      "lines": [],
+      "trace": "examples/portfolio-demo/release/argentina-2-trace.json"
+    }
+  ],
+  "models": [
+    "gpt-5.4-mini",
+    "gpt-5.4-2026-03-05"
+  ],
+  "selection": "Arsenal stronger observer attempt, Argentina mini attempt. The stronger observer was not consistently better. This is selected development output, not a model comparison benchmark.",
+  "manual_review": "Source-frame review by the coding assistant, not an independent human rating.",
+  "paid_calls_finished": true
+}

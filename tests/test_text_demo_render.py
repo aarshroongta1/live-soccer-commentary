@@ -23,7 +23,8 @@ def test_captions_preserve_words_and_stop_before_the_next_cue():
     assert "Caller:" in ass and "Analyst:" in ass
 
 
-def test_render_command_removes_source_audio_and_refuses_overwrite(tmp_path, monkeypatch):
+@pytest.mark.parametrize("edited", [False, True])
+def test_render_command_removes_source_audio_and_refuses_overwrite(tmp_path, monkeypatch, edited):
     clip = tmp_path / "england-france-penalties.mp4"
     clip.write_bytes(b"offline input")
     monkeypatch.setattr(renderer, "validate_inputs", lambda *_: None)
@@ -37,12 +38,16 @@ def test_render_command_removes_source_audio_and_refuses_overwrite(tmp_path, mon
 
     monkeypatch.setattr(renderer.subprocess, "run", fake_run)
     output = tmp_path / "render.mp4"
-    report = renderer.render(PLAN, clip, output, "Automatic dialogue")
+    raw = json.loads(PLAN.read_text())
+    raw["metadata"]["words_edited"] = edited
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(json.dumps(raw))
+    report = renderer.render(plan_path, clip, output, "Automatic dialogue")
     assert "-an" in commands[0]
     assert report["audio"] is False and report["tts_calls"] == 0
-    assert report["words_edited"] is False
+    assert report["words_edited"] is edited
     with pytest.raises(ValueError, match="overwrite"):
-        renderer.render(PLAN, clip, output, "Automatic dialogue")
+        renderer.render(plan_path, clip, output, "Automatic dialogue")
     assert len(commands) == 1
 
 

@@ -1,0 +1,36 @@
+{
+  "id": "resp_0770c019b44acc03006af25317bb0487d2bf6daa027c4d2a18",
+  "model": "gpt-5.4-2026-03-05",
+  "status": "completed",
+  "usage": {
+    "input_tokens": 34360,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 727,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 35087
+  },
+  "output": [
+    {
+      "id": "msg_0770c019b44acc03006af253190d7c87d28a4082c5b335d6d5",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"observations\":[{\"id\":\"obs1\",\"at_s\":1.0,\"kind\":\"play\",\"description\":\"France work the ball near Argentina's left side of the box and a dark-blue player sends the ball away from the crowded area.\",\"actor\":null,\"action\":{\"type\":\"cross\",\"certainty\":\"uncertain\",\"ball_path\":\"unknown\",\"cues\":[\"ball_contact\",\"ball_motion\",\"player_challenge\"],\"support_at_s\":[0.0,1.0]}},{\"id\":\"obs2\",\"at_s\":2.0,\"kind\":\"play\",\"description\":\"Argentina clear the danger from inside their area, lifting the ball high upfield.\",\"actor\":null,\"action\":{\"type\":\"clearance\",\"certainty\":\"confirmed\",\"ball_path\":\"aerial\",\"cues\":[\"ball_contact\",\"ball_motion\",\"ball_flight\"],\"support_at_s\":[1.0,2.0,3.0]}},{\"id\":\"obs3\",\"at_s\":5.0,\"kind\":\"play\",\"description\":\"France regain possession near the right touchline around halfway and carry forward.\",\"actor\":null,\"action\":{\"type\":\"carry\",\"certainty\":\"confirmed\",\"ball_path\":\"ground\",\"cues\":[\"ball_contact\",\"ball_motion\",\"ball_on_ground\"],\"support_at_s\":[4.0,5.0]}},{\"id\":\"obs4\",\"at_s\":10.0,\"kind\":\"play\",\"description\":\"Argentina win the ball in midfield and immediately play a forward pass into the right channel.\",\"actor\":null,\"action\":{\"type\":\"pass\",\"certainty\":\"confirmed\",\"ball_path\":\"ground\",\"cues\":[\"ball_contact\",\"ball_motion\",\"ball_on_ground\",\"player_challenge\"],\"support_at_s\":[9.0,10.0,11.0]}},{\"id\":\"obs5\",\"at_s\":15.0,\"kind\":\"play\",\"description\":\"An Argentina attacker races onto the through ball down the right side and drives into the penalty area.\",\"actor\":{\"side\":\"home\",\"shirt_number\":11,\"shirt_name\":\"DI MARIA\",\"identity_source\":\"shirt_name\",\"action_role\":\"ball_carrier\",\"resolved_name\":null},\"action\":{\"type\":\"carry\",\"certainty\":\"confirmed\",\"ball_path\":\"ground\",\"cues\":[\"ball_contact\",\"ball_motion\",\"ball_on_ground\"],\"support_at_s\":[14.0,15.0,16.0]}},{\"id\":\"obs6\",\"at_s\":17.0,\"kind\":\"goal\",\"description\":\"Argentina's number 11 finishes the move with a left-footed shot across the goalkeeper and into the far side of the net.\",\"actor\":{\"side\":\"home\",\"shirt_number\":11,\"shirt_name\":\"DI MARIA\",\"identity_source\":\"shirt_name\",\"action_role\":\"shooter\",\"resolved_name\":null},\"action\":{\"type\":\"goal\",\"certainty\":\"confirmed\",\"ball_path\":\"ground\",\"cues\":[\"ball_contact\",\"ball_motion\",\"ball_on_ground\",\"goal_line_crossing\",\"ball_in_net\"],\"support_at_s\":[16.0,17.0,18.0,21.0]}},{\"id\":\"obs7\",\"at_s\":21.0,\"kind\":\"celebration\",\"description\":\"Argentina's number 11, DI MARIA, runs away shouting with arms out after scoring.\",\"actor\":{\"side\":\"home\",\"shirt_number\":11,\"shirt_name\":\"DI MARIA\",\"identity_source\":\"shirt_name\",\"action_role\":\"visible_player\",\"resolved_name\":null},\"action\":{\"type\":\"unknown\",\"certainty\":\"uncertain\",\"ball_path\":\"unknown\",\"cues\":[],\"support_at_s\":[21.0,22.0,23.0]}}]}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "incomplete_details": null,
+  "tag": "recorded_observer"
+}

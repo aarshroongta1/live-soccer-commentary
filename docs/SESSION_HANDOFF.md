@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: ready-for-demo
 branch: feature/replay-agents
 timestamp: 2026-11-09
 files_modified: []
@@ -7,80 +7,74 @@ files_modified: []
 
 # Commentary project handoff
 
-## Current priority: bounded portfolio polish — completed locally
+## Current priority: showable portfolio demo — completed locally
 
-Latest addition: the automatic penalty demo now has a **Before / After** switch.
-Both versions are exact saved model output from the two bounded polish attempts,
-with identical source, observations and research, and the same requested model.
-Before, the optional reviewer rejected even “Kane scores!” twice and withheld the
-caller’s goal turn; after disabling that reviewer, the caller announces the goal
-and the analyst follows. Observed calls were 17 → 9 and reported token cost
-$0.01796 → $0.00871. Both retained 33 words; after starts later (3s vs 1s).
-This is one development pair with uncontrolled wording variation, not the earliest
-system baseline, a full-suite improvement result or an independent naturalness
-rating. The 15-clip pilot preceded this focused reviewer diagnosis. Existing
-citation, permission and timing checks remain. No new paid calls or word edits.
+The user wants a demo they can show, explain and put on a resume. Light editing is
+allowed; voice and open-ended research remain excluded. The focused `/` and
+`/demo` pages now feature generated commentary for three clips:
 
-Artifacts: examples/portfolio-demo/{before-plan,before-trace,iteration}.json,
-web/data/iteration-demo.json, and public before captions/render metadata/trace
-plus the downloadable comparison record. The before MP4 is a fourth local media
-asset for the same featured clip; there are still three featured clips. Added
-scripted regression coverage reproduces the supported-goal suppression with the
-same draft and snapshot, and verifies matched inputs and exact saved output.
+- England–France, 20s: exact unedited model words on saved perception/research.
+  The before/after switch retains the optional reviewer failure and restored
+  caller goal turn. Same saved evidence, 17 vs 9 calls, 33 words each; later run
+  starts at 3s instead of 1s. This is one development pair, not a suite-wide gain.
+- Arsenal–Norwich, 18s: fresh vision and independent speaker turns. All three
+  retained lines are verbatim. Trim the original 28s to one incident and move the
+  analyst cue from 17.000s to 11.508s, after evidence availability. This is a carry
+  and finish, not the earlier manually described Wilshere passing sequence.
+- Argentina–France, 20s: fresh vision/speakers, select the last 20s of the original
+  28s, omitting an earlier analyst line outside the crop. Remove “’s number 9” from
+  one caller line. Other retained words and source-relative cues are unchanged.
 
+No football action, name, statistic or explanation was added. Source cuts and
+retiming are editorial. Full-context vision saw the original 28s for both new
+clips. These are selected examples, not untouched end-to-end quality evidence.
+The older heavily rewritten showcases/media/plans remain archived, not featured.
+All three clips are silent and captioned; no TTS or measured live speech latency.
 
-The user chose **Bounded demo polish**: finish a resume-ready project with a few
-clips and a clear building/evaluation story. Open-ended recognition research is
-not the active objective. The focused local `/` and `/demo` pages now select:
+Fresh experiment: four attempts capped at $0.20 each, $0.80 maximum total; reported
+cost **$0.27827**, all reservations settled, 20 model calls, no retries/web research.
+Initial observers and all speakers use gpt-5.4-mini; follow-up observers use
+ gpt-5.4-2026-03-05. Select Arsenal attempt two and Argentina attempt one. Stronger
+vision was not consistently better: the Argentina follow-up returned five cues
+where the schema allows four and failed validation. All attempts remain preserved.
+No more model calls are planned. Inputs contain only footage and team/kit context,
+empty research briefs, no earlier scripts or evaluator labels. Source review was
+by the coding assistant against frames, not an independent human rating.
 
-- England–France penalty, 20s: one new automatic caller/analyst conversation on
-  saved model vision and cited squad research; exact generated words.
-- Arsenal–Norwich, 28s: labelled edited showcase.
-- Argentina–France, 28s: labelled edited showcase.
+Artifacts: examples/portfolio-demo/release contains raw plans, featured plans,
+exact edit records, all four traces, inputs and selection/spend report.
+web/data/featured-demos.json supplies new examples; portfolio-demo.json retains
+England. Each clip switches to its own trace, evidence and turn list. New public
+media: generated-arsenal.mp4/.jpg and generated-argentina.mp4/.jpg, with tracked
+ASS/render/edit/trace JSON. Media remains git-ignored. A fresh clone still shows
+transcripts without media. Renderer now preserves a plan's words_edited and
+source_time_edits metadata instead of always claiming no word edits.
 
-All three featured clips are silent, captioned videos. Original voiced media and
-all five curated source plans remain intact. Browsing the page makes no model
-calls. The automatic example has a seekable transcript, source-time turns,
-rejected drafts, observations and a downloadable trace. Architecture and an honest
-small evaluation summary follow; saved causal replay runs are expandable.
+**docs/DEMO_WALKTHROUGH.md** is the recommended entry point: a 30-second explanation,
+two-minute presentation, four code sections to understand, interview questions and
+one resume bullet. No trained-model, benchmark-accuracy or proven multi-agent
+quality claim. docs/PORTFOLIO_CASE_STUDY.md and docs/PORTFOLIO.md are updated.
 
-Durable automatic artifacts: examples/portfolio-demo/penalty-plan.json,
-penalty-trace.json, selection.json and media-manifest.json. Web summary:
-web/data/portfolio-demo.json. The source is existing footage at 42–62s. Prior
-commentary words and evaluator labels were excluded from runtime inputs; names
-were cleared and re-proposed through the roster tool. Saved perception originated
-from the earlier full-context preparation and is not evidence of causal operation.
+Shareable local package: runs/portfolio-release/commentary-demo.zip (38.2 MiB),
+three featured clips, England before comparison, walkthrough and edit/cost records.
+Individual copies are in runs/portfolio-release/share. Browsing/playing is free.
+This is ready to show locally or share as MP4s. No push, deployment or separate
+personal-website update has been performed; the existing public page is older.
 
-Two attempts exhausted the chosen generation limit. Combined cap $0.24, reported
-token cost **$0.02666745**, no unsettled reservations or TTS. Attempt one’s optional
-reviewer rejected even Kane scores!; selected attempt two disabled it. Attempt two
-used nine calls and $0.0087087, rejected one early oversized line, and retained
-penalty/run-up/goal/analysis. The words were not manually edited. No new vision or
-research calls were made, and those old costs are excluded.
+Validation: **384 offline tests passed**, Ruff and mypy passed, web lint/build
+passed. New provenance checks verify preserved words, the disclosed identity
+removal, available evidence after retiming, readable captions, and costs including
+failed/unselected attempts. ffprobe confirms new video durations 18s/20s, no audio.
+gstack browser checks at 1280px/375px: three labelled choices, correct transcripts,
+11.508s seek, old-player pause while actually playing, correct per-clip traces and
+edits, England before/after, download HTTP 200s, no overflow or console errors.
+QA screenshots are in runs/portfolio-release. Production preview is at
+http://127.0.0.1:3000/demo; verify its process before reuse. Stop next-server before
+rebuilding .next. Generate public media before the static build.
 
-scripts/prepare_agent_demo.py now supports --no-review and records that setting;
-reused vision is labelled reused in future plan metadata. New
-scripts/render_text_demo.py renders exact source-cued captions without any audio,
-TTS or model calls. The README and docs/PORTFOLIO.md describe the focused local
-release; docs/PORTFOLIO_CASE_STUDY.md provides architecture decisions, limitations,
-resume bullets and interview talking points.
-
-Validation: **380 offline tests passed**, targeted script checks passed after the
-final audit-metadata change, Ruff and mypy passed, web lint/build passed. gstack
-browser checks at desktop and 375px confirmed three clips, correct durations,
-transcript seeks, old-player pause on switching, trace/evaluation downloads,
-expandable replay traces, no horizontal overflow and no console errors on a clean
-reload. ffprobe confirms every featured video has no audio track. The production
-preview is running at http://127.0.0.1:3000/demo; verify the process before reuse.
-Stop it before rebuilding .next. Finish generating public media before building,
-because media availability is baked into this static page.
-
-All changes are local. No push, deployment or separate personal-website update
-was performed. Media stays git-ignored on this machine; missing-media transcripts
-work in a fresh clone. Further work should follow feedback on the selected demo
-or an explicit release request, rather than restart the false-goal research loop.
-Voice remains excluded. Paid experiments at $1 or less are authorized; ask above
-$1 and do not split a larger experiment to bypass that limit.
+Further work should follow actual user feedback or an explicit release request.
+Do not reopen the false-goal rabbit hole. Paid experiments up to $1 are authorized;
+ask above $1 and do not split a larger experiment to bypass that limit.
 
 ## Latest: false-goal investigation, 9 November 2026
 

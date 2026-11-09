@@ -1,0 +1,10 @@
+{
+  "home": {
+    "name": "Argentina",
+    "kit_colours": "light blue and white striped shirts, white shorts"
+  },
+  "away": {
+    "name": "France",
+    "kit_colours": "dark blue shirts, dark blue shorts"
+  }
+}

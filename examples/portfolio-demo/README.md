@@ -31,3 +31,9 @@ and limitations. The local player can switch both source-timed captioned version
 This is a focused development case following the 15-clip pilot, not the earliest
 system baseline or a claim that every output dimension improved. No additional
 model calls were made to package the comparison.
+
+## Fresh vision and light edits
+
+The additional featured clips are in [release](release/README.md), with fresh
+perception, raw outputs, every attempted run, exact edit records and no added
+football facts. These replace the heavily rewritten showcases in the player.

@@ -26,7 +26,7 @@ export default function CommentaryArchitecture() {
       <p className="demo-architecture-note">The prototype also supports a bounded reviewer/revision step, disabled by default. Saved examples below show which roles and tools actually ran; research is optional.</p>
       <details className="demo-recorded-path">
         <summary>Recorded preparation and causal replay</summary>
-        <p>The automatic video above reuses saved perception and research, then prepares new caller and analyst dialogue before playback. The curated showcases use a joint script followed by manual editing. The separate causal replay prototype releases frames over time and simulates speech occupancy. None of these examples establishes real-time spoken commentary latency.</p>
+        <p>The England example reuses saved perception and research. Arsenal and Argentina use fresh full-context vision and separate caller/analyst turns, followed by disclosed source cuts and caption edits. All three are prepared before playback. The separate causal replay prototype releases frames over time and simulates speech occupancy. None of these examples establishes real-time spoken commentary latency.</p>
       </details>
     </section>
   );

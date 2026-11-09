@@ -1,0 +1,805 @@
+{
+  "source": {
+    "path": "clips/demo-sources/arsenal-team-goals.mp4",
+    "start_s": 89.0,
+    "duration_s": 28.0,
+    "sha256": "b555373ae88ad325f0b1a6f7508531ff3bda92f04c9b34fce1bbb0d78a779867"
+  },
+  "research": {
+    "fixture": "Arsenal v Norwich City",
+    "as_of": "2013-10-18",
+    "facts": [],
+    "squads": []
+  },
+  "budget": {
+    "max_usd": 0.2,
+    "max_calls": 24,
+    "attempts": 6,
+    "reported_usd": 0.036462,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "mode": "recorded_preparation",
+  "reviewer_enabled": false,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 0.0,
+      "kind": "play",
+      "description": "Arsenal work the ball around the left side outside the Norwich penalty area with several yellow shirts retreating into shape.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 3.0,
+      "kind": "play",
+      "description": "An Arsenal attacker in red challenges a Norwich defender near the top-left edge of the box and the ball is nudged loose under pressure.",
+      "actor": null,
+      "action": {
+        "type": "tackle",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "A loose ball breaks centrally at the edge of the area as both teams converge, with Arsenal still in possession territory and Norwich trying to close the space.",
+      "actor": null,
+      "action": {
+        "type": "ball_recovery",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_motion",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 6.0,
+      "kind": "play",
+      "description": "An Arsenal attacker drives a low effort from just outside/at the edge of the box toward goal through a crowd of defenders.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "The Norwich goalkeeper dives low to his left as the ball continues toward the goalmouth.",
+      "actor": null,
+      "action": {
+        "type": "save",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "keeper_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 8.0,
+      "kind": "goal",
+      "description": "The ball is clearly inside the net after the low effort beats the keeper at the near side.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          8.0,
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 9.0,
+      "kind": "celebration",
+      "description": "An Arsenal player in red peels away from goal in celebration while the ball remains in the net behind him.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          9.0,
+          10.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-8",
+      "at_s": 18.0,
+      "kind": "play",
+      "description": "A replay shows Arsenal building the same attack from midfield before the decisive move toward the Norwich box.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_motion",
+          "on_screen_graphic"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    }
+  ],
+  "raw_observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 0.0,
+      "kind": "play",
+      "description": "Arsenal work the ball around the left side outside the Norwich penalty area with several yellow shirts retreating into shape.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 3.0,
+      "kind": "play",
+      "description": "An Arsenal attacker in red challenges a Norwich defender near the top-left edge of the box and the ball is nudged loose under pressure.",
+      "actor": null,
+      "action": {
+        "type": "tackle",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "A loose ball breaks centrally at the edge of the area as both teams converge, with Arsenal still in possession territory and Norwich trying to close the space.",
+      "actor": null,
+      "action": {
+        "type": "ball_recovery",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_motion",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 6.0,
+      "kind": "play",
+      "description": "An Arsenal attacker drives a low effort from just outside/at the edge of the box toward goal through a crowd of defenders.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "The Norwich goalkeeper dives low to his left as the ball continues toward the goalmouth.",
+      "actor": null,
+      "action": {
+        "type": "save",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "keeper_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 8.0,
+      "kind": "goal",
+      "description": "The ball is clearly inside the net after the low effort beats the keeper at the near side.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          8.0,
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 9.0,
+      "kind": "celebration",
+      "description": "An Arsenal player in red peels away from goal in celebration while the ball remains in the net behind him.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "visible_player",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "carry",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          9.0,
+          10.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-8",
+      "at_s": 18.0,
+      "kind": "play",
+      "description": "A replay shows Arsenal building the same attack from midfield before the decisive move toward the Norwich box.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_motion",
+          "on_screen_graphic"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    }
+  ],
+  "identity_steps": [],
+  "vision_usage": {
+    "input_tokens": 34360,
+    "output_tokens": 743,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0291135,
+    "latency_s": 9.77943883399712
+  },
+  "identity_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0,
+    "latency_s": 0.0
+  },
+  "generation_duration_s": 9.782199916997342,
+  "normalizations": [],
+  "model": "gpt-5.4-mini",
+  "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+  "dialogue": {
+    "lines": [
+      {
+        "id": "line-1",
+        "at_s": 2.0,
+        "voice": "caller",
+        "text": "Arsenal probing on the left, just outside the box, Norwich packed in behind",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-2",
+        "at_s": 9.0,
+        "voice": "analyst",
+        "text": "That low effort through traffic had the keeper scrambling, and the ball’s still beaten him at the near side",
+        "evidence_ids": [
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-3",
+        "at_s": 16.658,
+        "voice": "caller",
+        "text": "It’s in! Arsenal have scored, the ball nestled in the net at the near post",
+        "evidence_ids": [
+          "recorded-6"
+        ],
+        "research_ids": []
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "source_at_s": 2.0,
+        "word_budget": 17,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 1,
+          "cutoff_s": 2.0,
+          "line": {
+            "voice": "caller",
+            "text": "Arsenal probing on the left, just outside the box, Norwich packed in behind",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Describe the immediate confirmed action succinctly using only visual evidence.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 2.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Arsenal probing on the left, just outside the box, Norwich packed in behind",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Describe the immediate confirmed action succinctly using only visual evidence."
+                },
+                "usage": {
+                  "input_tokens": 1211,
+                  "output_tokens": 73,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00123675,
+                  "latency_s": 1.9058782079955563
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 1.9252460839925334
+      },
+      {
+        "role": "caller",
+        "source_at_s": 9.0,
+        "word_budget": 18,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "rejected": "agent cited evidence not presented to this turn",
+        "generation_elapsed_s": 3.751639833993977
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 9.0,
+        "word_budget": 28,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 6,
+          "cutoff_s": 9.0,
+          "line": {
+            "voice": "analyst",
+            "text": "That low effort through traffic had the keeper scrambling, and the ball’s still beaten him at the near side",
+            "evidence_ids": [
+              "recorded-4",
+              "recorded-5",
+              "recorded-6"
+            ],
+            "research_ids": []
+          },
+          "reason": "Provides a concise analyst explanation of the supported sequence and consequence without inventing scorer identity or score state.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 9.0,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "That low effort through traffic had the keeper scrambling, and the ball’s still beaten him at the near side",
+                    "evidence_ids": [
+                      "recorded-4",
+                      "recorded-5",
+                      "recorded-6"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Provides a concise analyst explanation of the supported sequence and consequence without inventing scorer identity or score state."
+                },
+                "usage": {
+                  "input_tokens": 1459,
+                  "output_tokens": 97,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00153075,
+                  "latency_s": 1.8672304580104537
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 5.7076053749915445
+      },
+      {
+        "role": "caller",
+        "source_at_s": 16.657692307692308,
+        "word_budget": 18,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6",
+          "recorded-7"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 7,
+          "cutoff_s": 16.657692307692308,
+          "line": {
+            "voice": "caller",
+            "text": "It’s in! Arsenal have scored, the ball nestled in the net at the near post",
+            "evidence_ids": [
+              "recorded-6"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed goal is visible now; keep it short and avoid naming an unresolved scorer.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 16.657692307692308,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "It’s in! Arsenal have scored, the ball nestled in the net at the near post",
+                    "evidence_ids": [
+                      "recorded-6"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Confirmed goal is visible now; keep it short and avoid naming an unresolved scorer."
+                },
+                "usage": {
+                  "input_tokens": 1460,
+                  "output_tokens": 79,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0014505,
+                  "latency_s": 1.531364125010441
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 7.244510624994291
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 22.776923076923076,
+        "word_budget": 12,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6",
+          "recorded-7",
+          "recorded-8"
+        ],
+        "rejected": "agent line exceeds recorded speech budget",
+        "generation_elapsed_s": 8.880654916996718
+      }
+    ],
+    "preparation_duration_s": 8.880719499997213,
+    "source_duration_s": 28.0,
+    "words": 47,
+    "timing": "Source-video seconds; word-count estimates until audio is measured."
+  },
+  "role_audit": [
+    {
+      "event": "agent_action",
+      "at_s": 2.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Arsenal probing on the left, just outside the box, Norwich packed in behind",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Describe the immediate confirmed action succinctly using only visual evidence."
+        },
+        "usage": {
+          "input_tokens": 1211,
+          "output_tokens": 73,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00123675,
+          "latency_s": 1.9058782079955563
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 9.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "And Arsenal have scored! The low effort sneaks in at the near side",
+            "evidence_ids": [
+              "recorded-8"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate scoring reaction without unsupported player identification or extra detail."
+        },
+        "usage": {
+          "input_tokens": 1462,
+          "output_tokens": 71,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.001416,
+          "latency_s": 1.821940458001336
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 9.0,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "That low effort through traffic had the keeper scrambling, and the ball’s still beaten him at the near side",
+            "evidence_ids": [
+              "recorded-4",
+              "recorded-5",
+              "recorded-6"
+            ],
+            "research_ids": []
+          },
+          "reason": "Provides a concise analyst explanation of the supported sequence and consequence without inventing scorer identity or score state."
+        },
+        "usage": {
+          "input_tokens": 1459,
+          "output_tokens": 97,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00153075,
+          "latency_s": 1.8672304580104537
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 16.657692307692308,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "It’s in! Arsenal have scored, the ball nestled in the net at the near post",
+            "evidence_ids": [
+              "recorded-6"
+            ],
+            "research_ids": []
+          },
+          "reason": "Confirmed goal is visible now; keep it short and avoid naming an unresolved scorer."
+        },
+        "usage": {
+          "input_tokens": 1460,
+          "output_tokens": 79,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0014505,
+          "latency_s": 1.531364125010441
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 22.776923076923076,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "The keeper’s low dive wasn’t enough; that skidded through bodies and found the near side",
+            "evidence_ids": [
+              "recorded-4",
+              "recorded-5",
+              "recorded-6"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported explanation of why the goal went in, without inventing scorer identity or extra details."
+        },
+        "usage": {
+          "input_tokens": 1722,
+          "output_tokens": 94,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0017145,
+          "latency_s": 1.6306000830081757
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    }
+  ],
+  "generation_elapsed_s": 22.749225124993245
+}
