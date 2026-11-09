@@ -1,0 +1,75 @@
+examples/evaluation-results/text-comparison-20261109.json
+  s_5122a6b523b341::t_661f415b31ae72 3,17-19,32-34,43-48,60-62,76-78,88-90,99-2404,2406-2636
+  s_c61538d1d875af::t_b6454b86d9ca98 5,68,73-75,79-83,85
+  s_c61538d1d875af::t_a97e4c4a06a508 84,86-87,2405
+  s_c61538d1d875af::t_15d7ad58ba7bf7 1-2,4,6-16,20-24,35-37,39-40,91-98,2637
+  s_5122a6b523b341::t_3d5e9500bf4e60 52-59,63-67,69-72
+  s_c61538d1d875af::t_e9a2036196ce79 25-31,38,41-42,49-51
+scripts/prepare_text_inputs.py
+  s_c61538d1d875af::t_8136a6c1a01730 1-43,46-146
+  s_c61538d1d875af::t_15d7ad58ba7bf7 44-45
+AGENTS.md
+  s_5122a6b523b341::t_c420401717939d 9-10
+examples/text-comparison/generated-inputs/miss.json
+  s_5122a6b523b341::t_661f415b31ae72 1-85
+docs/SESSION_HANDOFF.md
+  s_c61538d1d875af::t_e719fb5064f242 10-62
+examples/text-comparison/generated-inputs/throw-in.json
+  s_5122a6b523b341::t_661f415b31ae72 1-69
+examples/text-comparison/generated-inputs/interception.json
+  s_5122a6b523b341::t_661f415b31ae72 1-89
+src/commentary/replay/text_comparison.py
+  s_5122a6b523b341::t_65c573fbc1706d 39,41,159-160,166-172,366,372-381,420-421,424-425
+  s_5122a6b523b341::t_80a4d74c068cc0 422-423
+  s_5122a6b523b341::t_285cfb8e96a909 60-66,95-99,103-107,156-157,162-164,292-294,327
+  s_c61538d1d875af::t_87fe50a56badb9 92-94,100-102,158,161
+  s_5122a6b523b341::t_4b747f07075970 40,52-59,70-71,76-78,80-81,307,326,355,390-392
+  s_c61538d1d875af::t_8136a6c1a01730 72-75,79,288-290,354
+tests/test_prepare_text_inputs.py
+  s_c61538d1d875af::t_8ff09d72b67aab 1-100
+tests/test_text_comparison.py
+  s_5122a6b523b341::t_46ad7f17036662 338-343,363-392
+  s_5122a6b523b341::t_80a4d74c068cc0 176,393-420
+examples/text-comparison/generated-inputs/buildup.json
+  s_5122a6b523b341::t_661f415b31ae72 1-94
+examples/text-comparison/prepared-inputs.json
+  s_5122a6b523b341::t_661f415b31ae72 1-50
+examples/text-comparison/preparation-results.json
+  s_5122a6b523b341::t_661f415b31ae72 1-112
+examples/evaluation-results/text-review-v1.json
+  s_5122a6b523b341::t_f22c9e8c43fd22 5,16-17,113-192,194,197,283-362,364,367,434-513,515,518,586-665,667,670,737-824,826,828-829,907-986,988,991,1049-1128,1130,1133,1191-1270,1272,1275,1343-1412,1414,1417,1494-1573,1575,1578,1656-1739,1741,1743-1744,1802-1881,1883,1886,1954-2023,2025,2028,2087-2161,2163,2166,2224-2293,2295,2298
+examples/text-comparison/generated-inputs/cross-header.json
+  s_5122a6b523b341::t_661f415b31ae72 1-107
+docs/TEXT_EVALUATION.md
+  s_5122a6b523b341::t_c59c901811ef79 6-10,142-143,179-180,185,213-215
+docs/TEXT_EVALUATION_TRIAL.md
+  s_5122a6b523b341::t_20df362fd77244 1-86
+examples/text-comparison/README.md
+  s_5122a6b523b341::t_bbfb612d775489 41-54
+scripts/compare_text.py
+  s_c61538d1d875af::t_fb32f9278fef59 21,82-84,88,96,98,127,198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a2a63a532b3eeb2ed8d1adbde08ad3059ff38a2",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
