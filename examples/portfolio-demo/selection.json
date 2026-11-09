@@ -1,0 +1,641 @@
+{
+  "status": "selected_attempt_2",
+  "maximum_usd": 0.24,
+  "attempt_limit": 2,
+  "reported_usd": 0.026667450000000002,
+  "attempts": [
+    {
+      "attempt": 1,
+      "budget": {
+        "max_usd": 0.12,
+        "max_calls": 24,
+        "attempts": 17,
+        "reported_usd": 0.017958750000000002,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 1.0,
+          "voice": "caller",
+          "text": "Into the box, England!",
+          "evidence_ids": [
+            "recorded-1"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 3.0,
+          "voice": "caller",
+          "text": "Penalty England! The referee points straight to the spot",
+          "evidence_ids": [
+            "recorded-2"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 9.0,
+          "voice": "caller",
+          "text": "Kane...",
+          "evidence_ids": [
+            "recorded-3"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-4",
+          "at_s": 10.0,
+          "voice": "analyst",
+          "text": "Kane sends the keeper the wrong way and slots it low into the left corner, a composed penalty finish.",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        }
+      ],
+      "reviewer_enabled": true,
+      "role_audit": [
+        {
+          "event": "agent_action",
+          "at_s": 1.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Into the box, England!",
+                "evidence_ids": [
+                  "recorded-1"
+                ],
+                "research_ids": []
+              },
+              "reason": "Supported immediate action is an England dribble into the France box under challenge."
+            },
+            "usage": {
+              "input_tokens": 1224,
+              "output_tokens": 66,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.001215,
+              "latency_s": 1.8352680410025641
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 1.0,
+          "role": "caller",
+          "data": {
+            "accepted": true,
+            "feedback": "Good concise call and supported by the dribble into the box. Keep it natural like this; no extra claim needed.",
+            "usage": {
+              "input_tokens": 417,
+              "output_tokens": 46,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00051975,
+              "latency_s": 1.6286472499923548
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 3.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Penalty England! The referee points straight to the spot",
+                "evidence_ids": [
+                  "recorded-2"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported reaction to the referee's decision and consequence, without adding unsupported stakes."
+            },
+            "usage": {
+              "input_tokens": 1366,
+              "output_tokens": 71,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.001344,
+              "latency_s": 1.5527588749973802
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 3.0,
+          "role": "caller",
+          "data": {
+            "accepted": true,
+            "feedback": "Good. Trim the explanation a touch for broadcast: say \u2018Penalty for England!\u2019 and stop there; don\u2019t restate the pointing gesture.",
+            "usage": {
+              "input_tokens": 563,
+              "output_tokens": 50,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00064725,
+              "latency_s": 1.4814924170059385
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 9.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane...",
+                "evidence_ids": [
+                  "recorded-3"
+                ],
+                "research_ids": []
+              },
+              "reason": "The penalty run-up is in progress and the shooter is identified."
+            },
+            "usage": {
+              "input_tokens": 1511,
+              "output_tokens": 61,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00140775,
+              "latency_s": 1.7017871669959277
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 9.0,
+          "role": "caller",
+          "data": {
+            "accepted": true,
+            "feedback": "Accept. The brief surname + trailing pause fits the live penalty run-up and stays within the cutoff. No rewrite needed.",
+            "usage": {
+              "input_tokens": 701,
+              "output_tokens": 46,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00073275,
+              "latency_s": 1.7577943329961272
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane scores! England have the penalty in the net",
+                "evidence_ids": [
+                  "recorded-4"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate verified scoring reaction with named scorer"
+            },
+            "usage": {
+              "input_tokens": 1560,
+              "output_tokens": 63,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.0014535,
+              "latency_s": 2.104952499998035
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "accepted": false,
+            "feedback": "Rewrite to a short live reaction only: say the goal has gone in, but drop the extra report-style phrase \"England have the penalty in the net\" and avoid explaining the finish.",
+            "usage": {
+              "input_tokens": 758,
+              "output_tokens": 53,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.000807,
+              "latency_s": 1.6191338339995127
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "step": 2,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane scores!",
+                "evidence_ids": [
+                  "recorded-4"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported scoring reaction, concise and live."
+            },
+            "usage": {
+              "input_tokens": 1627,
+              "output_tokens": 58,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00148125,
+              "latency_s": 2.4797430409962544
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "accepted": false,
+            "feedback": "Use a shorter live reaction: keep the verified scorer and the immediate goal call, but drop the report-style wording and any explanation of the finish.",
+            "usage": {
+              "input_tokens": 787,
+              "output_tokens": 45,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00079275,
+              "latency_s": 1.8293766249989858
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 10.0,
+          "role": "analyst",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "analyst",
+                "text": "Kane sends the keeper the wrong way and slots it low into the left corner, a composed penalty finish.",
+                "evidence_ids": [
+                  "recorded-4"
+                ],
+                "research_ids": []
+              },
+              "reason": "Supported goal description with named scorer and visible outcome."
+            },
+            "usage": {
+              "input_tokens": 1557,
+              "output_tokens": 77,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00151425,
+              "latency_s": 1.598183334004716
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "draft_review",
+          "at_s": 10.0,
+          "role": "analyst",
+          "data": {
+            "accepted": true,
+            "feedback": "Acceptable: the line is a natural paraphrase of the confirmed goal. It stays within the evidence and does not add unsupported detail beyond the visible penalty finish. ",
+            "usage": {
+              "input_tokens": 717,
+              "output_tokens": 48,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00075375,
+              "latency_s": 1.5369644589954987
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 17.657692307692308,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Harry Kane celebrates",
+                "evidence_ids": [
+                  "recorded-5"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported visible action after the goal."
+            },
+            "usage": {
+              "input_tokens": 1525,
+              "output_tokens": 56,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00139575,
+              "latency_s": 1.4675917910062708
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "budget": {
+        "max_usd": 0.12,
+        "max_calls": 24,
+        "attempts": 9,
+        "reported_usd": 0.0087087,
+        "unsettled_reservations_usd": 0,
+        "unsettled_requests": 0,
+        "basis": "counted input + maximum output at standard token rates, 25% margin",
+        "hosted_tools_allowed": false
+      },
+      "lines": [
+        {
+          "id": "line-1",
+          "at_s": 3.0,
+          "voice": "caller",
+          "text": "Penalty for England! The referee points to the spot after that box challenge",
+          "evidence_ids": [
+            "recorded-1",
+            "recorded-2"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-2",
+          "at_s": 9.2,
+          "voice": "caller",
+          "text": "Kane...",
+          "evidence_ids": [
+            "recorded-3"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-3",
+          "at_s": 10.0,
+          "voice": "caller",
+          "text": "Kane scores! Low to the left, and England have the goal",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        },
+        {
+          "id": "line-4",
+          "at_s": 15.431,
+          "voice": "analyst",
+          "text": "That wrong-footed the keeper completely from the spot",
+          "evidence_ids": [
+            "recorded-4"
+          ],
+          "research_ids": []
+        }
+      ],
+      "reviewer_enabled": false,
+      "role_audit": [
+        {
+          "event": "agent_action",
+          "at_s": 1.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "England driving in, crowded out",
+                "evidence_ids": [
+                  "recorded-1"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported action from the visual observation, kept brief and without unsupported outcome."
+            },
+            "usage": {
+              "input_tokens": 200,
+              "output_tokens": 66,
+              "cache_read_tokens": 1024,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.0005237999999999999,
+              "latency_s": 1.7046717500052182
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 3.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Penalty for England! The referee points to the spot after that box challenge",
+                "evidence_ids": [
+                  "recorded-1",
+                  "recorded-2"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported reaction to the referee's decision and consequence, within word limit."
+            },
+            "usage": {
+              "input_tokens": 186,
+              "output_tokens": 79,
+              "cache_read_tokens": 1152,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.0005813999999999999,
+              "latency_s": 1.5532689169922378
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 9.2,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane...",
+                "evidence_ids": [
+                  "recorded-3"
+                ],
+                "research_ids": []
+              },
+              "reason": "The penalty run-up is in progress and the shooter is identified, so a brief anticipatory call is appropriate without inventing the outcome."
+            },
+            "usage": {
+              "input_tokens": 1493,
+              "output_tokens": 75,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00145725,
+              "latency_s": 1.7040082919993438
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 10.0,
+          "role": "caller",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "caller",
+                "text": "Kane scores! Low to the left, and England have the goal",
+                "evidence_ids": [
+                  "recorded-4"
+                ],
+                "research_ids": []
+              },
+              "reason": "Immediate supported scoring reaction using the verified scorer name from the confirmed goal event."
+            },
+            "usage": {
+              "input_tokens": 1542,
+              "output_tokens": 74,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.0014895,
+              "latency_s": 2.1420148750039516
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        },
+        {
+          "event": "agent_action",
+          "at_s": 15.430769230769231,
+          "role": "analyst",
+          "data": {
+            "step": 1,
+            "action": {
+              "kind": "speak",
+              "tool": null,
+              "line": {
+                "voice": "analyst",
+                "text": "That wrong-footed the keeper completely from the spot",
+                "evidence_ids": [
+                  "recorded-4"
+                ],
+                "research_ids": []
+              },
+              "reason": "Add a concise supported consequence of the goal without repeating the caller."
+            },
+            "usage": {
+              "input_tokens": 1653,
+              "output_tokens": 69,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "cost_usd": 0.00155025,
+              "latency_s": 1.6953919590014266
+            },
+            "model": "gpt-5.4-mini",
+            "timestamp_basis": "snapshot_cutoff"
+          }
+        }
+      ]
+    }
+  ],
+  "selection_reason": "Attempt 2 retains caller goal reaction followed by analyst response. No words were edited. One early over-budget draft was rejected.",
+  "tts": false,
+  "fresh_vision": false,
+  "fresh_research": false,
+  "validation": {
+    "offline_tests_passed": 377,
+    "mypy": "passed",
+    "ruff": "passed",
+    "web_lint": "passed",
+    "web_build": "passed",
+    "browser_qa": {
+      "desktop": [
+        1280,
+        900
+      ],
+      "mobile": [
+        375,
+        812
+      ],
+      "clip_count": 3,
+      "transcript_seek_s": 10,
+      "switch_pauses_previous_video": true,
+      "all_featured_clips_silent": true,
+      "mobile_horizontal_overflow": false,
+      "trace_download_status": 200,
+      "evaluation_notes_status": 200,
+      "clean_reload_console_errors": []
+    }
+  }
+}

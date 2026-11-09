@@ -1,0 +1,116 @@
+{
+  "id": "portfolio-penalty",
+  "title": "England vs France",
+  "subtitle": "Penalty award, run-up and finish",
+  "videoPath": "/soccer-commentary/portfolio-penalty.mp4",
+  "posterPath": "/soccer-commentary/portfolio-penalty.jpg",
+  "duration_s": 20,
+  "kind": "automatic",
+  "lines": [
+    {
+      "at_s": 3.0,
+      "voice": "caller",
+      "text": "Penalty for England! The referee points to the spot after that box challenge"
+    },
+    {
+      "at_s": 9.2,
+      "voice": "caller",
+      "text": "Kane..."
+    },
+    {
+      "at_s": 10.0,
+      "voice": "caller",
+      "text": "Kane scores! Low to the left, and England have the goal"
+    },
+    {
+      "at_s": 15.431,
+      "voice": "analyst",
+      "text": "That wrong-footed the keeper completely from the spot"
+    }
+  ],
+  "planPath": "examples/portfolio-demo/penalty-plan.json",
+  "tracePath": "/soccer-commentary/portfolio-penalty.trace.json",
+  "note": "Automatic dialogue on saved perception and cited squad research. Exact generated words; prepared before playback.",
+  "method": [
+    "The observer\u2019s saved readings are reused for this 20-second window.",
+    "The observer requests the dated England roster and proposes readable number 9 as Harry Kane.",
+    "Separate caller and analyst agents generate the words. Evidence and timing checks can reject a turn.",
+    "No voice synthesis. These are source-timed reading captions, not measured live speech."
+  ],
+  "generation": {
+    "model": "gpt-5.4-mini",
+    "calls": 9,
+    "cost_usd": 0.0087087,
+    "duration_s": 16.16072429099586,
+    "rejected_turns": 1
+  },
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "description": "An England attacker drives into the France box on the ground and is challenged by two defenders, with one sliding in from the side as the ball stays near the attacker's feet."
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 2.0,
+      "description": "The referee points toward the penalty spot after the challenge in the area, while players around the incident appeal with raised arms."
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 9.0,
+      "description": "England's number 9 begins the penalty kick run-up from the spot with the referee beside the area and France's goalkeeper set on the goal line."
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 10.0,
+      "description": "The penalty is struck low into the left side of the goal as the goalkeeper dives the other way and the ball crosses the line into the net."
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 12.0,
+      "description": "England's number 9 runs away along the byline with arms out in celebration after scoring."
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 17.0,
+      "description": "Replay: England's number 9 strikes the penalty with his right foot from the spot."
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 19.0,
+      "description": "Replay: the ball rises into the goal after the penalty, visibly inside the net."
+    }
+  ],
+  "turns": [
+    {
+      "role": "caller",
+      "at_s": 1.0,
+      "status": "rejected",
+      "detail": "agent line exceeds recorded speech budget"
+    },
+    {
+      "role": "caller",
+      "at_s": 3.0,
+      "status": "spoken",
+      "detail": "Immediate supported reaction to the referee's decision and consequence, within word limit."
+    },
+    {
+      "role": "caller",
+      "at_s": 9.2,
+      "status": "spoken",
+      "detail": "The penalty run-up is in progress and the shooter is identified, so a brief anticipatory call is appropriate without inventing the outcome."
+    },
+    {
+      "role": "caller",
+      "at_s": 10.0,
+      "status": "spoken",
+      "detail": "Immediate supported scoring reaction using the verified scorer name from the confirmed goal event."
+    },
+    {
+      "role": "analyst",
+      "at_s": 15.430769230769231,
+      "status": "spoken",
+      "detail": "Add a concise supported consequence of the goal without repeating the caller."
+    }
+  ]
+}

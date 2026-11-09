@@ -1,0 +1,32 @@
+[
+  {
+    "id": "portfolio-penalty",
+    "kind": "automatic",
+    "path": "web/public/soccer-commentary/portfolio-penalty.mp4",
+    "sha256": "3462b332db25e199a1cce4006fff33d760233d965b1f3a9ba00dd20c16e27a70",
+    "duration_s": 20.0,
+    "audio": false,
+    "source": "clips/action-sources/england-france-penalties.mp4",
+    "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12"
+  },
+  {
+    "id": "portfolio-arsenal-norwich",
+    "kind": "curated",
+    "path": "web/public/soccer-commentary/portfolio-arsenal-norwich.mp4",
+    "sha256": "03c89f0f56b933c6c880236f1a0ed8500ec169ca82c4b4e1bc7ab62a017387e3",
+    "duration_s": 28.0,
+    "audio": false,
+    "source": "web/public/soccer-commentary/arsenal-norwich-dialogue-v2.mp4",
+    "source_sha256": "5c35b046dc70c37251b77c918bf5bd8a2922e89fc897ab85ea921a50343b231f"
+  },
+  {
+    "id": "portfolio-argentina-france",
+    "kind": "curated",
+    "path": "web/public/soccer-commentary/portfolio-argentina-france.mp4",
+    "sha256": "11d9758eb253224c10fd808eeb269458d2c89e9754441557a1be5ce939f80a95",
+    "duration_s": 28.0,
+    "audio": false,
+    "source": "web/public/soccer-commentary/argentina-france-dialogue-v2.mp4",
+    "source_sha256": "e11502e3f9cf1ff384bf678cb1ae8b9d45b1552c78585cdc312b8ec342d015f4"
+  }
+]

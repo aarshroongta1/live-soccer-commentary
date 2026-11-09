@@ -7,21 +7,60 @@ files_modified: []
 
 # Commentary project handoff
 
-## Current priority: finish the portfolio project
+## Current priority: bounded portfolio polish — completed locally
 
-The user explicitly reframed the goal: put this project on their resume, have a
-few demo clips, and be able to discuss building and evaluating multi-agent
-systems. Optimize remaining work for that finish line. Open-ended false-goal
-investigation is no longer the active objective. Existing failures are useful
-case-study evidence; fixing every development clip is not a release requirement.
+The user chose **Bounded demo polish**: finish a resume-ready project with a few
+clips and a clear building/evaluation story. Open-ended recognition research is
+not the active objective. The focused local `/` and `/demo` pages now select:
 
-Prioritize selected demos, an understandable architecture explanation, a concise
-honest evaluation story, and resume/interview material. Distinguish curated scripts
-from unedited automatic outputs and recorded preparation from causal replay.
-Voice work remains excluded. The $1 experiment authorization still applies, but
-further experiments should serve a specific portfolio deliverable. The concrete
-finish scope is being discussed; no new model calls or runtime changes were made
-for this reframing.
+- England–France penalty, 20s: one new automatic caller/analyst conversation on
+  saved model vision and cited squad research; exact generated words.
+- Arsenal–Norwich, 28s: labelled edited showcase.
+- Argentina–France, 28s: labelled edited showcase.
+
+All three featured clips are silent, captioned videos. Original voiced media and
+all five curated source plans remain intact. Browsing the page makes no model
+calls. The automatic example has a seekable transcript, source-time turns,
+rejected drafts, observations and a downloadable trace. Architecture and an honest
+small evaluation summary follow; saved causal replay runs are expandable.
+
+Durable automatic artifacts: examples/portfolio-demo/penalty-plan.json,
+penalty-trace.json, selection.json and media-manifest.json. Web summary:
+web/data/portfolio-demo.json. The source is existing footage at 42–62s. Prior
+commentary words and evaluator labels were excluded from runtime inputs; names
+were cleared and re-proposed through the roster tool. Saved perception originated
+from the earlier full-context preparation and is not evidence of causal operation.
+
+Two attempts exhausted the chosen generation limit. Combined cap $0.24, reported
+token cost **$0.02666745**, no unsettled reservations or TTS. Attempt one’s optional
+reviewer rejected even Kane scores!; selected attempt two disabled it. Attempt two
+used nine calls and $0.0087087, rejected one early oversized line, and retained
+penalty/run-up/goal/analysis. The words were not manually edited. No new vision or
+research calls were made, and those old costs are excluded.
+
+scripts/prepare_agent_demo.py now supports --no-review and records that setting;
+reused vision is labelled reused in future plan metadata. New
+scripts/render_text_demo.py renders exact source-cued captions without any audio,
+TTS or model calls. The README and docs/PORTFOLIO.md describe the focused local
+release; docs/PORTFOLIO_CASE_STUDY.md provides architecture decisions, limitations,
+resume bullets and interview talking points.
+
+Validation: **377 offline tests passed**, targeted script checks passed after the
+final audit-metadata change, Ruff and mypy passed, web lint/build passed. gstack
+browser checks at desktop and 375px confirmed three clips, correct durations,
+transcript seeks, old-player pause on switching, trace/evaluation downloads,
+expandable replay traces, no horizontal overflow and no console errors on a clean
+reload. ffprobe confirms every featured video has no audio track. The production
+preview is running at http://127.0.0.1:3000/demo; verify the process before reuse.
+Stop it before rebuilding .next. Finish generating public media before building,
+because media availability is baked into this static page.
+
+All changes are local. No push, deployment or separate personal-website update
+was performed. Media stays git-ignored on this machine; missing-media transcripts
+work in a fresh clone. Further work should follow feedback on the selected demo
+or an explicit release request, rather than restart the false-goal research loop.
+Voice remains excluded. Paid experiments at $1 or less are authorized; ask above
+$1 and do not split a larger experiment to bypass that limit.
 
 ## Latest: false-goal investigation, 9 November 2026
 

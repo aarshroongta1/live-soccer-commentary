@@ -1,106 +1,83 @@
 # Portfolio demo
 
-Public page: https://www.aarshroongta.com/projects/soccer-commentary
+The local `/` and `/demo` pages lead with three selected, silent captioned clips:
 
-The portfolio hosts a minimal player with a match switcher, three sentences
-about the tech, and an expandable, seekable transcript. Back to projects and
-source links remain visible. The project entry links directly to this page.
+| Clip | Length | Provenance |
+| --- | --- | --- |
+| England vs France penalty | 20s | New automatic caller/analyst dialogue on saved vision and cited squad research. Exact generated words. |
+| Arsenal vs Norwich team goal | 28s | Existing manually reviewed and edited showcase. |
+| Argentina vs France counterattack | 28s | Existing manually reviewed and edited showcase. |
 
-Five recorded examples are available, all with the same ElevenLabs caller
-and analyst:
+The automatic example includes transcript seeking, source-time turns, rejected
+turns, visual observations and a downloadable preparation trace. The other two
+illustrate the intended presentation and are labelled **Edited showcase**.
+The page explains the agent roles, evaluation findings and recorded/live limits.
+Saved causal replay runs remain in an expandable section.
 
-- Di María vs France, 2022 World Cup final — 28 seconds.
-- Messi vs Bayern, 2015 Champions League — 34 seconds.
-- Arsenal vs Norwich, 2013 Premier League — 28 seconds.
-- Ronaldo vs Spain, 2018 World Cup — 32 seconds.
-- Ferran Torres vs Betis, 2025 La Liga — 32 seconds.
-
-These scripts were manually reviewed and edited for the showcase. They are
-not unedited system output. The [retained plans and review notes](../examples/demo-showcase/README.md)
-record source footage, observations, exact words, and editorial decisions.
-Both voices use their saved ElevenLabs settings. The analyst contributes during
-the buildup and after the finish; fuller caller phrases carry the big moments.
-
-## Standalone agent demo
-
-The local standalone `/demo` now adds an architecture flow and an inspectable
-saved-run section below the five curated videos. This does not update the
-separate integrated portfolio page or the public deployment automatically.
-
-`web/data/agent-runs.json` retains exact commentary text, elapsed execution
-events, source-frame times, model names, and source-run SHA-256 hashes for three
-unedited runs. In the default penalty run, the observer requests roster context
-and proposes Harry Kane for readable number 9. Its saved identity decisions are
-inspectable with the evidence. The researcher generated the England roster from its official dated squad-number
-page; all 26 entries were checked against that page. Unverified France context
-was excluded before the observer lookup. The page links the accepted research
-source. The final caller was regenerated; visual readings and analyst text are
-reused from this evaluation with their recorded delays.
-Speech timing is simulated and the run is not real-time. The red-card example
-includes the analyst's explicit abstention;
-the goal example distinguishes the deterministic caller reaction from model
-text and labels the analyst's inaccurate buildup and interrupted ending.
-
-The run clock preserves processing delays. Source footage stops at its end
-while the run continues. Replay, event selection, supporting-frame inspection,
-and the result shortcut work entirely in the browser. Speech timing in these
-runs is simulated from word counts; there is no generated audio. Research was
-not used in these saved examples. The architecture documents the optional
-researcher and reviewer separately from the roles that actually ran.
-
-Optional local source videos are `web/public/soccer-commentary/agent-card.mp4`,
-`web/public/soccer-commentary/agent-goal.mp4`, and
-`web/public/soccer-commentary/agent-penalty.mp4`. They are ignored by Git. If
-absent at build time, the saved text, evidence, and timeline remain available.
-No API keys or paid calls are needed to browse the demo.
-
-## Source and media
-
-The pipeline and standalone player live in this repository. The integrated
-portfolio page lives in `aarshroongta1/personal-website`, under
-`src/pages/SoccerCommentary.tsx`. Its video files are served from the existing
-`soccer-commentary-demo.vercel.app` deployment, so ordinary Git deployments of
-the portfolio do not depend on ignored local media.
-
-The standalone player uses `web/data/demo-clips.json` as its catalog. Each
-entry pairs a video with its own timestamped caller and analyst transcript.
-Switching clips stops the previous video and starts the new selection paused
-at the beginning. Playback and transcript inspection make no model calls.
-
-Local video files are deliberately excluded from Git:
-
-- `web/public/soccer-commentary/argentina-france-dialogue-v2.mp4`
-- `web/public/soccer-commentary/barcelona-bayern-dialogue-v2.mp4`
-- `web/public/soccer-commentary/arsenal-norwich-dialogue-v2.mp4`
-- `web/public/soccer-commentary/portugal-spain-dialogue-v2.mp4`
-- `web/public/soccer-commentary/betis-barcelona-dialogue-v2.mp4`
-
-Alternatively set the matching video URL variables documented in
-`web/.env.example`, in `web/.env.local` or the hosting build environment.
-The page exposes the matching transcript if a video is absent or fails to load.
-
-## Run and deploy the player
+## Review locally
 
 ```bash
-cd web
-npm ci
-npm run dev
+npm run build --prefix web
+npm run start --prefix web -- --port 3000
 ```
 
-To update the media deployment, keep the matching video files in place and
-run `vercel --prod` from `web`. The `.vercelignore` uploads these files from the
-local machine without putting them in Git. A GitHub-only deployment needs the
-remote video environment variables instead; otherwise it will have no media.
+Stop an existing production preview before building over `.next`. Restart after
+adding public media. Browsing clips and traces makes no model calls.
 
-Deploy portfolio page changes from the `personal-website` repository. Keep the
-source catalog and portfolio catalog aligned when replacing a clip or script.
+The separate integrated portfolio page at
+`https://www.aarshroongta.com/projects/soccer-commentary` lives in the
+`personal-website` repository. These local changes do not update or deploy that
+page. The five older curated plans and videos remain available; the focused
+player selects two of them alongside the automatic example.
 
-## Verification
+## Automatic example
 
-Check all five clips, switch while playback is active, and confirm the old video
-stops. Expand the transcript, verify each match has the correct lines, and seek
-using a timestamp. Check Back to projects, the source link, direct navigation to
-the demo route, and the portfolio's demo link. Test mobile and desktop widths.
+Durable artifacts are in [examples/portfolio-demo](../examples/portfolio-demo/):
+`penalty-plan.json`, `penalty-trace.json` and `selection.json`.
+The source is seconds 42–62 of the existing England–France footage. The model
+receives saved visual readings and pre-match context, never evaluation labels or
+an earlier commentary script. Roster lookups are rerun; the observer proposes
+Harry Kane for readable number 9. Caller and analyst have separate LangGraph turns.
 
-The source repository's web CI job checks lint and production builds. Python
-pipeline tests run separately.
+Two bounded development attempts were made, with a combined $0.24 maximum.
+Reported token cost was **$0.02666745**, including identity and dialogue calls,
+but excluding the prior saved vision and research. The selected second attempt
+used nine calls and $0.0087087. Its optional reviewer was disabled after attempt
+one rejected even a valid short goal reaction. Both attempts are retained; the
+selection is not a quality benchmark or a controlled reviewer ablation.
+
+An early oversized line in attempt two was rejected. The retained output contains
+four unedited lines: penalty award, run-up, goal, then analysis. It was checked
+against the existing source window for those claims. No flawless general action
+recognition or continuous real-time speech is claimed.
+
+The [portfolio case study](PORTFOLIO_CASE_STUDY.md) provides resume wording,
+architecture decisions, evaluation findings and interview talking points.
+
+## Media and reproduction
+
+Media remains local and git-ignored. Expected player files are:
+
+- `web/public/soccer-commentary/portfolio-penalty.mp4`
+- `web/public/soccer-commentary/portfolio-arsenal-norwich.mp4`
+- `web/public/soccer-commentary/portfolio-argentina-france.mp4`
+
+The automatic clip is rendered without audio, TTS or model calls:
+
+```bash
+uv run python scripts/render_text_demo.py \
+  --plan examples/portfolio-demo/penalty-plan.json \
+  --clip clips/action-sources/england-france-penalties.mp4 \
+  --out runs/demo/portfolio-penalty.mp4
+```
+
+The script refuses to overwrite outputs. Captions preserve source cues and exact
+words; display intervals use estimated reading time and are not speech latency.
+The curated player copies remove audio from the existing captioned videos with
+FFmpeg `-map 0:v:0 -c:v copy -an`. The original voiced media remains unchanged.
+
+`web/data/portfolio-demo.json` supplies the automatic transcript and run summary;
+`web/data/demo-clips.json` retains all five edited showcase transcripts. Optional
+remote sources can be configured with `PORTFOLIO_PENALTY_VIDEO_URL`,
+`PORTFOLIO_ARSENAL_VIDEO_URL` and `PORTFOLIO_ARGENTINA_VIDEO_URL`. A fresh clone
+without media displays its transcripts and missing-media guidance.

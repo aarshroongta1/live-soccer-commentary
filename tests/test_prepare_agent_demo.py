@@ -63,3 +63,36 @@ async def test_mismatched_cached_source_rejected_before_paid_setup(args, tmp_pat
     with pytest.raises(ValueError, match="does not match"):
         await script.run(args)
     assert not args.out_dir.exists()
+
+
+@pytest.mark.parametrize("disabled", [True, False])
+async def test_optional_reviewer_configuration_uses_scripted_backend(args, monkeypatch, disabled):
+    args.spend = True
+    args.no_review = disabled
+    args.speaker_model = "scripted"
+    args.observer_model = "scripted"
+    monkeypatch.setattr(script, "OpenAIBackend", lambda **kwargs: object())
+    configurations = []
+
+    class Agents:
+        def __init__(self, *_args, **kwargs):
+            configurations.append(kwargs)
+            self.audit = []
+
+        async def run(self, *_args):
+            raise AssertionError("scripted dialogue preparation does not call a model")
+
+    async def observe(*_args, **_kwargs):
+        return {"observations": [], "raw_observations": []}
+
+    async def dialogue(*_args, **_kwargs):
+        return {"lines": []}
+
+    monkeypatch.setattr(script, "RoleAgents", Agents)
+    monkeypatch.setattr(script, "observe_recorded", observe)
+    monkeypatch.setattr(script, "sample_clip", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(script, "prepare_dialogue", dialogue)
+    result = await script.run(args)
+    assert result["reviewer_enabled"] is (not disabled)
+    assert configurations[0]["reviewer_model"] == (None if disabled else "scripted")
+    assert configurations[0]["max_revisions"] == (0 if disabled else 1)

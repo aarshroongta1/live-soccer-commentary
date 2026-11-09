@@ -41,6 +41,9 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--max-model-calls", type=int, default=24)
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--spend", action="store_true")
+    parser.add_argument(
+        "--no-review", action="store_true", help="disable the optional draft reviewer"
+    )
     return parser.parse_args()
 
 
@@ -74,6 +77,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         research=research.model_dump(mode="json"),
         budget=budget.report(),
         mode="recorded_preparation",
+        reviewer_enabled=not getattr(args, "no_review", False),
     )
     if not args.spend:
         return {
@@ -130,9 +134,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             backend,
             args.speaker_model,
             args.speaker_model,
-            reviewer_model=args.speaker_model,
+            reviewer_model=None if getattr(args, "no_review", False) else args.speaker_model,
             max_steps=3,
-            max_revisions=1,
+            max_revisions=0 if getattr(args, "no_review", False) else 1,
         )
         report["dialogue"] = await prepare_dialogue(
             agents.run,
@@ -153,12 +157,13 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
                 trace=str(args.out_dir / "result.json"),
                 cost=budget.report()["reported_usd"],
                 models=dict(
-                    observer=args.observer_model,
+                    observer="reused" if cached else args.observer_model,
                     caller=args.speaker_model,
                     analyst=args.speaker_model,
                 ),
                 research=research.model_dump(mode="json"),
                 words_edited=False,
+                reviewer_enabled=not getattr(args, "no_review", False),
             ),
         )
         (args.out_dir / "plan.json").write_text(json.dumps(plan, indent=2) + "\n")
