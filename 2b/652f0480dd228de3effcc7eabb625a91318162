@@ -1,0 +1,109 @@
+web/public/soccer-commentary/generated-arsenal.edits.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-41
+examples/portfolio-demo/release/arsenal-teams.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-10
+examples/portfolio-demo/release/argentina-plan.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-199
+web/data/featured-demos.json
+  s_c61538d1d875af::t_7567a926eb9de3 165-170,317-322
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-164,171-316,323-324
+examples/portfolio-demo/release/argentina-2-trace.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-31
+web/public/soccer-commentary/generated-arsenal.trace.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-1022
+examples/portfolio-demo/release/arsenal-2-trace.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-1022
+web/public/soccer-commentary/portfolio-release.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-212
+examples/portfolio-demo/release/arsenal-edits.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-41
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_1fa6e4a00ec797 2,10,12-14,16-26,28-32,34-42,44-51,53-56,58-62,64-73,75-77
+examples/portfolio-demo/release/argentina-1-trace.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-785
+examples/portfolio-demo/release/arsenal-1-trace.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-805
+examples/portfolio-demo/release/arsenal-plan.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-217
+web/app/demo/demo-experience.tsx
+  s_5122a6b523b341::t_19e505ef21365c 141,229
+  s_c61538d1d875af::t_7567a926eb9de3 15,22-25,117-118,123-124,126,136,151,156,167,184-191,199,204,227
+README.md
+  s_5122a6b523b341::t_19e505ef21365c 8,25-26,28-31,34-36
+examples/portfolio-demo/media-manifest.json
+  s_5122a6b523b341::t_da83eb624c5ad0 13-17,19-21,24-28,30-32
+examples/portfolio-demo/release/argentina-edits.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-41
+examples/portfolio-demo/release/argentina-2-failed-response.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-36
+examples/portfolio-demo/release/arsenal-raw-plan.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-264
+examples/portfolio-demo/release/arsenal-research.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-6
+web/public/soccer-commentary/generated-argentina.edits.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-41
+scripts/render_text_demo.py
+  s_5122a6b523b341::t_823e1a1f246991 125-127
+web/app/demo/page.tsx
+  s_c61538d1d875af::t_7567a926eb9de3 4,18,21-23,26,40
+examples/portfolio-demo/release/README.md
+  s_5122a6b523b341::t_79335c2292e140 1-46
+web/app/demo/architecture.tsx
+  s_c61538d1d875af::t_7567a926eb9de3 29
+tests/test_text_demo_render.py
+  s_5122a6b523b341::t_823e1a1f246991 26-27,41-45,48,50
+docs/DEMO_WALKTHROUGH.md
+  s_5122a6b523b341::t_79335c2292e140 1-76
+examples/portfolio-demo/release/argentina-raw-plan.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-225
+examples/portfolio-demo/release/argentina-teams.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-10
+examples/portfolio-demo/release/argentina-research.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-6
+web/public/soccer-commentary/generated-argentina.trace.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-785
+examples/portfolio-demo/release/selection.json
+  s_5122a6b523b341::t_a862d6d1b7b1a9 1-212
+docs/PORTFOLIO.md
+  s_c61538d1d875af::t_e3f459c5c0df12 8-9,16-17,34-40,72-73,86-87,90-91
+docs/PORTFOLIO_CASE_STUDY.md
+  s_c61538d1d875af::t_2d7fe447ad66d7 11-14,80-93
+examples/portfolio-demo/README.md
+  s_c61538d1d875af::t_735ffbc666deaf 34-39
+tests/test_portfolio_release.py
+  s_c61538d1d875af::t_fd6024ac3df471 1-56
+web/public/soccer-commentary/demo-walkthrough.txt
+  s_5122a6b523b341::t_11d15228aec4a2 1-76
+web/public/soccer-commentary/generated-argentina.ass
+  s_c61538d1d875af::t_b323c12b5e374b 1-17
+web/public/soccer-commentary/generated-argentina.render.json
+  s_c61538d1d875af::t_ccb8b7dcae19ea 1-39
+web/public/soccer-commentary/generated-arsenal.ass
+  s_c61538d1d875af::t_8a10d95fc27eec 1-17
+web/public/soccer-commentary/generated-arsenal.render.json
+  s_c61538d1d875af::t_6e1d406c8b32b3 1-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b652f0480dd228de3effcc7eabb625a91318162",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
