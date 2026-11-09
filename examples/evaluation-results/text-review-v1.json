@@ -1,0 +1,936 @@
+{
+  "schema_version": 1,
+  "id": "text-review-v1",
+  "created_on": "2026-11-09",
+  "status": "template_not_scored",
+  "runtime_input": false,
+  "voice_in_scope": false,
+  "rubric": "docs/TEXT_EVALUATION.md",
+  "suite": "examples/action-suite.json",
+  "suite_sha256": "640543d324267529c8c4c20d6ada28dd5295885ba56ed1e48d936b99a9c75793",
+  "limits": [
+    "All cases are existing development cases; no held-out claims.",
+    "Draft events and checks are copied from references, not newly verified.",
+    "Null means pending or unknown, never pass. Scores require independent video review.",
+    "This file and all reference labels must stay outside runtime agent inputs."
+  ],
+  "candidate_review_template": {
+    "blind_id": null,
+    "artifact": null,
+    "artifact_sha256": null,
+    "status": "pending",
+    "gate_failures": null,
+    "ratings": {
+      "recognition": null,
+      "naming": null,
+      "grounded_meaning": null,
+      "text_timing": null,
+      "useful_analysis": null,
+      "dialogue_coherence": null
+    },
+    "rating_reasons": {
+      "recognition": null,
+      "naming": null,
+      "grounded_meaning": null,
+      "text_timing": null,
+      "useful_analysis": null,
+      "dialogue_coherence": null
+    },
+    "claims": [],
+    "claim_format": {
+      "line_id": null,
+      "claim": null,
+      "status": null,
+      "evidence": null,
+      "reason": null
+    },
+    "must_call_covered_ids": null,
+    "missed_readable_identities": null,
+    "correct_identity_abstentions": null,
+    "actual_cost_usd": null,
+    "model_calls": null,
+    "execution_failures": null,
+    "acceptance": null
+  },
+  "clips": [
+    {
+      "case_id": "buildup",
+      "title": "Routine buildup",
+      "reference": "examples/replay-evaluation/actions/liga-f-possession.json",
+      "reference_sha256": "4caf05a23f23472d339475ffc9708e5fd21e37c48a78cff944e1eddff43122e2",
+      "match_id": "atletico-real-madrid-liga-f-source",
+      "split": "development",
+      "source": "clips/action-sources/liga-f-routine.mp4",
+      "source_sha256": "fde153afd6fe81eae352f5f2f2947293b1e3ba75f11ce72e73b6016892e8652c",
+      "start_s": 24,
+      "duration_s": 15,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "pass",
+          "at_s": 1,
+          "kind": "play",
+          "action_type": "pass",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Short circulation pass in ordinary buildup; later passes are intentionally not exhaustively labeled."
+        }
+      ],
+      "checks": [
+        "Describe ordinary circulation without inventing a chance or filling every silence."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "dribble",
+      "title": "Dribble and finish",
+      "reference": "examples/replay-evaluation/suite/dribble.json",
+      "reference_sha256": "7bcc8f393d5c624cbb7a58a6c297bfb830f3110dd2f97b252dc310ba738858ef",
+      "match_id": "barcelona-bayern-2015-showcase",
+      "split": "development",
+      "source": "clips/demo-sources/barcelona-bayern-messi.mp4",
+      "source_sha256": "c47f518aac13032e44dc63018cc11e0a8c412412b612f895439812531efdcc5b",
+      "start_s": 7.5,
+      "duration_s": 6.5,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "dribble-e1",
+          "at_s": 2.5,
+          "kind": "play",
+          "action_type": "dribble",
+          "player": "Lionel Messi",
+          "player_action_role": "ball_carrier",
+          "annotation_note": "Attacker beats the nearby defender; timing approximate. Player label is evaluation-only. An identity readable in celebration must not be backdated to this action."
+        },
+        {
+          "id": "dribble-e2",
+          "at_s": 3.25,
+          "kind": "play",
+          "action_type": "shot",
+          "player": "Lionel Messi",
+          "player_action_role": "shooter",
+          "annotation_note": "Player label is evaluation-only. An identity readable in celebration must not be backdated to this action."
+        },
+        {
+          "id": "dribble-e3",
+          "at_s": 4.5,
+          "kind": "goal",
+          "action_type": "goal",
+          "player": "Lionel Messi",
+          "player_action_role": "scorer",
+          "annotation_note": "Player label is evaluation-only. An identity readable in celebration must not be backdated to this action."
+        },
+        {
+          "id": "dribble-identity-celebration",
+          "at_s": 5.5,
+          "kind": "celebration",
+          "action_type": null,
+          "player": "Lionel Messi",
+          "player_action_role": "visible_player",
+          "annotation_note": "Agent-inspected local frames show readable shirt identity in celebration. Does not identify earlier actions without direct evidence. Human review pending."
+        }
+      ],
+      "checks": [
+        "Distinguish beating a defender from a routine carry. Do not infer player identity from the famous clip."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "tackle",
+      "title": "Recovery tackle",
+      "reference": "examples/replay-evaluation/actions/norwich-tottenham-tackle.json",
+      "reference_sha256": "5dfcca16a246bb2a8742fc4c4ac6e494cffd470f82c668d4eefadef8e4ed5330",
+      "match_id": "norwich-tottenham-tackle-source",
+      "split": "development",
+      "source": "clips/action-sources/pl-tackles.mp4",
+      "source_sha256": "83bdd2c36f200a7e14aca42fd9b8036192ad82976aab6bffae07317b984d2082",
+      "start_s": 5,
+      "duration_s": 7,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "carry",
+          "at_s": 2,
+          "kind": "play",
+          "action_type": "carry",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Attacker advances toward goal; this is a point within a carry, not its onset."
+        },
+        {
+          "id": "tackle",
+          "at_s": 3.5,
+          "kind": "play",
+          "action_type": "tackle",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Defender slides across the ball carrier; contact/outcome timing needs human confirmation."
+        }
+      ],
+      "checks": [
+        "Do not announce a goal after the keeper/challenge collision."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "interception",
+      "title": "Cut out a pass",
+      "reference": "examples/replay-evaluation/suite/interception.json",
+      "reference_sha256": "3435212193c3c743d7fabafa5193cc23687ab1ac1eb0bfb9d5b19d2a1af22dab",
+      "match_id": "liverpool-tottenham-gomez-source",
+      "split": "development",
+      "source": "clips/action-sources/pl-interceptions.webm",
+      "source_sha256": "ca47b5d0dbecb5ad593a0135e85289e62073117804d6ba2ba55db45386cc132f",
+      "start_s": 37,
+      "duration_s": 6.5,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "interception-e1",
+          "at_s": 2.5,
+          "kind": "play",
+          "action_type": "interception",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Defender reaches the incoming pass before the intended receiver. Review exact contact."
+        },
+        {
+          "id": "interception-e2",
+          "at_s": 3.5,
+          "kind": "replay",
+          "action_type": "interception",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Closer repeat angle of the same intervention, not another turnover."
+        }
+      ],
+      "checks": [
+        "Distinguish intercepting a pass from tackling a player already controlling the ball.",
+        "Do not count the closer repeat angle as another interception."
+      ],
+      "replay_check": true,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "cross-header",
+      "title": "Cross and headed chance",
+      "reference": "examples/replay-evaluation/suite/cross-header.json",
+      "reference_sha256": "200515b2987defd682112f92515ba0a026eeb95c9f6c69d4af7d207eb8aedd76",
+      "match_id": "france-jamaica-2023-womens-world-cup",
+      "split": "development",
+      "source": "clips/action-sources/france-jamaica-late.webm",
+      "source_sha256": "1ae57eeb2a804107e434614840a6761e08122c073bd6def42fbe5f39986b2cb9",
+      "start_s": 3,
+      "duration_s": 10,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "cross-header-e1",
+          "at_s": 3.5,
+          "kind": "play",
+          "action_type": "cross",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": null
+        },
+        {
+          "id": "cross-header-e2",
+          "at_s": 6.5,
+          "kind": "play",
+          "action_type": "header",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": null
+        }
+      ],
+      "checks": [
+        "Describe a headed chance without inventing a goal."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "save",
+      "title": "Shot, rebound header, save",
+      "reference": "examples/replay-evaluation/actions/villa-arsenal-save.json",
+      "reference_sha256": "a049b78691ab46782a66433c3327427a9a80794bfe5f187f5c536b2af5ddbd6a",
+      "match_id": "villa-arsenal-raya-source",
+      "split": "development",
+      "source": "clips/action-sources/pl-saves.mp4",
+      "source_sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+      "start_s": 10,
+      "duration_s": 8,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "shot",
+          "at_s": 2.5,
+          "kind": "play",
+          "action_type": "shot",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Initial strike from outside the area. Do not label the woodwork rebound as a save without keeper contact."
+        },
+        {
+          "id": "header",
+          "at_s": 4.5,
+          "kind": "play",
+          "action_type": "header",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Close-range follow-up header after the first attempt."
+        },
+        {
+          "id": "save",
+          "at_s": 5.5,
+          "kind": "play",
+          "action_type": "save",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Keeper gets across to stop the follow-up. Timing estimated to nearest 0.5s from source frames."
+        }
+      ],
+      "checks": [
+        "Keep woodwork, header and keeper intervention separate."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "miss",
+      "title": "Penalty missed over the bar",
+      "reference": "examples/replay-evaluation/suite/miss.json",
+      "reference_sha256": "b490ee8acbb03c2be002fea60852f854803caaaead611582256ba5d0ab487e2e",
+      "match_id": "england-france-2022-world-cup",
+      "split": "development",
+      "source": "clips/action-sources/england-france-penalties.mp4",
+      "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+      "start_s": 103,
+      "duration_s": 5,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "miss-e1",
+          "at_s": 2.25,
+          "kind": "play",
+          "action_type": "penalty_kick",
+          "player": "Harry Kane",
+          "player_action_role": "shooter",
+          "annotation_note": "Live second penalty. Ball travels over the bar; do not label a goal or keeper save. Number 9 is readable on the penalty taker in the source frames; mapped to the historical England roster. Identity reviewed by the coding agent, not human-approved."
+        }
+      ],
+      "checks": [
+        "Call the miss over the bar, not a goal or a save."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "goal",
+      "title": "Goal and reaction",
+      "reference": "examples/replay-evaluation/public/chelsea-burnley-public-goal.json",
+      "reference_sha256": "14d0db0d2a18f807448aa013929017126f8b05b94a3c77948f5f08611ab5872a",
+      "match_id": "england_epl/2014-2015/2015-02-21 - 18-00 Chelsea 1 - 1 Burnley",
+      "split": "development",
+      "source": "clips/action-sources/chelsea-burnley-2015.webm",
+      "source_sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913",
+      "start_s": 12,
+      "duration_s": 6.5,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "sn-h1-a31",
+          "at_s": 3.72199999999998,
+          "kind": "goal",
+          "action_type": "goal",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Published events-v2 label: Goal; local alignment awaits review."
+        }
+      ],
+      "checks": [
+        "Wait for visible line/net evidence before the goal call."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "corner",
+      "title": "Corner delivery into a crowded box",
+      "reference": "examples/replay-evaluation/suite/corner.json",
+      "reference_sha256": "82f0b0f2051ba0dd5f4398ccd5218d82ded5d81e5fab6ac801bde218ceef30cd",
+      "match_id": "villa-nottingham-forest-martinez-source",
+      "split": "development",
+      "source": "clips/action-sources/pl-saves.mp4",
+      "source_sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+      "start_s": 38.5,
+      "duration_s": 7.5,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "corner-e1",
+          "at_s": 1.0,
+          "kind": "play",
+          "action_type": "corner",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Kick from the corner arc with flag visible; not an ordinary open-play cross."
+        },
+        {
+          "id": "corner-e2",
+          "at_s": 3.5,
+          "kind": "play",
+          "action_type": "save",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Crowded close-range keeper intervention; exact contact needs normal-speed review."
+        }
+      ],
+      "checks": [
+        "Distinguish setup, corner delivery and outcome. Do not infer a goal from the crowd."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "free-kick",
+      "title": "Direct free kick",
+      "reference": "examples/replay-evaluation/suite/free-kick.json",
+      "reference_sha256": "8d097ff6ef7a2d0721c1d7af6615aaf2ce218a53d398d3bc21efe36c5dca544a",
+      "match_id": "portugal-spain-2018-world-cup",
+      "split": "development",
+      "source": "clips/demo-sources/portugal-spain-live.mp4",
+      "source_sha256": "ce81a00b525a1c2de5490520d1a51534082dfb46874f2cae0c1a8e36ded65bf6",
+      "start_s": 19.5,
+      "duration_s": 6,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "free-kick-e1",
+          "at_s": 1.25,
+          "kind": "play",
+          "action_type": "free_kick",
+          "player": "Cristiano Ronaldo",
+          "player_action_role": "shooter",
+          "annotation_note": "Player label is evaluation-only. An identity readable in celebration must not be backdated to this action."
+        },
+        {
+          "id": "free-kick-e2",
+          "at_s": 3.0,
+          "kind": "goal",
+          "action_type": "goal",
+          "player": "Cristiano Ronaldo",
+          "player_action_role": "scorer",
+          "annotation_note": "Player label is evaluation-only. An identity readable in celebration must not be backdated to this action."
+        },
+        {
+          "id": "free-kick-identity-celebration",
+          "at_s": 4.0,
+          "kind": "celebration",
+          "action_type": null,
+          "player": "Cristiano Ronaldo",
+          "player_action_role": "visible_player",
+          "annotation_note": "Agent-inspected local frames show readable shirt identity in celebration. Does not identify earlier actions without direct evidence. Human review pending."
+        }
+      ],
+      "checks": [
+        "Recognize the wall and restart, then wait for the outcome."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "penalty",
+      "title": "Penalty scored, then replay",
+      "reference": "examples/replay-evaluation/suite/penalty.json",
+      "reference_sha256": "0cebed17defeade182ac437647dd89e7d5f1925a16d5403437608e39aefce4da",
+      "match_id": "england-france-2022-world-cup",
+      "split": "development",
+      "source": "clips/action-sources/england-france-penalties.mp4",
+      "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+      "start_s": 50.5,
+      "duration_s": 7,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "penalty-e1",
+          "at_s": 1.25,
+          "kind": "play",
+          "action_type": "penalty_kick",
+          "player": "Harry Kane",
+          "player_action_role": "shooter",
+          "annotation_note": "Number 9 is readable on the penalty taker in the source frames; mapped to the historical England roster. Identity reviewed by the coding agent, not human-approved."
+        },
+        {
+          "id": "penalty-e2",
+          "at_s": 1.75,
+          "kind": "goal",
+          "action_type": "goal",
+          "player": "Harry Kane",
+          "player_action_role": "shooter",
+          "annotation_note": "Number 9 is readable on the penalty taker in the source frames; mapped to the historical England roster. Identity reviewed by the coding agent, not human-approved."
+        },
+        {
+          "id": "penalty-e3",
+          "at_s": 3.5,
+          "kind": "replay",
+          "action_type": "penalty_kick",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": null
+        }
+      ],
+      "checks": [
+        "Do not announce success during the run-up.",
+        "The second angle is the same penalty, not another goal."
+      ],
+      "replay_check": true,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "throw-in",
+      "title": "Long throw into the area",
+      "reference": "examples/replay-evaluation/suite/throw-in.json",
+      "reference_sha256": "ddbbef57b3d3ba3aa22baac61b0472a8b5e4279d930aacefcabd96ed1c4807b7",
+      "match_id": "stoke-manchester-united-2011-spectator-source",
+      "split": "development",
+      "source": "clips/action-sources/delap-match-throw.webm",
+      "source_sha256": "7399eba14fa41915efba8c6b3aadac19a1886d7ecd6aa38f24633e4c293b9441",
+      "start_s": 23,
+      "duration_s": 6.5,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "throw-in-e1",
+          "at_s": 4.0,
+          "kind": "play",
+          "action_type": "throw_in",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Overhead release from the touchline; visible hands/ball motion, no explanatory captions."
+        }
+      ],
+      "checks": [
+        "Recognize a throw rather than a corner/cross. No outcome is established by the long delivery alone."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "foul-decision",
+      "title": "Foul followed by a penalty award",
+      "reference": "examples/replay-evaluation/suite/foul-decision.json",
+      "reference_sha256": "ac6ff0d8cd201d512a847dc0ff09512d236389420ed11724d27477ea77749a20",
+      "match_id": "england-france-2022-world-cup",
+      "split": "development",
+      "source": "clips/action-sources/england-france-penalties.mp4",
+      "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+      "start_s": 43,
+      "duration_s": 6,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "foul-decision-e1",
+          "at_s": 2.5,
+          "kind": "play",
+          "action_type": "penalty_awarded",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Referee visibly points to the spot after the challenge. Prefer this specific decision label to guessing from contact alone."
+        },
+        {
+          "id": "foul-decision-e2",
+          "at_s": 4.0,
+          "kind": "replay",
+          "action_type": "tackle",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Repeat close angle of the challenge; do not issue a second live decision."
+        }
+      ],
+      "checks": [
+        "Collision alone is insufficient. Use the referee signal for the penalty award.",
+        "This tests foul-to-penalty decisions; an ordinary midfield foul is not separately labeled."
+      ],
+      "replay_check": true,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "card",
+      "title": "Red-card decision",
+      "reference": "examples/replay-evaluation/actions/france-jamaica-red-card.json",
+      "reference_sha256": "e2aae35ec39f8a48c2491c50dc98dfd4440f889ee2ada7536095d1b8f9b72052",
+      "match_id": "france-jamaica-2023-womens-world-cup",
+      "split": "development",
+      "source": "clips/action-sources/france-jamaica-late.webm",
+      "source_sha256": "1ae57eeb2a804107e434614840a6761e08122c073bd6def42fbe5f39986b2cb9",
+      "start_s": 37.5,
+      "duration_s": 5,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "red-card",
+          "at_s": 0.5,
+          "kind": "play",
+          "action_type": "red_card",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Red card visibly raised by referee; no inference about identity, prior booking, or reason."
+        }
+      ],
+      "checks": [
+        "Read the visible card color accurately; do not invent the booking history."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    },
+    {
+      "case_id": "offside",
+      "title": "VAR decision: no goal, offside",
+      "reference": "examples/replay-evaluation/suite/offside.json",
+      "reference_sha256": "b91466380c48d4cbae6349b3613a7c52815c0bd3cffb83012d9538dfb82ab22a",
+      "match_id": "everton-manchester-united-2020-var-source",
+      "split": "development",
+      "source": "clips/action-sources/everton-var-offside.webm",
+      "source_sha256": "72714f9de63a5e5b5a53f05544111568ff17ba4cd7bd9219f7287561dacfaf2f",
+      "start_s": 92,
+      "duration_s": 10,
+      "annotation_status": "unreviewed",
+      "action_labels_complete": false,
+      "reference_commentary_count": 0,
+      "draft_events": [
+        {
+          "id": "offside-e1",
+          "at_s": 3.5,
+          "kind": "play",
+          "action_type": "offside",
+          "player": null,
+          "player_action_role": null,
+          "annotation_note": "Stadium screen explicitly reads DECISION NO GOAL OFFSIDE. The prior review banner alone is not final confirmation."
+        }
+      ],
+      "checks": [
+        "Do not call a new goal. Distinguish checking possible offside from the final no-goal decision."
+      ],
+      "replay_check": false,
+      "reference_review": {
+        "status": "pending",
+        "reviewer": null,
+        "reviewer_kind": null,
+        "reviewed_at": null,
+        "must_call_event_ids": null,
+        "first_visible_support_s": null,
+        "identity_eligibility": null,
+        "analysis_eligible": null,
+        "quiet_intervals": null,
+        "uncertainties": [],
+        "notes": null
+      },
+      "candidates": [],
+      "pairwise_review": {
+        "status": "pending",
+        "blind_mapping_file": null,
+        "preference": null,
+        "reason": null
+      }
+    }
+  ]
+}

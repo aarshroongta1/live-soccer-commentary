@@ -4,6 +4,10 @@ Selected November 7, 2026: **15 short windows, 112.5 seconds total**. The select
 
 The machine-readable selection is [action-suite.json](../examples/action-suite.json). Each entry links to a separate evaluator reference and records its source window, action targets, and manual commentary checks. Labels never go to the runtime agents.
 
+The next pass uses the [text-only rubric and comparison protocol](TEXT_EVALUATION.md)
+and its [15-case review worksheet](../examples/evaluation-results/text-review-v1.json).
+Worksheet scores are pending; voice is excluded.
+
 | # | Case | Local source window | Main checks |
 | --- | --- | --- | --- |
 | 1 | Routine buildup | `liga-f-routine.mp4`, 24–39s | pass, carry |

@@ -7,6 +7,20 @@ files_modified: []
 
 # Commentary project handoff
 
+## Update: text evaluation resumed, 9 November 2026
+
+The user explicitly skipped voice and authorized work on text evaluation. Voice,
+audio generation and deployment remain paused. The current deliverables are
+[the text-only rubric/comparison protocol](TEXT_EVALUATION.md) and an
+[unscored 15-case review worksheet](../examples/evaluation-results/text-review-v1.json).
+The evaluation docs and saved reports were inspected without paid calls. All 15
+references remain unreviewed with empty commentary arrays; no new semantic scores
+or baseline-versus-agent quality result is claimed. The protocol identifies a
+bounded shared-observation comparison adapter as the next implementation task;
+the legacy entry points do not yet provide equivalent comparison controls.
+This update supersedes the blanket text-work pause below, while preserving the
+voice pause and historical findings.
+
 Read this first in a new session. This snapshot supersedes older status prose
 where it conflicts with the recent recorded-demo work. The user requested this
 handoff, not more implementation or audio generation.

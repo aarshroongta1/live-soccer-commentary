@@ -1,5 +1,11 @@
 # Commentary evaluation and improvement
 
+Current next step: [text-only acceptance rubric and controlled comparison](TEXT_EVALUATION.md)
+(9 November 2026). Voice and listening evaluation are out of the active scope.
+That protocol supersedes the older sequencing and audio deliverables below.
+The existing 15 local clips are sufficient; do not acquire broader datasets for
+this pass. Their labels remain unreviewed and are all development examples.
+
 Current scope: a handful of short action/event clips, using existing models only.
 No training, fine-tuning, or RL. Improve recognition and caller/analyst output on
 this fixed set before adding infrastructure. The [first checks](ACTION_TRIAL.md)
