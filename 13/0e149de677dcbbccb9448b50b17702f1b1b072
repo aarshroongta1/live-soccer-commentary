@@ -1,0 +1,57 @@
+web/public/soccer-commentary/portfolio-before.render.json
+  s_c61538d1d875af::t_5249b7230897b6 1-44
+docs/PORTFOLIO.md
+  s_c61538d1d875af::t_c35d809f0bbd4d 11-16,40-41,87-88
+docs/PORTFOLIO_CASE_STUDY.md
+  s_c61538d1d875af::t_c35d809f0bbd4d 44-77,112-115
+docs/SESSION_HANDOFF.md
+  s_c61538d1d875af::t_50af55d3afd96d 12-31,68
+web/app/demo/demo.css
+  s_c61538d1d875af::t_5249b7230897b6 409-427
+examples/portfolio-demo/README.md
+  s_c61538d1d875af::t_c35d809f0bbd4d 25-33
+web/app/demo/demo-experience.tsx
+  s_c61538d1d875af::t_50af55d3afd96d 185
+  s_c61538d1d875af::t_5249b7230897b6 28-38,113-114,118-121,150-177,184,187,191,197
+web/app/demo/page.tsx
+  s_c61538d1d875af::t_5249b7230897b6 6,31-43
+web/public/soccer-commentary/portfolio-iteration.json
+  s_c61538d1d875af::t_5249b7230897b6 1-43
+README.md
+  s_c61538d1d875af::t_c35d809f0bbd4d 29-32
+web/.env.example
+  s_c61538d1d875af::t_c35d809f0bbd4d 16-18
+web/data/iteration-demo.json
+  s_c61538d1d875af::t_5249b7230897b6 111
+  s_c61538d1d875af::t_56273b613f2e6f 1-110,112-164
+examples/portfolio-demo/before-plan.json
+  s_c61538d1d875af::t_34be260a98b394 1-356
+examples/portfolio-demo/before-trace.json
+  s_c61538d1d875af::t_e0b646885f8688 1-1663
+examples/portfolio-demo/iteration.json
+  s_c61538d1d875af::t_cc0ef8090b1891 1-43
+tests/test_portfolio_iteration.py
+  s_c61538d1d875af::t_d84656588658a3 1-42
+tests/test_replay_agents.py
+  s_c61538d1d875af::t_87f10fd6a761be 386-432
+web/public/soccer-commentary/portfolio-before.ass
+  s_c61538d1d875af::t_1158a86a562c41 1-18
+web/public/soccer-commentary/portfolio-before.trace.json
+  s_c61538d1d875af::t_26face73a6c601 1-1663
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "130e149de677dcbbccb9448b50b17702f1b1b072",
+  "prompts": {},
+  "sessions": {
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
