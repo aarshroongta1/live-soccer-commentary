@@ -1,0 +1,82 @@
+{
+  "status": "historical_cache_not_quality_approved",
+  "sources": [
+    {
+      "case_id": "card",
+      "artifact": "runs/replay/recognition-pass-20261107-inspected/card.json",
+      "artifact_sha256": "a96c98f02a6b3d0db4ed7186f8eeb9f4f842b9eda5066a7fca8d17c32d962d02",
+      "json_pointer": "",
+      "bundle_sha256": "3080bb4b9fae5a0531b307ac69a6cf8b34ceef02b4a29c83e7e316a07bdf87b7",
+      "removed_legacy_identity_evidence_ids": [],
+      "scope": "Historical model perception reused verbatim except unresolved/legacy identity removal. Not corrected from evaluator notes or newly approved vision."
+    },
+    {
+      "case_id": "save",
+      "artifact": "runs/replay/recognition-pass-20261107-inspected/save.json",
+      "artifact_sha256": "4781bb41012a9a50f057fa9559111c408e33575225f182ab6c32a5164524de3a",
+      "json_pointer": "",
+      "bundle_sha256": "5098161cc6a3a5bed4ba38c24de0399cd6641903ad297f9422c6274354f9647a",
+      "removed_legacy_identity_evidence_ids": [],
+      "scope": "Historical model perception reused verbatim except unresolved/legacy identity removal. Not corrected from evaluator notes or newly approved vision."
+    },
+    {
+      "case_id": "tackle",
+      "artifact": "runs/replay/recognition-pass-20261107-inspected/tackle.json",
+      "artifact_sha256": "980121b6bd2b8681541b84a457adf3dfb52d839eb0403fa94dfff4786e853df3",
+      "json_pointer": "",
+      "bundle_sha256": "8050f18fc05fd6adbd73f746b69c384c4152ad538eb2b637a550cdf3dbd94281",
+      "removed_legacy_identity_evidence_ids": [],
+      "scope": "Historical model perception reused verbatim except unresolved/legacy identity removal. Not corrected from evaluator notes or newly approved vision."
+    },
+    {
+      "case_id": "goal",
+      "artifact": "runs/replay/action-baseline-20261107/public-goal-complete.json",
+      "artifact_sha256": "d2103f4e23ffc857816761df097b02cf3647ab63c9a9d938d8002fcea9c5ee4e",
+      "json_pointer": "",
+      "bundle_sha256": "8f3c8215b16405d4347778b84d09911d9bc01735cd5f593b67ae165c97145320",
+      "removed_legacy_identity_evidence_ids": [],
+      "scope": "Historical model perception reused verbatim except unresolved/legacy identity removal. Not corrected from evaluator notes or newly approved vision."
+    },
+    {
+      "case_id": "dribble",
+      "artifact": "examples/evaluation-results/player-name-iteration-20261107.json",
+      "artifact_sha256": "b3fc6fdd8f6ef5784e2eeeebd34dd8cea668212f855fc5f43d02de1c883d1cc9",
+      "json_pointer": "/observer_results/0",
+      "bundle_sha256": "be403ab04c122eea88e8a6479d30d44c1cdc829756cc84d93c93aa6e2972cbed",
+      "removed_legacy_identity_evidence_ids": [],
+      "scope": "Historical model perception reused verbatim except unresolved/legacy identity removal. Not corrected from evaluator notes or newly approved vision."
+    },
+    {
+      "case_id": "free-kick",
+      "artifact": "examples/evaluation-results/player-name-iteration-20261107.json",
+      "artifact_sha256": "b3fc6fdd8f6ef5784e2eeeebd34dd8cea668212f855fc5f43d02de1c883d1cc9",
+      "json_pointer": "/observer_results/1",
+      "bundle_sha256": "cc63392006ec2a357d49afb244581967328475b283bc015dfa32664bfe02018c",
+      "removed_legacy_identity_evidence_ids": [
+        "v1-o2",
+        "v1-o3"
+      ],
+      "scope": "Historical model perception reused verbatim except unresolved/legacy identity removal. Not corrected from evaluator notes or newly approved vision."
+    },
+    {
+      "case_id": "penalty",
+      "artifact": "examples/evaluation-results/researched-handoff-20261107.json",
+      "artifact_sha256": "783a7c7b84e2a2d7d3efdd303f1fa3badcc04149f08300a8b222113b26c0a2ce",
+      "json_pointer": "/final_replay",
+      "bundle_sha256": "da11fc13c1c554ded99608ba6cff66cb2af6b3ea1854a51dc40f3d7e9337ac5f",
+      "removed_legacy_identity_evidence_ids": [],
+      "scope": "Historical model perception reused verbatim except unresolved/legacy identity removal. Not corrected from evaluator notes or newly approved vision."
+    }
+  ],
+  "missing_cases": [
+    "buildup",
+    "interception",
+    "cross-header",
+    "miss",
+    "corner",
+    "throw-in",
+    "foul-decision",
+    "offside"
+  ],
+  "no_new_model_calls": true
+}

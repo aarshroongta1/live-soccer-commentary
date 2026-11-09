@@ -1,0 +1,206 @@
+{
+  "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+  "source_start_s": 50.5,
+  "duration_s": 7.0,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "goal_line_crossing",
+          "keeper_contact"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 3.5,
+      "kind": "goal",
+      "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          2.0,
+          3.0,
+          3.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 5.5,
+      "kind": "celebration",
+      "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          5.5,
+          6.5
+        ]
+      }
+    }
+  ],
+  "research": {
+    "fixture": "England v France, FIFA World Cup quarter-final, 10 December 2022",
+    "as_of": "2022-12-09",
+    "facts": [],
+    "squads": [
+      {
+        "id": "england-world-cup-2022-squad",
+        "side": "home",
+        "team": "England",
+        "kit_colours": "white shirts, dark shorts",
+        "players": [
+          {
+            "name": "Jordan Pickford",
+            "number": 1
+          },
+          {
+            "name": "Kyle Walker",
+            "number": 2
+          },
+          {
+            "name": "Luke Shaw",
+            "number": 3
+          },
+          {
+            "name": "Declan Rice",
+            "number": 4
+          },
+          {
+            "name": "John Stones",
+            "number": 5
+          },
+          {
+            "name": "Harry Maguire",
+            "number": 6
+          },
+          {
+            "name": "Jack Grealish",
+            "number": 7
+          },
+          {
+            "name": "Jordan Henderson",
+            "number": 8
+          },
+          {
+            "name": "Harry Kane",
+            "number": 9
+          },
+          {
+            "name": "Raheem Sterling",
+            "number": 10
+          },
+          {
+            "name": "Marcus Rashford",
+            "number": 11
+          },
+          {
+            "name": "Kieran Trippier",
+            "number": 12
+          },
+          {
+            "name": "Nick Pope",
+            "number": 13
+          },
+          {
+            "name": "Kalvin Phillips",
+            "number": 14
+          },
+          {
+            "name": "Eric Dier",
+            "number": 15
+          },
+          {
+            "name": "Conor Coady",
+            "number": 16
+          },
+          {
+            "name": "Bukayo Saka",
+            "number": 17
+          },
+          {
+            "name": "Trent Alexander-Arnold",
+            "number": 18
+          },
+          {
+            "name": "Mason Mount",
+            "number": 19
+          },
+          {
+            "name": "Phil Foden",
+            "number": 20
+          },
+          {
+            "name": "Ben White",
+            "number": 21
+          },
+          {
+            "name": "Jude Bellingham",
+            "number": 22
+          },
+          {
+            "name": "Aaron Ramsdale",
+            "number": 23
+          },
+          {
+            "name": "Callum Wilson",
+            "number": 24
+          },
+          {
+            "name": "James Maddison",
+            "number": 25
+          },
+          {
+            "name": "Conor Gallagher",
+            "number": 26
+          }
+        ],
+        "source_url": "https://www.englandfootball.com/articles/2022/Nov/14/england-2022-world-cup-squad-numbers-20221114",
+        "source_date": "2022-11-14"
+      }
+    ]
+  },
+  "teams": {
+    "home": "England",
+    "away": "France"
+  }
+}

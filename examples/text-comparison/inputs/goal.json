@@ -1,0 +1,70 @@
+{
+  "source_sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913",
+  "source_start_s": 12.0,
+  "duration_s": 6.5,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "A ball is swung into the six-yard box and players converge in front of goal; the exact contact is hard to see.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "uncertain",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_flight",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 2.5,
+      "kind": "play",
+      "description": "The ball drops in the crowded goalmouth and is redirected toward the goal line amid a scramble.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_motion",
+          "goal_line_crossing",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          2.5,
+          3.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 3.5,
+      "kind": "goal",
+      "description": "The ball is visible inside the net after crossing the line, with defenders and the goalkeeper in the goalmouth.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          3.5,
+          4.5
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

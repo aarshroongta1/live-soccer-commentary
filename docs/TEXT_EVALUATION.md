@@ -44,9 +44,11 @@ reference drafting. A later celebration identity does not identify an earlier
 scorer unless action-linked evidence establishes that connection.
 
 The evaluator-only [worksheet](../examples/evaluation-results/text-review-v1.json)
-contains all 15 case IDs, reference hashes, draft events and review checks. Its null
-ratings mean **not reviewed**, never zero or pass. It is not a runtime input or a
-completed result. Record reviewer identity and whether review was by a human or
+contains all 15 case IDs, reference hashes, draft events and review checks. A coding
+agent inspected 12 evenly spaced frames per clip and recorded provisional must-call
+meanings and unresolved details. This is sampled reference triage, not full-motion
+verification. Candidate ratings remain null: **not scored**, never zero or pass.
+It is not a runtime input or a completed result. Record reviewer identity and whether review was by a human or
 coding agent; never silently promote agent review to human-approved truth.
 
 ## Rubric
@@ -116,7 +118,7 @@ into a weighted score that can hide factual failures.
    eligibility in the worksheet. No expected script is required. If broadcaster
    transcripts become available later, verify names/offsets and use them as an
    additional paraphrase-compatible reference, outside runtime inputs.
-2. **Freeze a recorded text comparison.** A is the unedited automatic joint writer;
+2. **Freeze a recorded text comparison.** A is an automatic joint writer;
    B is separate caller/analyst without the optional reviewer. Both get the same
    immutable full-context observations, accepted identities, fixture context and
    saved research facts. Neither gets references, target prose, labels or worksheet
@@ -163,16 +165,33 @@ reference match IDs), and alternate uploads can contain the same match. Split by
 verified fixture, not file or case ID. Future unseen evidence is a separate task;
 do not acquire more data for this comparison.
 
-## Implementation needed before paid execution
+## Comparison implementation
 
-Existing scripts are individual entry points, not a controlled comparison runner.
+`scripts/compare_text.py` and `src/commentary/replay/text_comparison.py` implement
+the shared-input runner and blind JSON review export. Default mode inventories
+all 15 cases and validates supplied bundles, source hashes/windows and schemas
+without creating a model client. Explicit `--spend --model MODEL_ID` opts into
+generation, with hard $0.03/eight-call limits per arm, no provider retries,
+1,024 output tokens per call by default, and reasoning effort `none`. Every
+response, rejected draft, repair, partial output and failure remains in the audit.
+The paid branch is also exercised end to end with a scripted provider in tests.
+
+The runner's version is **short-clips-v1**, an explicitly adapted baseline rather
+than unchanged historical output. The old joint schema requires 7–12 lines and
+three substantial analyst turns, which cannot reasonably fit five-second clips.
+The comparison permits 0–7 lines, optional analysis and one validation repair in
+each arm. It preserves historical grounding instructions and uses the existing
+role/tool loops with the reviewer disabled. The agent adapter presents the same
+complete observation pool at each turn, with an explicit offline planning prompt;
+it does not use the causal replay or source-filtered recorded scheduler. Both
+arms use the same support-aware placement, spacing and total-word constraints.
+No goal shortcut or hand-edited output participates.
+
+The original scripts remain individual entry points:
 `generate_demo.py` has no dollar/call CLI guard and the joint writer allows an
 8,192-token response plus one validation repair. `prepare_agent_demo.py` is
-budgeted but enables the reviewer. Both need a small shared-observation comparison
-adapter with identical context, budget enforcement, output limits and explicit
-repair/reviewer controls before running the experiment. Preserve the original
-automatic prompts as A; label any necessary context adapter. Do not run the legacy
-defaults and assume they satisfy this protocol.
+budgeted but enables the reviewer. Do not run those defaults and assume they
+satisfy this protocol.
 
 Use scripted backends to verify budget stops, rejected output accounting, reference
 isolation, shared inputs and one-repair limits before paid execution. This protocol
@@ -184,6 +203,8 @@ not accept a joint-writer `DemoPlan` directly, verify sentence meaning, or turn
 sparse-label unmatched detections into proven false positives. Preserve original
 outputs and use a clearly identified adapter if adding a common scorecard.
 
-Next implementation: the bounded shared-observation text comparison adapter and
-blind review export. Recognition prompt changes and GEPA follow the measured
-failures; they are not prerequisites for establishing this comparison.
+Seven historical perception bundles and their provenance are saved in
+[text-comparison](../examples/text-comparison/README.md). Eight cases lack cached
+inputs in that selection and remain explicit missing rows. This is not a newly
+generated or quality-approved perception baseline. Recognition prompt changes
+and GEPA follow measured failures; neither is required to run this comparison.

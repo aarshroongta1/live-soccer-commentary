@@ -1,0 +1,69 @@
+{
+  "source_sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+  "source_start_s": 10.0,
+  "duration_s": 8.0,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 4.5,
+      "kind": "play",
+      "description": "A low ball is driven across the face of goal from the right side, skimming into the six-yard area as the goalkeeper moves left to cover.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 5.5,
+      "kind": "play",
+      "description": "The goalkeeper dives low and makes contact with the ball, deflecting the close-range attempt away from the goalmouth.",
+      "actor": null,
+      "action": {
+        "type": "save",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "keeper_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          5.5,
+          6.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 6.5,
+      "kind": "play",
+      "description": "After the save, the ball is loose in front of the area with defenders and attackers converging, but no clear follow-up contact is visible.",
+      "actor": null,
+      "action": {
+        "type": "ball_recovery",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          6.5,
+          7.5
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

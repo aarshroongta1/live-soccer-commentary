@@ -1,0 +1,30 @@
+[
+  {
+    "case_id": "card",
+    "bundle": "inputs/card.json"
+  },
+  {
+    "case_id": "save",
+    "bundle": "inputs/save.json"
+  },
+  {
+    "case_id": "tackle",
+    "bundle": "inputs/tackle.json"
+  },
+  {
+    "case_id": "goal",
+    "bundle": "inputs/goal.json"
+  },
+  {
+    "case_id": "dribble",
+    "bundle": "inputs/dribble.json"
+  },
+  {
+    "case_id": "free-kick",
+    "bundle": "inputs/free-kick.json"
+  },
+  {
+    "case_id": "penalty",
+    "bundle": "inputs/penalty.json"
+  }
+]

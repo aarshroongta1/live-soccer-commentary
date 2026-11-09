@@ -15,9 +15,38 @@ audio generation and deployment remain paused. The current deliverables are
 [unscored 15-case review worksheet](../examples/evaluation-results/text-review-v1.json).
 The evaluation docs and saved reports were inspected without paid calls. All 15
 references remain unreviewed with empty commentary arrays; no new semantic scores
-or baseline-versus-agent quality result is claimed. The protocol identifies a
-bounded shared-observation comparison adapter as the next implementation task;
-the legacy entry points do not yet provide equivalent comparison controls.
+or baseline-versus-agent quality result is claimed.
+
+The user then requested continued autonomous work with progress updates and no
+permission checks for small steps. The bounded text comparison is implemented in
+`scripts/compare_text.py` and `src/commentary/replay/text_comparison.py`. It compares
+an explicitly adapted short-clip joint writer with the existing caller/analyst
+role loops, both using the full shared evidence pool and common support-aware
+placement. This is offline text planning, not causal replay. Original demo paths
+are unchanged. Provider retries and the agent reviewer are disabled; each arm has
+a $0.03/eight-call cap and at most one validation repair. Blind review JSON hides
+architecture/model/cost; its mapping is separate. Default mode makes no model call.
+
+Seven historical inputs are frozen in `examples/text-comparison/` with provenance;
+eight cases are explicitly missing. Their known perception errors are preserved.
+Legacy deterministic free-kick identities are removed, not promoted to accepted
+agent-owned names. A dry run verified all seven source hashes/windows. The coding
+agent inspected 12-frame contact sheets for all 15 clips and recorded provisional
+reference notes in the worksheet. In particular, red-card timing and the penalty's
+later celebration angle need reference review. No source reference was promoted
+or silently corrected; candidate scores remain pending.
+
+Validation after this work: **365 offline tests passed**, Ruff and mypy passed.
+Twenty new comparison tests include scripted end-to-end execution of the paid
+branch, budget stops, repair limits, rejected/partial outputs and reference
+isolation. No new paid calls, audio, deployment or push occurred.
+
+An asynchronous question asks whether the handoff's paid-experiment pause can be
+lifted for a text-only run capped at $1.20 total (including missing perception,
+existing small model, no TTS). It is pending, not approved. Do not treat elapsed
+time or this requested cap as permission. Continue offline work freely; generating
+the actual model comparison and filling missing model perception depend on that
+answer. Quality review must follow generation; tests/dry runs are not quality wins.
 This update supersedes the blanket text-work pause below, while preserving the
 voice pause and historical findings.
 

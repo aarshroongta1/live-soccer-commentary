@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "text-review-v1",
   "created_on": "2026-11-09",
-  "status": "template_not_scored",
+  "status": "reference_agent_triage_candidates_unscored",
   "runtime_input": false,
   "voice_in_scope": false,
   "rubric": "docs/TEXT_EVALUATION.md",
@@ -12,7 +12,8 @@
     "All cases are existing development cases; no held-out claims.",
     "Draft events and checks are copied from references, not newly verified.",
     "Null means pending or unknown, never pass. Scores require independent video review.",
-    "This file and all reference labels must stay outside runtime agent inputs."
+    "This file and all reference labels must stay outside runtime agent inputs.",
+    "Contact-sheet triage does not resolve exact contact/timing or make labels human-approved; original references are unchanged."
   ],
   "candidate_review_template": {
     "blind_id": null,
@@ -83,17 +84,30 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "pass"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": false,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Exact pass/carry boundaries and actor numbers need closer inspection."
+        ],
+        "notes": "Ordinary lateral/backward circulation throughout; no visible chance. Wide view does not establish readable actor identities.",
+        "must_call_meanings": [
+          "Describe circulation at least once without inventing a chance."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/buildup.jpg",
+          "sha256": "fd977ec830b47947ec703ed060042d0f5507f2302303d1b02fa39352e91ef09c",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -160,17 +174,31 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "dribble-e1",
+          "dribble-e3"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "First line-crossing instant and action-linked shirt number require full-resolution inspection."
+        ],
+        "notes": "Defender goes to ground around 3.49s; finish follows and goalmouth/celebration appear around 4.65\u20135.24s. Later number 10 celebration must not retroactively identify the shooter.",
+        "must_call_meanings": [
+          "Beat the defender, then finish; no goal call during approach."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/dribble.jpg",
+          "sha256": "7ac1f8285ab0622a3e4fa762ae4c1454b5e5de1350eecca47cfe071f76305ac2",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -219,17 +247,30 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "tackle"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Contact mechanism, tackle versus loose-ball challenge, and first supporting time need dense frames."
+        ],
+        "notes": "Defender/attacker/keeper converge around 3.14\u20133.76s; no goal is established. Later close-up shows grounded players and number 20 but cannot identify the preceding ball carrier by itself.",
+        "must_call_meanings": [
+          "Recognize the defensive intervention without inventing a goal/save."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/tackle.jpg",
+          "sha256": "d0f236472993d5a1d9ee8f835baf3b7337bb35f172bf27ba657154d91c4382fc",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -279,17 +320,30 @@
       ],
       "replay_check": true,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "interception-e1"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Roster mapping is not established by the contact sheet."
+        ],
+        "notes": "A pass into the channel is cut out by the red-shirted number 12 around 2.33\u20132.91s. A closer angle follows around 3.49s; it is the same action.",
+        "must_call_meanings": [
+          "Call the cut-out pass once; distinguish the repeat angle."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/interception.jpg",
+          "sha256": "fa5ffa245a63195f111ddf5e74365dd6512a6d25a86d228a24212615e5fbb6ed",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -338,17 +392,30 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "cross-header-e1"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Header contact and its exact timing remain unresolved at contact-sheet scale."
+        ],
+        "notes": "Delivery into the box around 3.60\u20134.50s; crowded aerial contest around 5.40\u20136.30s. Keeper subsequently gathers/holds the ball. No goal shown.",
+        "must_call_meanings": [
+          "Describe the delivery and aerial chance without inventing a goal."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/cross-header.jpg",
+          "sha256": "6856de36612f160ccda76c6ead6b40195b35d0eee27ef5ad02fc9962376c2f79",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -406,17 +473,32 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "shot",
+          "header",
+          "save"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Woodwork contact, exact header and first save-support instant need dense full-resolution frames."
+        ],
+        "notes": "Initial attempt around 2.15\u20132.87s, high keeper movement by 3.59s, rebound/header phase around 4.31s, low keeper intervention around 5.03s. A single low-cross/save account omits the sequence.",
+        "must_call_meanings": [
+          "Keep initial attempt, rebound/header and final keeper intervention distinct."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/save.jpg",
+          "sha256": "47cf734169b0442b4802c9020652efca9a755b7c1d44be2275c826935f5623c8",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -456,17 +538,30 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "miss-e1"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": false,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Readable number during the kick requires a closer view; do not use face recognition."
+        ],
+        "notes": "Penalty approach then strike by 2.23s; ball travels above the bar around 2.67s. No goal or keeper contact is established. Later face close-up is not independent action-linked naming evidence.",
+        "must_call_meanings": [
+          "Call the penalty miss over the bar."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/miss.jpg",
+          "sha256": "db772016846c7247dad4e1999454c8d1eb68a14e97a797b6a54b2cdcf23ce488",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -506,17 +601,30 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "sn-h1-a31"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Low-resolution ball/line crossing needs closer inspection; published approximate event time is not exact support."
+        ],
+        "notes": "Delivery and crowded finish, followed by clear celebrations. Later IVANOVIC 2 shirt is readable, but that alone cannot identify the scorer.",
+        "must_call_meanings": [
+          "Call the goal only after visible outcome support."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/goal.jpg",
+          "sha256": "81ab31acf63fcb076ac7371f5775162829e4da8ce066bcf102f738c8cf4c3191",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -565,17 +673,31 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "corner-e1",
+          "corner-e2"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Punch/catch/save mechanism and first supporting time remain unresolved."
+        ],
+        "notes": "Corner setup and delivery around 0.67\u20131.35s, crowded near-post intervention around 2.69\u20133.36s; no goal shown. Graphic names Emiliano Martinez but its action linkage still requires checking.",
+        "must_call_meanings": [
+          "Distinguish corner delivery and keeper intervention; no invented goal."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/corner.jpg",
+          "sha256": "9a51c1aec6f197c6ad7ce4a8fef3b97b2f8ed103c980fe62dcb03d465f69cb6f",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -633,17 +755,31 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "free-kick-e1",
+          "free-kick-e2"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": false,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Exact goal-line instant and readable action-linked number before celebration need closer inspection."
+        ],
+        "notes": "Wall and restart are visible; ball travels beyond the wall toward goal around 2.15\u20132.68s. Later RONALDO 7 shirt is clear during celebration.",
+        "must_call_meanings": [
+          "Recognize the free kick and its goal outcome, without anticipating it."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/free-kick.jpg",
+          "sha256": "b22a9c3c6573883d96e05e6c74294278af6d87060e88e67eb8688e4e14ac2dcd",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -702,17 +838,31 @@
       ],
       "replay_check": true,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "penalty-e2"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Draft penalty-e3 labels a replayed penalty_kick at 3.5s, but sampled frames show celebration. Resolve before accepting that scene/action label.",
+          "Action-linked number should be checked at full resolution."
+        ],
+        "notes": "Strike between 0.63 and 1.25s; goal/keeper opposite direction visible by 1.88s. At 3.76s the new camera angle shows the scorer running away, not another kick.",
+        "must_call_meanings": [
+          "Call the scored penalty once; never announce the changed angle as another goal."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/penalty.jpg",
+          "sha256": "dfca0083baa55164576ef58a43169214750e8029978fbe476686d6b58ac118da",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -752,17 +902,30 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "throw-in-e1"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": false,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "No supported outcome or useful tactical explanation established by this short view."
+        ],
+        "notes": "Overhead preparation at 3.49s and release by 4.07s clearly establish a throw-in; the ball enters a crowded area by 5.24s. No outcome follows within the window.",
+        "must_call_meanings": [
+          "Call the long throw without inventing a corner or goal."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/throw-in.jpg",
+          "sha256": "78f824a61325c38ccfd2a737844b3cd895737c93bfee007f277a2d26c33ae20a",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -812,17 +975,30 @@
       ],
       "replay_check": true,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "foul-decision-e1"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": true,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "The later angle can explain visible contact, but not referee intent or booking history."
+        ],
+        "notes": "Challenge/collision followed by pointing toward the spot; close referee signal at 2.15s. At 3.22\u20135.36s a closer repeat shows the same challenge.",
+        "must_call_meanings": [
+          "Wait for the referee signal before calling a penalty award."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/foul-decision.jpg",
+          "sha256": "1252ab1f873bdc446179411872e9da90ef31fff40987ff6ed0f1edd761eb071d",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -862,17 +1038,31 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "red-card"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": false,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "Draft event at 0.5s appears earlier than clear card evidence; inspect the 0.9\u20131.4s interval before fixing time.",
+          "Number 11 requires a verified fixture roster before naming."
+        ],
+        "notes": "Referee raises a red card, clearly visible around 1.34\u20132.23s. Earlier 0.45\u20130.89s samples do not show an unambiguous raised card. Number 11 protests; dismissal reason/history is not established.",
+        "must_call_meanings": [
+          "Call the red-card decision without inventing the reason or prior bookings."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/card.jpg",
+          "sha256": "73f8c5d72410d01fa97870b86715968b3e52c736d82285df9856a88b4ff7bd68",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {
@@ -912,17 +1102,30 @@
       ],
       "replay_check": false,
       "reference_review": {
-        "status": "pending",
-        "reviewer": null,
-        "reviewer_kind": null,
-        "reviewed_at": null,
-        "must_call_event_ids": null,
+        "status": "agent_contact_sheet_review_needs_detail",
+        "reviewer": "coding agent",
+        "reviewer_kind": "agent",
+        "reviewed_at": "2026-11-09",
+        "must_call_event_ids": [
+          "offside-e1"
+        ],
         "first_visible_support_s": null,
-        "identity_eligibility": null,
-        "analysis_eligible": null,
+        "identity_eligibility": "unresolved_full_resolution_or_roster_check",
+        "analysis_eligible": false,
         "quiet_intervals": null,
-        "uncertainties": [],
-        "notes": null
+        "uncertainties": [
+          "No-goal overlay and specific offside reason become readable at different times; use the large final board for the combined claim."
+        ],
+        "notes": "Small overlay already says VAR DECISION - NO GOAL around 0.90s. Stadium screen says CHECKING GOAL POSSIBLE OFFSIDE at 2.70s, then DECISION NO GOAL OFFSIDE at 3.60s.",
+        "must_call_meanings": [
+          "Call the final offside/no-goal decision; do not announce a fresh goal."
+        ],
+        "evidence": {
+          "contact_sheet": "runs/text-review-v1/source-sheets/offside.jpg",
+          "sha256": "227688f918cbdd74187ba73cc1008d5276c8661a25907ee88c4fd6c1e21c584e",
+          "sampling": "12 evenly spaced clip-relative frames from 0 to duration_s - 0.1, displayed at 400x225 each",
+          "limits": "Sampled visual review only; not full motion or frame-accurate verification. No candidate text used to draft these notes."
+        }
       },
       "candidates": [],
       "pairwise_review": {

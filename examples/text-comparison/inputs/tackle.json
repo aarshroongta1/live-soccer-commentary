@@ -1,0 +1,72 @@
+{
+  "source_sha256": "83bdd2c36f200a7e14aca42fd9b8036192ad82976aab6bffae07317b984d2082",
+  "source_start_s": 5.0,
+  "duration_s": 7.0,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "A navy attacker drives into the left side of the penalty area with the ball under control, closing on the goalkeeper as defenders recover.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 3.5,
+      "kind": "play",
+      "description": "The navy attacker releases a low shot from inside the box; the goalkeeper gets down and the ball is redirected away from the immediate goalmouth.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground",
+          "keeper_contact"
+        ],
+        "support_at_s": [
+          3.0,
+          3.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 5.5,
+      "kind": "play",
+      "description": "After the attempt, players and the goalkeeper collide in a crowded scramble inside the six-yard area, with the ball no longer clearly visible.",
+      "actor": null,
+      "action": {
+        "type": "foul",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [
+          "player_challenge"
+        ],
+        "support_at_s": [
+          4.5,
+          5.5,
+          6.5
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

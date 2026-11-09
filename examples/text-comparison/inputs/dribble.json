@@ -1,0 +1,71 @@
+{
+  "source_sha256": "c47f518aac13032e44dc63018cc11e0a8c412412b612f895439812531efdcc5b",
+  "source_start_s": 7.5,
+  "duration_s": 6.5,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 2.5,
+      "kind": "play",
+      "description": "A Barcelona attacker drives into the left side of the penalty area with the ball under control while a Bayern defender closes from behind and the goalkeeper sets himself near the near post.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          1.5,
+          2.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 3.5,
+      "kind": "play",
+      "description": "The attacker releases a left-footed shot from inside the box; the ball travels toward the far side of goal and the goalkeeper dives across, but the ball continues past him.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          3.5,
+          4.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 4.5,
+      "kind": "goal",
+      "description": "The ball crosses the goal line and finishes in the net inside the left side of the goal.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          4.5,
+          5.0,
+          6.0
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}

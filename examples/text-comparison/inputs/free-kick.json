@@ -1,0 +1,66 @@
+{
+  "source_sha256": "ce81a00b525a1c2de5490520d1a51534082dfb46874f2cae0c1a8e36ded65bf6",
+  "source_start_s": 19.5,
+  "duration_s": 6.0,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 4.0,
+      "kind": "goal",
+      "description": "The ball is visible inside the net at the right side of the goal as players react and the Portugal attacker begins to celebrate.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing",
+          "ball_flight"
+        ],
+        "support_at_s": [
+          2.5,
+          3.0,
+          4.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 4.0,
+      "kind": "celebration",
+      "description": "A Portugal player in a red shirt with the name and number visible on his back celebrates with outstretched arms.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          4.0,
+          4.5,
+          5.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 4.5,
+      "kind": "celebration",
+      "description": "The same Portugal player continues celebrating, with the shirt name and number still clearly visible.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          4.5,
+          5.5
+        ]
+      }
+    }
+  ],
+  "research": null,
+  "teams": {}
+}
