@@ -1,0 +1,28 @@
+docs/FALSE_GOAL_INVESTIGATION.md
+  s_c61538d1d875af::t_fbb628606a3c18 1-88
+scripts/investigate_false_goals.py
+  s_c61538d1d875af::t_d215b0703a6335 1-86,89-130,134-135,143-145,148-152,154-221
+  s_c61538d1d875af::t_eb28f921d2c808 87-88,131-133,136-142,146-147,153
+tests/test_false_goal_investigation.py
+  s_c61538d1d875af::t_eb28f921d2c808 1-47
+examples/evaluation-results/false-goal-investigation-20261109.json
+  s_c61538d1d875af::t_fbb628606a3c18 1-2309
+docs/SESSION_HANDOFF.md
+  s_c61538d1d875af::t_556b1d4ec295f3 10-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1063e1b38849c1d1f56a3add71c280e797d5467c",
+  "prompts": {},
+  "sessions": {
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
