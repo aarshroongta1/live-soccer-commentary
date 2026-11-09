@@ -1,0 +1,27 @@
+docs/EVALUATION.md
+  s_5122a6b523b341::t_69a3429affc79b 3-8
+examples/evaluation-results/text-review-v1.json
+  s_5122a6b523b341::t_8be8ada6235b2b 1-936
+docs/ACTION_SUITE.md
+  s_5122a6b523b341::t_69a3429affc79b 7-10
+docs/TEXT_EVALUATION.md
+  s_5122a6b523b341::t_69a3429affc79b 1-189
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_9f1f6013c69281 10-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e30d7abcc067e4161a79142d188751d71fa8df17",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
