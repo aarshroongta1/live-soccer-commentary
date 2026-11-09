@@ -1,0 +1,64 @@
+examples/text-comparison/inputs/tackle.json
+  s_c61538d1d875af::t_01917c934bb34a 1-72
+examples/text-comparison/inputs.json
+  s_c61538d1d875af::t_01917c934bb34a 1-30
+tests/test_text_comparison.py
+  s_c61538d1d875af::t_23dca97b4376be 299-366
+  s_5122a6b523b341::t_ee869b6d6efcf9 1-231
+  s_c61538d1d875af::t_b39ab58e95acfe 232-298
+examples/text-comparison/inputs/free-kick.json
+  s_c61538d1d875af::t_01917c934bb34a 1-66
+examples/evaluation-results/text-review-v1.json
+  s_c61538d1d875af::t_47bf4c166feff7 5,15-16,87-93,95-96,98-110,177-184,186-187,189-201,250-256,258-259,261-273,323-329,331-332,334-346,395-401,403-404,406-418,476-484,486-487,489-501,541-547,549-550,552-564,604-610,612-613,615-627,676-683,685-686,688-700,758-765,767-768,770-782,841-847,849-850,852-865,905-911,913-914,916-928,978-984,986-987,989-1001,1041-1047,1049-1050,1052-1065,1105-1111,1113-1114,1116-1128
+examples/text-comparison/inputs/penalty.json
+  s_c61538d1d875af::t_01917c934bb34a 1-206
+examples/text-comparison/README.md
+  s_5122a6b523b341::t_115a5268fecd1a 1-40
+scripts/compare_text.py
+  s_5122a6b523b341::t_5d6de0fe0630d2 1-82,84-105,107-125,127-129,131-136,138,140-149,153,162-174,182-190,194-196,199,202-205
+  s_5122a6b523b341::t_9d423dee796e3e 83,154-161,175-181,191-193,197-198
+  s_5122a6b523b341::t_ee869b6d6efcf9 106,126,130,137,139,150-152,200-201
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_d9b2e0490ad8ae 18-49
+docs/TEXT_EVALUATION.md
+  s_5122a6b523b341::t_115a5268fecd1a 47-51,121,168-190,193-194,206-210
+examples/text-comparison/input-provenance.json
+  s_c61538d1d875af::t_01917c934bb34a 1-82
+examples/text-comparison/inputs/save.json
+  s_c61538d1d875af::t_01917c934bb34a 1-69
+src/commentary/replay/text_comparison.py
+  s_5122a6b523b341::t_ee869b6d6efcf9 306
+  s_5122a6b523b341::t_e9fe19434bf1b2 1-20,22-38,41-50,55-57,61-80,82-130,137-152,162-167,170,180-185,194,201-222,227-231,234-238,250-255,258-260,264-266,271-281,286,290-301,308-321,332-335,341-359,366-381,403-404
+  s_5122a6b523b341::t_5d6de0fe0630d2 39-40,51-54,58-60,81,131-136,153-161,168-169,171-179,186-193,195-200,223-226,232-233,239-249,256-257,261-263,267-270,282-285,287-289,302-305,307,322-331,336-340,360-365,382-402
+  s_5122a6b523b341::t_1347890212faa3 21
+examples/text-comparison/inputs/goal.json
+  s_c61538d1d875af::t_01917c934bb34a 1-70
+examples/text-comparison/inputs/card.json
+  s_c61538d1d875af::t_01917c934bb34a 1-48
+examples/text-comparison/inputs/dribble.json
+  s_c61538d1d875af::t_01917c934bb34a 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "711ebeca8b7fbf89fa9c04844954e82cc764bcaa",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
