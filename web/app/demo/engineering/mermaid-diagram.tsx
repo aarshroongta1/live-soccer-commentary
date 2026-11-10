@@ -4,8 +4,8 @@ import { useEffect, useId, useRef, useState } from "react";
 
 type Diagram = { title: string; description: string; source: string };
 
-export default function MermaidDiagram({ diagram, theme, compact = false }: {
-  diagram: Diagram; theme: "light" | "dark"; compact?: boolean;
+export default function MermaidDiagram({ diagram, theme, compact = false, showSource = true, responsive = false }: {
+  diagram: Diagram; theme: "light" | "dark"; compact?: boolean; showSource?: boolean; responsive?: boolean;
 }) {
   const id = `mermaid-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const target = useRef<HTMLDivElement>(null);
@@ -13,6 +13,7 @@ export default function MermaidDiagram({ diagram, theme, compact = false }: {
 
   useEffect(() => {
     let cancelled = false;
+    const viewport = window.matchMedia("(max-width: 650px)");
     async function draw() {
       try {
         const { default: mermaid } = await import("mermaid");
@@ -38,7 +39,8 @@ export default function MermaidDiagram({ diagram, theme, compact = false }: {
           },
           flowchart: { htmlLabels: false, curve: "linear", nodeSpacing: 24, rankSpacing: 28, padding: 12 },
         });
-        const { svg } = await mermaid.render(`${id}-${theme}`, diagram.source);
+        const source = responsive && viewport.matches ? diagram.source.replace(/^flowchart LR/, "flowchart TD") : diagram.source;
+        const { svg } = await mermaid.render(`${id}-${theme}`, source);
         if (!cancelled && target.current) {
           // The diagram source is a checked-in constant, never user or model input.
           target.current.innerHTML = svg;
@@ -52,11 +54,13 @@ export default function MermaidDiagram({ diagram, theme, compact = false }: {
         }
       }
     }
+    const redraw = () => { void draw(); };
     void draw();
-    return () => { cancelled = true; };
-  }, [diagram.source, diagram.description, id, theme]);
+    if (responsive) viewport.addEventListener("change", redraw);
+    return () => { cancelled = true; viewport.removeEventListener("change", redraw); };
+  }, [diagram.source, diagram.description, id, theme, responsive]);
 
-  return <figure className={`engineering-diagram${compact ? " engineering-diagram-compact" : ""}`}>
+  return <figure className={`engineering-diagram${compact ? " engineering-diagram-compact" : ""}${responsive ? " engineering-diagram-responsive" : ""}`}>
     <figcaption>{diagram.title}<span>Mermaid</span></figcaption>
     <div className="engineering-diagram-scroll" tabIndex={0} role="region" aria-label={diagram.description}>
       <div ref={target} className="engineering-diagram-canvas">
@@ -64,6 +68,6 @@ export default function MermaidDiagram({ diagram, theme, compact = false }: {
       </div>
     </div>
     {failed && <p className="engineering-diagram-error">The visual could not load. Read the flowchart source below.</p>}
-    <details className="engineering-diagram-source"><summary>View Mermaid source</summary><pre><code>{diagram.source}</code></pre></details>
+    {(showSource || failed) && <details className="engineering-diagram-source"><summary>View Mermaid source</summary><pre><code>{diagram.source}</code></pre></details>}
   </figure>;
 }

@@ -5,8 +5,9 @@ The local `/` and `/demo` pages lead with three selected, silent captioned clips
 The main page is a recruiter-facing showcase: a short introduction, three clip
 choices, a large video player, and compact provenance labels. It keeps the website's
 Space Grotesk/blue palette and light/dark themes. The **How I built it** link opens
-`/demo/engineering`: a concise engineering case study with two Mermaid flowcharts,
-a skills-to-implementation table, evaluation-driven decisions and resume wording.
+`/demo/engineering`: a quick-scan engineering overview with one simplified flowchart, three skill
+highlights and one evaluation result. “Explore further” reveals the full skills
+table, detailed flowcharts, tradeoffs and resume wording.
 The deeper transcript/evidence/run inspector, costs, iteration comparison and
 causal replay explorer remain at `/demo/engineering/runs`.
 

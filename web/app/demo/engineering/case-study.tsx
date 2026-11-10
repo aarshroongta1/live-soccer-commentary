@@ -19,6 +19,7 @@ const skills = [
 
 export default function EngineeringCaseStudy() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [expanded, setExpanded] = useState(false);
   return <div className="demo-page showcase-page engineering-page" data-theme={theme}>
     <main className="engineering-content">
       <nav className="showcase-nav" aria-label="Project navigation">
@@ -28,14 +29,28 @@ export default function EngineeringCaseStudy() {
       <header className="engineering-heading">
         <p><a href="/demo">Football commentary</a><span aria-hidden="true">/</span>Engineering</p>
         <h1>How I built it<span aria-hidden="true">.</span></h1>
-        <p>I built a multimodal commentary prototype that turns football footage into evidence-grounded dialogue between two specialist agents. The engineering work is in orchestration, validation and evaluation around existing models.</p>
+        <p>A vision model reads the play. Two specialist agents write commentary. Code checks evidence and timing.</p>
       </header>
 
-      <section className="engineering-section" aria-labelledby="architecture-title">
-        <h2 id="architecture-title">System architecture</h2>
-        <MermaidDiagram diagram={diagrams.system} theme={theme} />
-        <p className="engineering-note">This diagram shows recorded preparation: vision sees the short clip before playback. England reuses saved perception and squad research; Arsenal and Argentina use fresh perception with disclosed light edits.</p>
+      <MermaidDiagram diagram={diagrams.overview} theme={theme} showSource={false} responsive />
+      <section className="engineering-highlights" aria-label="Key engineering skills">
+        <article><h2>Multimodal inference</h2><p>OpenCV + vision models turn footage into timestamped evidence.</p></article>
+        <article><h2>Multi-agent orchestration</h2><p>LangGraph roles use scoped tools; Pydantic validates their proposed lines.</p></article>
+        <article><h2>Evaluation & observability</h2><p>15 development clips, saved decision traces, and hard cost limits.</p></article>
       </section>
+      <section className="engineering-result" aria-labelledby="result-title">
+        <div><span>One evaluation-driven change</span><h2 id="result-title">Restored the caller’s goal reaction.</h2></div>
+        <p>A reviewer blocked “Kane scores!” Disabling it restored the caller-to-analyst handoff.<small>One saved example; the first call also started later.</small></p>
+      </section>
+
+      <details className="engineering-explore" onToggle={(event) => setExpanded(event.currentTarget.open)}>
+        <summary>Explore further <span>Architecture, tradeoffs and resume summary</span></summary>
+        {expanded && <div className="engineering-expanded">
+          <section className="engineering-section" aria-labelledby="architecture-title">
+            <h2 id="architecture-title">Full system architecture</h2>
+            <MermaidDiagram diagram={diagrams.system} theme={theme} />
+            <p className="engineering-note">Recorded preparation sees the short clip before playback. England reuses saved perception and squad research; Arsenal and Argentina use fresh perception with disclosed light edits.</p>
+          </section>
 
       <section className="engineering-section" aria-labelledby="skills-title">
         <h2 id="skills-title">The engineering behind it</h2>
@@ -65,6 +80,8 @@ export default function EngineeringCaseStudy() {
         <blockquote>Built a Python/LangGraph football commentary prototype with multimodal perception, tool-using caller and analyst agents, timestamped evidence checks, and a 15-clip evaluation workflow with reproducible failure traces.</blockquote>
         <p className="engineering-note">The demo uses existing models and precomputed captions. The replay prototype simulates speech timing; measured live speech latency is outside this demonstration.</p>
       </section>
+        </div>}
+      </details>
       <footer className="showcase-footer"><a href="/demo">Back to the demo</a><a href="/soccer-commentary/engineering-overview.md" download>Download the README-style overview</a><a href="https://github.com/aarshroongta1/live-soccer-commentary" target="_blank" rel="noreferrer">Source code ↗</a></footer>
     </main>
   </div>;

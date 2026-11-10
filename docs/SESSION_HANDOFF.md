@@ -7,6 +7,31 @@ files_modified: []
 
 # Commentary project handoff
 
+## Latest refinement: engineering page must be quick to scan
+
+User found the ~500-word case study too dense for most viewers. The default
+/demo/engineering view now has one simplified Mermaid flowchart, three concise
+highlights (multimodal inference, orchestration, evaluation/observability) and one
+concrete reviewer-iteration result. The single-case scope and later first-call
+tradeoff remain visible. “Explore further” is closed by default and lazily mounts
+the seven-skill table, full architecture and agent-turn diagrams, evaluation
+findings and resume summary. Do not expand the deep-dive content by default.
+
+The simplified overview graph is a third key in engineering-diagrams.json;
+system and turn sources used in README/downloaded Markdown are unchanged.
+MermaidDiagram accepts showSource=false for the default overview, while retaining
+source access on failure and on the two detailed diagrams. The overview switches
+to a top-down layout on phones, so the whole system is visible without sideways
+scrolling; the two detailed diagrams retain their original sources. Recruiter showcase,
+run inspector, generated text, media and runtime agents are unchanged.
+
+Validation: web lint/build passed. Default view has ~130 visible words and one
+diagram; “Explore further” mounts the full seven-skill table and two additional
+diagrams, then removes them on collapse. Light/dark rendering and phone-to-desktop
+layout switching passed; phone overview fits its frame without horizontal scroll.
+No console errors. Screenshots: runs/engineering-quick-scan.
+
+
 ## Latest: concise engineering deep dive
 
 User asked for slightly deeper “How I built it” content with AI-engineering resume

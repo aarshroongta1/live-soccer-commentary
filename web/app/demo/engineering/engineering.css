@@ -49,3 +49,28 @@
 }
 /* Keep connector strokes behind their text labels in both themes. */
 .engineering-diagram .edgeLabel rect.background { fill: var(--demo-bg) !important; opacity: 1 !important; }
+
+/* The first pass is a quick scan; implementation detail is opt-in. */
+.engineering-highlights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; margin: 28px 0; }
+.engineering-highlights h2 { font-size: 14px; font-weight: 550; line-height: 1.5; margin: 0 0 8px; }
+.engineering-highlights p { font-size: 12px; line-height: 1.8; color: var(--demo-muted); margin: 0; }
+.engineering-result { display: grid; grid-template-columns: 1fr 1.3fr; gap: 32px; border-block: 1px solid var(--demo-rule); padding: 22px 0; margin-top: 28px; }
+.engineering-result > div > span { color: var(--demo-muted); font-size: 10px; }
+.engineering-result h2 { font-size: 19px; font-weight: 550; line-height: 1.4; letter-spacing: -.3px; margin: 5px 0 0; max-width: 24ch; }
+.engineering-result > p { font-size: 13px; line-height: 1.85; margin: 0; }
+.engineering-result small { display: block; color: var(--demo-muted); font-size: 10px; margin-top: 8px; }
+.engineering-explore { padding: 18px 0 0; }
+.engineering-explore > summary { font-size: 13px; font-weight: 500; }
+.engineering-explore > summary > span { margin-left: 12px; font-weight: 400; }
+.engineering-expanded { padding-top: 4px; }
+.engineering-expanded .engineering-section:first-child { margin-top: 24px; }
+@media (max-width: 650px) {
+  .engineering-highlights { grid-template-columns: 1fr; gap: 16px; margin-block: 22px; }
+  .engineering-highlights h2 { font-size: 13px; margin-bottom: 4px; }
+  .engineering-result { grid-template-columns: 1fr; gap: 12px; padding-block: 18px; }
+  .engineering-result h2 { font-size: 18px; max-width: none; }
+  .engineering-result > p { font-size: 12px; }
+  .engineering-explore > summary > span { display: block; margin: 5px 0 0 14px; }
+}
+
+@media (max-width: 650px) { .engineering-diagram-responsive .engineering-diagram-canvas { min-width: 0; } }

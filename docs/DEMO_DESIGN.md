@@ -43,3 +43,11 @@ wording. Keep the website's colors/type, readable prose under 80 characters per
 line, and flowcharts in bordered scrollable figures. Use actual framework terms
 and concrete code links, not a keyword cloud. Preserve the old interactive run
 inspector under /demo/engineering/runs. The recruiter-facing showcase is unchanged.
+
+## Quick-scan engineering overview
+
+User feedback: the case study was still too dense for a time-limited reader.
+Default view is now one simplified Mermaid architecture diagram, three short
+engineering highlights and one concrete evaluation-led result. “Explore further”
+is collapsed by default and lazily mounts the full skills table, both detailed
+flowcharts, evaluation tradeoffs and resume summary. Keep these details opt-in.
