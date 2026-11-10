@@ -1,0 +1,49 @@
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_db2a5aa42dcafd 10-24,31-33
+  s_5122a6b523b341::t_573af3ab299d0a 25-30
+docs/DEMO_DESIGN.md
+  s_5122a6b523b341::t_db2a5aa42dcafd 54-61
+README.md
+  s_5122a6b523b341::t_9c35ec7607c171 1,3-5,7-9,11-12,14,16,18-51,67-69,71,73-76,78-81,94-117,120,122,124-127,129-130,132,134,136-139,141-153,159-166,173-313,315-320
+  s_c61538d1d875af::t_1e040d325f98df 77,118-119
+docs/DEMO_WALKTHROUGH.md
+  s_5122a6b523b341::t_db2a5aa42dcafd 20-21
+docs/ENGINEERING_OVERVIEW.md
+  s_5122a6b523b341::t_db2a5aa42dcafd 1,3,5-9,11-12
+web/public/soccer-commentary/engineering-overview.md
+  s_5122a6b523b341::t_db2a5aa42dcafd 1,3-4,6,8
+web/app/demo/demo-experience.tsx
+  s_5122a6b523b341::t_11d6e38d0c7ad4 60
+web/public/soccer-commentary/demo-walkthrough.txt
+  s_5122a6b523b341::t_db2a5aa42dcafd 20-21
+docs/DEMO.md
+  s_c61538d1d875af::t_1e040d325f98df 17
+web/app/demo/engineering/page.tsx
+  s_5122a6b523b341::t_11d6e38d0c7ad4 1,6
+docs/PORTFOLIO.md
+  s_5122a6b523b341::t_db2a5aa42dcafd 8-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "85d81baafb5b26eb4b95253f773232a6716cd6d8",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
