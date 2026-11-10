@@ -1,0 +1,66 @@
+web/app/demo/showcase.css
+  s_5122a6b523b341::t_de8153501ff790 1-41
+web/app/demo/engineering-experience.tsx
+  s_5122a6b523b341::t_de8153501ff790 1-270
+web/app/demo/demo-experience.tsx
+  s_5122a6b523b341::t_de8153501ff790 4,6,8,10,19-31,33,37,42-47,49-61
+docs/DEMO_DESIGN.md
+  s_c61538d1d875af::t_3325c5b5dbf4bc 29-36
+web/public/soccer-commentary/demo-walkthrough.txt
+  s_c61538d1d875af::t_3325c5b5dbf4bc 20
+web/app/demo/engineering/page.tsx
+  s_5122a6b523b341::t_de8153501ff790 1-8
+docs/SESSION_HANDOFF.md
+  s_c61538d1d875af::t_3325c5b5dbf4bc 10-22,28,36
+  s_5122a6b523b341::t_46372b05c60edc 23-27
+  s_c61538d1d875af::t_602b2263647571 29-35
+docs/DEMO_WALKTHROUGH.md
+  s_c61538d1d875af::t_3325c5b5dbf4bc 20
+web/app/layout.tsx
+  s_5122a6b523b341::t_46372b05c60edc 21,23,25-26
+web/app/demo/demo-data.ts
+  s_5122a6b523b341::t_de8153501ff790 1-10,12-14,16-21,23-41
+  s_5122a6b523b341::t_118fd4e52a24aa 11,15,22
+web/app/demo/page.tsx
+  s_5122a6b523b341::t_de8153501ff790 1-2,6-8
+  s_5122a6b523b341::t_118fd4e52a24aa 5
+docs/PORTFOLIO.md
+  s_c61538d1d875af::t_b33d3d9f042ede 77-79,81-82
+  s_c61538d1d875af::t_3325c5b5dbf4bc 5-9,17
+web/public/soccer-commentary/showcase-argentina.ass
+  s_5122a6b523b341::t_4c00b9b33f2e19 1-17
+web/public/soccer-commentary/showcase-argentina.render.json
+  s_5122a6b523b341::t_6d5a2085132664 1-39
+web/public/soccer-commentary/showcase-arsenal.ass
+  s_5122a6b523b341::t_4b07277e7082e1 1-17
+web/public/soccer-commentary/showcase-arsenal.render.json
+  s_5122a6b523b341::t_ae6611f835171a 1-39
+web/public/soccer-commentary/showcase-penalty.ass
+  s_5122a6b523b341::t_a80c9132e45c2a 1-18
+web/public/soccer-commentary/showcase-penalty.render.json
+  s_5122a6b523b341::t_804d4e2e900feb 1-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7671e75299675c5a9278bb2ef2812ac175953b0a",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
