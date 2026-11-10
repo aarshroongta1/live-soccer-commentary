@@ -1,0 +1,51 @@
+.engineering-content { max-width: 1000px; margin: 0 auto; }
+.engineering-heading { margin: 0 0 34px; }
+.engineering-heading > p:first-child { display: flex; align-items: baseline; gap: 10px; font-size: 11px; color: var(--demo-muted); margin-bottom: 16px; }
+.engineering-heading h1 { font-size: clamp(32px, 4vw, 42px); font-weight: 550; letter-spacing: -1.4px; line-height: 1.2; margin: 0 0 16px; }
+.engineering-heading h1 > span { color: var(--demo-accent); }
+.engineering-heading > p:last-child { font-size: 15px; line-height: 1.85; max-width: 74ch; color: var(--demo-muted); }
+.engineering-section { border-top: 1px solid var(--demo-rule); padding-top: 24px; margin-top: 34px; }
+.engineering-section h2 { font-size: 21px; font-weight: 550; letter-spacing: -.5px; margin: 0 0 18px; }
+.engineering-section > p:not(.engineering-note) { max-width: 78ch; font-size: 13px; line-height: 1.9; color: var(--demo-text); }
+.engineering-section .engineering-note { font-size: 11px; line-height: 1.85; color: var(--demo-muted); max-width: 100ch; margin: 16px 0 0; }
+.engineering-diagram { border: 1px solid var(--demo-rule); margin: 22px 0 16px; }
+.engineering-diagram figcaption { padding: 9px 14px; border-bottom: 1px solid var(--demo-rule); background: var(--demo-panel); display: flex; justify-content: space-between; gap: 16px; font-size: 11px; }
+.engineering-diagram figcaption > span { color: var(--demo-muted); font-family: var(--demo-mono); font-size: 10px; }
+.engineering-diagram-scroll { overflow-x: auto; padding: 24px 16px; }
+.engineering-diagram-canvas { min-width: 820px; }
+.engineering-diagram-canvas svg { display: block; width: 100%; max-width: none !important; height: auto; }
+.engineering-diagram-compact .engineering-diagram-canvas { min-width: 820px; }
+.engineering-diagram-loading { font-size: 12px; color: var(--demo-muted); padding: 24px; }
+.engineering-diagram-source { border-top: 1px solid var(--demo-rule); padding: 9px 14px; }
+.engineering-diagram-source > summary { font-size: 10px; color: var(--demo-muted) !important; }
+.engineering-diagram-source pre { white-space: pre; overflow-x: auto; margin: 15px 0 4px; font-size: 11px; color: var(--demo-text); line-height: 1.9; }
+.engineering-diagram-error { color: var(--demo-muted); padding: 10px 14px; font-size: 12px; }
+.engineering-skills { margin: 0; }
+.engineering-skills > div { display: grid; grid-template-columns: minmax(180px, 1fr) 2.5fr; gap: 28px; border-top: 1px solid var(--demo-rule); padding: 16px 0; }
+.engineering-skills > div:first-child { border-top: 0; padding-top: 0; }
+.engineering-skills dt { font-size: 13px; font-weight: 550; color: var(--demo-ink); }
+.engineering-skills dd { font-size: 13px; margin: 0; line-height: 1.85; color: var(--demo-muted); max-width: 74ch; }
+.engineering-skills dd code { color: var(--demo-text); font-size: 11px; }
+.engineering-decisions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.engineering-decisions h3 { font-size: 14px; font-weight: 550; line-height: 1.6; margin: 0 0 10px; }
+.engineering-decisions p { font-size: 12px; line-height: 1.95; color: var(--demo-muted); margin: 0; }
+.engineering-links { display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 11px; margin: 18px 0; }
+.engineering-resume blockquote { border-left: 2px solid var(--demo-accent); padding: 2px 0 2px 20px; margin: 20px 0; font-size: 15px; line-height: 1.9; max-width: 78ch; color: var(--demo-ink); }
+.engineering-page .showcase-footer { margin-top: 38px; margin-bottom: 14px; }
+.engineering-page .showcase-footer a:first-child { margin-right: auto; }
+@media (max-width: 650px) {
+  .engineering-heading > p:last-child { font-size: 13px; }
+  .engineering-heading { margin-bottom: 26px; }
+  .engineering-section h2 { font-size: 19px; }
+  .engineering-section { margin-top: 28px; padding-top: 20px; }
+  .engineering-skills > div { display: block; padding: 15px 0; }
+  .engineering-skills dt { margin-bottom: 7px; }
+  .engineering-skills dd { font-size: 12px; }
+  .engineering-decisions { grid-template-columns: 1fr; gap: 20px; }
+  .engineering-diagram-scroll { padding: 18px 12px; }
+  .engineering-resume blockquote { font-size: 13px; padding-left: 14px; }
+  .engineering-page .showcase-nav > div > a:first-child { display: inline; }
+  .engineering-page .showcase-nav > div > a:nth-child(2) { display: none; }
+}
+/* Keep connector strokes behind their text labels in both themes. */
+.engineering-diagram .edgeLabel rect.background { fill: var(--demo-bg) !important; opacity: 1 !important; }

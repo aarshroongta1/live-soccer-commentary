@@ -18,6 +18,9 @@ __pycache__/
 recordings/
 clips/
 runs/
+# This saved-run web route contains application source.
+!web/app/demo/engineering/runs/
+!web/app/demo/engineering/runs/page.tsx
 out/
 *.mp4
 *.mkv

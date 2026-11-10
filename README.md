@@ -5,6 +5,7 @@ asyncio, Pydantic, OpenCV and Next.js**. A visual observer and pre-match researc
 supply context to separate caller and analyst agents. Bounded tools, evidence
 contracts and a deterministic coordinator keep their decisions inspectable.
 
+[Engineering overview](docs/ENGINEERING_OVERVIEW.md) ·
 [Demo walkthrough](docs/DEMO_WALKTHROUGH.md) ·
 [Portfolio case study](docs/PORTFOLIO_CASE_STUDY.md) ·
 [Demo setup](docs/PORTFOLIO.md) ·
@@ -17,7 +18,9 @@ npm ci --prefix web
 npm run dev --prefix web
 ```
 
-Open http://127.0.0.1:3000/demo. Browsing clips and traces makes no model calls.
+Open http://127.0.0.1:3000/demo. The engineering case study is at
+`/demo/engineering`; the full saved-run inspector is at `/demo/engineering/runs`.
+Browsing these pages makes no model calls.
 
 | Example | What it shows |
 | --- | --- |
@@ -44,13 +47,16 @@ shows an earlier version. Local changes do not deploy automatically.
 
 ```mermaid
 flowchart LR
-    R[Pre-match researcher] --> E[Timestamped evidence and context]
-    V[Visual observer] --> E
-    E --> C[Caller agent]
-    E --> A[Analyst agent]
-    C --> D[Deterministic coordinator]
-    A --> D
-    D --> O[Commentary and execution trace]
+    V["Video<br/>frames"] --> O["Vision<br/>observer"]
+    R["Optional<br/>squad context"] -.-> O
+    O --> E["Timestamped<br/>evidence"]
+    R -.-> E
+    E --> C[Coordinator]
+    C --> P[Caller]
+    C --> A[Analyst]
+    P --> G["Evidence +<br/>timing checks"]
+    A --> G
+    G --> S["Captions +<br/>run trace"]
 ```
 
 The observer can inspect a bounded crop and request a researched squad before
@@ -64,6 +70,23 @@ and stale-result rejection. Speech occupancy is simulated. Recorded preparation
 instead generates source-timed dialogue before playback using full-context vision.
 A bounded reviewer is optional; the selected automatic demo leaves it disabled.
 See [the replay design](docs/REPLAY.md) for these distinct paths.
+
+### Inside a speaking-agent turn
+
+```mermaid
+flowchart LR
+    S["Evidence snapshot +<br/>recent dialogue"] --> D{Agent action}
+    D -->|Request context| T[Allowed read-only tool]
+    T -->|Result within action budget| S
+    D -->|Speak| V["Validate citations,<br/>role and word budget"]
+    D -->|Abstain| Q[Record no speech]
+    V -->|Pass| K[Keep line + audit trace]
+    V -->|Fail| Q
+```
+
+The optional model reviewer is disabled in these selected runs. See the
+[engineering overview](docs/ENGINEERING_OVERVIEW.md) for implementation skills,
+evaluation-driven decisions and resume wording.
 
 ## Evaluation and engineering decisions
 

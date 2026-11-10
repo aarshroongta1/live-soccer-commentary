@@ -34,3 +34,12 @@ The main route now has only a title/sentence, clip choices and a full-width vide
 with short provenance and recorded/silent labels. No rail, stack tags, inspector,
 notes, metrics, evaluation or comparison controls appear there. The existing
 workbench is preserved at /demo/engineering through “How I built it”.
+
+## Engineering deep dive
+
+“How I built it” becomes a concise README-style case study: two Mermaid diagrams,
+a skills-to-implementation table, three evaluation-driven decisions, and resume
+wording. Keep the website's colors/type, readable prose under 80 characters per
+line, and flowcharts in bordered scrollable figures. Use actual framework terms
+and concrete code links, not a keyword cloud. Preserve the old interactive run
+inspector under /demo/engineering/runs. The recruiter-facing showcase is unchanged.

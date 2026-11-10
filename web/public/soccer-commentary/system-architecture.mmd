@@ -1,0 +1,11 @@
+flowchart LR
+    V["Video<br/>frames"] --> O["Vision<br/>observer"]
+    R["Optional<br/>squad context"] -.-> O
+    O --> E["Timestamped<br/>evidence"]
+    R -.-> E
+    E --> C[Coordinator]
+    C --> P[Caller]
+    C --> A[Analyst]
+    P --> G["Evidence +<br/>timing checks"]
+    A --> G
+    G --> S["Captions +<br/>run trace"]

@@ -5,8 +5,10 @@ The local `/` and `/demo` pages lead with three selected, silent captioned clips
 The main page is a recruiter-facing showcase: a short introduction, three clip
 choices, a large video player, and compact provenance labels. It keeps the website's
 Space Grotesk/blue palette and light/dark themes. The **How I built it** link opens
-`/demo/engineering`, which retains the transcript/evidence/run inspector, costs,
-iteration comparison, edit records, pipeline, evaluation and causal replay explorer.
+`/demo/engineering`: a concise engineering case study with two Mermaid flowcharts,
+a skills-to-implementation table, evaluation-driven decisions and resume wording.
+The deeper transcript/evidence/run inspector, costs, iteration comparison and
+causal replay explorer remain at `/demo/engineering/runs`.
 
 | Clip | Length | Provenance |
 | --- | --- | --- |
@@ -14,7 +16,7 @@ iteration comparison, edit records, pipeline, evaluation and causal replay explo
 | Arsenal vs Norwich | 18s | Fresh vision and generated caller/analyst dialogue. Exact retained words; source cut and one analyst caption retimed. |
 | Argentina vs France | 20s | Fresh vision and generated caller/analyst dialogue. Source cut and one unsupported identity phrase removed. |
 
-The engineering page includes a before/after switch, transcript seeking, source-time
+The saved-run inspector includes a before/after switch, transcript seeking, source-time
 turns, rejected drafts, visual observations and downloadable preparation traces.
 Both versions use identical saved evidence; the focused iteration restored the
 caller’s goal announcement after an optional reviewer blocked it. The comparison

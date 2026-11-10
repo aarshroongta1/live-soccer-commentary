@@ -7,6 +7,36 @@ files_modified: []
 
 # Commentary project handoff
 
+## Latest: concise engineering deep dive
+
+User asked for slightly deeper “How I built it” content with AI-engineering resume
+skills and GitHub README-style flowcharts, without making the main demo verbose.
+/demo/engineering is now a ~500-word case study: two rendered Mermaid diagrams,
+a skills-to-implementation table, three evaluation-driven decisions and a truthful
+resume summary. Skills map to actual multimodal inference/OpenCV, LangGraph agent
+orchestration, Pydantic structured outputs and grounding, application-managed tools,
+asyncio coordination in the separate replay prototype, evaluation, observability
+and cost control. Recorded-vs-replay boundaries and narrow evaluation claims remain.
+
+The prior full interactive workbench moved to /demo/engineering/runs, linked by
+“Inspect the saved runs”. The ~49-word recruiter showcase at / and /demo is unchanged.
+Mermaid 12.3.0 is a pinned dependency, dynamically imported only by the case-study
+component. Sources live in web/data/engineering-diagrams.json, match the two
+README Mermaid blocks and docs/ENGINEERING_OVERVIEW.md, and are downloadable as
+.mmd files. The public engineering-overview.md download includes the same diagrams.
+Case study files: web/app/demo/engineering/{case-study.tsx,mermaid-diagram.tsx,
+engineering.css}. No runtime agents, model calls, footage or generated words changed.
+
+Validation: production lint/build passed; both Mermaid diagrams rendered in
+light/dark themes with no console errors. Mobile diagrams scroll inside their
+frames, with no page overflow. Source toggles work; Markdown/.mmd downloads return
+200; navigation to the retained saved-run inspector works. The recruiter view
+remains minimal with zero technical sections. README and downloadable Markdown
+diagram blocks exactly match the JSON sources. Production npm audit reports zero
+vulnerabilities; remaining audit findings are pre-existing development lint
+dependencies. Screenshots and browser-qa.json are in runs/engineering-deep-dive.
+
+
 ## Latest correction: recruiter-facing showcase
 
 User clarified that the developer workbench exposed too much text, backend work

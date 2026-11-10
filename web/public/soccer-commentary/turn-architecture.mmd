@@ -1,0 +1,8 @@
+flowchart LR
+    S["Evidence snapshot +<br/>recent dialogue"] --> D{Agent action}
+    D -->|Request context| T[Allowed read-only tool]
+    T -->|Result within action budget| S
+    D -->|Speak| V["Validate citations,<br/>role and word budget"]
+    D -->|Abstain| Q[Record no speech]
+    V -->|Pass| K[Keep line + audit trace]
+    V -->|Fail| Q
