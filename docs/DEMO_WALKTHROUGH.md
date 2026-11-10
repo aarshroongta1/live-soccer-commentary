@@ -17,7 +17,7 @@ experiments you can explain; use the code walkthrough below to check that unders
 
 1. Open `/demo` and play the 20-second England–France example. Point out the caller
    reacting and the analyst following. The generated words are unedited.
-2. Switch to **Before: reviewer enabled**. At the goal, the caller is missing.
+2. Open **How I built it**, then switch to **Before: reviewer enabled**. At the goal, the caller is missing.
    Open the explanation: the reviewer rejected even “Kane scores!” twice.
 3. Switch back to **After: reviewer disabled**. The caller announces the goal.
    Deterministic citation, permission and timing checks still run. This one pair

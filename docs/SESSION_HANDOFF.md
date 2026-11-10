@@ -7,6 +7,33 @@ files_modified: []
 
 # Commentary project handoff
 
+## Latest correction: recruiter-facing showcase
+
+User clarified that the developer workbench exposed too much text, backend work
+and notes for recruiters. The main / and /demo routes are now a simple showcase:
+name/navigation, title, one sentence, three clip choices, a large video, brief
+AI/light-edit and recorded/silent labels, and a “How I built it” footer link.
+No inspector, cost data, technical notes, pipeline, evaluation or comparison
+controls are on the main view. The full prior workbench remains at
+/demo/engineering. Do not reintroduce its technical content on the main view.
+
+New showcase is demo-experience.tsx + showcase.css. The former UI is preserved in
+engineering-experience.tsx; demo-data.ts supplies both server pages. No generated
+text, media or experiments changed. Both pages retain light/dark themes. The
+separate engineering page returns to /demo via “Back to demo”. Recruiter videos
+are re-rendered as showcase-{penalty,arsenal,argentina}.mp4 with an empty title
+label, so no backend/editing notes are burned above the footage. Generated
+commentary words, source windows and cues are unchanged. Engineering retains
+its original annotated media. Each new render has tracked ASS and render JSON.
+
+Validation: web lint/build passed. Browser checks confirmed 49 interface words,
+zero technical sections on the main route, clip switching pauses actual playback,
+light/dark themes and no mobile overflow, the engineering link opens the retained
+inspector, and all three clean media URLs return 200. Render reports confirm
+identical commentary/cues/source hashes and no audio. No paid calls.
+
+
+
 ## Latest: developer-themed presentation, 10 November 2026
 
 The user requested a proper showable, developer-themed demo using their website

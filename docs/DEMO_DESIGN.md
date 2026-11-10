@@ -26,3 +26,11 @@ Brief review: a dark green terminal dashboard would not match the reference.
 Use the website's white/blue presentation, with functional developer tooling
 (timestamps, inspectable evidence, downloadable runs), rather than decorative code.
 No new model calls, changes to generated commentary, or public deployment.
+
+## Recruiter-facing refinement
+
+User feedback: the workbench had too much text and backend detail for recruiters.
+The main route now has only a title/sentence, clip choices and a full-width video,
+with short provenance and recorded/silent labels. No rail, stack tags, inspector,
+notes, metrics, evaluation or comparison controls appear there. The existing
+workbench is preserved at /demo/engineering through “How I built it”.

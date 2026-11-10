@@ -2,11 +2,11 @@
 
 The local `/` and `/demo` pages lead with three selected, silent captioned clips:
 
-The presentation follows Aarsh’s website: Space Grotesk, blue links, a left
-navigation rail, and light/dark themes. A player workspace offers keyboard-accessible
-Transcript, Evidence and Run tabs. Evidence timestamps seek the video; the Run tab
-shows actual saved model/call/cost data. Iteration, editing and preparation notes
-expand beneath the player. No agent activity is simulated during playback.
+The main page is a recruiter-facing showcase: a short introduction, three clip
+choices, a large video player, and compact provenance labels. It keeps the website's
+Space Grotesk/blue palette and light/dark themes. The **How I built it** link opens
+`/demo/engineering`, which retains the transcript/evidence/run inspector, costs,
+iteration comparison, edit records, pipeline, evaluation and causal replay explorer.
 
 | Clip | Length | Provenance |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ expand beneath the player. No agent activity is simulated during playback.
 | Arsenal vs Norwich | 18s | Fresh vision and generated caller/analyst dialogue. Exact retained words; source cut and one analyst caption retimed. |
 | Argentina vs France | 20s | Fresh vision and generated caller/analyst dialogue. Source cut and one unsupported identity phrase removed. |
 
-The automatic example includes a before/after switch, transcript seeking, source-time
+The engineering page includes a before/after switch, transcript seeking, source-time
 turns, rejected drafts, visual observations and downloadable preparation traces.
 Both versions use identical saved evidence; the focused iteration restored the
 caller’s goal announcement after an optional reviewer blocked it. The comparison
@@ -74,10 +74,12 @@ architecture decisions, evaluation findings and interview talking points.
 
 Media remains local and git-ignored. Expected player files are:
 
-- `web/public/soccer-commentary/portfolio-penalty.mp4`
-- `web/public/soccer-commentary/generated-arsenal.mp4`
-- `web/public/soccer-commentary/generated-argentina.mp4`
+- `web/public/soccer-commentary/showcase-penalty.mp4`
+- `web/public/soccer-commentary/showcase-arsenal.mp4`
+- `web/public/soccer-commentary/showcase-argentina.mp4`
 
+Recruiter variants omit the burned-in preparation labels using `--label ''`.
+Their words, source cuts and caption cues match the annotated engineering versions.
 The automatic clip is rendered without audio, TTS or model calls:
 
 ```bash

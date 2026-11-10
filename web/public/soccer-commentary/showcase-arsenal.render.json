@@ -1,0 +1,39 @@
+{
+  "source": "clips/demo-sources/arsenal-team-goals.mp4",
+  "source_start_s": 89.0,
+  "duration_s": 18.0,
+  "source_sha256": "b555373ae88ad325f0b1a6f7508531ff3bda92f04c9b34fce1bbb0d78a779867",
+  "plan": "examples/portfolio-demo/release/arsenal-plan.json",
+  "plan_sha256": "f2689cd4b364197f48303fbac7ec9848974105a6c9c03fc6a4459ffe02b1a257",
+  "output": "web/public/soccer-commentary/showcase-arsenal.mp4",
+  "output_sha256": "46ed74e7e3c13186882ff3f90fcf41029b1b69893d5e38dde92e65994a257a45",
+  "audio": false,
+  "tts_calls": 0,
+  "words_edited": false,
+  "source_time_edits": true,
+  "edit_record": "examples/portfolio-demo/release/arsenal-edits.json",
+  "caption_timing": "Source cues with estimated reading time; not speech latency.",
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 2.0,
+      "end_s": 5.846153846153846,
+      "voice": "caller",
+      "text": "Arsenal\u2019s left-sided attacker carries it toward the box, Norwich backpedalling"
+    },
+    {
+      "id": "line-2",
+      "at_s": 8.0,
+      "end_s": 10.307692307692307,
+      "voice": "caller",
+      "text": "And Arsenal\u2019s number 7 finishes it!"
+    },
+    {
+      "id": "line-3",
+      "at_s": 11.508,
+      "end_s": 17.661846153846152,
+      "voice": "analyst",
+      "text": "That low finish has beaten the diving keeper and found the far side of the net"
+    }
+  ]
+}

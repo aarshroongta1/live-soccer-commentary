@@ -18,12 +18,12 @@ const projectFont = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Football Commentary Agents — Aarsh Roongta",
+  title: "AI Football Commentary — Aarsh Roongta",
   description:
-    "Three football commentary examples, independent agent roles, inspectable traces and a small evaluation case study. A project by Aarsh Roongta.",
+    "Watch AI-generated play-by-play and analysis on three short football clips. A project by Aarsh Roongta.",
   openGraph: {
-    title: "Football Commentary Agents — Aarsh Roongta",
-    description: "A portfolio project in multimodal perception, researched context and coordinated AI agents.",
+    title: "AI Football Commentary — Aarsh Roongta",
+    description: "AI-generated football commentary: a caller follows the action and an analyst explains the play.",
     type: "website",
   },
 };

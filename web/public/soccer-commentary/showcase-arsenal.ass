@@ -1,0 +1,17 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1280
+PlayResY: 720
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Caption,Arial,48,&H00FFFFFF,&H00FFFFFF,&H00201C18,&HC0201C18,0,0,0,0,100,100,0,0,3,10,0,2,70,70,32,1
+Style: Label,Arial,17,&H00FFFFFF,&H00FFFFFF,&H00201C18,&H80201C18,0,0,0,0,100,100,0,0,3,6,0,8,20,20,15,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:18.00,Label,,0,0,0,,
+Dialogue: 0,0:00:02.00,0:00:05.85,Caption,,0,0,0,,Caller: Arsenal’s left-sided attacker carries it toward the box, Norwich backpedalling
+Dialogue: 0,0:00:08.00,0:00:10.31,Caption,,0,0,0,,Caller: And Arsenal’s number 7 finishes it!
+Dialogue: 0,0:00:11.51,0:00:17.66,Caption,,0,0,0,,Analyst: That low finish has beaten the diving keeper and found the far side of the net

@@ -1,0 +1,46 @@
+{
+  "source": "clips/action-sources/england-france-penalties.mp4",
+  "source_start_s": 42.0,
+  "duration_s": 20.0,
+  "source_sha256": "a9169aa010ecf7d166e341ab506d298d29136ec77e7cf1dc30516e1a1efb5a12",
+  "plan": "examples/portfolio-demo/penalty-plan.json",
+  "plan_sha256": "5f7bb50c98c4068ea59a0015e5573843a1605b5278e3ccdfc604fd114a896807",
+  "output": "web/public/soccer-commentary/showcase-penalty.mp4",
+  "output_sha256": "99900c1cf33ce265e6f8f91e192803006e85fb618f1ec12128f8b8e695208643",
+  "audio": false,
+  "tts_calls": 0,
+  "words_edited": false,
+  "source_time_edits": false,
+  "edit_record": null,
+  "caption_timing": "Source cues with estimated reading time; not speech latency.",
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 3.0,
+      "end_s": 8.0,
+      "voice": "caller",
+      "text": "Penalty for England! The referee points to the spot after that box challenge"
+    },
+    {
+      "id": "line-2",
+      "at_s": 9.2,
+      "end_s": 9.92,
+      "voice": "caller",
+      "text": "Kane..."
+    },
+    {
+      "id": "line-3",
+      "at_s": 10.0,
+      "end_s": 14.23076923076923,
+      "voice": "caller",
+      "text": "Kane scores! Low to the left, and England have the goal"
+    },
+    {
+      "id": "line-4",
+      "at_s": 15.431,
+      "end_s": 18.507923076923078,
+      "voice": "analyst",
+      "text": "That wrong-footed the keeper completely from the spot"
+    }
+  ]
+}
