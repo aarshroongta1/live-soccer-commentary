@@ -1,0 +1,26 @@
+src/commentary/grading/metrics.py
+  s_94df9e875c1f44::t_900692acad34fc 281-283
+  s_94df9e875c1f44::t_3064a3ae15954f 265
+  s_94df9e875c1f44::t_9ff81cc95d49b7 29-31,33
+  s_94df9e875c1f44::t_6983cc0338906d 1-28,32,34-264,266-280,284-314
+src/commentary/grading/__init__.py
+  s_94df9e875c1f44::t_e7317cf962f074 1-43
+src/commentary/grading/report.py
+  s_94df9e875c1f44::t_e7317cf962f074 1-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6b569bfa01b7cc77e1d89e2dd83e083f8f52035c",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

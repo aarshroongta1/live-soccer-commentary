@@ -1,0 +1,26 @@
+src/commentary/runtime.py
+  s_071588aa9615d3::t_9b874fc10fab3e 57,62,98-99,101-112,212-218,410-411,492-493,643,728-743,747,751-757,761-763
+docs/HANDOFF.md
+  s_071588aa9615d3::t_d13a625d3483ca 164-168
+tests/test_runtime.py
+  s_071588aa9615d3::t_41f3ce6caabcef 274,277,288,303,310,312,317-319,322
+  s_071588aa9615d3::t_f91c2d6ef8a949 27,472-563
+docs/BRIEF-real-footage-and-wire.md
+  s_071588aa9615d3::t_9abe73e29b9a7d 310-330
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "39bc5ee18f3e4cd5bd6b24afddb7b71808c41a5f",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

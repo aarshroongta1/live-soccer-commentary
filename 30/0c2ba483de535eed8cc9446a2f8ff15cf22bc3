@@ -1,0 +1,21 @@
+src/commentary/prompts/caller.py
+  s_071588aa9615d3::t_c579ae59d46c81 72-75
+src/commentary/perception/players.py
+  s_071588aa9615d3::t_c579ae59d46c81 63-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "300c2ba483de535eed8cc9446a2f8ff15cf22bc3",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

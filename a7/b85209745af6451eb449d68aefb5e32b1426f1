@@ -1,0 +1,21 @@
+docs/HANDOFF.md
+  s_1eec300a49e1ff::t_fa0c1d944f1cd8 419-423
+  s_1eec300a49e1ff::t_679481d2a44ec5 426-427,430-435,437-459,461-462,464-467,470-483
+  s_1eec300a49e1ff::t_5079a2cab4df66 497-504
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a7b85209745af6451eb449d68aefb5e32b1426f1",
+  "prompts": {},
+  "sessions": {
+    "s_1eec300a49e1ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7feafbb1-43b3-4ee3-afb0-bb66484d3043",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

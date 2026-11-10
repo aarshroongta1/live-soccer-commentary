@@ -1,0 +1,32 @@
+tests/fixtures/captions.en.json3
+  s_53408140bf619f::t_b666ba0f6f6b57 1-11
+tests/test_captions.py
+  s_53408140bf619f::t_b666ba0f6f6b57 1-53
+src/commentary/__main__.py
+  s_53408140bf619f::t_b666ba0f6f6b57 335-351,428-431
+  s_53408140bf619f::t_9ca99c351d7c2c 432
+src/commentary/grading/transcripts.py
+  s_53408140bf619f::t_e1ee9705879271 9-16
+src/commentary/grading/metrics.py
+  s_53408140bf619f::t_e1ee9705879271 202-206
+src/commentary/grading/captions.py
+  s_53408140bf619f::t_0844020ef4a2f6 1-64
+src/commentary/grading/__init__.py
+  s_53408140bf619f::t_e1ee9705879271 8,63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "43547c3c008aff538d6a5078e984103ff6155e6a",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

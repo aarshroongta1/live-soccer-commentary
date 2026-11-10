@@ -1,0 +1,64 @@
+src/commentary/schemas.py
+  s_d55ab428b62c9f::t_5864f1fe8cc7f5 129-153,220-224
+src/commentary/__main__.py
+  s_d55ab428b62c9f::t_2e5e148714b566 9,424-460,462-464,473-478,805-819
+  s_d55ab428b62c9f::t_4aab3012c47801 461,465-472
+  s_d55ab428b62c9f::t_52cd5560018e40 820
+src/commentary/bus.py
+  s_d55ab428b62c9f::t_9ae16e7a8e89d5 32-36
+.env.example
+  s_d55ab428b62c9f::t_1b6f54cac07c8e 18-22
+tests/test_phraser.py
+  s_d55ab428b62c9f::t_d2a32dd5b20005 155
+  s_d55ab428b62c9f::t_311e5a5f698331 20,41,49
+  s_d55ab428b62c9f::t_f65a23077e22d8 16,29,243-253,263-265,305,327,346,363,366-372,374,376-407
+  s_d55ab428b62c9f::t_9cbeafe8e688bb 1-15,17-19,21-28,30-40,42-48,50-154,156-242,254-262,266-304,306-326,328-345,347-362,364-365,373,375,408-600
+src/commentary/runtime.py
+  s_d55ab428b62c9f::t_6712a6f6e8a5c1 45,198-208
+  s_d55ab428b62c9f::t_44c7009eb59de1 649,654-655
+  s_d55ab428b62c9f::t_60a049fee035c3 663-696
+  s_d55ab428b62c9f::t_945c58edd00cda 608-614,616
+src/commentary/prompts/phraser.py
+  s_d55ab428b62c9f::t_7d4321053812f1 1-99,111-116,120-125,130-259,262,271-302
+  s_d55ab428b62c9f::t_ef6af0de563b5e 100-110
+  s_d55ab428b62c9f::t_d2a32dd5b20005 117-119,126-129,260-261,263-270
+src/commentary/agents/phraser.py
+  s_d55ab428b62c9f::t_fc7b65aba54346 1-63,65-69,71-153
+  s_d55ab428b62c9f::t_3481530fc497bb 64,70
+src/commentary/config.py
+  s_d55ab428b62c9f::t_9ae16e7a8e89d5 22-27,128-137,143-157,234
+  s_d55ab428b62c9f::t_3481530fc497bb 138-142
+scripts/build_commentary_examples.py
+  s_d55ab428b62c9f::t_a730d13b417419 289-291,294-304,306,309-312,314-316
+  s_d55ab428b62c9f::t_2e53de15fcebea 1-68,76-288,292-293,305,307-308,313,317-322,327-332,336-345,350-353,358,389-390,400-401,403,406-409,411-414,422,424,430-433,436-464,466-503,505-518
+  s_d55ab428b62c9f::t_c858697862de36 323-326,333-335,346-349,354-357,359-388,402,404,410
+  s_d55ab428b62c9f::t_355996d0ffe348 391-399,405,415-421,423,425-429
+  s_d55ab428b62c9f::t_5c162c10f21054 69-75
+  s_d55ab428b62c9f::t_3816361012aaab 434-435,465,504
+web/lib/events.ts
+  s_d55ab428b62c9f::t_cf241c63bb6e5f 29,34-50,429,438,442
+web/mock/events.ts
+  s_d55ab428b62c9f::t_cf241c63bb6e5f 15,19
+src/commentary/rephrase.py
+  s_d55ab428b62c9f::t_3906044240591f 1-34,42-107,110-112,115-314,316-336,338-380,382-442
+  s_d55ab428b62c9f::t_9b6449ba2d8879 35-41
+  s_d55ab428b62c9f::t_37b29ee8bd9d09 108-109,113-114,315,337,381
+src/commentary/prompts/commentary_examples.py
+  s_d55ab428b62c9f::t_10fed56286a32d 1-271
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3ee6e263f8623abeb5bb69f9db3af1fd514243b0",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

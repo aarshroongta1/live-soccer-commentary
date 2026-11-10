@@ -1,0 +1,53 @@
+src/commentary/prompts/phraser.py
+  s_b9d647e85fe0bb::t_88f303b9e6c790 310-319
+src/commentary/rephrase.py
+  s_b9d647e85fe0bb::t_048adee73548e2 578,738,1006
+src/commentary/gate.py
+  s_b9d647e85fe0bb::t_fa39cb79274456 1680-1685,1687,1690,2335
+  s_b9d647e85fe0bb::t_bb416d35b684fa 2348-2352
+  s_b9d647e85fe0bb::t_8b35bae1482cb3 1702-1707,1710
+  s_b9d647e85fe0bb::t_0b7670497e08de 500-596
+  s_b9d647e85fe0bb::t_d8b455a8026f92 1671-1679,1686,1688-1689,1691-1701,1708-1709,1711-1738,1809,1853-1858,1871,1889,1955-1957,1961,2315-2328,2336-2342,2347
+tests/test_dead_ball.py
+  s_b9d647e85fe0bb::t_841cd455f74bd5 439-445,456-457
+tests/test_gate.py
+  s_b9d647e85fe0bb::t_539cff4e1e6a00 5-11,1432-1538
+src/commentary/grading/baselines.py
+  s_b9d647e85fe0bb::t_c007fea11fe771 106
+tests/test_goal_sequence.py
+  s_b9d647e85fe0bb::t_841cd455f74bd5 437-439
+  s_b9d647e85fe0bb::t_b0e4d6f5a695bb 50,596-742
+  s_b9d647e85fe0bb::t_fa9a76ab72d8de 59
+src/commentary/scoreline.py
+  s_b9d647e85fe0bb::t_048adee73548e2 54-59,420-424
+  s_b9d647e85fe0bb::t_6138fface5e9bc 425
+src/commentary/agents/phraser.py
+  s_b9d647e85fe0bb::t_791629c251b1af 40,92-96,352-369,795-806,817-848,916-917,923-932,941-953,960-962
+  s_b9d647e85fe0bb::t_7184c0f5870627 195-274
+src/commentary/goalfollow.py
+  s_b9d647e85fe0bb::t_47d3e4c6f4292d 215-223
+  s_b9d647e85fe0bb::t_4d6a56f510bd65 340-343,345-346
+  s_b9d647e85fe0bb::t_574f8dae7f469f 360-372,377
+  s_b9d647e85fe0bb::t_54da46b2fc12f7 78-81,151-153,183-186,190-214,270,285-289,293-294,357-359,373-375,413,415-416,418
+  s_b9d647e85fe0bb::t_fdf1919176f80a 376,378
+src/commentary/runtime.py
+  s_b9d647e85fe0bb::t_ac94e43ae46b9c 937,1162-1164
+src/commentary/schemas.py
+  s_b9d647e85fe0bb::t_2bdb75e3b4888c 216-229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "18f25b8187ef4dbce1b9558e4ba9d064379a5dc3",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

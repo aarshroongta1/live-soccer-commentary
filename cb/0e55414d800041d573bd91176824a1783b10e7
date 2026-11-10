@@ -1,0 +1,35 @@
+src/commentary/config.py
+  s_b9d647e85fe0bb::t_eb6be0948ea985 457
+  s_b9d647e85fe0bb::t_0ae26e2a3d5ef7 350,360,367,373,384,393
+tests/test_colour_share.py
+  s_b9d647e85fe0bb::t_55d21254c33e34 1578-1599
+  s_b9d647e85fe0bb::t_eb6be0948ea985 323-324,327
+  s_b9d647e85fe0bb::t_394e730e6185d1 287,289,293-294
+src/commentary/prompts/colour.py
+  s_b9d647e85fe0bb::t_02e1c837435251 689-694
+src/commentary/agents/colour.py
+  s_b9d647e85fe0bb::t_00cbf4f47d8923 1723,1729-1732
+  s_b9d647e85fe0bb::t_18804f96a70ac8 1201-1207
+  s_b9d647e85fe0bb::t_c8c90f6d676cf3 925-953
+tests/test_colour.py
+  s_b9d647e85fe0bb::t_394e730e6185d1 193-194,299,302,305,307-308,313-314,316,766
+docs/HANDOFF.md
+  s_b9d647e85fe0bb::t_2a5622aaca76b1 628-648,651-655
+  s_b9d647e85fe0bb::t_866636a1827490 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cb0e55414d800041d573bd91176824a1783b10e7",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

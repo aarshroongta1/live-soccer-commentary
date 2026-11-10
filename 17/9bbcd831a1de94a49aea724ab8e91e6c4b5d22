@@ -1,0 +1,37 @@
+src/commentary/voice/elevenlabs.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 36,48-58,158,164-170,173-177,278-296,302,347
+uv.lock
+  s_d55ab428b62c9f::t_aac4b5a171587e 408-410,447,450,1943-1958
+src/commentary/voice/say.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 101-104
+src/commentary/director.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 142-152
+src/commentary/voice/speaker.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 31-36,81-83
+src/commentary/voice/playback.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 17-21,27,30-31,44-59,112-287,291-301,373-377,415-416,418-421,423-429
+pyproject.toml
+  s_d55ab428b62c9f::t_05f2be9afbd14a 21-24,60
+src/commentary/voice/__init__.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 4,15
+tests/test_director.py
+  s_d55ab428b62c9f::t_0e4621d7ce25dc 132-164
+tests/test_elevenlabs.py
+  s_d55ab428b62c9f::t_002c1c85f0f3d7 7-11,17-18,29-37,310-535
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "179bbcd831a1de94a49aea724ab8e91e6c4b5d22",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

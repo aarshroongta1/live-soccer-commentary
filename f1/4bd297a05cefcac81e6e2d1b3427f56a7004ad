@@ -1,0 +1,33 @@
+README.md
+  s_53408140bf619f::t_95f8e20cc2e0cf 249-251
+  s_53408140bf619f::t_7154cf2b2c69eb 65-68
+  s_53408140bf619f::t_4fb7d86f3e7aae 272-276,288-294,305
+  s_53408140bf619f::t_30f9187f919ebd 23
+  s_53408140bf619f::t_c994ac0ccfdaf6 64,69-79
+  s_53408140bf619f::t_48fccc81fb8314 10-11,39-62
+  s_53408140bf619f::t_0c9f2756d3017b 171-199
+  s_53408140bf619f::t_345fcc4fe8179a 139-170,211-215,217-219,229-231
+  s_53408140bf619f::t_03e51a4b756673 63,80,316-330
+tests/test_marks.py
+  s_53408140bf619f::t_a0c47f234b4d56 177-206
+  s_53408140bf619f::t_2ea30fc1fa32ae 107,122,153,157-159
+  s_53408140bf619f::t_2e26c2348d8fe1 207-214
+src/commentary/prompts/caller.py
+  s_53408140bf619f::t_2e26c2348d8fe1 193-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f14bd297a05cefcac81e6e2d1b3427f56a7004ad",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

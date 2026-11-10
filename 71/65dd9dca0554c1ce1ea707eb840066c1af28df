@@ -1,0 +1,28 @@
+src/commentary/schemas.py
+  s_b9d647e85fe0bb::t_4a31a1f10330b5 234-238
+src/commentary/agents/phraser.py
+  s_b9d647e85fe0bb::t_f82c35b2507090 337-342,420-427
+  s_b9d647e85fe0bb::t_c784e1d00eca30 364,366,1181-1185
+  s_b9d647e85fe0bb::t_4a31a1f10330b5 536-543,1164-1171,1186-1188,1266-1297,1318,1450-1454,1456
+  s_b9d647e85fe0bb::t_db272e46c7b2ed 185,187,191
+  s_b9d647e85fe0bb::t_364ce12d2f9bc8 66-72,304-336,350-363,365,367-419,428-440,1140-1142,1180
+  s_b9d647e85fe0bb::t_152f6cbef27dce 343-349
+tests/test_goal_sequence.py
+  s_b9d647e85fe0bb::t_ac2e9dfa9c4b56 39-41,281-286,302-303,914-1000
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7165dd9dca0554c1ce1ea707eb840066c1af28df",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

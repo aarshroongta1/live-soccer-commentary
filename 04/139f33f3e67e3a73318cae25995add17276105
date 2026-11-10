@@ -1,0 +1,25 @@
+tests/test_runtime.py
+  s_071588aa9615d3::t_b8953e33f49fe2 639,642-648,650-664,667-674,676-677
+src/commentary/perception/players.py
+  s_071588aa9615d3::t_97578cf1e83b9b 170-176,182
+  s_071588aa9615d3::t_4770fe525f9726 183
+src/commentary/runtime.py
+  s_071588aa9615d3::t_273a873253f8a6 851,853,857-858
+  s_071588aa9615d3::t_97578cf1e83b9b 826-834,848,850,852,854-855
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "04139f33f3e67e3a73318cae25995add17276105",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

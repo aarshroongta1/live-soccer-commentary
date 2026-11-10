@@ -1,0 +1,44 @@
+tests/test_voice_curve.py
+  s_d55ab428b62c9f::t_22ef6ed6af42fe 1-306
+  s_d55ab428b62c9f::t_bc2881fb282394 307-375
+.env.example
+  s_d55ab428b62c9f::t_ca428ee65682b5 10-45
+README.md
+  s_d55ab428b62c9f::t_1bfc9ee5383ca2 138-142,397
+scripts/voice_sweep.py
+  s_d55ab428b62c9f::t_ffc11c5cfa8906 1-352
+src/commentary/config.py
+  s_d55ab428b62c9f::t_b638ff60b96e63 229-377,395
+src/commentary/director.py
+  s_d55ab428b62c9f::t_ccf61f495b9535 152
+src/commentary/voice/__init__.py
+  s_d55ab428b62c9f::t_d1e35244b78cdc 13,30
+src/commentary/voice/elevenlabs.py
+  s_d55ab428b62c9f::t_b017a8ed200bd2 18-25,43,46,83-86,124-125,138-142,163-164,169,179,183,190,194,199,203,206-215,266-268,270-271,273-275,286-289,295,331,342-345,353,401
+src/commentary/voice/say.py
+  s_d55ab428b62c9f::t_ecc36c7a889ff8 27,39-41,56-57,61,67-69,80-93,96,102,129-132
+src/commentary/voice/shaping.py
+  s_d55ab428b62c9f::t_cac67ef3d88af5 1-82
+src/commentary/voice/speaker.py
+  s_d55ab428b62c9f::t_14152aea7fcc5d 37-44
+tests/test_elevenlabs.py
+  s_d55ab428b62c9f::t_c3b951b00b64c7 27,42,44-46,579-725
+tests/test_say.py
+  s_d55ab428b62c9f::t_901bbd9748c8f7 19,22,25,27-29,123-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0cf41510a6ab532423597461f660ee5ae89e4876",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

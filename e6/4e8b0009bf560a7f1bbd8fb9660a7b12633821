@@ -1,0 +1,24 @@
+src/commentary/grading/metrics.py
+  s_071588aa9615d3::t_419dea00715fe5 406-409,411
+  s_071588aa9615d3::t_0b10a4b54390e9 25
+src/commentary/gate.py
+  s_071588aa9615d3::t_419dea00715fe5 127-155,337
+tests/test_gate.py
+  s_071588aa9615d3::t_41e61751b3a496 487-516
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e64e8b0009bf560a7f1bbd8fb9660a7b12633821",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

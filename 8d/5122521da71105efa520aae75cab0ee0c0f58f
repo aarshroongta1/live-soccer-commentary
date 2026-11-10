@@ -1,0 +1,19 @@
+README.md
+  s_94df9e875c1f44::t_5447ed5dea5949 87,91-93,95-101,103-107,111-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8d5122521da71105efa520aae75cab0ee0c0f58f",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

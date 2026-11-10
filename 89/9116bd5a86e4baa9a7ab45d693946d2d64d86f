@@ -1,0 +1,35 @@
+src/commentary/voice/__init__.py
+  s_94df9e875c1f44::t_9515b3d4693e32 1-5
+tests/test_director.py
+  s_94df9e875c1f44::t_ada9844d1d146e 1-5,7-42,44-71,73-131
+  s_94df9e875c1f44::t_6c2893e84f054e 6,43,72
+src/commentary/director.py
+  s_94df9e875c1f44::t_c7a812b6adecf9 1-193
+src/commentary/voice/speaker.py
+  s_94df9e875c1f44::t_12fda806703b4b 1-87
+src/commentary/trace.py
+  s_94df9e875c1f44::t_80d51f650bc920 1-79
+src/commentary/server/app.py
+  s_94df9e875c1f44::t_941feb5f39b8e0 155-156
+  s_94df9e875c1f44::t_c69b943c7158a2 1-154,157-168
+src/commentary/bus.py
+  s_94df9e875c1f44::t_98ff9baf2587a0 1-92
+src/commentary/server/__init__.py
+  s_94df9e875c1f44::t_eb6be9a4f60718 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "899116bd5a86e4baa9a7ab45d693946d2d64d86f",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

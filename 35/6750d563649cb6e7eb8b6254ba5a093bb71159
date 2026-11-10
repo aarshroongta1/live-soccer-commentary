@@ -1,0 +1,51 @@
+src/commentary/config.py
+  s_d55ab428b62c9f::t_b75331f9ddf008 42-68
+web/app/api/state/route.ts
+  s_d55ab428b62c9f::t_d4e712d38e795f 1-24
+tests/test_server.py
+  s_d55ab428b62c9f::t_a3b50460bb4a51 17,23,25,48-50
+  s_d55ab428b62c9f::t_248ef2a5a2e59f 142-201
+  s_d55ab428b62c9f::t_256e431d241c9d 51
+tests/test_replay.py
+  s_d55ab428b62c9f::t_101fc4e463619a 236-285,289-291,293,295-319
+  s_d55ab428b62c9f::t_dba83bd7c10760 286-288,292,294
+web/components/VideoStage.tsx
+  s_d55ab428b62c9f::t_d4802a45560c05 8-18,27,67-71,78-111
+  s_d55ab428b62c9f::t_077cc6ee65758a 46
+  s_d55ab428b62c9f::t_5e4b759baa960e 112
+src/commentary/replay.py
+  s_d55ab428b62c9f::t_4f8612a3e5891d 111
+  s_d55ab428b62c9f::t_db85e69415f009 10-20
+  s_d55ab428b62c9f::t_52634b54bb5032 58-60,66-67,69-72,74-91,108-110,112
+  s_d55ab428b62c9f::t_40530378ec6144 92-95
+  s_d55ab428b62c9f::t_a064bcd5dffe37 144,174-177,253
+src/commentary/server/app.py
+  s_d55ab428b62c9f::t_d3ef71624b37f0 137
+  s_d55ab428b62c9f::t_cd8134a2a6c56d 29,51-53,57-75,78-80,87
+  s_d55ab428b62c9f::t_0595089813587c 109-111
+  s_d55ab428b62c9f::t_5b90f777572611 5-13
+src/commentary/__main__.py
+  s_d55ab428b62c9f::t_67ac87e78260bb 344-348
+src/commentary/runtime.py
+  s_d55ab428b62c9f::t_ce31130c4064fb 246-250
+tests/test_baselines.py
+  s_d55ab428b62c9f::t_68f7dd7c558985 80-90
+tests/test_runtime.py
+  s_d55ab428b62c9f::t_f687f4f73252bd 35-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "356750d563649cb6e7eb8b6254ba5a093bb71159",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+tests/test_goal_sequence.py
+  s_334950940021ac::t_d80239476bc8e4 357
+  s_334950940021ac::t_343d18e2d5ac6b 63-64,72,320-356,358
+  s_334950940021ac::t_78ce2a2d1e3b80 359-360
+src/commentary/goalfollow.py
+  s_334950940021ac::t_25699dbd9c4671 50-60,167,270-295,312,475,501-510,521-538
+  s_334950940021ac::t_16a63305e17418 539-540
+src/commentary/agents/phraser.py
+  s_334950940021ac::t_5e29edcbdbf3ae 724-730
+src/commentary/prompts/phraser.py
+  s_334950940021ac::t_9f50b468c48f97 47,1514-1519,1536-1540,1544-1573
+  s_334950940021ac::t_9bec45148d51c3 1574-1575
+tests/test_runtime.py
+  s_334950940021ac::t_98189fc2d8ff43 30-31,37-38,1151-1258
+  s_334950940021ac::t_343d18e2d5ac6b 1261-1289
+  s_334950940021ac::t_a31501928f1aeb 1259-1260
+src/commentary/runtime.py
+  s_334950940021ac::t_98189fc2d8ff43 68,345-348,1340-1342
+  s_334950940021ac::t_5e7b7227723191 1543-1545,1597,1739-1755
+  s_334950940021ac::t_2491dcb686be53 1756
+tests/test_phraser.py
+  s_334950940021ac::t_343d18e2d5ac6b 20,47-48,58,529-584
+  s_334950940021ac::t_ce7ad08d34def8 585-586
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a9a59991e037fc1a82a6832e60e55a3fba5f473b",
+  "prompts": {},
+  "sessions": {
+    "s_334950940021ac": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ac8c-7bcf-7602-819a-ad5eb2da32d2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

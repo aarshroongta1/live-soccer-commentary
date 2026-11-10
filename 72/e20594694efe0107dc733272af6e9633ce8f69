@@ -1,0 +1,30 @@
+src/commentary/prompts/caller.py
+  s_7078a6b7dcd5e9::t_6d0aff109dd26c 172-182
+src/commentary/config.py
+  s_7078a6b7dcd5e9::t_6d0aff109dd26c 102-106
+src/commentary/runtime.py
+  s_7078a6b7dcd5e9::t_ee5af402cf1386 710-711,713-732
+  s_7078a6b7dcd5e9::t_6d0aff109dd26c 701,703-709,712
+tests/test_prompts.py
+  s_7078a6b7dcd5e9::t_6d0aff109dd26c 83-88
+tests/test_runtime.py
+  s_7078a6b7dcd5e9::t_ee5af402cf1386 37-38
+  s_7078a6b7dcd5e9::t_6d0aff109dd26c 103-127
+  s_7078a6b7dcd5e9::t_0c161c494fe19f 102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "72e20594694efe0107dc733272af6e9633ce8f69",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

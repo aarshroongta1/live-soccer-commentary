@@ -1,0 +1,83 @@
+web/app/page.tsx
+  s_94df9e875c1f44::t_268f59e182f48d 3-15
+src/commentary/grading/transcripts.py
+  s_94df9e875c1f44::t_a7b1d356754564 1-200
+web/lib/useEventStream.ts
+  s_94df9e875c1f44::t_c5b1f784437fe2 27-28
+  s_94df9e875c1f44::t_8a190799363d23 115
+  s_94df9e875c1f44::t_74a1ddcd44df1c 129-136
+  s_94df9e875c1f44::t_e12dca7abbeed1 116-128,138,153
+tests/test_feed.py
+  s_94df9e875c1f44::t_db7448a35b3978 1-162,165-223
+  s_94df9e875c1f44::t_dceae343ad6fed 163-164
+tests/test_transcripts.py
+  s_94df9e875c1f44::t_126f076681f9b4 1-87
+web/components/StatusStrip.tsx
+  s_94df9e875c1f44::t_e7607008287f92 72-73,75-83
+src/commentary/grading/judge.py
+  s_94df9e875c1f44::t_5153eb3198aa31 1-28,30-32,34-280,282-434,441,443-672
+  s_94df9e875c1f44::t_300d89dc11f2fc 29,435-440,442
+  s_94df9e875c1f44::t_b9a209b66318bd 33,281
+src/commentary/grading/feed.py
+  s_94df9e875c1f44::t_218746cca54a66 1-189,194-218,220-278,293-442
+  s_94df9e875c1f44::t_b626fbd8aebab1 190-193,279-292
+  s_94df9e875c1f44::t_dbe776ebc0aadc 219
+tests/test_sim.py
+  s_94df9e875c1f44::t_97910afec9bceb 311,316,476,512-513,544-566,571
+  s_94df9e875c1f44::t_9b327e7303c535 11,290-296,298-310,312-315,317-333,464-475,477-511,514-543,567-570,572-586
+src/commentary/sim/__init__.py
+  s_94df9e875c1f44::t_97451c6adf3492 17,21-28,42-43,52-53,55
+web/components/Watch.tsx
+  s_94df9e875c1f44::t_20bf693ce74c08 38
+  s_94df9e875c1f44::t_3f5829229ee225 43
+  s_94df9e875c1f44::t_d2ee8225b937c7 16-20,23
+  s_94df9e875c1f44::t_a7b0b83315f2fd 3
+web/components/VideoStage.tsx
+  s_94df9e875c1f44::t_91b222d19fd840 13-17,19,34-35,42,54,58,67,72-76
+src/commentary/grading/baselines.py
+  s_94df9e875c1f44::t_5e6cc35d439859 583-591
+  s_94df9e875c1f44::t_61ece63c696395 454-459
+  s_94df9e875c1f44::t_bfad20fe83e002 488
+  s_94df9e875c1f44::t_706e5de25922ed 437
+  s_94df9e875c1f44::t_a4684861739e9f 54
+  s_94df9e875c1f44::t_3e231bc8be561e 509
+  s_94df9e875c1f44::t_74f4ba35c4b350 636-637
+  s_94df9e875c1f44::t_7a1ffd1f4d01c0 659
+web/next.config.ts
+  s_94df9e875c1f44::t_77cf3c30e3c343 18-24
+src/commentary/grading/__init__.py
+  s_94df9e875c1f44::t_d84f28eb18a4d9 8-17,34,37,39-42,44,49-51,57-59,61,65-66,69
+tests/test_judge.py
+  s_94df9e875c1f44::t_22777b4bf9816b 1-27,34-49,53-63,65,71,73-252
+  s_94df9e875c1f44::t_b9a209b66318bd 28-33,50-52
+  s_94df9e875c1f44::t_55b3f59833551b 64,66-70,72
+src/commentary/sim/oracle.py
+  s_94df9e875c1f44::t_00f53c07458a36 335-336,341,354,369,378-383,412-442
+  s_94df9e875c1f44::t_a90e2d5de806d2 48,54-55,58-87,90-100,173,190-203
+  s_94df9e875c1f44::t_97451c6adf3492 174-189,233,370-377
+  s_94df9e875c1f44::t_562a1e3994f188 268-269,274,288-302,304-311,313,315-316,318-331
+  s_94df9e875c1f44::t_a54223b656d8c9 11-25
+  s_94df9e875c1f44::t_5d74bf318b9967 210-225,230,241-242,251
+  s_94df9e875c1f44::t_28ed25b618e6f9 88-89,137-138,396
+  s_94df9e875c1f44::t_0b822261666651 519-530
+  s_94df9e875c1f44::t_715adb0f187183 204-205,443
+src/commentary/sim/match.py
+  s_94df9e875c1f44::t_8410ab3c9313f0 763-796
+  s_94df9e875c1f44::t_af2a52767fe4fd 238-268
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e8bece14a7963cd04cd7ae8950cfee3f9ac0a2dc",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

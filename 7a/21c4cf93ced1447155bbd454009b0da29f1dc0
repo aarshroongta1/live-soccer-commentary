@@ -1,0 +1,46 @@
+src/commentary/prompts/colour.py
+  s_b9d647e85fe0bb::t_a92e9c2068ef72 357-362,364-372
+  s_b9d647e85fe0bb::t_abc44cf3f3f175 651-655
+  s_b9d647e85fe0bb::t_ea5ad987e2d49b 295-301
+  s_b9d647e85fe0bb::t_7c1e5269d9a855 195
+  s_b9d647e85fe0bb::t_8131cf1deb723f 208-215,223
+  s_b9d647e85fe0bb::t_dda33fde043d42 216-222
+tests/test_colour_share.py
+  s_b9d647e85fe0bb::t_5089125acbaa94 289,293
+src/commentary/agents/colour.py
+  s_b9d647e85fe0bb::t_42c7224002126e 2763-2774
+  s_b9d647e85fe0bb::t_55d8a9eae57ee3 1915-1927
+  s_b9d647e85fe0bb::t_af7e6a0c740d7b 440-445,449-450
+  s_b9d647e85fe0bb::t_e31f20520be5c8 1578
+  s_b9d647e85fe0bb::t_59d772f1a71084 2117-2122
+  s_b9d647e85fe0bb::t_08a6c457c9230b 1628
+  s_b9d647e85fe0bb::t_58d9eec57345c9 1546-1555,1560-1565
+  s_b9d647e85fe0bb::t_c3b51b754baff0 1314,2104-2116,2123-2169
+  s_b9d647e85fe0bb::t_4a35af33bc6671 2524
+  s_b9d647e85fe0bb::t_301be4e4d142c2 1311-1313
+  s_b9d647e85fe0bb::t_3ea4f19437cd16 1315-1317
+  s_b9d647e85fe0bb::t_4dceb55579fc69 695,1007,1251-1310,1318-1320,1856-1881,2038,2954
+src/commentary/config.py
+  s_b9d647e85fe0bb::t_ee20ccd918dea1 367
+  s_b9d647e85fe0bb::t_1fabf8116a54fe 363-366
+tests/test_colour.py
+  s_b9d647e85fe0bb::t_18b4a8d70d882f 302-305,307-308
+  s_b9d647e85fe0bb::t_afe4e4064067cb 571-574
+  s_b9d647e85fe0bb::t_6b418acc9bbfe6 525-532,541-550
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7a21c4cf93ced1447155bbd454009b0da29f1dc0",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+src/commentary/agents/phraser.py
+  s_b9d647e85fe0bb::t_4054e1daa68715 41
+  s_b9d647e85fe0bb::t_7c3032595a7614 762-763,765-773
+  s_b9d647e85fe0bb::t_1aa662850db5cf 47-48,726-732,735,737
+  s_b9d647e85fe0bb::t_0c71f9cb8f4a7d 36,44,701-705,715-725,733-734,736,738-761,764,774-797,1397-1428
+  s_b9d647e85fe0bb::t_3fdbd3cb03dabd 1429-1430
+tests/test_goal_sequence.py
+  s_b9d647e85fe0bb::t_f499f8743a1f81 788-790
+  s_b9d647e85fe0bb::t_6912649122b7ff 36,1091-1112,1117-1144
+  s_b9d647e85fe0bb::t_3d3a8fcc554e30 1113-1116
+docs/HANDOFF.md
+  s_b9d647e85fe0bb::t_c9b30b90e03839 8-10
+  s_b9d647e85fe0bb::t_bf26fe27517afe 605-608
+  s_b9d647e85fe0bb::t_c2d56049c8cff8 701-702,707-710
+  s_b9d647e85fe0bb::t_09a634a377c43f 491-501,509-595,598-604,609-626
+  s_b9d647e85fe0bb::t_f66a6aefc8d889 704-706
+  s_b9d647e85fe0bb::t_eb17244293e5da 829-842
+  s_b9d647e85fe0bb::t_55c7269a6035c8 502-508
+  s_b9d647e85fe0bb::t_a2e4d2d19e0028 703
+tests/test_dead_ball.py
+  s_b9d647e85fe0bb::t_f499f8743a1f81 518-520
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "407c11967c15924a2395d5a1de878debc6c3eea3",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

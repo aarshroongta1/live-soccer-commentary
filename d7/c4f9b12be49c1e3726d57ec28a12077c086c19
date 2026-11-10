@@ -1,0 +1,19 @@
+tests/test_statsbomb.py
+  s_53408140bf619f::t_cf10b314a40e49 42,47-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d7c4f9b12be49c1e3726d57ec28a12077c086c19",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

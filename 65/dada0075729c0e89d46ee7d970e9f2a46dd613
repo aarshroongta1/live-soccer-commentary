@@ -1,0 +1,25 @@
+src/commentary/llm/fake.py
+  s_071588aa9615d3::t_fb0f83b09f5ead 12
+src/commentary/agents/researcher.py
+  s_071588aa9615d3::t_2de3bc6e79dfb2 220-221
+src/commentary/director.py
+  s_071588aa9615d3::t_fb0f83b09f5ead 26
+src/commentary/runtime.py
+  s_071588aa9615d3::t_fb0f83b09f5ead 32,38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "65dada0075729c0e89d46ee7d970e9f2a46dd613",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+tests/fixtures/orchestration/manifest.json
+  s_7078a6b7dcd5e9::t_b13f9a365b5772 1-13
+tests/test_orchestration_parity.py
+  s_7078a6b7dcd5e9::t_9bc2cbcc2223fd 88-89
+  s_7078a6b7dcd5e9::t_b13f9a365b5772 1-87,91-113,115-123
+  s_7078a6b7dcd5e9::t_d568a22ce5dac3 90,114
+tests/fixtures/orchestration/lead_turns.json
+  s_7078a6b7dcd5e9::t_b13f9a365b5772 1-49,51-88,90-93,96-115
+  s_7078a6b7dcd5e9::t_4f5e2364681e62 89
+  s_7078a6b7dcd5e9::t_4184b9bb94be0b 94-95
+  s_7078a6b7dcd5e9::t_9bc2cbcc2223fd 50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "83556648a5b0ca18499e4ed02815b17f60baccc8",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

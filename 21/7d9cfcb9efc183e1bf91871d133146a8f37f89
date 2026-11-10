@@ -1,0 +1,24 @@
+src/commentary/grading/baselines.py
+  s_94df9e875c1f44::t_a29b1f6e9f6f60 565-600,603-607
+  s_94df9e875c1f44::t_581b1bcf456a66 475,480-486
+tests/test_baselines.py
+  s_94df9e875c1f44::t_311903c0af4fc3 244
+  s_94df9e875c1f44::t_c41ab0297c561f 234-243,245-263
+  s_94df9e875c1f44::t_09155a40e17f10 233
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "217d9cfcb9efc183e1bf91871d133146a8f37f89",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

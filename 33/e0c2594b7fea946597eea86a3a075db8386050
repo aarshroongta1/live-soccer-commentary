@@ -1,0 +1,20 @@
+docs/CLIPS.md
+  s_071588aa9615d3::t_dd3ba429f7db1e 3-80
+  s_071588aa9615d3::t_352e11821cc6a9 109-115,553-555,593-600
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "33e0c2594b7fea946597eea86a3a075db8386050",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

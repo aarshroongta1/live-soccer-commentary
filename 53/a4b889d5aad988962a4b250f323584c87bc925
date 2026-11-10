@@ -1,0 +1,24 @@
+tests/test_researcher.py
+  s_94df9e875c1f44::t_57b2c2574b90da 34-35
+  s_94df9e875c1f44::t_60e873dc2dcfed 16,24
+  s_94df9e875c1f44::t_c05b95284dd1ed 364-403
+src/commentary/agents/researcher.py
+  s_94df9e875c1f44::t_0c4ffaa886b0b9 306-315
+  s_94df9e875c1f44::t_aa1e76a39ac770 194-214
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "53a4b889d5aad988962a4b250f323584c87bc925",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

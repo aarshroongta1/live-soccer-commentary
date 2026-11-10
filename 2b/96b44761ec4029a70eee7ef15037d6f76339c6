@@ -1,0 +1,55 @@
+src/commentary/runtime.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 43-44,95-96,768-771,773-774,789,862-865
+docs/HANDOFF.md
+  s_afc8d3126874f1::t_c5e1f69aad6b8a 111-112,155-187,232-233
+src/commentary/capture/audio.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 3-16,25,32,44
+tests/test_caller.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 50-52,62
+src/commentary/sim/source.py
+  s_afc8d3126874f1::t_ab4796553c1104 15,23,75-76
+src/commentary/grading/baselines.py
+  s_afc8d3126874f1::t_ab4796553c1104 35
+tests/test_predictor.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 15,18,51,54,75,77
+tests/test_prompts.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 131,138
+tests/test_sim.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 214,218
+pyproject.toml
+  s_afc8d3126874f1::t_dd82ff83e5eca5 56
+src/commentary/gate.py
+  s_afc8d3126874f1::t_c5e1f69aad6b8a 19-20,609,611
+tests/test_gate.py
+  s_afc8d3126874f1::t_c5e1f69aad6b8a 153,159
+web/components/AgentPanel.tsx
+  s_afc8d3126874f1::t_c5e1f69aad6b8a 47
+src/commentary/capture/source.py
+  s_afc8d3126874f1::t_ab4796553c1104 20,175,178-180
+src/commentary/capture/__init__.py
+  s_afc8d3126874f1::t_ab4796553c1104 1,3
+tests/test_audio.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 7-8
+src/commentary/predictor.py
+  s_afc8d3126874f1::t_dd82ff83e5eca5 6-7
+README.md
+  s_afc8d3126874f1::t_c5e1f69aad6b8a 4-5,15,311
+uv.lock
+  s_afc8d3126874f1::t_cae41d915447e1 446
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2b96b44761ec4029a70eee7ef15037d6f76339c6",
+  "prompts": {},
+  "sessions": {
+    "s_afc8d3126874f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d85f9692-fb3b-44fd-9cad-bdf46a255d94",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+src/commentary/grading/metrics.py
+  s_94df9e875c1f44::t_a423ec5e04c915 289
+  s_94df9e875c1f44::t_01562a4964141a 322-330
+  s_94df9e875c1f44::t_07c676bd336de0 35-47,54-66,68
+tests/test_grading.py
+  s_94df9e875c1f44::t_7998930410e646 1-96,105-166
+  s_94df9e875c1f44::t_998c99b40044fe 97-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "04a99e4419c46fc925f6fbbdcd0f6980cc166eb4",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+src/commentary/capture/buffer.py
+  s_94df9e875c1f44::t_7121a728b2dbc9 26-74
+src/commentary/capture/__init__.py
+  s_94df9e875c1f44::t_90e1fca3cbe478 3,7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d06e7fd35163050ae4ec5b1ac23173e089defb87",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

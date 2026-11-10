@@ -1,0 +1,40 @@
+src/commentary/voice/elevenlabs.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 36,48-58,158,164-170,173-177,278-296,302,347
+pyproject.toml
+  s_d55ab428b62c9f::t_05f2be9afbd14a 21-24,60
+src/commentary/voice/say.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 101-104
+src/commentary/voice/speaker.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 31-36,81-83
+src/commentary/__main__.py
+  s_d55ab428b62c9f::t_e3934b69f89dcd 723-733
+  s_d55ab428b62c9f::t_05f2be9afbd14a 24,328-342,349-353,362,369-371,379-383,386-390,399-405
+  s_d55ab428b62c9f::t_3ca7fcfab13ce9 385
+  s_d55ab428b62c9f::t_1b29f9d9333e10 363-368
+src/commentary/voice/playback.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 17-21,27,30-31,44-59,112-287,291-301,373-377,415-416,418-421,423-429
+src/commentary/voice/__init__.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 4,15
+src/commentary/replay.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 27-34,47,55,57,59-70,146-162,177-179,185-193,239-242,276-277,282,289-304,331-358,386,398
+src/commentary/director.py
+  s_d55ab428b62c9f::t_05f2be9afbd14a 142-152
+uv.lock
+  s_d55ab428b62c9f::t_aac4b5a171587e 408-410,447,450,1943-1958
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d091c85efe623ab73776b0574fc79b4ea24e7b3e",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

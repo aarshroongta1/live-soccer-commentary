@@ -1,0 +1,28 @@
+pyproject.toml
+  s_071588aa9615d3::t_6d54ce825d4df0 30-35
+src/commentary/perception/players.py
+  s_071588aa9615d3::t_f68f4cb37e85fd 456-461,540-547,549,551
+  s_071588aa9615d3::t_5f3fdc235fb8c0 500-507
+docs/BRIEF-real-footage-and-wire.md
+  s_071588aa9615d3::t_7c24dc4cf32d6b 432-481
+  s_071588aa9615d3::t_e7aa0f1d00d698 227-262
+  s_071588aa9615d3::t_5f3fdc235fb8c0 263-281
+docs/HANDOFF.md
+  s_071588aa9615d3::t_086f76dd95fa60 91-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "912dbdd79ad0fc480e00b2fb0d8be0fcc3538175",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

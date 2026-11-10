@@ -1,0 +1,31 @@
+.env.example
+  s_7078a6b7dcd5e9::t_c9d54d54455bfd 62
+src/commentary/config.py
+  s_7078a6b7dcd5e9::t_c9d54d54455bfd 27
+tests/test_phraser.py
+  s_7078a6b7dcd5e9::t_e3e4588871467e 32
+  s_7078a6b7dcd5e9::t_37f083e424ed18 631-634,804-860
+  s_7078a6b7dcd5e9::t_f87fac737aceea 707
+  s_7078a6b7dcd5e9::t_c12e0c1a7aca91 861-862
+src/commentary/runtime.py
+  s_7078a6b7dcd5e9::t_e42e680e08dd21 115-125
+  s_7078a6b7dcd5e9::t_f905ba8f0b5b39 1233-1244
+  s_7078a6b7dcd5e9::t_c9d54d54455bfd 95,1445-1452,1535-1542,1553-1554,1556-1558,1585-1606
+  s_7078a6b7dcd5e9::t_04f0f419765879 1607
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a9ec44028de2770a35839b2ae1d91ac87013af15",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

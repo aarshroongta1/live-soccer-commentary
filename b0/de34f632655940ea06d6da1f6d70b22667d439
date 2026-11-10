@@ -1,0 +1,38 @@
+tests/test_goal_sequence.py
+  s_b9d647e85fe0bb::t_83a34cf7b99d0e 183-184,227,240
+tests/test_scoreline.py
+  s_b9d647e85fe0bb::t_83a34cf7b99d0e 628,637
+src/commentary/config.py
+  s_b9d647e85fe0bb::t_321e3cadbf854b 400
+src/commentary/agents/phraser.py
+  s_b9d647e85fe0bb::t_2dec17966c309d 544-570,573,577,584-586
+  s_b9d647e85fe0bb::t_b30603c8d0b515 571-572
+  s_b9d647e85fe0bb::t_1e769f5270aa94 574-576,578-583
+  s_b9d647e85fe0bb::t_2b29a99c09cd24 1627-1629
+src/commentary/agents/colour.py
+  s_b9d647e85fe0bb::t_658554a592d394 995-996
+  s_b9d647e85fe0bb::t_d5ba7226b00899 988-994,997-1000
+  s_b9d647e85fe0bb::t_fc64231d92005d 1288-1296
+tests/test_colour_share.py
+  s_b9d647e85fe0bb::t_cebd3c50777876 1620-1643
+tests/test_phraser.py
+  s_b9d647e85fe0bb::t_baae8c5692df3a 1568-1581
+docs/HANDOFF.md
+  s_b9d647e85fe0bb::t_66ddc3e2ad62d5 8,664-692
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b0de34f632655940ea06d6da1f6d70b22667d439",
+  "prompts": {},
+  "sessions": {
+    "s_b9d647e85fe0bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9fc5aad-0798-4d5f-b261-4b5ae38e905b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

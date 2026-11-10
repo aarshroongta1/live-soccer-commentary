@@ -1,0 +1,21 @@
+tests/test_schemas.py
+  s_7078a6b7dcd5e9::t_1c7cde5718ccc7 44-61
+src/commentary/llm/schema.py
+  s_7078a6b7dcd5e9::t_1c7cde5718ccc7 59-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b701c586a4211ecd89075c245899ed30b2c42b91",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+src/commentary/gate.py
+  s_53408140bf619f::t_4a303200259cc7 19-23,351-356
+src/commentary/perception/__init__.py
+  s_53408140bf619f::t_7bd2e23b10c55e 11-20,28-34,36
+src/commentary/perception/players.py
+  s_53408140bf619f::t_f68f809b8d8fb8 1-448,451-516,518-522
+  s_53408140bf619f::t_45f8004aa8f668 449-450,517
+src/commentary/runtime.py
+  s_53408140bf619f::t_213f8c79dcb406 69-82,154,316-318,439,477-525
+  s_53408140bf619f::t_4a303200259cc7 23-28
+  s_53408140bf619f::t_7b7b8175dc7cff 526
+tests/test_runtime.py
+  s_53408140bf619f::t_fd8f32adb9f5e7 12,15,173,202-290
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9b76685d4c7cfcb78b1afc3393de947eda6ae698",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

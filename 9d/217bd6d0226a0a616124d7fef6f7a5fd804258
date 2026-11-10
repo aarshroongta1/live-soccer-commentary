@@ -1,0 +1,36 @@
+tests/test_buffer.py
+  s_7078a6b7dcd5e9::t_9c9efe8a8b8ed7 39-53
+src/commentary/capture/buffer.py
+  s_7078a6b7dcd5e9::t_86c2857dc47198 92-97,99,104-109,124-125
+src/commentary/agents/caller.py
+  s_7078a6b7dcd5e9::t_86c2857dc47198 181-183,224-226,235-239,244-248,274,276,291-292
+src/commentary/runtime.py
+  s_7078a6b7dcd5e9::t_9c9efe8a8b8ed7 1214,1217-1225,1228-1232
+  s_7078a6b7dcd5e9::t_f2d7ea03b1c5ec 115-121,386-391,518-533,760-770,1195-1205,1207-1213,1215-1216,1226-1227,1233-1251,1253-1254,1267-1277,1284-1285,1290-1292,1294-1298,1300
+  s_7078a6b7dcd5e9::t_0c7762f4ac6d3e 134-138,1465-1469,1721-1725,1730-1734
+  s_7078a6b7dcd5e9::t_160cff20c03ab8 122
+  s_7078a6b7dcd5e9::t_f957f74ec7f943 1735
+tests/test_runtime.py
+  s_7078a6b7dcd5e9::t_773423676a5bd6 1184-1280
+  s_7078a6b7dcd5e9::t_9c9efe8a8b8ed7 108-109,118,128
+  s_7078a6b7dcd5e9::t_3763b1410e8a87 1313-1314,1346-1349
+  s_7078a6b7dcd5e9::t_db6140e48bdd30 10
+  s_7078a6b7dcd5e9::t_d0d4700628a7ec 1315-1345,1350-1377
+  s_7078a6b7dcd5e9::t_30b693e6dad8b7 129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9d217bd6d0226a0a616124d7fef6f7a5fd804258",
+  "prompts": {},
+  "sessions": {
+    "s_7078a6b7dcd5e9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab11-63bc-7630-a752-f87385ee8669",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

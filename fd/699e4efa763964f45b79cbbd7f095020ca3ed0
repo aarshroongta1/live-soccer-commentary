@@ -1,0 +1,21 @@
+tests/test_replay.py
+  s_d55ab428b62c9f::t_c51987d7e489c1 574-599
+README.md
+  s_d55ab428b62c9f::t_972c60b5ab2e95 148-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fd699e4efa763964f45b79cbbd7f095020ca3ed0",
+  "prompts": {},
+  "sessions": {
+    "s_d55ab428b62c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fe4a5e-087b-4b8d-bcbc-675b32dc204c",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

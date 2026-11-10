@@ -1,0 +1,27 @@
+src/commentary/prompts/caller.py
+  s_071588aa9615d3::t_70dbbd8452bea1 22
+  s_071588aa9615d3::t_34aab87a7db002 305-313
+  s_071588aa9615d3::t_cacf56fd41deb8 139-146
+tests/test_marks.py
+  s_071588aa9615d3::t_5dff123de4dc14 70-79,81-82
+docs/BRIEF-real-footage-and-wire.md
+  s_071588aa9615d3::t_439040ceb1abd3 559-571
+src/commentary/runtime.py
+  s_071588aa9615d3::t_8e294ff77be980 868-873,877-884,907-913
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4cfb6782b2c4ae0abe13711f50588e99f6d77280",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

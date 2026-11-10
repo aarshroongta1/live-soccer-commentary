@@ -1,0 +1,28 @@
+src/commentary/gate.py
+  s_53408140bf619f::t_5ff424b631dca7 42,250-260,270-272,424-430,437-443,445,451-459
+  s_53408140bf619f::t_6c59290fca1d43 460
+src/commentary/grading/metrics.py
+  s_53408140bf619f::t_7ae149b1cdbc69 280-287,291-292,294-295
+tests/test_grading.py
+  s_53408140bf619f::t_c81edb4ef0e5a1 223-224
+  s_53408140bf619f::t_a1611699be20b6 207-222,225
+tests/test_gate.py
+  s_53408140bf619f::t_7ae149b1cdbc69 223-227,243-296
+  s_53408140bf619f::t_f7554cb5bc8e5f 228-242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f352dbe7e3174a21c299fa3a60b0f197944751f8",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

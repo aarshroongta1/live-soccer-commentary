@@ -1,0 +1,28 @@
+tests/test_rephrase_all.py
+  s_1eec300a49e1ff::t_aa3b8037dd743d 1-82
+scripts/rephrase_all.py
+  s_1eec300a49e1ff::t_f5cf014889dc11 49
+  s_1eec300a49e1ff::t_81e2e44e001f72 100
+  s_1eec300a49e1ff::t_c80b9f8596be43 569-572
+  s_1eec300a49e1ff::t_ac45b19e63b8a2 629-631,635-638,642-644,647-649
+  s_1eec300a49e1ff::t_a3902431690cd0 193
+  s_1eec300a49e1ff::t_af9c8a2500742b 315-317
+  s_1eec300a49e1ff::t_c68b962991b92d 407-408
+  s_1eec300a49e1ff::t_1a78eb8a5972a8 1-48,50-99,101-192,194-314,318-406,409-568,573-628,632-634,639-641,645-646,650-666
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9f803e6cc1efa5dd1043dc85173d77be2d6091d6",
+  "prompts": {},
+  "sessions": {
+    "s_1eec300a49e1ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7feafbb1-43b3-4ee3-afb0-bb66484d3043",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

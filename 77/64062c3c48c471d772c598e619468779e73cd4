@@ -1,0 +1,32 @@
+docs/BRIEF-real-footage-and-wire.md
+  s_071588aa9615d3::t_b0cc431c03b4da 219-226
+  s_071588aa9615d3::t_d511a78349ded7 15-18,240-383,386,388-394,396-400,619-622
+  s_071588aa9615d3::t_49c3a2ca5fb318 128-199,227-228,230-232,237
+  s_071588aa9615d3::t_861821bf4e75a2 200-218,229,233-236
+  s_071588aa9615d3::t_e8e205b645b669 643-650
+  s_53408140bf619f::t_1e6a53965a39d8 238-239
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7764062c3c48c471d772c598e619468779e73cd4",
+  "prompts": {},
+  "sessions": {
+    "s_071588aa9615d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83884937-1088-4d5c-ab8e-15db51a4198b",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

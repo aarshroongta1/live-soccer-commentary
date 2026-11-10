@@ -1,0 +1,23 @@
+tests/test_baselines.py
+  s_53408140bf619f::t_c2ef4a8e4ade60 54
+  s_53408140bf619f::t_d09fa0749b7427 50,52,294-295,299,303,305-324,329-337,339-348
+  s_53408140bf619f::t_25ddb3bedd7e0a 325-328,338
+README.md
+  s_53408140bf619f::t_936702030d63df 305
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a6bbc4f51b4a94b542513d27386f0bec4d8e40e3",
+  "prompts": {},
+  "sessions": {
+    "s_53408140bf619f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ecc92993-38a1-4390-a5bc-ee9c026a0461",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}

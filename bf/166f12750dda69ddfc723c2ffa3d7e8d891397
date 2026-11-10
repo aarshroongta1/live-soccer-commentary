@@ -1,0 +1,240 @@
+web/app/layout.tsx
+  s_94df9e875c1f44::t_bec57b73df411f 16-27
+  s_94df9e875c1f44::t_2ee6ead790f8d2 1-15,28-30
+tests/test_predictor.py
+  s_94df9e875c1f44::t_928c4a32555336 1-107
+web/CLAUDE.md
+  s_94df9e875c1f44::t_0fec6c45181523 1
+src/commentary/__main__.py
+  s_94df9e875c1f44::t_a4f56ffc5375b5 1,3-6,11,14-15,17-22,24,26-30,32-33,36,46,54-58,60-83,86-181,183-184,192-193,196-273,276-280,282
+  s_94df9e875c1f44::t_628476097136db 84-85
+  s_94df9e875c1f44::t_c9fc57aa098bc3 182
+  s_94df9e875c1f44::t_c86f15a58cd9d9 59
+  s_94df9e875c1f44::t_b247d549b73b28 185-191,194-195
+  s_94df9e875c1f44::t_36530378f36feb 274-275
+src/commentary/voice/elevenlabs.py
+  s_94df9e875c1f44::t_f2891a7d7b14fa 1-326
+src/commentary/sim/match.py
+  s_94df9e875c1f44::t_d5512e155df006 1-481,486-493,496-497,506-613,622-643,649-825
+  s_94df9e875c1f44::t_e819b64175ce91 614-621
+  s_94df9e875c1f44::t_c5cae9509b3c0b 644-648
+  s_94df9e875c1f44::t_53602e6e06c47c 482-485,498-505
+  s_94df9e875c1f44::t_6854aa9decc8b5 494-495
+src/commentary/prompts/__init__.py
+  s_94df9e875c1f44::t_4f0de0df187108 1-13
+src/commentary/agents/researcher.py
+  s_94df9e875c1f44::t_ce583430c162f1 46
+  s_94df9e875c1f44::t_a91dd05eb24abb 228-230
+  s_94df9e875c1f44::t_fdd79bf4b35af9 1-45,47-227,231-261,263-382
+  s_94df9e875c1f44::t_75d593d75cbd80 262
+.gitignore
+  s_94df9e875c1f44::t_37ccddc8cbb392 32
+src/commentary/runtime.py
+  s_94df9e875c1f44::t_442954f90046ad 347
+src/commentary/prompts/analyst.py
+  s_94df9e875c1f44::t_19de93332e0728 1-306
+src/commentary/state.py
+  s_94df9e875c1f44::t_45fca1b4488451 23
+  s_94df9e875c1f44::t_3913c52e805851 1-22,24-259,261-263,266-362
+  s_94df9e875c1f44::t_a8e44f9f490f27 260,264-265
+web/app/page.tsx
+  s_94df9e875c1f44::t_8be1c35690a7dc 1-4
+  s_94df9e875c1f44::t_78557d15192745 5
+web/components/ui.tsx
+  s_94df9e875c1f44::t_d515cc6b8452b6 1-77
+tests/test_gate.py
+  s_94df9e875c1f44::t_28dadeeab8354d 1-222
+web/lib/events.ts
+  s_94df9e875c1f44::t_1c5333e0264804 89-90
+  s_94df9e875c1f44::t_b606e7d2656b06 1-88,91-276,278-454
+  s_94df9e875c1f44::t_a719708147f3ea 277
+web/lib/useEventStream.ts
+  s_94df9e875c1f44::t_2cdf248c022732 121-123
+  s_94df9e875c1f44::t_a32815575ded64 135
+  s_94df9e875c1f44::t_50c92402d9d3f0 166-168
+  s_94df9e875c1f44::t_fa608ae081b68e 70-77
+  s_94df9e875c1f44::t_afe5ece973a651 115
+  s_94df9e875c1f44::t_97f1ce3bde27ae 1-44,46,48,59-69,78-114,116-120,124-134,136-165,169-170
+  s_94df9e875c1f44::t_4e70f088a4f744 45,47,49-58
+web/components/VideoStage.tsx
+  s_94df9e875c1f44::t_4dbc03fdbb67e1 30-34,36-37,42
+  s_94df9e875c1f44::t_6cab9b9ea7ecbc 1-29,35,38-41,43-71
+web/components/Scoreboard.tsx
+  s_94df9e875c1f44::t_3cd159f3c44d85 21-28,30
+  s_94df9e875c1f44::t_497457996fc815 1-16,20,29,31-34,36-87
+  s_94df9e875c1f44::t_7c256563846982 17-19
+  s_94df9e875c1f44::t_d924e46e2d846d 35
+web/app/api/video/route.ts
+  s_94df9e875c1f44::t_a34ba3d3b590a3 1-11
+src/commentary/sim/render.py
+  s_94df9e875c1f44::t_f8cb687953da43 394-395
+  s_94df9e875c1f44::t_f78930805d3906 12-15
+  s_94df9e875c1f44::t_ef872683da9cb2 305-306,439-447,452-453,455-458,461-465,469-470,472,474-476,479-486,489,491-493,495-496,498-506,508-515,518-521,525,536-543,546-553
+  s_94df9e875c1f44::t_987b5542095e92 25,127-134,136-149,152-160,173-175,220-230,233,237,246-249
+  s_94df9e875c1f44::t_e819b64175ce91 26,82-88,392-393,396-397,526
+  s_94df9e875c1f44::t_6854aa9decc8b5 251,362,364,377-378,408-409
+  s_94df9e875c1f44::t_8603ff4c749f3d 1-11,16-24,27-81,89-126,135,161-172,176-180,182,185-219,235-236,238-245,250,252-304,307-309,314-361,363,365-376,379-391,398-407,410-438,448-451,454,459-460,466-468,471,473,477-478,487-488,490,494,497,507,516-517,522-524,535,544-545,554-558,560-584
+  s_94df9e875c1f44::t_e3d9e0b69a7751 527-534
+  s_94df9e875c1f44::t_17d637d50978b9 310-313,559
+  s_94df9e875c1f44::t_8d3f9b860a89a8 150-151,181,183-184,231-232,234
+src/commentary/prompts/caller.py
+  s_94df9e875c1f44::t_7e5e59ab1c08bd 1-18,20-88,92-239,243-259,261-263,267
+  s_94df9e875c1f44::t_3fedfeabae46e3 19
+  s_94df9e875c1f44::t_6861e40b727247 89-91
+  s_94df9e875c1f44::t_4e44d3857b3692 260,264-266
+  s_94df9e875c1f44::t_d1489f395db8cc 240-242
+web/lib/proxy.ts
+  s_94df9e875c1f44::t_e43968b73da3b2 1-45
+tests/test_audio.py
+  s_94df9e875c1f44::t_4be7a3e616b1a4 1-126
+src/commentary/grading/metrics.py
+  s_94df9e875c1f44::t_ab82de11e39b7c 75-78
+  s_94df9e875c1f44::t_37dd0a18a6ca88 85
+  s_94df9e875c1f44::t_a3983688210de8 123
+  s_94df9e875c1f44::t_6d37dbcec09ae8 160-168
+web/app/globals.css
+  s_94df9e875c1f44::t_c6cc5635c92996 3-77
+  s_94df9e875c1f44::t_f29bc97dd7d164 1-2
+web/next.config.ts
+  s_94df9e875c1f44::t_4dfc4db280f338 18-21
+  s_94df9e875c1f44::t_f77a5358f13b5b 7-13
+  s_94df9e875c1f44::t_bb124a475a2ba4 3-6,14-16,22-27
+  s_94df9e875c1f44::t_fee6cb9c2348e7 1-2
+  s_94df9e875c1f44::t_c95969ec7f8bab 17
+  s_94df9e875c1f44::t_8f6b61cdb5dc5a 28-30
+web/lib/store.ts
+  s_94df9e875c1f44::t_61c7f6a816f65b 51-55
+  s_94df9e875c1f44::t_baa232f0dfd1a2 1-50,56-70,72-86,88-111,113-175,177-194,196-198
+  s_94df9e875c1f44::t_ec4f2a42dffec9 112
+  s_94df9e875c1f44::t_85fc9ffa4ad39b 176
+  s_94df9e875c1f44::t_81ee7e42f3aa6b 195
+  s_94df9e875c1f44::t_e6c439a7d07ef3 71
+  s_94df9e875c1f44::t_963db66b8b23a0 87
+tests/test_state.py
+  s_94df9e875c1f44::t_59774cd34dfd88 1-247
+src/commentary/perception/__init__.py
+  s_94df9e875c1f44::t_0ccfed07d51a38 1-19
+web/components/Feed.tsx
+  s_94df9e875c1f44::t_e75397a96e84e3 1-96
+web/components/AgentPanel.tsx
+  s_94df9e875c1f44::t_7a28ffb74112bb 273-277
+  s_94df9e875c1f44::t_7af9b8d6d454fb 236-245
+  s_94df9e875c1f44::t_d8aad4bfd93879 1-21,23-235,246-272,278-282
+  s_94df9e875c1f44::t_2e7c033850997a 22
+tests/test_board.py
+  s_94df9e875c1f44::t_d97ad3da5a5fff 1-5,7-10,16-222
+  s_94df9e875c1f44::t_6ab54024950451 6,11-15
+src/commentary/voice/playback.py
+  s_94df9e875c1f44::t_3e556caffa3af8 1-218
+web/components/Watch.tsx
+  s_94df9e875c1f44::t_d8f7f4018848f5 41
+  s_94df9e875c1f44::t_dab844a5299932 3
+  s_94df9e875c1f44::t_a688bd76fa20dd 1-2,4-17,24-25,27-40,42-58,69-93
+  s_94df9e875c1f44::t_89f59983e1676a 18-23,26
+  s_94df9e875c1f44::t_771dd9227c77a2 59-68
+src/commentary/sim/oracle.py
+  s_94df9e875c1f44::t_69864e88f9a181 171,231,275,294
+  s_94df9e875c1f44::t_5ba8f97393951e 1-21,23-93,114-170,172-177,179-230,232-274,276-293,295-349
+  s_94df9e875c1f44::t_70c0875bb1aa28 22,178
+  s_94df9e875c1f44::t_27b23ceff3d5e5 94-113
+src/commentary/sim/audio.py
+  s_94df9e875c1f44::t_70d3edf80f0e22 1-72,78-153
+  s_94df9e875c1f44::t_e25ef7b352eb51 73-77
+web/lib/format.ts
+  s_94df9e875c1f44::t_0628274edda20f 1-31
+src/commentary/prompts/researcher.py
+  s_94df9e875c1f44::t_24812496cce8d5 1-167
+src/commentary/perception/board.py
+  s_94df9e875c1f44::t_d305270ccee54e 1-277
+src/commentary/capture/audio.py
+  s_94df9e875c1f44::t_208365074a778d 197-204
+  s_94df9e875c1f44::t_896921e0cc27d6 1-196,205-244
+src/commentary/agents/caller.py
+  s_94df9e875c1f44::t_45ff68d2fe3986 105,107,110
+  s_94df9e875c1f44::t_2d99c36950de9f 38-44
+  s_94df9e875c1f44::t_7289dff92d2e7e 1-37,45-104,106,108-109,111-284,286-291
+  s_94df9e875c1f44::t_26ab1e2413e506 285
+src/commentary/predictor.py
+  s_94df9e875c1f44::t_61aa1fa4f456cd 1-75,79-122,124-125,130-131,136-160
+  s_94df9e875c1f44::t_a3b1d31dda9f32 123,126-129
+  s_94df9e875c1f44::t_70c9a3b4feb57c 76-78,132-135
+src/commentary/sim/__init__.py
+  s_94df9e875c1f44::t_f78930805d3906 23,28,37,50
+  s_94df9e875c1f44::t_c99bf6e82577a9 1-22,24-27,29-36,38-49,51
+web/app/api/stream/route.ts
+  s_94df9e875c1f44::t_ec0d0bf49fa170 1-12
+src/commentary/agents/__init__.py
+  s_94df9e875c1f44::t_7fe0df07af524b 1-12
+web/mock/events.ts
+  s_94df9e875c1f44::t_9912b7498d0c98 1-41,45-550
+  s_94df9e875c1f44::t_42fb4070b54630 42-44
+web/AGENTS.md
+  s_94df9e875c1f44::t_0fec6c45181523 1-9
+tests/test_prompts.py
+  s_94df9e875c1f44::t_be41e4da941861 29-32
+  s_94df9e875c1f44::t_2318f728797acd 1-28,33-98,100-146
+  s_94df9e875c1f44::t_a911c6145a6e34 99
+tests/test_sim.py
+  s_94df9e875c1f44::t_53602e6e06c47c 114
+  s_94df9e875c1f44::t_eac73b202877ef 14,146,171-172,174,180,184-198,200,202-204
+  s_94df9e875c1f44::t_0f3af13ec3250d 178-179,296
+  s_94df9e875c1f44::t_7bc37bd332f4bc 22,25-26,28,36-38,40-41,43,125-126,128,133,135-137,139-141,143-145,147-160
+  s_94df9e875c1f44::t_6118a9994aa949 1-6,8-9,11-13,15-21,23-24,27,29-35,39,42,44-113,115-124,127,129-132,134,138,142,161-170,173,175-177,181-182,199,201,205-295,297-307,334-421
+  s_94df9e875c1f44::t_e4eb6d4d6775cd 7,10,308-333
+  s_94df9e875c1f44::t_3c28914b2bb6b0 183
+tests/test_grading.py
+  s_94df9e875c1f44::t_8ccae1f9c4362c 51-52,56-62
+  s_94df9e875c1f44::t_44a9a66f907ed1 129,135-141
+  s_94df9e875c1f44::t_9ea034e1b1d366 142-143
+src/commentary/sim/source.py
+  s_94df9e875c1f44::t_5a1aca11c749f3 1-19,21-54,56-106
+  s_94df9e875c1f44::t_a7b881dc9ed820 55
+  s_94df9e875c1f44::t_039e948d07db3a 20
+src/commentary/voice/__init__.py
+  s_94df9e875c1f44::t_a3a2abe8b042d5 3-4,7-18
+tests/test_caller.py
+  s_94df9e875c1f44::t_e81fc1bc7630e4 1-75,81-252
+  s_94df9e875c1f44::t_d2d5060b28cdba 76-80
+src/commentary/schemas.py
+  s_94df9e875c1f44::t_77bee70c7832f5 145-149
+web/components/StatusStrip.tsx
+  s_94df9e875c1f44::t_bf180ca2f512f5 1-85
+src/commentary/gate.py
+  s_94df9e875c1f44::t_424bb650b521d1 1-42,44-63,71-220,228-423,427-446
+  s_94df9e875c1f44::t_a82e794ad63aeb 64-65
+  s_94df9e875c1f44::t_7b0729a43c6986 66-68
+  s_94df9e875c1f44::t_a538abbfc518f1 69-70
+  s_94df9e875c1f44::t_70c9a3b4feb57c 221-227
+  s_94df9e875c1f44::t_a8b864fb6c79fa 43
+  s_94df9e875c1f44::t_b2dc203b4a6e0c 424-426
+web/.gitignore
+  s_94df9e875c1f44::t_62ce1342f8d6d9 1-41
+web/README.md
+  s_94df9e875c1f44::t_3635d3042f22b3 1-36
+web/eslint.config.mjs
+  s_94df9e875c1f44::t_365046753e624b 1-18
+web/package-lock.json
+  s_94df9e875c1f44::t_12826d1086ac4a 1-6782
+web/package.json
+  s_94df9e875c1f44::t_0ab3ab54ea33bc 1-26
+web/postcss.config.mjs
+  s_94df9e875c1f44::t_9a79943ffac364 1-7
+web/tsconfig.json
+  s_94df9e875c1f44::t_f6989575ce060d 1-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bf166f12750dda69ddfc723c2ffa3d7e8d891397",
+  "prompts": {},
+  "sessions": {
+    "s_94df9e875c1f44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db329dbb-a4d3-4b8e-b201-640f9ed89c05",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
