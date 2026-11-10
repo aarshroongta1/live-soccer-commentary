@@ -1,0 +1,44 @@
+docs/SESSION_HANDOFF.md
+  s_c61538d1d875af::t_9b1b43630e4568 23-25
+  s_c61538d1d875af::t_06aa800254d4d5 28-33
+  s_5122a6b523b341::t_88556370dae3ab 10-22,26-27,34
+web/app/demo/engineering/engineering.css
+  s_c61538d1d875af::t_8bb69c75595969 75-76
+  s_5122a6b523b341::t_2d0dafc7009d5e 52-74
+web/data/engineering-diagrams.json
+  s_5122a6b523b341::t_2d0dafc7009d5e 11-15
+docs/PORTFOLIO.md
+  s_5122a6b523b341::t_88556370dae3ab 8-10
+web/app/demo/engineering/case-study.tsx
+  s_5122a6b523b341::t_2d0dafc7009d5e 22,32,36-39,41-53,83-84
+  s_c61538d1d875af::t_8bb69c75595969 35
+web/app/demo/engineering/mermaid-diagram.tsx
+  s_c61538d1d875af::t_8bb69c75595969 7-8,16,42-43,57,59-61,63
+  s_5122a6b523b341::t_2d0dafc7009d5e 71
+docs/DEMO_DESIGN.md
+  s_5122a6b523b341::t_88556370dae3ab 46-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d4d61a12637d5f1af15b582a89c8ae15421c111",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
