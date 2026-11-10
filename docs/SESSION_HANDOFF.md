@@ -7,6 +7,30 @@ files_modified: []
 
 # Commentary project handoff
 
+## Latest direction: engineering explanation belongs in the GitHub README
+
+User moved the engineering explanation to GitHub and requested a more detailed,
+conventional AI-project README with flowcharts. README.md is now canonical:
+overview, demo/provenance, capabilities, two Mermaid diagrams, agent roles and
+typed tool protocol, recorded-vs-replay distinction, quick start, usage, evaluation
+and before/after results, development checks, project structure and limitations.
+The example SpeechLine is copied from the retained penalty output; commands use
+existing CLI flags and tracked team/research inputs. No new paid experiment.
+
+Main demo “How I built it” links directly to the GitHub repository #architecture.
+/demo/engineering redirects there for old links. The optional full saved-run
+inspector remains at /demo/engineering/runs. Duplicated case-study components,
+Mermaid rendering code, engineering CSS and browser diagram JSON are removed;
+Mermaid npm dependency is removed. GitHub renders the Markdown flowcharts without
+shipping a diagram renderer to the demo.
+Validation: README relative links/section anchors pass, both Mermaid blocks match
+the previously rendered .mmd sources, the recorded example dry run reports zero
+model attempts, and the free scripted diagnostic exits successfully. Web lint and
+production build pass after removing Mermaid. The main link points to GitHub and
+the old /demo/engineering URL redirects there. No paid calls or publish/push. docs/ENGINEERING_OVERVIEW.md now points
+to README sections. Prior web-page descriptions below are historical.
+
+
 ## Latest refinement: engineering page must be quick to scan
 
 User found the ~500-word case study too dense for most viewers. The default

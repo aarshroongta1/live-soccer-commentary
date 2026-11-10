@@ -5,11 +5,10 @@ The local `/` and `/demo` pages lead with three selected, silent captioned clips
 The main page is a recruiter-facing showcase: a short introduction, three clip
 choices, a large video player, and compact provenance labels. It keeps the website's
 Space Grotesk/blue palette and light/dark themes. The **How I built it** link opens
-`/demo/engineering`: a quick-scan engineering overview with one simplified flowchart, three skill
-highlights and one evaluation result. “Explore further” reveals the full skills
-table, detailed flowcharts, tradeoffs and resume wording.
-The deeper transcript/evidence/run inspector, costs, iteration comparison and
-causal replay explorer remain at `/demo/engineering/runs`.
+the [GitHub README](https://github.com/aarshroongta1/live-soccer-commentary#architecture).
+It contains the full engineering explanation and Mermaid diagrams. The former
+`/demo/engineering` route redirects there. The deeper run inspector remains at
+`/demo/engineering/runs` for source-time transcripts, evidence and comparison data.
 
 | Clip | Length | Provenance |
 | --- | --- | --- |

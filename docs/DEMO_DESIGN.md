@@ -51,3 +51,11 @@ Default view is now one simplified Mermaid architecture diagram, three short
 engineering highlights and one concrete evaluation-led result. “Explore further”
 is collapsed by default and lazily mounts the full skills table, both detailed
 flowcharts, evaluation tradeoffs and resume summary. Keep these details opt-in.
+
+## Engineering moves to the README
+
+User chose GitHub as the home for the fuller engineering explanation. The demo’s
+“How I built it” link now goes to the repository README's Architecture section;
+/demo/engineering is a compatibility redirect. The duplicated case-study UI and
+Mermaid browser dependency are removed. GitHub renders the two README flowcharts.
+The optional saved-run inspector remains separate.

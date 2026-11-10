@@ -14,7 +14,7 @@ that the commentary sounds good. Listening review remains necessary.
 
 Generate a script from your own soccer clip, review it, then render speech and
 captions. Run these commands from the repository root after the
-[setup steps](../README.md#generate-your-own-commentary). Rendering needs FFmpeg with subtitle
+[setup steps](../README.md#quick-start). Rendering needs FFmpeg with subtitle
 support and ffprobe; the `demo` extra supplies a compatible FFmpeg binary.
 
 ## Generate a script
