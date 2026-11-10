@@ -309,12 +309,3 @@ docs/                  # Design notes, evaluations and reproduction guides
   and real-time spoken latency are not established by this demo.
 - More agents add requests, delay and failure paths. A general quality advantage
   over a single writer has not been demonstrated.
-
-## Further reading
-
-- [Portfolio setup and media](docs/PORTFOLIO.md)
-- [Resume wording and interview discussion](docs/PORTFOLIO_CASE_STUDY.md)
-- [Replay architecture](docs/REPLAY.md)
-- [Text evaluation methodology](docs/TEXT_EVALUATION.md)
-- [False-goal investigation](docs/FALSE_GOAL_INVESTIGATION.md)
-- [Agent identity resolution](docs/PLAYER_IDENTIFICATION.md)
