@@ -1,0 +1,76 @@
+web/app/demo/engineering/page.tsx
+  s_5122a6b523b341::t_60dd7b942838bd 1,6
+web/app/demo/engineering/mermaid-diagram.tsx
+  s_5122a6b523b341::t_937f9c77c36e90 1-24,26-28,30-48,53-61,63-69
+  s_5122a6b523b341::t_1b01e49e62ab66 49-52
+  s_c61538d1d875af::t_ab94de4c3f866a 25,29,62
+web/app/demo/engineering/engineering.css
+  s_c61538d1d875af::t_ab94de4c3f866a 17
+  s_5122a6b523b341::t_60dd7b942838bd 1-16,18-49
+  s_5122a6b523b341::t_1b01e49e62ab66 50-51
+web/app/demo/engineering/case-study.tsx
+  s_5122a6b523b341::t_60dd7b942838bd 1-71
+web/public/soccer-commentary/turn-architecture.mmd
+  s_c61538d1d875af::t_ab94de4c3f866a 1
+  s_c61538d1d875af::t_a1575b16f1c73e 2-8
+web/public/soccer-commentary/engineering-overview.md
+  s_c61538d1d875af::t_a1575b16f1c73e 1-40,42-85
+  s_c61538d1d875af::t_ab94de4c3f866a 41
+docs/DEMO_DESIGN.md
+  s_5122a6b523b341::t_937f9c77c36e90 37-45
+docs/ENGINEERING_OVERVIEW.md
+  s_c61538d1d875af::t_ab94de4c3f866a 41
+  s_c61538d1d875af::t_a1575b16f1c73e 1-40,42-85
+docs/DEMO_WALKTHROUGH.md
+  s_5122a6b523b341::t_aed265ef462a1e 20
+web/data/engineering-diagrams.json
+  s_c61538d1d875af::t_ab94de4c3f866a 10
+  s_5122a6b523b341::t_937f9c77c36e90 1-4,6-9,11-12
+  s_5122a6b523b341::t_60dd7b942838bd 5
+docs/PORTFOLIO.md
+  s_5122a6b523b341::t_aed265ef462a1e 8-11,19
+web/public/soccer-commentary/demo-walkthrough.txt
+  s_5122a6b523b341::t_aed265ef462a1e 20
+.gitignore
+  s_5122a6b523b341::t_775c07d3d22f5b 21-23
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_68646b6fa50498 30-38
+  s_5122a6b523b341::t_aed265ef462a1e 10-29,39
+web/public/soccer-commentary/system-architecture.mmd
+  s_c61538d1d875af::t_a1575b16f1c73e 1-11
+README.md
+  s_5122a6b523b341::t_aed265ef462a1e 21-23
+  s_c61538d1d875af::t_ab94de4c3f866a 77
+  s_c61538d1d875af::t_a1575b16f1c73e 8,50-59,74-76,78-89
+  s_5122a6b523b341::t_5054e986378323 90
+web/app/demo/engineering/runs/page.tsx
+  s_5122a6b523b341::t_392b6928eeee2a 1-8
+web/package-lock.json
+  s_c61538d1d875af::t_730684507360ae 11,40-52,293-335,579-595,1147-1158,1770-2022,2030-2035,2080-2086,2706-2715,3176-3191,3218-3226,3241-3249,3272-3771,3833-3838,3900-3908,3932-3940,3963-3968,4189-4200,4969-4974,5086-5097,5125-5134,5160-5168,5735-5759,5770-5774,5795-5800,6092-6097,6138-6149,6170-6202,6590-6595,6609-6614,6661-6676,6896-6913,6938-6943,6999-7004,7422-7427,7475-7483,7558-7566
+web/package.json
+  s_c61538d1d875af::t_537c9285b142d9 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bdae03b04f7283ba0a94d1cddd66285b2e7d7322",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
