@@ -1,0 +1,45 @@
+docs/SESSION_HANDOFF.md
+  s_c61538d1d875af::t_e751b10f13d68d 4,10-32
+  s_c61538d1d875af::t_3e3f5792a76dd7 33-42
+  s_c61538d1d875af::t_2360d17165ab16 43
+docs/DEMO_DESIGN.md
+  s_c61538d1d875af::t_b8ed49fd9f5e52 1-28
+web/app/demo/demo-experience.tsx
+  s_5122a6b523b341::t_67564fe8289e8f 185
+  s_c61538d1d875af::t_b8347af5f783c0 44-46,48,53-54,62-69,71-109,112-163,173,181-184,186-188,190-192,194-200,202,204-219,222-228,230-231,233-237,239-242,244-245,248,250,252-262,264-266,268
+  s_c61538d1d875af::t_ab2fab36c1bf9c 201,203
+  s_5122a6b523b341::t_5a7d5ea81c4a00 220-221
+web/app/demo/demo.css
+  s_c61538d1d875af::t_e751b10f13d68d 239
+  s_c61538d1d875af::t_e47ad38b30d3d4 1,3-12,14-16,20-56,58-60,64-66,68-104,106-110,112-143,145-149,151-161,163-238,240-247,249-251,253,255-272,274-290
+  s_5122a6b523b341::t_5a7d5ea81c4a00 57,105,248,252,254,273
+  s_c61538d1d875af::t_ab2fab36c1bf9c 19,61-63,67,111
+docs/PORTFOLIO.md
+  s_c61538d1d875af::t_e751b10f13d68d 5-10
+web/app/demo/architecture.tsx
+  s_c61538d1d875af::t_e47ad38b30d3d4 2-5,10-11,13-16,18-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "97b655f905c589e3ee7996c6b76f5bff59a937bb",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
