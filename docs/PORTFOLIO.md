@@ -2,6 +2,12 @@
 
 The local `/` and `/demo` pages lead with three selected, silent captioned clips:
 
+The presentation follows Aarsh’s website: Space Grotesk, blue links, a left
+navigation rail, and light/dark themes. A player workspace offers keyboard-accessible
+Transcript, Evidence and Run tabs. Evidence timestamps seek the video; the Run tab
+shows actual saved model/call/cost data. Iteration, editing and preparation notes
+expand beneath the player. No agent activity is simulated during playback.
+
 | Clip | Length | Provenance |
 | --- | --- | --- |
 | England vs France penalty | 20s | New automatic caller/analyst dialogue on saved vision and cited squad research. Exact generated words. |

@@ -1,11 +1,45 @@
 ---
 status: ready-for-demo
 branch: feature/replay-agents
-timestamp: 2026-11-09
+timestamp: 2026-11-10
 files_modified: []
 ---
 
 # Commentary project handoff
+
+## Latest: developer-themed presentation, 10 November 2026
+
+The user requested a proper showable, developer-themed demo using their website
+as reference. Read the live aarshroongta.com and local personal-website source;
+no personal-website files were changed. The commentary demo now uses the same
+Space Grotesk, blue accents, restrained rules, left navigation rail and light/dark
+palette. Default light; theme toggle stays within this page, leaving /live alone.
+
+A footage-first workspace has Transcript / Evidence / Run inspector tabs.
+Transcript lines and evidence timestamps seek actual footage; arrow keys and
+Home/End navigate the inspector tabs. Run metadata uses saved costs, models and
+rejected-turn counts. It explicitly labels recorded preparation and makes no
+model calls. Clip selection resets the inspector and pauses the old player.
+England retains compact before/after controls; detailed iteration results are
+collapsed initially. Light-edit and preparation notes remain downloadable.
+Pipeline is reduced to four explainable stages, followed by evaluation findings
+and the separate expandable causal replay explorer. Generated words/media and
+all experiment records are unchanged. No paid calls or deployment.
+
+Design brief: docs/DEMO_DESIGN.md. Presentation code: web/app/demo/
+{demo-experience.tsx,demo.css,architecture.tsx}. Scoped theme tokens replace the
+old layered white/green CSS. The walkthrough's underlying story is unchanged.
+
+Validation: production web lint/build passed. gstack checks at 1440, 1280, 768,
+375 and 320px found no horizontal overflow. Verified both themes, keyboard
+Arrow/Home navigation, transcript and evidence seeks, live source-time display,
+per-clip model/cost metadata, playing-video pause on clip switch, England
+before/after trace changes, all trace/edit/document downloads (HTTP 200), and
+media-error fallback retaining transcript/evidence. No console errors. Screenshots
+and browser-qa.json are in runs/demo-workbench. The production server is running
+at http://127.0.0.1:3000/demo. Core Python code and all generated media are unchanged;
+no paid or Python regression runs were needed for this presentation-only change.
+
 
 ## Current priority: showable portfolio demo — completed locally
 
