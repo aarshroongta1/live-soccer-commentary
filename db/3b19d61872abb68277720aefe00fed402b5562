@@ -1,0 +1,66 @@
+web/app/demo/demo-data.ts
+  s_5122a6b523b341::t_e8b7ddf6d97518 43-45
+  s_5122a6b523b341::t_4b3828c5c2eaee 3,41-42,46-49
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_4b3828c5c2eaee 10-32
+web/public/soccer-commentary/showcase-penalty-edited-v2.narration.json
+  s_5122a6b523b341::t_43544c1a2a4d10 1-2,4,6-8,11-79,81,147-149,151-152,154-160,162-168,170-176,178-184,186,194
+  s_c61538d1d875af::t_fd5dc9e37c9ba8 3,5,9-10,80,82-146,150,153,161,169,177,185,187-193
+examples/portfolio-demo/edited-showcase/penalty-plan.json
+  s_c61538d1d875af::t_41b85c865b27d2 1-6,8-17,19-23,25-35,37-53,55-63,65-83,85-102,113-114
+  s_5122a6b523b341::t_55a222d8d40d8b 18,24,36,54,64,84,103-109
+  s_c61538d1d875af::t_e99a6ab85c3232 7,110-112
+examples/portfolio-demo/edited-showcase/arsenal-plan.json
+  s_c61538d1d875af::t_41b85c865b27d2 1-17,19-23,25-29,31-41,43-59,61-69,71-79,81-99,101-118,127-129
+  s_c61538d1d875af::t_831c8c8454bb93 18,24,30,42,60,70,80,100,119-126
+examples/portfolio-demo/edited-showcase/README.md
+  s_5122a6b523b341::t_97ebe4181bf1e1 1-52
+README.md
+  s_5122a6b523b341::t_4b3828c5c2eaee 16-18,20,22-31
+web/app/demo/demo-experience.tsx
+  s_5122a6b523b341::t_4b3828c5c2eaee 31
+docs/PORTFOLIO.md
+  s_5122a6b523b341::t_4b3828c5c2eaee 4-22,71,73-75
+web/.vercelignore
+  s_5122a6b523b341::t_4b3828c5c2eaee 23-27
+web/public/soccer-commentary/showcase-argentina-edited-v2.narration.json
+  s_5122a6b523b341::t_d34d4b8632b4ed 1-225
+tests/test_edited_showcase.py
+  s_5122a6b523b341::t_97ebe4181bf1e1 1-60
+scripts/render_edited_showcase.py
+  s_5122a6b523b341::t_43544c1a2a4d10 10,13-20,34-35,110-111
+  s_5122a6b523b341::t_97ebe4181bf1e1 39-72,213-215
+  s_5122a6b523b341::t_55a222d8d40d8b 1-9,11-12,21-33,36-38,73-78,82-88,91-101,105-109,112-212,216-224
+  s_5122a6b523b341::t_ba63db981c5739 79-81,89-90,102-104
+web/data/edited-showcase.json
+  s_5122a6b523b341::t_4b3828c5c2eaee 1-120
+examples/portfolio-demo/edited-showcase/argentina-plan.json
+  s_c61538d1d875af::t_41b85c865b27d2 1-17,19-23,25-41,43-59,61-69,71-99,101-118,127-129
+  s_c61538d1d875af::t_1a921868b8307d 18,24,42,60,70,100,119-126
+web/public/soccer-commentary/showcase-arsenal-edited-v2.narration.json
+  s_c61538d1d875af::t_8c0ebdc126e276 1-225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db3b19d61872abb68277720aefe00fed402b5562",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
