@@ -1,0 +1,34 @@
+tests/test_portfolio_release.py
+  s_5122a6b523b341::t_31ca374c24e4b5 29
+README.md
+  s_5122a6b523b341::t_3bf9761f62e51b 31-32
+  s_c61538d1d875af::t_8e33292bd80902 3-5
+web/.vercelignore
+  s_c61538d1d875af::t_1f2f1fa6d9ce91 6-17
+docs/PORTFOLIO.md
+  s_c61538d1d875af::t_be1d315827181f 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2aa66b83232ff98914039604db96fceeaaacd94",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
