@@ -1,6 +1,7 @@
 # Portfolio demo
 
-The local `/` and `/demo` pages lead with three selected, silent captioned clips:
+The public demo is https://soccer-commentary-demo.vercel.app/demo.
+It presents three selected, silent captioned clips:
 
 The main page is a recruiter-facing showcase: a short introduction, three clip
 choices, a large video player, and compact provenance labels. It keeps the website's

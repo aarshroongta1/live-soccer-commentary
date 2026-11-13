@@ -1,5 +1,8 @@
 # AI Football Commentary
 
+[**Live demo**](https://soccer-commentary-demo.vercel.app/demo) · [Architecture](#architecture) · [Quick start](#quick-start) ·
+[Usage](#usage) · [Evaluation](#evaluation) · [Project structure](#project-structure)
+
 A multimodal, multi-agent prototype that turns football footage into play-by-play
 and analysis. A visual observer supplies timestamped evidence; independent caller
 and analyst agents decide what to say; deterministic code controls their turns.
@@ -7,9 +10,6 @@ and analyst agents decide what to say; deterministic code controls their turns.
 Built with **Python, LangGraph, Pydantic, asyncio, OpenCV and Next.js**.
 The focus is engineering around existing models: orchestration, grounded tool use,
 evaluation, failure analysis and inspectable execution.
-
-[Demo](#demo) · [Architecture](#architecture) · [Quick start](#quick-start) ·
-[Usage](#usage) · [Evaluation](#evaluation) · [Project structure](#project-structure)
 
 ## Demo
 
@@ -28,8 +28,8 @@ prototype simulates speech occupancy; these clips do not measure live spoken lat
 
 Media is git-ignored and is not included in a fresh clone. The app falls back to
 saved commentary when a video is unavailable. See [media setup](docs/PORTFOLIO.md)
-for expected files and optional remote video URLs. The existing public portfolio
-page shows an earlier release; local changes do not deploy automatically.
+for expected files and optional remote video URLs. The live demo hosts the three
+featured clips and requires no API key to watch.
 
 ## Key capabilities
 

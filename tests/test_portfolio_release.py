@@ -26,8 +26,7 @@ def test_featured_text_has_only_the_disclosed_identity_deletion():
             assert line["text"] == expected
         assert edits["new_football_claims_added"] is False
         assert clip["lines"] == [
-            {key: line[key] for key in ("at_s", "voice", "text")}
-            for line in plan["lines"]
+            {key: line[key] for key in ("at_s", "voice", "text")} for line in plan["lines"]
         ]
 
 

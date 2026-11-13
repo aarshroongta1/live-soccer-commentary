@@ -3,5 +3,15 @@ node_modules
 .git
 .env*
 *.tsbuildinfo
-# Upload only the featured demos; media stays out of Git.
-public/*.mp4
+# Include the current showcase and saved-run videos in the CLI deployment.
+public/**/*.mp4
+!public/soccer-commentary/agent-card.mp4
+!public/soccer-commentary/agent-goal.mp4
+!public/soccer-commentary/agent-penalty.mp4
+!public/soccer-commentary/generated-argentina.mp4
+!public/soccer-commentary/generated-arsenal.mp4
+!public/soccer-commentary/portfolio-before.mp4
+!public/soccer-commentary/portfolio-penalty.mp4
+!public/soccer-commentary/showcase-argentina.mp4
+!public/soccer-commentary/showcase-arsenal.mp4
+!public/soccer-commentary/showcase-penalty.mp4
