@@ -1,6 +1,6 @@
 # AI Football Commentary
 
-[**Live demo**](https://soccer-commentary-demo.vercel.app/demo) · [Architecture](#architecture) · [Quick start](#quick-start) ·
+[**Live demo**](https://www.aarshroongta.com/projects/soccer-commentary) · [Architecture](#architecture) · [Quick start](#quick-start) ·
 [Usage](#usage) · [Evaluation](#evaluation) · [Project structure](#project-structure)
 
 A multimodal, multi-agent prototype that turns football footage into play-by-play

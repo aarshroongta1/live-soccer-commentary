@@ -7,6 +7,18 @@ files_modified: []
 
 # Commentary project handoff
 
+## Current hosting direction
+
+User wants the demo on their personal website domain. Canonical demo URL is
+https://www.aarshroongta.com/projects/soccer-commentary. Its React/Vite showcase
+lives in personal-website, with the three clean clips, brief provenance labels,
+website theme and GitHub engineering link. Videos reuse the existing standalone
+Vercel media origin. The working checkout is /Users/Aarsh/Developer/personal-website;
+the Desktop checkout is older and has iCloud dataless files that block reads.
+Website source commit e977a6a is on personal-website/main. The Projects entry also
+points to this route and describes the current recorded project accurately.
+
+
 ## Latest direction: engineering explanation belongs in the GitHub README
 
 User moved the engineering explanation to GitHub and requested a more detailed,

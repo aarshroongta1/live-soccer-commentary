@@ -1,6 +1,6 @@
 # Portfolio demo
 
-The public demo is https://soccer-commentary-demo.vercel.app/demo.
+The public demo is https://www.aarshroongta.com/projects/soccer-commentary.
 It presents three selected, silent captioned clips:
 
 The main page is a recruiter-facing showcase: a short introduction, three clip
@@ -37,11 +37,10 @@ npm run start --prefix web -- --port 3000
 Stop an existing production preview before building over `.next`. Restart after
 adding public media. Browsing clips and traces makes no model calls.
 
-The separate integrated portfolio page at
-`https://www.aarshroongta.com/projects/soccer-commentary` lives in the
-`personal-website` repository. These local changes do not update or deploy that
-page. The five older curated plans and videos remain archived; the focused
-player now uses three conversations with generated wording.
+The public showcase lives in the `personal-website` repository, with the same
+three featured clips and the website's theme/navigation. Its video assets use
+`https://soccer-commentary-demo.vercel.app` as their media origin. The standalone
+Next.js deployment also retains the optional saved-run inspector.
 
 [The demo walkthrough](DEMO_WALKTHROUGH.md) gives a two-minute presentation, a
 small code-reading route, interview questions and a resume bullet.
