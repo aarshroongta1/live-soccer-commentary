@@ -1,0 +1,53 @@
+docs/SESSION_HANDOFF.md
+  s_c61538d1d875af::t_44db35f9f6a1a8 10-23
+scripts/add_demo_narration.py
+  s_c61538d1d875af::t_2a12b1574e1227 7,48,57-134
+  s_5122a6b523b341::t_61ccfdfb631fe8 12
+  s_c61538d1d875af::t_ddc3ac3f18b4b4 14-25
+  s_c61538d1d875af::t_61df5a5cd76b22 1-6,8-11,13,26-47,49-56,135-168
+web/public/soccer-commentary/showcase-argentina-voiced.narration.json
+  s_c61538d1d875af::t_2a12b1574e1227 9-54
+  s_c61538d1d875af::t_649b1698195941 1-8,55-57
+web/public/soccer-commentary/showcase-penalty-voiced.narration.json
+  s_c61538d1d875af::t_2a12b1574e1227 9-67
+  s_c61538d1d875af::t_cc64e53dfe9e4b 1-8,68-70
+web/public/soccer-commentary/showcase-arsenal-voiced.narration.json
+  s_c61538d1d875af::t_2a12b1574e1227 9-54
+  s_c61538d1d875af::t_263d24083740d5 1-8,55-57
+tests/test_demo_narration.py
+  s_c61538d1d875af::t_ddc3ac3f18b4b4 1-69
+docs/PORTFOLIO.md
+  s_c61538d1d875af::t_44db35f9f6a1a8 4,79-81,85,106-131
+README.md
+  s_c61538d1d875af::t_44db35f9f6a1a8 16
+web/app/demo/demo-experience.tsx
+  s_c61538d1d875af::t_44db35f9f6a1a8 22-23,30
+web/app/demo/demo-data.ts
+  s_c61538d1d875af::t_44db35f9f6a1a8 15,22
+web/.vercelignore
+  s_c61538d1d875af::t_44db35f9f6a1a8 18-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db757ee8fd43435d6a8c46281934e502d0d7e22c",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
