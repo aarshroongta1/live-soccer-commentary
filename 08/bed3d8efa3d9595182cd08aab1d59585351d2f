@@ -1,0 +1,23 @@
+README.md
+  s_5122a6b523b341::t_0086940dfe8648 3
+docs/SESSION_HANDOFF.md
+  s_5122a6b523b341::t_0086940dfe8648 10-21
+docs/PORTFOLIO.md
+  s_5122a6b523b341::t_0086940dfe8648 3,40-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "08bed3d8efa3d9595182cd08aab1d59585351d2f",
+  "prompts": {},
+  "sessions": {
+    "s_5122a6b523b341": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
