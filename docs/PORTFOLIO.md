@@ -1,7 +1,7 @@
 # Portfolio demo
 
 The public demo is https://www.aarshroongta.com/projects/soccer-commentary.
-It presents three selected, silent captioned clips:
+It presents three selected clips with AI caller/analyst narration and captions:
 
 The main page is a recruiter-facing showcase: a short introduction, three clip
 choices, a large video player, and compact provenance labels. It keeps the website's
@@ -76,13 +76,13 @@ architecture decisions, evaluation findings and interview talking points.
 
 Media remains local and git-ignored. Expected player files are:
 
-- `web/public/soccer-commentary/showcase-penalty.mp4`
-- `web/public/soccer-commentary/showcase-arsenal.mp4`
-- `web/public/soccer-commentary/showcase-argentina.mp4`
+- `web/public/soccer-commentary/showcase-penalty-voiced.mp4`
+- `web/public/soccer-commentary/showcase-arsenal-voiced.mp4`
+- `web/public/soccer-commentary/showcase-argentina-voiced.mp4`
 
 Recruiter variants omit the burned-in preparation labels using `--label ''`.
 Their words, source cuts and caption cues match the annotated engineering versions.
-The automatic clip is rendered without audio, TTS or model calls:
+The original silent base clip is rendered without TTS or model calls:
 
 ```bash
 uv run python scripts/render_text_demo.py \
@@ -103,3 +103,29 @@ remote sources can be configured with `PORTFOLIO_PENALTY_VIDEO_URL`,
 `PORTFOLIO_ARSENAL_VIDEO_URL`, `PORTFOLIO_ARGENTINA_VIDEO_URL` and
 `PORTFOLIO_BEFORE_VIDEO_URL`. A fresh clone
 without media displays its transcripts and missing-media guidance.
+
+## Narrated showcase
+
+The public player starts unmuted when the viewer presses Play. The three
+`showcase-*-voiced.mp4` variants copy the existing captioned video stream and mix
+saved ElevenLabs caller/analyst speech at the plan cues. No original broadcast
+audio is mixed in. Exact words are retained. The short penalty run-up phrase is
+sped up 1.2255x to finish before the goal call; the other nine lines use their
+original generated speed. Existing captions retain their reading intervals.
+
+Reproduce from saved speech (no API calls):
+
+```bash
+uv run python scripts/add_demo_narration.py \
+  --plan examples/portfolio-demo/penalty-plan.json \
+  --video web/public/soccer-commentary/showcase-penalty.mp4 \
+  --manifest runs/demo/showcase-narration-v1/penalty/manifest.json \
+  --out web/public/soccer-commentary/showcase-penalty-voiced.mp4
+```
+
+The command refuses existing outputs. Per-clip `.narration.json` reports record
+input/output hashes, exact words, measured durations, voice IDs and placement.
+Speech generation used `eleven_flash_v2_5`, 10 requests, 497 characters and 249
+reported provider character-cost credits; no retries or new commentary calls.
+The advertised Flash API rate gives an estimated $0.01988 before tax; actual
+account billing was not read. No subjective voice-quality benchmark is claimed.

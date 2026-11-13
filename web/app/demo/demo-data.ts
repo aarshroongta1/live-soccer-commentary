@@ -12,14 +12,14 @@ export function getDemoData(showcase = false) {
   const clips: DemoClip[] = [{
     ...prepared,
     kind: "automatic",
-    src: process.env.PORTFOLIO_PENALTY_VIDEO_URL || localMedia(showcase ? "/soccer-commentary/showcase-penalty.mp4" : prepared.videoPath),
+    src: process.env.PORTFOLIO_PENALTY_VIDEO_URL || localMedia(showcase ? "/soccer-commentary/showcase-penalty-voiced.mp4" : prepared.videoPath),
     poster: localMedia(prepared.posterPath),
   }];
   for (const clip of featured) {
     clips.push({
       ...clip,
       kind: "lightly-edited",
-      src: process.env[`PORTFOLIO_${clip.id === "generated-arsenal" ? "ARSENAL" : "ARGENTINA"}_VIDEO_URL`] || localMedia(showcase ? `/soccer-commentary/showcase-${clip.id === "generated-arsenal" ? "arsenal" : "argentina"}.mp4` : clip.videoPath),
+      src: process.env[`PORTFOLIO_${clip.id === "generated-arsenal" ? "ARSENAL" : "ARGENTINA"}_VIDEO_URL`] || localMedia(showcase ? `/soccer-commentary/showcase-${clip.id === "generated-arsenal" ? "arsenal" : "argentina"}-voiced.mp4` : clip.videoPath),
       poster: localMedia(clip.posterPath),
     });
   }

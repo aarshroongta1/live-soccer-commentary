@@ -1,0 +1,70 @@
+{
+  "plan": "examples/portfolio-demo/penalty-plan.json",
+  "plan_sha256": "5f7bb50c98c4068ea59a0015e5573843a1605b5278e3ccdfc604fd114a896807",
+  "captioned_video": "web/public/soccer-commentary/showcase-penalty.mp4",
+  "captioned_video_sha256": "99900c1cf33ce265e6f8f91e192803006e85fb618f1ec12128f8b8e695208643",
+  "manifest": "runs/demo/showcase-narration-v1/penalty/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "web/public/soccer-commentary/showcase-penalty-voiced.mp4",
+  "output_sha256": "9000eebe9ec684686fac7672c49bccdb33e534f8e97f048310c5b22bf423b666",
+  "duration_s": 20.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Penalty for England! The referee points to the spot after that box challenge",
+      "at_s": 3.0,
+      "end_s": 6.529433,
+      "input_duration_s": 3.529433,
+      "speed": 1.0,
+      "audio_sha256": "233f3d61b8d0a70621cafcc910c9db00b2f429bfc8517d96c7cdf6fd150d3570",
+      "provider_character_cost": "38",
+      "exported_rms_dbfs": -14.66
+    },
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Kane...",
+      "at_s": 9.2,
+      "end_s": 9.92,
+      "input_duration_s": 0.882358,
+      "speed": 1.225497,
+      "audio_sha256": "81c3f8532148f7619f4d96e808c0f87e083b7e0bc76bdcec7ffe12d199870001",
+      "provider_character_cost": "4",
+      "exported_rms_dbfs": -16.8
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Kane scores! Low to the left, and England have the goal",
+      "at_s": 10.0,
+      "end_s": 13.250794,
+      "input_duration_s": 3.250794,
+      "speed": 1.0,
+      "audio_sha256": "c189b5912f7214f97ad1ad343046375284e38586641911c26086895b23b78669",
+      "provider_character_cost": "28",
+      "exported_rms_dbfs": -15.38
+    },
+    {
+      "id": "line-4",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "That wrong-footed the keeper completely from the spot",
+      "at_s": 15.431,
+      "end_s": 18.263834,
+      "input_duration_s": 2.832834,
+      "speed": 1.0,
+      "audio_sha256": "2fd22648049e3c2356df35e16c50c888f3d44d92a9a6c183ab8e2194b939cfaf",
+      "provider_character_cost": "26",
+      "exported_rms_dbfs": -17.29
+    }
+  ]
+}

@@ -7,6 +7,20 @@ files_modified: []
 
 # Commentary project handoff
 
+## Narration restored — November 12, 2026
+
+User explicitly resumed voice for all three current clips. Current public
+showcase uses `showcase-{penalty,arsenal,argentina}-voiced.mp4`, unmuted players,
+“AI voices” labels. The original silent assets remain for archival/reproduction.
+Exact current words and footage are unchanged. ElevenLabs Flash generated ten
+lines using configured caller/analyst IDs, 497 characters, 249 provider credits,
+no retries. Posted API pricing estimate $0.01988 before tax; not an invoice.
+Saved audio/audits are in runs/demo/showcase-narration-v1 (ignored).
+New add_demo_narration.py muxes saved speech with no API calls; per-clip public
+.narration.json sidecars preserve provenance and measured placements. All speech
+fits without overlap or clipping; only the short Kane run-up cue is accelerated
+within 1.25x. Earlier “voice excluded” sections below are historical.
+
 ## Current hosting direction
 
 User wants the demo on their personal website domain. Canonical demo URL is

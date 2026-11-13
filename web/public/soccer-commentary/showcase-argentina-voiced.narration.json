@@ -1,0 +1,57 @@
+{
+  "plan": "examples/portfolio-demo/release/argentina-plan.json",
+  "plan_sha256": "69c1390811bb9841a07261f6f8ebe9a4ec1417b5981792e376fa7fc16f5d6a20",
+  "captioned_video": "web/public/soccer-commentary/showcase-argentina.mp4",
+  "captioned_video_sha256": "b9390d0b1faf74934346376a3e1f961a6efc812e9ba188168ce7307ad412b8dc",
+  "manifest": "runs/demo/showcase-narration-v1/argentina/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "web/public/soccer-commentary/showcase-argentina-voiced.mp4",
+  "output_sha256": "34cfe9600edf41835b417fbadde9a03fd11d9dd7e8862102de0e01e8a73f0e89",
+  "duration_s": 20.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Argentina drives forward",
+      "at_s": 7.581,
+      "end_s": 8.927757,
+      "input_duration_s": 1.346757,
+      "speed": 1.0,
+      "audio_sha256": "7959650bfdf967c44b7380fc2f1877a12c1536acafc3df6fd2ef6ed2f69c0808",
+      "provider_character_cost": "12",
+      "exported_rms_dbfs": -14.07
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "It\u2019s in for Argentina!",
+      "at_s": 11.0,
+      "end_s": 12.439637,
+      "input_duration_s": 1.439637,
+      "speed": 1.0,
+      "audio_sha256": "344df3279d2dc0dd58c1da5b677d89c90c9b24a69ae7f4dcd29942690adfb20c",
+      "provider_character_cost": "11",
+      "exported_rms_dbfs": -13.58
+    },
+    {
+      "id": "line-4",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "That far-post touch is the key, steering it beyond the keeper\u2019s reach",
+      "at_s": 13.738,
+      "end_s": 17.592512,
+      "input_duration_s": 3.854512,
+      "speed": 1.0,
+      "audio_sha256": "0f97a529221089868da88ab86f9bb013d91eb5c5084d53a43b533140cfae8585",
+      "provider_character_cost": "34",
+      "exported_rms_dbfs": -17.9
+    }
+  ]
+}

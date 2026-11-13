@@ -13,7 +13,7 @@ evaluation, failure analysis and inspectable execution.
 
 ## Demo
 
-The web app presents three short, silent clips with AI commentary captions:
+The web app presents three short clips with AI caller/analyst voices and commentary captions:
 
 | Example | Duration | Output provenance |
 | --- | --- | --- |

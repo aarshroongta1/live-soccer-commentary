@@ -1,0 +1,57 @@
+{
+  "plan": "examples/portfolio-demo/release/arsenal-plan.json",
+  "plan_sha256": "f2689cd4b364197f48303fbac7ec9848974105a6c9c03fc6a4459ffe02b1a257",
+  "captioned_video": "web/public/soccer-commentary/showcase-arsenal.mp4",
+  "captioned_video_sha256": "46ed74e7e3c13186882ff3f90fcf41029b1b69893d5e38dde92e65994a257a45",
+  "manifest": "runs/demo/showcase-narration-v1/arsenal/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "web/public/soccer-commentary/showcase-arsenal-voiced.mp4",
+  "output_sha256": "e7b715a7e3b1cbd8219a7fe56f6d041dcc2f7b9e1d564b01da24669b3afd0701",
+  "duration_s": 18.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Arsenal\u2019s left-sided attacker carries it toward the box, Norwich backpedalling",
+      "at_s": 2.0,
+      "end_s": 6.458231,
+      "input_duration_s": 4.458231,
+      "speed": 1.0,
+      "audio_sha256": "da9a6c56ccaace5686ffd3a05dbc887652174f736f5d9fb9ce6ece9eb53c8482",
+      "provider_character_cost": "39",
+      "exported_rms_dbfs": -16.32
+    },
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "And Arsenal\u2019s number 7 finishes it!",
+      "at_s": 8.0,
+      "end_s": 9.904036,
+      "input_duration_s": 1.904036,
+      "speed": 1.0,
+      "audio_sha256": "64d1cc1afff186018fcadf84c43aa04a885e73719353910d7e5b909c093ee936",
+      "provider_character_cost": "18",
+      "exported_rms_dbfs": -17.08
+    },
+    {
+      "id": "line-3",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "That low finish has beaten the diving keeper and found the far side of the net",
+      "at_s": 11.508,
+      "end_s": 16.105551,
+      "input_duration_s": 4.597551,
+      "speed": 1.0,
+      "audio_sha256": "98f7d11a6eb6aea870373ad1fcb5a9fe228bda9ad252fa1f3b65cbc868850d0e",
+      "provider_character_cost": "39",
+      "exported_rms_dbfs": -15.93
+    }
+  ]
+}

@@ -19,15 +19,15 @@ function ShowcaseVideo({ clip }: { clip: DemoClip }) {
     <>
       {clip.src && !failed ? <video
         ref={video} src={clip.src} poster={clip.poster ?? undefined}
-        controls muted playsInline preload="metadata"
-        aria-label={`${clip.title}: AI commentary demo with captions`}
+        controls playsInline preload="metadata"
+        aria-label={`${clip.title}: AI commentary demo with two voices and captions`}
         onError={() => setFailed(true)}
       >Your browser cannot play this video.</video> : <div className="showcase-missing" role="status">
         <h2>Video unavailable</h2><p>Here’s the commentary for this clip.</p>
         <ul>{clip.lines.map((line, index) => <li key={index}><strong>{line.voice === "caller" ? "Caller" : "Analyst"}:</strong> {line.text}</li>)}</ul>
       </div>}
       <div className="showcase-caption">
-        <span>{clip.duration_s}s <span aria-hidden="true">/</span> Captioned demo <span aria-hidden="true">/</span> No audio</span>
+        <span>{clip.duration_s}s <span aria-hidden="true">/</span> Captioned demo <span aria-hidden="true">/</span> AI voices</span>
         <span>{clip.kind === "automatic" ? "AI-generated text" : "AI-generated text, lightly edited"}</span>
       </div>
     </>

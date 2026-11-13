@@ -15,3 +15,8 @@ public/**/*.mp4
 !public/soccer-commentary/showcase-argentina.mp4
 !public/soccer-commentary/showcase-arsenal.mp4
 !public/soccer-commentary/showcase-penalty.mp4
+
+# Narrated showcase media.
+!public/soccer-commentary/showcase-penalty-voiced.mp4
+!public/soccer-commentary/showcase-arsenal-voiced.mp4
+!public/soccer-commentary/showcase-argentina-voiced.mp4
