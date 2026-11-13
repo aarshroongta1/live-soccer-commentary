@@ -1,0 +1,194 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/edited-showcase/penalty-plan.json",
+  "plan_sha256": "b0f7c16b4ebcf5b75640980fa63d1d100e1967fe570f3b10dac1114037f893b3",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/commentary-edit-v2/prepared/penalty/captioned.mp4",
+  "captioned_video_sha256": "123fd83467813d1b56fce58e7f7dbb9198ea52ae825fbfe52fcd2f5c68705b80",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/commentary-edit-v2/prepared/penalty/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/showcase-penalty-edited-v2.mp4",
+  "output_sha256": "d65da1824445d8fb46a5f05853e35a9142504cedebd275c3bd9915e81cc004eb",
+  "duration_s": 19.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Into the box... and he's brought down!",
+      "at_s": 0.15,
+      "end_s": 2.671746,
+      "input_duration_s": 2.521746,
+      "speed": 1.0,
+      "audio_sha256": "445abda8aaa8470ee4e850cb60f885feb56e754e479791a3b14db4aff35f3002",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.6
+    },
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Penalty! The referee points straight to the spot.",
+      "at_s": 2.8,
+      "end_s": 6.100408,
+      "input_duration_s": 3.300408,
+      "speed": 1.0,
+      "audio_sha256": "02042a9dfbbf554ffaaa41f9e2903a9741f548c7ed2083719825dcf6415ec355",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -17.4
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Kane steps up. A chance to bring England level.",
+      "at_s": 6.25,
+      "end_s": 9.867324,
+      "input_duration_s": 3.617324,
+      "speed": 1.0,
+      "audio_sha256": "9188b26a27e712ad182d761684aab6a5ba3232a72394d6e29cec004e4f499638",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.88
+    },
+    {
+      "id": "line-4",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Kane scores! Low to the left, and England have the goal",
+      "at_s": 10.0,
+      "end_s": 13.241429,
+      "input_duration_s": 3.241429,
+      "speed": 1.0,
+      "audio_sha256": "ef826fcbfc89db6217e63fd0916ad377c40ed8dc71b1d0bbda666c6ee763e0c6",
+      "provider_character_cost": "28",
+      "exported_rms_dbfs": -15.59
+    },
+    {
+      "id": "line-5",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "The keeper goes the wrong way. Kane keeps it low, right into the corner. England are level.",
+      "at_s": 13.65,
+      "end_s": 18.717483,
+      "input_duration_s": 5.067483,
+      "speed": 1.0,
+      "audio_sha256": "639a7db58f9dfd7892907f0157f4eb2967d8cfcadf05cd82e34f35090719d618",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -18.22
+    }
+  ],
+  "editorial_reference": true,
+  "words_edited": true,
+  "original_synthesis": {
+    "model": "eleven_flash_v2_5",
+    "mode": "continuous_voice_blocks",
+    "settings_source": "saved ElevenLabs voice settings; no request overrides",
+    "blocks": [
+      {
+        "voice": "caller",
+        "voice_id": "7kZjjorO6NZ82NBwcvgV",
+        "provider_request_id": "fcVsp2ItuObAsnRmHXgH",
+        "audio_sha256": "3a5a078b97dade7c1912f56e3de5d7dc7fcbf7ee0423cf7f672fcffb6ec067f3",
+        "request": {
+          "text": "Into the box... and he's brought down! Penalty! The referee points straight to the spot. Kane steps up. A chance to bring England level.",
+          "model_id": "eleven_flash_v2_5"
+        },
+        "line_ids": [
+          "line-1",
+          "line-2",
+          "line-3"
+        ],
+        "credit_headers": {
+          "character-cost": "68"
+        },
+        "cuts": [
+          [
+            0.0,
+            2.5250000000000004
+          ],
+          [
+            2.5250000000000004,
+            6.269
+          ],
+          [
+            6.269,
+            9.971
+          ]
+        ]
+      },
+      {
+        "voice": "analyst",
+        "voice_id": "8aumr1JnqELHfstCHQOk",
+        "provider_request_id": "Noby58yuTQ2fwdBjkz4f",
+        "audio_sha256": "c1b820871148a6c402b5b321f33ff2e6c1ca4ab0895408b6d64a89c456d89480",
+        "request": {
+          "text": "The keeper goes the wrong way. Kane keeps it low, right into the corner. England are level.",
+          "model_id": "eleven_flash_v2_5"
+        },
+        "line_ids": [
+          "line-5"
+        ],
+        "credit_headers": {
+          "character-cost": "45"
+        },
+        "cuts": [
+          [
+            0.0,
+            4.399
+          ]
+        ]
+      }
+    ]
+  },
+  "pacing": [
+    {
+      "id": "line-1",
+      "at_s": 0.15,
+      "end_s": 2.6717459999999997,
+      "voice": "caller",
+      "text": "Into the box... and he's brought down!",
+      "speed": 1.0
+    },
+    {
+      "id": "line-2",
+      "at_s": 2.8,
+      "end_s": 6.100408,
+      "voice": "caller",
+      "text": "Penalty! The referee points straight to the spot.",
+      "speed": 1.14
+    },
+    {
+      "id": "line-3",
+      "at_s": 6.25,
+      "end_s": 9.867324,
+      "voice": "caller",
+      "text": "Kane steps up. A chance to bring England level.",
+      "speed": 1.0
+    },
+    {
+      "id": "line-4",
+      "at_s": 10.0,
+      "end_s": 13.241429,
+      "voice": "caller",
+      "text": "Kane scores! Low to the left, and England have the goal",
+      "speed": 1.0
+    },
+    {
+      "id": "line-5",
+      "at_s": 13.65,
+      "end_s": 18.717483,
+      "voice": "analyst",
+      "text": "The keeper goes the wrong way. Kane keeps it low, right into the corner. England are level.",
+      "speed": 0.85
+    }
+  ],
+  "measured_audio": {
+    "silence_threshold_db": -40,
+    "minimum_gap_s": 0.2,
+    "longest_gap_s": 0.608458,
+    "speech_occupancy": 0.9062654210526315
+  }
+}

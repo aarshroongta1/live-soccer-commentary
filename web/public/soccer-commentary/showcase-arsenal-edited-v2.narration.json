@@ -1,0 +1,225 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/edited-showcase/arsenal-plan.json",
+  "plan_sha256": "c9589b34af5eb574681f4904b7e3d3836da44fc6980a03c1bbf087771c6be8ee",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/commentary-edit-v2/prepared/arsenal/captioned.mp4",
+  "captioned_video_sha256": "46dbfb30203d758beb1886cdda1cb32e07770466801f1145a0de752b3ff9c0d3",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/commentary-edit-v2/prepared/arsenal/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/showcase-arsenal-edited-v2.mp4",
+  "output_sha256": "a6500e11b4423c10b1d8b3ccd904c87b451570817b93fac528e47d1d31274f63",
+  "duration_s": 18.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Arsenal building down the left.",
+      "at_s": 0.15,
+      "end_s": 1.599342,
+      "input_duration_s": 1.449342,
+      "speed": 1.0,
+      "audio_sha256": "8202f90109b686472a48d09f922e5390016ca07e124974c58b76260a4c798828",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.58
+    },
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Inside, and straight back again.",
+      "at_s": 1.7,
+      "end_s": 3.81517,
+      "input_duration_s": 2.11517,
+      "speed": 1.0,
+      "audio_sha256": "41c3dd7f2dcfb84b89b56d4a8553109622822438b178aac0ec495a14e3eb2f81",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.75
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Lovely one-touch passing. They're through!",
+      "at_s": 3.9,
+      "end_s": 6.03542,
+      "input_duration_s": 2.13542,
+      "speed": 1.0,
+      "audio_sha256": "b0a2145e8e302801876b2083dec07aef96277fffb0cb14bd13811ed139c22aab",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -15.47
+    },
+    {
+      "id": "line-4",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "In behind now...",
+      "at_s": 6.15,
+      "end_s": 7.317982,
+      "input_duration_s": 1.167982,
+      "speed": 1.0,
+      "audio_sha256": "3fa5b20fda956f78bbccb0920fca9ca0ed3956e87f11a03d112373af3ec20609",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.09
+    },
+    {
+      "id": "line-5",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Goal! What a move from Arsenal!",
+      "at_s": 7.6,
+      "end_s": 9.558254,
+      "input_duration_s": 1.958254,
+      "speed": 1.0,
+      "audio_sha256": "228b6243070f65104d31d9093aa4210fac9098827703ebe60409c224f47c7e14",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.64
+    },
+    {
+      "id": "line-6",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "It's the movement after the pass. He keeps running, gets the return, and slips it past the keeper before Norwich can recover.",
+      "at_s": 10.0,
+      "end_s": 17.126599,
+      "input_duration_s": 7.126599,
+      "speed": 1.0,
+      "audio_sha256": "954fdfcefee4967fa1b7c9b45624ac895de0173c938a64e64d42c5ec71d9224c",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -18.52
+    }
+  ],
+  "editorial_reference": true,
+  "words_edited": true,
+  "original_synthesis": {
+    "model": "eleven_flash_v2_5",
+    "mode": "continuous_voice_blocks",
+    "settings_source": "saved ElevenLabs voice settings; no request overrides",
+    "blocks": [
+      {
+        "voice": "caller",
+        "voice_id": "7kZjjorO6NZ82NBwcvgV",
+        "provider_request_id": "EWclHBGCVORiMDu9596I",
+        "audio_sha256": "f3c2681920c021d4e683b76043c7e6d16fd487039204dffe3cd9fead14648954",
+        "request": {
+          "text": "Arsenal building down the left. Inside, and straight back again. Lovely one-touch passing. They're through! In behind now... Goal! What a move from Arsenal!",
+          "model_id": "eleven_flash_v2_5"
+        },
+        "line_ids": [
+          "line-1",
+          "line-2",
+          "line-3",
+          "line-4",
+          "line-5"
+        ],
+        "credit_headers": {
+          "character-cost": "78"
+        },
+        "cuts": [
+          [
+            0.0,
+            1.585
+          ],
+          [
+            1.585,
+            4.1045
+          ],
+          [
+            4.1045,
+            6.7635000000000005
+          ],
+          [
+            6.7635000000000005,
+            8.1045
+          ],
+          [
+            8.1045,
+            10.065
+          ]
+        ]
+      },
+      {
+        "voice": "analyst",
+        "voice_id": "8aumr1JnqELHfstCHQOk",
+        "provider_request_id": "ZsIcKT1GuiR7oeBJMFTB",
+        "audio_sha256": "47f7efaf39334c2a91321643fe0d17cf8652a8405a7f6b1fbc82125278aa88b4",
+        "request": {
+          "text": "It's the movement after the pass. He keeps running, gets the return, and slips it past the keeper before Norwich can recover.",
+          "model_id": "eleven_flash_v2_5"
+        },
+        "line_ids": [
+          "line-6"
+        ],
+        "credit_headers": {
+          "character-cost": "62"
+        },
+        "cuts": [
+          [
+            0.0,
+            6.86
+          ]
+        ]
+      }
+    ]
+  },
+  "pacing": [
+    {
+      "id": "line-1",
+      "at_s": 0.15,
+      "end_s": 1.5993419999999998,
+      "voice": "caller",
+      "text": "Arsenal building down the left.",
+      "speed": 1.1
+    },
+    {
+      "id": "line-2",
+      "at_s": 1.7,
+      "end_s": 3.81517,
+      "voice": "caller",
+      "text": "Inside, and straight back again.",
+      "speed": 1.2
+    },
+    {
+      "id": "line-3",
+      "at_s": 3.9,
+      "end_s": 6.03542,
+      "voice": "caller",
+      "text": "Lovely one-touch passing. They're through!",
+      "speed": 1.25
+    },
+    {
+      "id": "line-4",
+      "at_s": 6.15,
+      "end_s": 7.317982000000001,
+      "voice": "caller",
+      "text": "In behind now...",
+      "speed": 1.15
+    },
+    {
+      "id": "line-5",
+      "at_s": 7.6,
+      "end_s": 9.558254,
+      "voice": "caller",
+      "text": "Goal! What a move from Arsenal!",
+      "speed": 1.0
+    },
+    {
+      "id": "line-6",
+      "at_s": 10.0,
+      "end_s": 17.126599,
+      "voice": "analyst",
+      "text": "It's the movement after the pass. He keeps running, gets the return, and slips it past the keeper before Norwich can recover.",
+      "speed": 0.95
+    }
+  ],
+  "measured_audio": {
+    "silence_threshold_db": -40,
+    "minimum_gap_s": 0.2,
+    "longest_gap_s": 1.152667,
+    "speech_occupancy": 0.8819594444444444
+  }
+}

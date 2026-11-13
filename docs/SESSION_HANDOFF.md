@@ -7,6 +7,29 @@ files_modified: []
 
 # Commentary project handoff
 
+## Edited commentary after user quality rejection — November 13, 2026
+
+User rejected the three narrated clips: long empty stretches and weak commentary.
+They explicitly authorized editing the commentary itself, including filling gaps.
+New showcase scripts are editorial rewrites reviewed against source frames;
+they are not fresh agent outputs or evidence of improved automatic quality.
+All three showcase clips now use showcase-{name}-edited-v2.mp4 and an “Edited demo
+commentary” label. Separate original runs/inspector/evaluation are preserved.
+Penalty is 19s (one second of final replay trimmed); Arsenal 18s, Argentina 20s.
+Original successful Kane goal audio is reused. Other speech uses continuous voice
+blocks with verified alignment; six TTS requests, 834 submitted characters,
+414 provider credits. Conservative estimate $0.2085 at $0.25/1K characters;
+actual account billing not read. No commentator/observer calls, no retries.
+Measured longest pauses: penalty 0.61s, Arsenal 1.15s, Argentina 1.18s at -40dB
+with minimum 0.2s pauses. Occupancy 91%, 88%, 84%. These are pacing checks, not
+subjective voice ratings. This environment cannot listen to audio; do not claim
+listening review. Scripts, provenance and reproduction are in
+examples/portfolio-demo/edited-showcase. Media/audits remain ignored local files.
+Validation: 387 offline tests pass; full project mypy and Ruff pass; both site
+lint/build checks pass. The new actual-silence gate rejects all three previous
+voice exports (longest gaps 3.01s, 2.00s, 7.58s). New exports all pass. No new
+agent-model experiment or automatic-quality-improvement claim was made.
+
 ## Narration restored — November 12, 2026
 
 User explicitly resumed voice for all three current clips. Current public

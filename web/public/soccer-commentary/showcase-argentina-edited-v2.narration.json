@@ -1,0 +1,225 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/edited-showcase/argentina-plan.json",
+  "plan_sha256": "5379447410012aecf2302764f4a163b3d4ad2358d6747be442d0d2076cb061ac",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/commentary-edit-v2/prepared/argentina/captioned.mp4",
+  "captioned_video_sha256": "5dccd4e2dc1cd27fc649f97a018ffaf06d2e1aba639cf394b32a29fc28eeef6a",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/commentary-edit-v2/prepared/argentina/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/showcase-argentina-edited-v2.mp4",
+  "output_sha256": "0617120567140a6877f585e93815c11202e0d626c468db35b16b4485b507bb17",
+  "duration_s": 20.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Argentina break through midfield.",
+      "at_s": 0.15,
+      "end_s": 2.052993,
+      "input_duration_s": 1.902993,
+      "speed": 1.0,
+      "audio_sha256": "feca0f785039b460238bed1547fade88f52036689b3b63b91dd181c6cd0b0f0f",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.44
+    },
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "France are scrambling to get back.",
+      "at_s": 2.15,
+      "end_s": 3.692336,
+      "input_duration_s": 1.542336,
+      "speed": 1.0,
+      "audio_sha256": "05c2f2e8af5ee3f80bcd4cc0b975dd677cae3eeca7402942e2ae6fe0aa2b7ccd",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.91
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "There's space ahead... and a runner on the left!",
+      "at_s": 3.8,
+      "end_s": 6.164671,
+      "input_duration_s": 2.364671,
+      "speed": 1.0,
+      "audio_sha256": "5fc047963bf55ee80e03b6e5c43f42fdaaba213552f23967c9b6123b769e016a",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.84
+    },
+    {
+      "id": "line-4",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Played across... Di María!",
+      "at_s": 7.0,
+      "end_s": 8.519955,
+      "input_duration_s": 1.519955,
+      "speed": 1.0,
+      "audio_sha256": "3723a0a02787037d7a2f4a0563685558c778612cbf0177cf7347cea8dac5a1a9",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.49
+    },
+    {
+      "id": "line-5",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "He's scored! A sweeping Argentina counterattack!",
+      "at_s": 9.7,
+      "end_s": 12.675669,
+      "input_duration_s": 2.975669,
+      "speed": 1.0,
+      "audio_sha256": "b5a0bd23a7f8c16e9e6cd60cc4cb539aae5876900d8981c755954edcb5456d0d",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -17.21
+    },
+    {
+      "id": "line-6",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "That first-time ball takes the defenders out of it. Di María keeps his width, arrives unmarked, and finishes across the keeper.",
+      "at_s": 12.95,
+      "end_s": 19.769161,
+      "input_duration_s": 6.819161,
+      "speed": 1.0,
+      "audio_sha256": "135d2de5aa6231f9965339c3dbbb0da26cdf2136867c79f28fecbecdd56d8191",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -17.44
+    }
+  ],
+  "editorial_reference": true,
+  "words_edited": true,
+  "original_synthesis": {
+    "model": "eleven_flash_v2_5",
+    "mode": "continuous_voice_blocks",
+    "settings_source": "saved ElevenLabs voice settings; no request overrides",
+    "blocks": [
+      {
+        "voice": "caller",
+        "voice_id": "7kZjjorO6NZ82NBwcvgV",
+        "provider_request_id": "DsGTOItYG4IaMoRliqie",
+        "audio_sha256": "e8ed0794998bb28dcd47862234d07e1ad0a2177fea9cc3551c9657f8edefa754",
+        "request": {
+          "text": "Argentina break through midfield. France are scrambling to get back. There's space ahead... and a runner on the left! Played across... Di María! He's scored! A sweeping Argentina counterattack!",
+          "model_id": "eleven_flash_v2_5"
+        },
+        "line_ids": [
+          "line-1",
+          "line-2",
+          "line-3",
+          "line-4",
+          "line-5"
+        ],
+        "credit_headers": {
+          "character-cost": "97"
+        },
+        "cuts": [
+          [
+            0.0,
+            1.916
+          ],
+          [
+            1.916,
+            3.46
+          ],
+          [
+            3.46,
+            5.829
+          ],
+          [
+            5.829,
+            7.361
+          ],
+          [
+            7.361,
+            10.437
+          ]
+        ]
+      },
+      {
+        "voice": "analyst",
+        "voice_id": "8aumr1JnqELHfstCHQOk",
+        "provider_request_id": "Y0ZSBb1iW6SMI5xdgc40",
+        "audio_sha256": "e130dc7af534acad4b37a34414d07b57d3497aea4183204e39bd48138012e894",
+        "request": {
+          "text": "That first-time ball takes the defenders out of it. Di María keeps his width, arrives unmarked, and finishes across the keeper.",
+          "model_id": "eleven_flash_v2_5"
+        },
+        "line_ids": [
+          "line-6"
+        ],
+        "credit_headers": {
+          "character-cost": "64"
+        },
+        "cuts": [
+          [
+            0.0,
+            7.231
+          ]
+        ]
+      }
+    ]
+  },
+  "pacing": [
+    {
+      "id": "line-1",
+      "at_s": 0.15,
+      "end_s": 2.052993,
+      "voice": "caller",
+      "text": "Argentina break through midfield.",
+      "speed": 1.0
+    },
+    {
+      "id": "line-2",
+      "at_s": 2.15,
+      "end_s": 3.692336,
+      "voice": "caller",
+      "text": "France are scrambling to get back.",
+      "speed": 1.0
+    },
+    {
+      "id": "line-3",
+      "at_s": 3.8,
+      "end_s": 6.164671,
+      "voice": "caller",
+      "text": "There's space ahead... and a runner on the left!",
+      "speed": 1.0
+    },
+    {
+      "id": "line-4",
+      "at_s": 7.0,
+      "end_s": 8.519955,
+      "voice": "caller",
+      "text": "Played across... Di María!",
+      "speed": 1.0
+    },
+    {
+      "id": "line-5",
+      "at_s": 9.7,
+      "end_s": 12.675669,
+      "voice": "caller",
+      "text": "He's scored! A sweeping Argentina counterattack!",
+      "speed": 1.0
+    },
+    {
+      "id": "line-6",
+      "at_s": 12.95,
+      "end_s": 19.769161,
+      "voice": "analyst",
+      "text": "That first-time ball takes the defenders out of it. Di María keeps his width, arrives unmarked, and finishes across the keeper.",
+      "speed": 1.05
+    }
+  ],
+  "measured_audio": {
+    "silence_threshold_db": -40,
+    "minimum_gap_s": 0.2,
+    "longest_gap_s": 1.184854,
+    "speech_occupancy": 0.8406656
+  }
+}

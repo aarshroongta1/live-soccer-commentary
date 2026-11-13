@@ -20,3 +20,8 @@ public/**/*.mp4
 !public/soccer-commentary/showcase-penalty-voiced.mp4
 !public/soccer-commentary/showcase-arsenal-voiced.mp4
 !public/soccer-commentary/showcase-argentina-voiced.mp4
+
+# Editorial showcase release.
+!public/soccer-commentary/showcase-penalty-edited-v2.mp4
+!public/soccer-commentary/showcase-arsenal-edited-v2.mp4
+!public/soccer-commentary/showcase-argentina-edited-v2.mp4

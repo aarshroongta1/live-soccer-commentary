@@ -13,18 +13,22 @@ evaluation, failure analysis and inspectable execution.
 
 ## Demo
 
-The web app presents three short clips with AI caller/analyst voices and commentary captions:
+The public showcase has three short clips with edited commentary, two AI voices
+and captions. After feedback on sparse and weak original narration, the scripts
+were rewritten against the footage and timed across the whole sequence.
 
-| Example | Duration | Output provenance |
+| Example | Duration | Presentation |
 | --- | --- | --- |
-| England–France penalty | 20s | Unedited generated words on saved perception and cited squad context. |
-| Arsenal–Norwich finish | 18s | Fresh perception; exact retained words, source cut and one caption retimed. |
-| Argentina–France attack | 20s | Fresh perception; source cut and one unsupported shirt-number phrase removed. |
+| England–France penalty | 19s | Edited build-up and analysis; original Kane goal-call recording retained. |
+| Arsenal–Norwich finish | 18s | Rewritten play-by-play follows the passing move into the finish. |
+| Argentina–France attack | 20s | Rewritten counterattack call starts at the opening, followed by analysis. |
 
-These are selected **recorded examples prepared before playback**. The raw
-outputs, failed attempts and exact editorial changes are retained in
-[the demo artifacts](examples/portfolio-demo/README.md). The separate replay
-prototype simulates speech occupancy; these clips do not measure live spoken latency.
+**These scripts are editorially rewritten showcase material, not unedited agent
+output or evidence of a measured agent-quality improvement.** The source runs,
+failed attempts and previous automatic scripts remain in
+[the demo artifacts](examples/portfolio-demo/README.md). The edited scripts and
+release checks are in [the showcase record](examples/portfolio-demo/edited-showcase/README.md).
+All clips are prepared before playback; they do not measure live spoken latency.
 
 Media is git-ignored and is not included in a fresh clone. The app falls back to
 saved commentary when a video is unavailable. See [media setup](docs/PORTFOLIO.md)

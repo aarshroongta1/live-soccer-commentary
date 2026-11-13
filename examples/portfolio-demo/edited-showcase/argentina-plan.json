@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "argentina-france-dimaria.mp4",
+    "start_s": 20.0,
+    "duration_s": 20.0
+  },
+  "observations": [
+    {
+      "id": "editorial-1",
+      "at_s": 0.15,
+      "kind": "play",
+      "description": "Argentina advance through midfield"
+    },
+    {
+      "id": "editorial-2",
+      "at_s": 2.15,
+      "kind": "play",
+      "description": "French defenders retreat"
+    },
+    {
+      "id": "editorial-3",
+      "at_s": 3.8,
+      "kind": "play",
+      "description": "Argentina attack open space with runner wide left"
+    },
+    {
+      "id": "editorial-4",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "Pass across toward left-sided runner"
+    },
+    {
+      "id": "editorial-5",
+      "at_s": 9.7,
+      "kind": "goal",
+      "description": "Ball enters net; subsequent close-up identifies Di María"
+    },
+    {
+      "id": "editorial-6",
+      "at_s": 12.95,
+      "kind": "play",
+      "description": "Replay/sequence shows first-time pass, wide run and finish across goalkeeper"
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 0.15,
+      "voice": "caller",
+      "text": "Argentina break through midfield.",
+      "evidence_ids": [
+        "editorial-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-2",
+      "at_s": 2.15,
+      "voice": "caller",
+      "text": "France are scrambling to get back.",
+      "evidence_ids": [
+        "editorial-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-3",
+      "at_s": 3.8,
+      "voice": "caller",
+      "text": "There's space ahead... and a runner on the left!",
+      "evidence_ids": [
+        "editorial-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-4",
+      "at_s": 7.0,
+      "voice": "caller",
+      "text": "Played across... Di María!",
+      "evidence_ids": [
+        "editorial-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-5",
+      "at_s": 9.7,
+      "voice": "caller",
+      "text": "He's scored! A sweeping Argentina counterattack!",
+      "evidence_ids": [
+        "editorial-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-6",
+      "at_s": 12.95,
+      "voice": "analyst",
+      "text": "That first-time ball takes the defenders out of it. Di María keeps his width, arrives unmarked, and finishes across the keeper.",
+      "evidence_ids": [
+        "editorial-6"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "examples/portfolio-demo/release/argentina-plan.json",
+    "cost": 0,
+    "models": {
+      "writer": "editorial rewrite by coding assistant; not an agent run"
+    },
+    "words_edited": true,
+    "editorial_reference": true,
+    "quality_status": "Demo script edited after user rejection; not automatic pipeline output",
+    "source_review": "Local source footage reviewed at half-second intervals; no dataset references used",
+    "speech_rates": {
+      "line-1": 1.0,
+      "line-2": 1.0,
+      "line-3": 1.0,
+      "line-4": 1.0,
+      "line-5": 1.0,
+      "line-6": 1.05
+    }
+  }
+}

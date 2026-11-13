@@ -1,0 +1,120 @@
+[
+  {
+    "id": "portfolio-penalty",
+    "title": "England vs France",
+    "duration_s": 19.0,
+    "kind": "edited-demo",
+    "lines": [
+      {
+        "at_s": 0.15,
+        "voice": "caller",
+        "text": "Into the box... and he's brought down!"
+      },
+      {
+        "at_s": 2.8,
+        "voice": "caller",
+        "text": "Penalty! The referee points straight to the spot."
+      },
+      {
+        "at_s": 6.25,
+        "voice": "caller",
+        "text": "Kane steps up. A chance to bring England level."
+      },
+      {
+        "at_s": 10.0,
+        "voice": "caller",
+        "text": "Kane scores! Low to the left, and England have the goal"
+      },
+      {
+        "at_s": 13.65,
+        "voice": "analyst",
+        "text": "The keeper goes the wrong way. Kane keeps it low, right into the corner. England are level."
+      }
+    ],
+    "videoPath": "/soccer-commentary/showcase-penalty-edited-v2.mp4",
+    "posterPath": "/soccer-commentary/portfolio-penalty.jpg",
+    "planPath": "examples/portfolio-demo/edited-showcase/penalty-plan.json"
+  },
+  {
+    "id": "generated-arsenal",
+    "title": "Arsenal vs Norwich",
+    "duration_s": 18.0,
+    "kind": "edited-demo",
+    "lines": [
+      {
+        "at_s": 0.15,
+        "voice": "caller",
+        "text": "Arsenal building down the left."
+      },
+      {
+        "at_s": 1.7,
+        "voice": "caller",
+        "text": "Inside, and straight back again."
+      },
+      {
+        "at_s": 3.9,
+        "voice": "caller",
+        "text": "Lovely one-touch passing. They're through!"
+      },
+      {
+        "at_s": 6.15,
+        "voice": "caller",
+        "text": "In behind now..."
+      },
+      {
+        "at_s": 7.6,
+        "voice": "caller",
+        "text": "Goal! What a move from Arsenal!"
+      },
+      {
+        "at_s": 10.0,
+        "voice": "analyst",
+        "text": "It's the movement after the pass. He keeps running, gets the return, and slips it past the keeper before Norwich can recover."
+      }
+    ],
+    "videoPath": "/soccer-commentary/showcase-arsenal-edited-v2.mp4",
+    "posterPath": "/soccer-commentary/generated-arsenal.jpg",
+    "planPath": "examples/portfolio-demo/edited-showcase/arsenal-plan.json"
+  },
+  {
+    "id": "generated-argentina",
+    "title": "Argentina vs France",
+    "duration_s": 20.0,
+    "kind": "edited-demo",
+    "lines": [
+      {
+        "at_s": 0.15,
+        "voice": "caller",
+        "text": "Argentina break through midfield."
+      },
+      {
+        "at_s": 2.15,
+        "voice": "caller",
+        "text": "France are scrambling to get back."
+      },
+      {
+        "at_s": 3.8,
+        "voice": "caller",
+        "text": "There's space ahead... and a runner on the left!"
+      },
+      {
+        "at_s": 7.0,
+        "voice": "caller",
+        "text": "Played across... Di María!"
+      },
+      {
+        "at_s": 9.7,
+        "voice": "caller",
+        "text": "He's scored! A sweeping Argentina counterattack!"
+      },
+      {
+        "at_s": 12.95,
+        "voice": "analyst",
+        "text": "That first-time ball takes the defenders out of it. Di María keeps his width, arrives unmarked, and finishes across the keeper."
+      }
+    ],
+    "videoPath": "/soccer-commentary/showcase-argentina-edited-v2.mp4",
+    "posterPath": "/soccer-commentary/generated-argentina.jpg",
+    "planPath": "examples/portfolio-demo/edited-showcase/argentina-plan.json"
+  }
+]

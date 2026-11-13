@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "england-france-penalties.mp4",
+    "start_s": 42.0,
+    "duration_s": 19.0
+  },
+  "observations": [
+    {
+      "id": "editorial-1",
+      "at_s": 0.15,
+      "kind": "play",
+      "description": "Attacker enters area and is brought down"
+    },
+    {
+      "id": "editorial-2",
+      "at_s": 2.8,
+      "kind": "play",
+      "description": "Referee points to penalty spot"
+    },
+    {
+      "id": "editorial-3",
+      "at_s": 6.25,
+      "kind": "play",
+      "description": "Kane shown preparing the penalty, England trailing 0–1"
+    },
+    {
+      "id": "editorial-4",
+      "at_s": 10.0,
+      "kind": "goal",
+      "description": "Penalty scored; goalkeeper dives the other way"
+    },
+    {
+      "id": "editorial-5",
+      "at_s": 13.65,
+      "kind": "play",
+      "description": "Goal and replay show low finish; score becomes 1–1"
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 0.15,
+      "voice": "caller",
+      "text": "Into the box... and he's brought down!",
+      "evidence_ids": [
+        "editorial-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-2",
+      "at_s": 2.8,
+      "voice": "caller",
+      "text": "Penalty! The referee points straight to the spot.",
+      "evidence_ids": [
+        "editorial-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-3",
+      "at_s": 6.25,
+      "voice": "caller",
+      "text": "Kane steps up. A chance to bring England level.",
+      "evidence_ids": [
+        "editorial-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-4",
+      "at_s": 10.0,
+      "voice": "caller",
+      "text": "Kane scores! Low to the left, and England have the goal",
+      "evidence_ids": [
+        "editorial-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-5",
+      "at_s": 13.65,
+      "voice": "analyst",
+      "text": "The keeper goes the wrong way. Kane keeps it low, right into the corner. England are level.",
+      "evidence_ids": [
+        "editorial-5"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "examples/portfolio-demo/penalty-plan.json",
+    "cost": 0,
+    "models": {
+      "writer": "editorial rewrite by coding assistant; not an agent run"
+    },
+    "words_edited": true,
+    "editorial_reference": true,
+    "quality_status": "Demo script edited after user rejection; not automatic pipeline output",
+    "source_review": "Local source footage reviewed at half-second intervals; no dataset references used",
+    "speech_rates": {
+      "line-1": 1.0,
+      "line-2": 1.14,
+      "line-3": 1.0,
+      "line-4": 1.0,
+      "line-5": 0.85
+    },
+    "source_time_edits": true,
+    "source_edit": "Trim final second of repeated penalty replay; preserve all speech and action."
+  }
+}

@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import editedShowcase from "@/data/edited-showcase.json";
 import savedRuns from "@/data/agent-runs.json";
 import featured from "@/data/featured-demos.json";
 import prepared from "@/data/portfolio-demo.json";
@@ -37,5 +38,13 @@ export function getDemoData(showcase = false) {
       },
     },
   };
-  return { clips, runs, preparations, iteration };
+  const showcaseClips: DemoClip[] = editedShowcase.map((clip) => ({
+    ...clip,
+    kind: "curated",
+    subtitle: "Edited caller and analyst commentary",
+    note: "Editorial rewrite for the showcase; original agent outputs retained separately.",
+    src: localMedia(clip.videoPath),
+    poster: localMedia(clip.posterPath),
+  }));
+  return { clips: showcase ? showcaseClips : clips, runs, preparations, iteration };
 }

@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "arsenal-team-goals.mp4",
+    "start_s": 89.0,
+    "duration_s": 18.0
+  },
+  "observations": [
+    {
+      "id": "editorial-1",
+      "at_s": 0.15,
+      "kind": "play",
+      "description": "Arsenal build on left"
+    },
+    {
+      "id": "editorial-2",
+      "at_s": 1.7,
+      "kind": "play",
+      "description": "Short passes are exchanged infield"
+    },
+    {
+      "id": "editorial-3",
+      "at_s": 3.9,
+      "kind": "play",
+      "description": "Quick return passes advance move"
+    },
+    {
+      "id": "editorial-4",
+      "at_s": 6.15,
+      "kind": "play",
+      "description": "Attacker runs into area behind defenders"
+    },
+    {
+      "id": "editorial-5",
+      "at_s": 7.6,
+      "kind": "goal",
+      "description": "Shot beats keeper and enters net"
+    },
+    {
+      "id": "editorial-6",
+      "at_s": 10.0,
+      "kind": "play",
+      "description": "Replay shows return passes, continuing run and low finish"
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 0.15,
+      "voice": "caller",
+      "text": "Arsenal building down the left.",
+      "evidence_ids": [
+        "editorial-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-2",
+      "at_s": 1.7,
+      "voice": "caller",
+      "text": "Inside, and straight back again.",
+      "evidence_ids": [
+        "editorial-2"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-3",
+      "at_s": 3.9,
+      "voice": "caller",
+      "text": "Lovely one-touch passing. They're through!",
+      "evidence_ids": [
+        "editorial-3"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-4",
+      "at_s": 6.15,
+      "voice": "caller",
+      "text": "In behind now...",
+      "evidence_ids": [
+        "editorial-4"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-5",
+      "at_s": 7.6,
+      "voice": "caller",
+      "text": "Goal! What a move from Arsenal!",
+      "evidence_ids": [
+        "editorial-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-6",
+      "at_s": 10.0,
+      "voice": "analyst",
+      "text": "It's the movement after the pass. He keeps running, gets the return, and slips it past the keeper before Norwich can recover.",
+      "evidence_ids": [
+        "editorial-6"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "examples/portfolio-demo/release/arsenal-plan.json",
+    "cost": 0,
+    "models": {
+      "writer": "editorial rewrite by coding assistant; not an agent run"
+    },
+    "words_edited": true,
+    "editorial_reference": true,
+    "quality_status": "Demo script edited after user rejection; not automatic pipeline output",
+    "source_review": "Local source footage reviewed at half-second intervals; no dataset references used",
+    "speech_rates": {
+      "line-1": 1.1,
+      "line-2": 1.2,
+      "line-3": 1.25,
+      "line-4": 1.15,
+      "line-5": 1.0,
+      "line-6": 0.95
+    }
+  }
+}

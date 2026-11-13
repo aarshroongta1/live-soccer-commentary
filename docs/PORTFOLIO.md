@@ -1,31 +1,25 @@
 # Portfolio demo
 
 The public demo is https://www.aarshroongta.com/projects/soccer-commentary.
-It presents three selected clips with AI caller/analyst narration and captions:
+It presents three clips with edited demo commentary, AI caller/analyst voices
+and captions: England–France (19s), Arsenal–Norwich (18s), Argentina–France (20s).
 
-The main page is a recruiter-facing showcase: a short introduction, three clip
-choices, a large video player, and compact provenance labels. It keeps the website's
-Space Grotesk/blue palette and light/dark themes. The **How I built it** link opens
-the [GitHub README](https://github.com/aarshroongta1/live-soccer-commentary#architecture).
-It contains the full engineering explanation and Mermaid diagrams. The former
-`/demo/engineering` route redirects there. The deeper run inspector remains at
-`/demo/engineering/runs` for source-time transcripts, evidence and comparison data.
+The current scripts were rewritten after the user rejected the previous narration
+for sparse coverage and weak commentary. Each begins at 0.15s, follows the actual
+build-up, calls the goal, and uses replay/celebration for analysis. The penalty
+retains the successful original Kane goal-call recording. Its final second of
+repeated replay is trimmed. No automatic-quality gain is claimed for these edits.
 
-| Clip | Length | Provenance |
-| --- | --- | --- |
-| England vs France penalty | 20s | New automatic caller/analyst dialogue on saved vision and cited squad research. Exact generated words. |
-| Arsenal vs Norwich | 18s | Fresh vision and generated caller/analyst dialogue. Exact retained words; source cut and one analyst caption retimed. |
-| Argentina vs France | 20s | Fresh vision and generated caller/analyst dialogue. Source cut and one unsupported identity phrase removed. |
+The native personal-website showcase lives at the URL above. Videos use the
+soccer-commentary-demo.vercel.app media origin. The “Edited demo commentary” label
+makes the presentation provenance visible. “How I built it” links to the GitHub
+README architecture section. The separate saved-run inspector retains the original
+agent words, evidence and comparison artifacts.
 
-The saved-run inspector includes a before/after switch, transcript seeking, source-time
-turns, rejected drafts, visual observations and downloadable preparation traces.
-Both versions use identical saved evidence; the focused iteration restored the
-caller’s goal announcement after an optional reviewer blocked it. The comparison
-reports observed cost/call changes and the later first call, without claiming
-general naturalness improvement. The other two are labelled **Lightly edited AI**,
-with source cuts, exact edit records, and the original preparation traces available.
-The page explains the agent roles, evaluation findings and recorded/live limits.
-Saved causal replay runs remain in an expandable section.
+The current catalog is web/data/edited-showcase.json, mirrored into the personal
+website. Reproduction and pacing checks are in
+[the edited showcase record](../examples/portfolio-demo/edited-showcase/README.md).
+Earlier sections below describe archived automatic/silent/first-voice variants.
 
 ## Review locally
 
@@ -74,11 +68,11 @@ architecture decisions, evaluation findings and interview talking points.
 
 ## Media and reproduction
 
-Media remains local and git-ignored. Expected player files are:
+Media remains local and git-ignored. Current player files are:
 
-- `web/public/soccer-commentary/showcase-penalty-voiced.mp4`
-- `web/public/soccer-commentary/showcase-arsenal-voiced.mp4`
-- `web/public/soccer-commentary/showcase-argentina-voiced.mp4`
+- `web/public/soccer-commentary/showcase-penalty-edited-v2.mp4`
+- `web/public/soccer-commentary/showcase-arsenal-edited-v2.mp4`
+- `web/public/soccer-commentary/showcase-argentina-edited-v2.mp4`
 
 Recruiter variants omit the burned-in preparation labels using `--label ''`.
 Their words, source cuts and caption cues match the annotated engineering versions.

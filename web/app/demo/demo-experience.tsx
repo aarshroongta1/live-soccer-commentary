@@ -28,7 +28,7 @@ function ShowcaseVideo({ clip }: { clip: DemoClip }) {
       </div>}
       <div className="showcase-caption">
         <span>{clip.duration_s}s <span aria-hidden="true">/</span> Captioned demo <span aria-hidden="true">/</span> AI voices</span>
-        <span>{clip.kind === "automatic" ? "AI-generated text" : "AI-generated text, lightly edited"}</span>
+        <span>Edited demo commentary</span>
       </div>
     </>
   );
