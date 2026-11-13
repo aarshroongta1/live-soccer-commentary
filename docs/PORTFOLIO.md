@@ -127,5 +127,6 @@ The command refuses existing outputs. Per-clip `.narration.json` reports record
 input/output hashes, exact words, measured durations, voice IDs and placement.
 Speech generation used `eleven_flash_v2_5`, 10 requests, 497 characters and 249
 reported provider character-cost credits; no retries or new commentary calls.
-The advertised Flash API rate gives an estimated $0.01988 before tax; actual
+The [advertised Flash API rate](https://elevenlabs.io/pricing/api) gives an
+estimated $0.01988 before tax; actual
 account billing was not read. No subjective voice-quality benchmark is claimed.

@@ -21,6 +21,13 @@ New add_demo_narration.py muxes saved speech with no API calls; per-clip public
 fits without overlap or clipping; only the short Kane run-up cue is accelerated
 within 1.25x. Earlier “voice excluded” sections below are historical.
 
+Release validation: 8 targeted offline tests pass, Ruff/mypy pass for the new
+mux script, and both website lint/build checks pass. A synthetic-tone integration
+test guards against timestamp-induced silent exports. All three downloaded public
+videos match local export hashes; public browser playback decodes audio with
+muted=false, and switching clips pauses the prior player. Website main is 99771e8;
+commentary implementation is db757ee. Both production aliases are updated.
+
 ## Current hosting direction
 
 User wants the demo on their personal website domain. Canonical demo URL is
