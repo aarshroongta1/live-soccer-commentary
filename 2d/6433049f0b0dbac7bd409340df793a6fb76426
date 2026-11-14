@@ -1,0 +1,48 @@
+scripts/prepare_replay.mjs
+  s_92c34a7e6dab58::t_7a525c471f32d9 1-7,9-28,30-38
+  s_d9c258fdacc760::t_83a5cd34eaa8e2 8,29
+web/app/demo/replay/replay.tsx
+  s_d9c258fdacc760::t_83a5cd34eaa8e2 71
+  s_92c34a7e6dab58::t_58c7f77fa26520 1-70,72-87
+web/data/replay-delivery.json
+  s_d9c258fdacc760::t_3e6327cdc03ed3 1-35
+README.md
+  s_d9c258fdacc760::t_83a5cd34eaa8e2 316-321
+web/app/demo/demo-experience.tsx
+  s_92c34a7e6dab58::t_7a525c471f32d9 55
+web/app/demo/replay/replay.css
+  s_92c34a7e6dab58::t_7a525c471f32d9 3
+  s_d9c258fdacc760::t_83a5cd34eaa8e2 4
+  s_d9c258fdacc760::t_3fde3331228500 1
+  s_d9c258fdacc760::t_3e6327cdc03ed3 2
+  s_92c34a7e6dab58::t_4fe2878863f66d 5-126
+docs/RECORDABLE_REPLAY.md
+  s_d9c258fdacc760::t_83a5cd34eaa8e2 1-88
+web/app/demo/replay/page.tsx
+  s_92c34a7e6dab58::t_7a525c471f32d9 2,9
+  s_92c34a7e6dab58::t_58c7f77fa26520 1,3-8,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2d6433049f0b0dbac7bd409340df793a6fb76426",
+  "prompts": {},
+  "sessions": {
+    "s_92c34a7e6dab58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc2c-5537-78a2-b400-7d4dd463f293",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_d9c258fdacc760": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc2c-5537-78a2-b400-7d4dd463f293",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
