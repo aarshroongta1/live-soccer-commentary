@@ -1,0 +1,21 @@
+web/app/demo/demo-experience.tsx
+  s_c61538d1d875af::t_c23d43da60f494 51,55
+web/app/demo/showcase.css
+  s_c61538d1d875af::t_e4b43a76bd9579 9,11,15,29-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "23c766162c6e752b0eb132d3ddcda6ee5309f081",
+  "prompts": {},
+  "sessions": {
+    "s_c61538d1d875af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1c1d4-c720-78f0-b6f0-e9004e6446c9",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
