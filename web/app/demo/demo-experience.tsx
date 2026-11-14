@@ -26,9 +26,6 @@ function ShowcaseVideo({ clip }: { clip: DemoClip }) {
         <h2>Video unavailable</h2><p>Here’s the commentary for this clip.</p>
         <ul>{clip.lines.map((line, index) => <li key={index}><strong>{line.voice === "caller" ? "Caller" : "Analyst"}:</strong> {line.text}</li>)}</ul>
       </div>}
-      <div className="showcase-caption">
-        <span>{clip.duration_s}s <span aria-hidden="true">/</span> Captioned demo <span aria-hidden="true">/</span> AI voices</span>
-      </div>
     </>
   );
 }
@@ -48,15 +45,14 @@ export default function DemoExperience({ clips }: { clips: DemoClip[] }) {
         </nav>
         <header className="showcase-heading">
           <h1>AI football commentary<span aria-hidden="true">.</span></h1>
-          <p>Two AI commentators follow the action and explain the play.</p>
         </header>
         <section aria-label="Football commentary demo">
           <div className="showcase-clips" role="group" aria-label="Choose a demo clip">
-            {clips.map((clip) => <button key={clip.id} type="button" aria-pressed={activeId === clip.id} onClick={() => setActiveId(clip.id)}><span>{clip.title}</span><span>{clip.duration_s}s</span></button>)}
+            {clips.map((clip) => <button key={clip.id} type="button" aria-pressed={activeId === clip.id} onClick={() => setActiveId(clip.id)}><span>{clip.title}</span></button>)}
           </div>
           <ShowcaseVideo key={active.id} clip={active} />
         </section>
-        <footer className="showcase-footer"><span>Recorded examples</span><a href="https://github.com/aarshroongta1/live-soccer-commentary#architecture" target="_blank" rel="noreferrer">How I built it <span aria-hidden="true">↗</span></a>{active.src && <a href={active.src} download>Download clip</a>}</footer>
+        <footer className="showcase-footer"><a href="https://github.com/aarshroongta1/live-soccer-commentary#architecture" target="_blank" rel="noreferrer">How I built it <span aria-hidden="true">↗</span></a>{active.src && <a href={active.src} download>Download clip</a>}</footer>
       </main>
     </div>
   );

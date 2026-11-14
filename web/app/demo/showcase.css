@@ -6,19 +6,13 @@
 .showcase-nav > div { display: flex; align-items: center; gap: 22px; font-size: 12px; }
 .showcase-theme { background: none; border: 0; min-height: 36px; min-width: 28px; font-size: 21px !important; padding: 0; }
 .showcase-heading { margin-bottom: 28px; }
-.showcase-heading h1 { font-size: clamp(30px, 3.5vw, 42px); line-height: 1.15; letter-spacing: -1.5px; font-weight: 550; margin: 0 0 10px; }
-.showcase-heading p { font-size: 15px; line-height: 1.7; color: var(--demo-muted); margin: 0; }
+.showcase-heading h1 { font-size: clamp(30px, 3.5vw, 42px); line-height: 1.15; letter-spacing: -1.5px; font-weight: 550; margin: 0; }
 .showcase-clips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; border-bottom: 1px solid var(--demo-rule); margin-bottom: 18px; }
-.showcase-clips button { padding: 12px 0; display: flex; justify-content: space-between; gap: 10px; align-items: baseline; min-width: 0; color: var(--demo-muted); border: 0; border-bottom: 2px solid transparent; background: transparent; text-align: left; font-size: 13px; }
+.showcase-clips button { padding: 12px 0; display: flex; justify-content: space-between; gap: 10px; align-items: baseline; min-width: 0; color: var(--demo-muted); border: 0; border-bottom: 2px solid transparent; background: transparent; text-align: left; font-size: 14px; }
 .showcase-clips button[aria-pressed="true"] { color: var(--demo-accent); border-bottom-color: var(--demo-accent); }
 .showcase-clips button:hover { color: var(--demo-ink); }
-.showcase-clips button > span:last-child { font-family: var(--demo-mono); font-size: 10px; }
 .showcase-page video { border: 1px solid var(--demo-rule); }
-.showcase-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; color: var(--demo-muted); font-size: 10px; margin-top: 12px; }
-.showcase-caption > span:first-child { display: flex; flex-wrap: wrap; gap: 8px; }
-.showcase-caption > span > span { color: var(--demo-muted); opacity: .6; }
-.showcase-footer { display: flex; flex-wrap: wrap; gap: 10px 24px; border-top: 1px solid var(--demo-rule); padding-top: 16px; margin-top: 24px; font-size: 11px; }
-.showcase-footer > span { color: var(--demo-muted); margin-right: auto; }
+.showcase-footer { display: flex; flex-wrap: wrap; gap: 10px 24px; border-top: 1px solid var(--demo-rule); padding-top: 16px; margin-top: 24px; font-size: 14px; }
 .showcase-missing { min-height: 300px; padding: 35px; background: var(--demo-panel); border: 1px solid var(--demo-rule); }
 .showcase-missing h2 { font-size: 20px; margin-bottom: 10px; }
 .showcase-missing p, .showcase-missing li { font-size: 13px; color: var(--demo-muted); }
@@ -30,12 +24,9 @@
   .showcase-nav > div { gap: 14px; font-size: 11px; }
   .showcase-nav > div > a:first-child { display: none; }
   .showcase-heading h1 { font-size: 31px; letter-spacing: -1.2px; }
-  .showcase-heading p { font-size: 13px; max-width: 35ch; }
   .showcase-heading { margin-bottom: 22px; }
   .showcase-clips { gap: 15px; }
-  .showcase-clips button { font-size: 11px; align-items: start; line-height: 1.5; }
-  .showcase-clips button > span:last-child { display: none; }
-  .showcase-caption { font-size: 9px; }
-  .showcase-footer { font-size: 10px; gap: 10px 16px; }
+  .showcase-clips button { font-size: 13px; align-items: start; line-height: 1.5; }
+  .showcase-footer { font-size: 13px; gap: 10px 16px; }
   .showcase-missing { padding: 24px; }
 }
