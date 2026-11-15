@@ -1,0 +1,31 @@
+web/app/demo/keenable/comparison.tsx
+  s_66401525119ae6::t_a6e0ca9a8d9c1b 12,14,17-23,34,37-38,49-50,61-63,73-74,76-78,81-88,90-94,96-99,102-107
+web/app/demo/keenable/comparison.css
+  s_66401525119ae6::t_a6e0ca9a8d9c1b 1-48
+examples/keenable-outreach/README.md
+  s_e7f8ed463e957d::t_c29fe14864100f 4-5,8,49,51,53,55-57,110,119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "041f3cfa271e87b3796088227e6a23b0576ee105",
+  "prompts": {},
+  "sessions": {
+    "s_66401525119ae6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
