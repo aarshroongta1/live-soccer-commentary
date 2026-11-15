@@ -1,0 +1,330 @@
+{
+  "run_id": "20261115T044137-e472ae",
+  "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match",
+  "events": [
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "search_started",
+      "at_ms": 0.1,
+      "provider": "keenable",
+      "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match"
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "search_started",
+      "at_ms": 2.1,
+      "provider": "exa",
+      "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match"
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "search_returned",
+      "at_ms": 541.7,
+      "provider": "keenable",
+      "search": {
+        "provider": "keenable",
+        "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match",
+        "retrieved_at": "2026-11-15T03:00:07.128357+00:00",
+        "elapsed_ms": 536.7,
+        "request": {
+          "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match",
+          "max_results": 5,
+          "snippet_max_length": 2500
+        },
+        "results": [
+          {
+            "rank": 1,
+            "title": "Sunderland 2 Arsenal 2 \u2013 How was defence breached? Saka and Trossard step up (again)",
+            "url": "https://nytimes.com/athletic/6784511/2025/11/08/sunderland-2-arsenal-2-conceded-saka-trossard-ballard",
+            "excerpt": "How was Arsenal\u2019s defence finally breached? While all the pre-match focus was on their former captain and now Sunderland skipper Granit Xhaka, maybe it should have been on another former Arsenal man in the home ranks. Ballard left the London club for Sunderland, then newly promoted from third-tier League One, three years ago at age 22 without having made a first-team appearance, and has had a knack for scoring important goals since. This one was the first Arsenal had conceded in all competitions for over 13 hours and meant their clean-sheet record stopped at eight in a row. The defender\u2019s powerful strike was Sunderland\u2019s first shot on target in the game, but Arsenal were given a warning beforehand. Sunderland had a free kick in midfield in the 12th minute which the English-born Northern Ireland international centre-back went forward for only to be flagged offside after goalkeeper Robin Roefs\u2019 long ball. Ballard was the target again on their second go at that routine, and while he didn\u2019t win the first ball, he gave Arsenal a different challenge than any they have faced this season. DAN BALLARD! Sunderland break Arsenal\u2019s clean sheet run! \ud83d\udd25 pic.twitter.com/lVQ3ACpp41 \u2014 Sky Sports Premier League (@SkySportsPL) November 8, 2025 And for readers in the U.S. DAN BALLARD RAISES THE ROOF AT THE STADIUM OF LIGHT. SUNDERLAND LEAD ARSENAL. pic.twitter.com/Y2rrR4Uvs9 \u2014 NBC Sports Soccer (@NBCSportsSoccer) November 8, 2025 His awareness and technique to stay alive, control with his left foot and finish were lethal. There was nothing Raya could do, but Arsenal could have protected him better after Sunderland showed their hand with that first attempt at the same move in the 12th minute.\n\nIt may surprise some, but this was always going to be a tough evening for Arsenal, as Regis Le Bris\u2019 Sunderland defence is almost as stingy this season as counterpart Mikel Arteta\u2019s. Before kick-off this evening, they ranked second-best in the Premier League for goals conceded (eight) and set-piece goals conceded (two), third-best for clean sheets (four) and fourth-best for expected goals against (11.4), despite this being their first top-flight season since 2016-17.\n\n2025 Once again, Arsenal\u2019s defenders struggled with him in their box as he flicked the ball on for Brobbey\u2019s late equaliser. Then at the death, the 26-year-old showed the defensive qualities that have brought him to the Premier League by hurling his body forward to block Merino\u2019s goalbound shot.",
+            "published_at": "2025-11-08T15:33:04Z"
+          },
+          {
+            "rank": 2,
+            "title": "Arsenal clean sheet record ended by Dan Ballard in Sunderland draw",
+            "url": "https://transfermarkt.com/arsenal-defence-breached-by-one-of-their-own-as-mikel-artetas-side-held-by-sunderland/view/news/462666",
+            "excerpt": "Prior to facing [Sunderland](/sunderland-afc/startseite/verein/289), they hadn't conceded a goal in all competitions for six weeks, eight games and 812 minutes. Some 96 minutes later, the ball had been in their net twice. And as the script goes, it had to be one of their own who finally breached the Gunners' goal. [Daniel Ballard](/dan-ballard/profil/spieler/503686), now at Sunderland, was a former captain in the Hale End academy as recently as 2022 before leaving without a making a single senior appearance. Fast forward three years, at the Stadium of Light on Saturday evening, Ballard enjoyed a career highlight as he scored the opener against his boyhood team.\nWith 35 minutes on the clock, the Black Cats defender marched forward into the Arsenal 18-yard box, took one cushioned touch of the ball and thundered beyond [David Raya](/david-raya/profil/spieler/262749) with a ferocious right-footed strike. His jubilant celebration said it all: that's what you get for letting me go. Arsenal's steely defence had only shipped three goals in 16 games before this one.\n\nThat was until Brian Brobbey volleyed home in the fourth minute of stoppage time to spark wild celebrations. At the other end, Ballard was heroic again to block Mikel Merino's effort after an equally magnificent Roefs save to salvage a point. It was another spirited display to prove the Black Cats aren't going anywhere quietly, after ending the league leaders' eight-game clean sheet record and taking points off them too.",
+            "published_at": "2025-11-08T21:01:56Z"
+          },
+          {
+            "rank": 3,
+            "title": "Sunderland fight back with late Brobbey equaliser to hold leaders Arsenal",
+            "url": "https://theguardian.com/football/2025/nov/08/sunderland-arsenal-premier-league-match-report",
+            "excerpt": "Maybe it should not have come as such a surprise that the team that was able to slow Arsenal\u2019s title charge would be led by Granit Xhaka, their former captain. The substitute Brian Brobbey scored an injury-time equaliser after second-half goals from Bukayo Saka and Leandro Trossard had put the visitors in the lead following a first-half goal from the [Sunderland](https://www.theguardian.com/football/sunderland) captain, Dan Ballard.\n\nThe goal from Ballard, a former [Arsenal](https://www.theguardian.com/football/arsenal) academy player, ended a run of eight successive clean sheets in all competitions for Arsenal.\n\nA more painful blow was to come next for bruised Arsenal. Sunderland launched a free-kick into the visiting box and Ballard, signed from Arsenal three years ago, held off Declan Rice to lash the ball past David Raya after it was knocked out. It was the first goal Arsenal had conceded in eight games since their last visit to the north-east in late September, when they had underlined their title credentials with a late win over Newcastle at St James\u2019 Park.\n\nFittingly, the former Gunner Ballard had the final say with a flying block at the feet of Merino in the game\u2019s last action.",
+            "published_at": "2025-11-08T22:28:44Z"
+          },
+          {
+            "rank": 4,
+            "title": "Arsenal\u2019s last clean-sheet record ended in 1903 \u2013 meet the Glossop tripe-dresser who Dan Ballard emulated",
+            "url": "https://nytimes.com/athletic/6791516/2025/11/10/arsenal-defensive-record-glossop",
+            "excerpt": "More than a century on, that mark ties him to Dan Ballard and the Sunderland-Arsenal Premier League match at the Stadium of Light on Saturday.\n\nLess discussed was another former Arsenal player in the home team, Dan Ballard. Ballard was at the London club from the age of eight until an initial release at 14. At 16, he was telephoned by Arsenal\u2019s academy director Andries Jonker with an invitation to appear in a one-off trial match, where Ballard shone. He returned, spent time in the youth team with the likes of Bukayo Saka and went on loans to Swindon Town (League Two), Millwall (Championship) and Blackpool (League One). You have to be a Champions League-level defender to get into the Arsenal first team and Ballard wasn\u2019t, not then. In the summer of 2022, aged 22, he joined the youthful squad being assembled on a budget by Sunderland. The initial fee was under \u00a31m. Sunderland were in the Championship then, newly promoted from League One. They were still there three full seasons on \u2014 well, almost three full seasons. In May, in the second leg of a play-off semi-final against Coventry City, Ballard rose at the Roker End \u2014 in the last seconds of added time in extra time \u2014 and headed an equaliser that meant a 3-2 aggregate win. The Stadium of Light nearly melted. Promotion followed. Ballard had written his name into Sunderland\u2019s history. There is a huge mural of that moment against Coventry on a building across the River Wear from the stadium. Now he was about to sign \u2018Dan Ballard\u2019 across Arsenal\u2019s 2025-26 season. First, on what was an occasion as much as a match, came an observance of Remembrance.\n\nThere was still time for Arsenal to win the match, only for Ballard to produce another illustration of his abilities, blocking a goal-bound Mikel Merino shot. Ballard the Bollard, as his head coach, Regis Le Bris, recognised. \u201cI was surprised when I started here about their attitudes to defend the goal,\u201d Le Bris said. \u201cHere in Sunderland we have many players who will give their life to keep a clean sheet or to stop a shot. It\u2019s a question of mentality, it\u2019s a question of technique as well. And, for example, Trai (Hume), Ballard, Luke (O\u2019Nien) are really good for that.\u201d It is defiance Arsenal defenders understand. Their record has been broken. They have not been. They will go again.",
+            "published_at": "2025-11-10T11:28:08Z"
+          },
+          {
+            "rank": 5,
+            "title": "Sunderland 2 - 2 Arsenal - Match Report",
+            "url": "https://arsenal.com/fixture/arsenal/2025-Nov-08/sunderland-2-2-arsenal-match-report",
+            "excerpt": "Our quest to set a new club record of nine successive clean sheets ended when Dan Ballard put the hosts in front, but after the break we were much improved and Bukayo Saka drove home an equaliser on 54 minutes to level things up.\n\nRoefs played a long free-kick into the area towards Ballard and he flicked the ball onto Nordi Mukiele, who managed to control it and nudge it back into the defender\u2019s path, and the Hale End graduate became the first player in 13 and a half hours of football to find a way past our defence as he lashed the ball past David Raya.\n\nDan Ballard\u2019s opener \u2013 as well as being Sunderland\u2019s first shot on target \u2013 was the first goal we had conceded in 812 minutes in all competitions, since Nick Woltemade\u2019s strike for Newcastle in September.",
+            "published_at": "2025-11-08T12:43:10Z"
+          }
+        ],
+        "raw": {
+          "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match",
+          "mode": "pro",
+          "results": [
+            {
+              "title": "Sunderland 2 Arsenal 2 \u2013 How was defence breached? Saka and Trossard step up (again)",
+              "url": "https://nytimes.com/athletic/6784511/2025/11/08/sunderland-2-arsenal-2-conceded-saka-trossard-ballard",
+              "description": "",
+              "snippet": "How was Arsenal\u2019s defence finally breached? While all the pre-match focus was on their former captain and now Sunderland skipper Granit Xhaka, maybe it should have been on another former Arsenal man in the home ranks. Ballard left the London club for Sunderland, then newly promoted from third-tier League One, three years ago at age 22 without having made a first-team appearance, and has had a knack for scoring important goals since. This one was the first Arsenal had conceded in all competitions for over 13 hours and meant their clean-sheet record stopped at eight in a row. The defender\u2019s powerful strike was Sunderland\u2019s first shot on target in the game, but Arsenal were given a warning beforehand. Sunderland had a free kick in midfield in the 12th minute which the English-born Northern Ireland international centre-back went forward for only to be flagged offside after goalkeeper Robin Roefs\u2019 long ball. Ballard was the target again on their second go at that routine, and while he didn\u2019t win the first ball, he gave Arsenal a different challenge than any they have faced this season. DAN BALLARD! Sunderland break Arsenal\u2019s clean sheet run! \ud83d\udd25 pic.twitter.com/lVQ3ACpp41 \u2014 Sky Sports Premier League (@SkySportsPL) November 8, 2025 And for readers in the U.S. DAN BALLARD RAISES THE ROOF AT THE STADIUM OF LIGHT. SUNDERLAND LEAD ARSENAL. pic.twitter.com/Y2rrR4Uvs9 \u2014 NBC Sports Soccer (@NBCSportsSoccer) November 8, 2025 His awareness and technique to stay alive, control with his left foot and finish were lethal. There was nothing Raya could do, but Arsenal could have protected him better after Sunderland showed their hand with that first attempt at the same move in the 12th minute.\n\nIt may surprise some, but this was always going to be a tough evening for Arsenal, as Regis Le Bris\u2019 Sunderland defence is almost as stingy this season as counterpart Mikel Arteta\u2019s. Before kick-off this evening, they ranked second-best in the Premier League for goals conceded (eight) and set-piece goals conceded (two), third-best for clean sheets (four) and fourth-best for expected goals against (11.4), despite this being their first top-flight season since 2016-17.\n\n2025 Once again, Arsenal\u2019s defenders struggled with him in their box as he flicked the ball on for Brobbey\u2019s late equaliser. Then at the death, the 26-year-old showed the defensive qualities that have brought him to the Premier League by hurling his body forward to block Merino\u2019s goalbound shot.",
+              "published_at": "2025-11-08T15:33:04Z",
+              "acquired_at": "2026-02-19T11:26:47Z"
+            },
+            {
+              "title": "Arsenal clean sheet record ended by Dan Ballard in Sunderland draw",
+              "url": "https://transfermarkt.com/arsenal-defence-breached-by-one-of-their-own-as-mikel-artetas-side-held-by-sunderland/view/news/462666",
+              "description": "",
+              "snippet": "Prior to facing [Sunderland](/sunderland-afc/startseite/verein/289), they hadn't conceded a goal in all competitions for six weeks, eight games and 812 minutes. Some 96 minutes later, the ball had been in their net twice. And as the script goes, it had to be one of their own who finally breached the Gunners' goal. [Daniel Ballard](/dan-ballard/profil/spieler/503686), now at Sunderland, was a former captain in the Hale End academy as recently as 2022 before leaving without a making a single senior appearance. Fast forward three years, at the Stadium of Light on Saturday evening, Ballard enjoyed a career highlight as he scored the opener against his boyhood team.\nWith 35 minutes on the clock, the Black Cats defender marched forward into the Arsenal 18-yard box, took one cushioned touch of the ball and thundered beyond [David Raya](/david-raya/profil/spieler/262749) with a ferocious right-footed strike. His jubilant celebration said it all: that's what you get for letting me go. Arsenal's steely defence had only shipped three goals in 16 games before this one.\n\nThat was until Brian Brobbey volleyed home in the fourth minute of stoppage time to spark wild celebrations. At the other end, Ballard was heroic again to block Mikel Merino's effort after an equally magnificent Roefs save to salvage a point. It was another spirited display to prove the Black Cats aren't going anywhere quietly, after ending the league leaders' eight-game clean sheet record and taking points off them too.",
+              "published_at": "2025-11-08T21:01:56Z",
+              "acquired_at": "2026-11-08T19:20:30Z"
+            },
+            {
+              "title": "Sunderland fight back with late Brobbey equaliser to hold leaders Arsenal",
+              "url": "https://theguardian.com/football/2025/nov/08/sunderland-arsenal-premier-league-match-report",
+              "description": "",
+              "snippet": "Maybe it should not have come as such a surprise that the team that was able to slow Arsenal\u2019s title charge would be led by Granit Xhaka, their former captain. The substitute Brian Brobbey scored an injury-time equaliser after second-half goals from Bukayo Saka and Leandro Trossard had put the visitors in the lead following a first-half goal from the [Sunderland](https://www.theguardian.com/football/sunderland) captain, Dan Ballard.\n\nThe goal from Ballard, a former [Arsenal](https://www.theguardian.com/football/arsenal) academy player, ended a run of eight successive clean sheets in all competitions for Arsenal.\n\nA more painful blow was to come next for bruised Arsenal. Sunderland launched a free-kick into the visiting box and Ballard, signed from Arsenal three years ago, held off Declan Rice to lash the ball past David Raya after it was knocked out. It was the first goal Arsenal had conceded in eight games since their last visit to the north-east in late September, when they had underlined their title credentials with a late win over Newcastle at St James\u2019 Park.\n\nFittingly, the former Gunner Ballard had the final say with a flying block at the feet of Merino in the game\u2019s last action.",
+              "published_at": "2025-11-08T22:28:44Z",
+              "acquired_at": "2026-05-17T03:14:40Z"
+            },
+            {
+              "title": "Arsenal\u2019s last clean-sheet record ended in 1903 \u2013 meet the Glossop tripe-dresser who Dan Ballard emulated",
+              "url": "https://nytimes.com/athletic/6791516/2025/11/10/arsenal-defensive-record-glossop",
+              "description": "",
+              "snippet": "More than a century on, that mark ties him to Dan Ballard and the Sunderland-Arsenal Premier League match at the Stadium of Light on Saturday.\n\nLess discussed was another former Arsenal player in the home team, Dan Ballard. Ballard was at the London club from the age of eight until an initial release at 14. At 16, he was telephoned by Arsenal\u2019s academy director Andries Jonker with an invitation to appear in a one-off trial match, where Ballard shone. He returned, spent time in the youth team with the likes of Bukayo Saka and went on loans to Swindon Town (League Two), Millwall (Championship) and Blackpool (League One). You have to be a Champions League-level defender to get into the Arsenal first team and Ballard wasn\u2019t, not then. In the summer of 2022, aged 22, he joined the youthful squad being assembled on a budget by Sunderland. The initial fee was under \u00a31m. Sunderland were in the Championship then, newly promoted from League One. They were still there three full seasons on \u2014 well, almost three full seasons. In May, in the second leg of a play-off semi-final against Coventry City, Ballard rose at the Roker End \u2014 in the last seconds of added time in extra time \u2014 and headed an equaliser that meant a 3-2 aggregate win. The Stadium of Light nearly melted. Promotion followed. Ballard had written his name into Sunderland\u2019s history. There is a huge mural of that moment against Coventry on a building across the River Wear from the stadium. Now he was about to sign \u2018Dan Ballard\u2019 across Arsenal\u2019s 2025-26 season. First, on what was an occasion as much as a match, came an observance of Remembrance.\n\nThere was still time for Arsenal to win the match, only for Ballard to produce another illustration of his abilities, blocking a goal-bound Mikel Merino shot. Ballard the Bollard, as his head coach, Regis Le Bris, recognised. \u201cI was surprised when I started here about their attitudes to defend the goal,\u201d Le Bris said. \u201cHere in Sunderland we have many players who will give their life to keep a clean sheet or to stop a shot. It\u2019s a question of mentality, it\u2019s a question of technique as well. And, for example, Trai (Hume), Ballard, Luke (O\u2019Nien) are really good for that.\u201d It is defiance Arsenal defenders understand. Their record has been broken. They have not been. They will go again.",
+              "published_at": "2025-11-10T11:28:08Z",
+              "acquired_at": "2026-02-18T01:33:56Z"
+            },
+            {
+              "title": "Sunderland 2 - 2 Arsenal - Match Report",
+              "url": "https://arsenal.com/fixture/arsenal/2025-Nov-08/sunderland-2-2-arsenal-match-report",
+              "description": "",
+              "snippet": "Our quest to set a new club record of nine successive clean sheets ended when Dan Ballard put the hosts in front, but after the break we were much improved and Bukayo Saka drove home an equaliser on 54 minutes to level things up.\n\nRoefs played a long free-kick into the area towards Ballard and he flicked the ball onto Nordi Mukiele, who managed to control it and nudge it back into the defender\u2019s path, and the Hale End graduate became the first player in 13 and a half hours of football to find a way past our defence as he lashed the ball past David Raya.\n\nDan Ballard\u2019s opener \u2013 as well as being Sunderland\u2019s first shot on target \u2013 was the first goal we had conceded in 812 minutes in all competitions, since Nick Woltemade\u2019s strike for Newcastle in September.",
+              "published_at": "2025-11-08T12:43:10Z",
+              "acquired_at": "2026-05-17T15:13:16Z"
+            }
+          ],
+          "usage": {
+            "sku": "search.pro",
+            "amount": 1,
+            "credits": 1,
+            "paid": false,
+            "credits_remaining": 99997
+          }
+        }
+      }
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "research_started",
+      "at_ms": 543.0,
+      "provider": "keenable"
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "search_returned",
+      "at_ms": 2506.0,
+      "provider": "exa",
+      "search": {
+        "provider": "exa",
+        "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match",
+        "retrieved_at": "2026-11-15T03:00:09.094764+00:00",
+        "elapsed_ms": 2470.0,
+        "request": {
+          "query": "Dan Ballard Sunderland Arsenal 8 November 2025 background former club Arsenal defensive record before match",
+          "numResults": 5,
+          "type": "auto",
+          "objective": "Find source-backed football background for a recorded commentary agent. Prefer contemporary reporting and club sources; extract relevant player history and team form, excluding unrelated fixtures.",
+          "contents": {
+            "highlights": true
+          }
+        },
+        "results": [
+          {
+            "rank": 1,
+            "title": "Preview: Sunderland v Arsenal | Arsenal FC Official Website | Arsenal.com",
+            "url": "https://www.arsenal.com/news/preview-sunderland-v-arsenal-aFIOD6Z5t7jW",
+            "excerpt": "08 Nov 2025\n\n# Preview: Sunderland v Arsenal\n\nJonathon Rogers\n\nWe head to Sunderland for the first time in eight years on Saturday (5.30pm), looking to increase our lead at the top of the Premier League table and create more history in the process.\n\n...\n\nWe must look out for Nordi Mukiele\u2019s long throws [above], and mark Hale End academy graduate Dan Ballard very closely as he has had nine headed shots in 2025/26, second only to Erling Haaland. The diminutive Enzo Le Fee is skilful in wide areas, and our shooting will also need to be clinical against Robin Roefs, who has an 81% save accuracy, preventing 2.7 extra goals.",
+            "published_at": "2025-11-08T09:00:00.000Z"
+          },
+          {
+            "rank": 2,
+            "title": "Sunderland end Arsenal\u2019s winning run \u2014 and show the rest of the Premier League how to stop them | The Independent",
+            "url": "https://www.independent.co.uk/sport/football/sunderland-arsenal-result-score-premier-league-b2861516.html",
+            "excerpt": "Saturday 08 November 2025 22:14 GMT\n\n...\n\nBy the 35th minute just before Dan Ballard opened the scoring, there was a physicality, belligerence and a lack of fear, with the ball in play for just 13 minutes before that goal.\n\n...\n\nArsenal\u2019s defence was breached for the first time in eight games, and 13 and a half hours of play, when their former academy product Ballard gave the Wearside upstarts the lead. \n\nCentre back Ballard joined the Arsenal academy aged 8, earned a professional contract, and had three loan spells, with Swindon, Blackpool and Millwall before Arteta cashed him in, and let him build a blossoming career on Wearside from 2022.\n\nBallard, 26, bustled past Declan Rice in the box, as Nordi Mukiele\u2019s header fell invitingly. He lashed a right foot volley giving David Raya no chance.",
+            "published_at": "2025-11-08T22:14:56.000Z"
+          },
+          {
+            "rank": 3,
+            "title": "Dan Ballard on Sunderland\u2019s flying start, what he owes Ar...",
+            "url": "https://observer.co.uk/news/sport/article/dan-ballard-on-sunderlands-flying-start-what-he-owes-arsenal-and-his-degree-in-trading",
+            "excerpt": "One day in 2016, a 16-year-old Daniel Ballard was lying in bed when his phone lit up. He left it ringing, thinking he\u2019d return the call later.\n\nHe wasn\u2019t having the easiest of times, having been released by Arsenal before suffering a broken ankle, which caused other trials to fall through.\n\nNow he was fit again, he was pursuing a scholarship with his home town club Stevenage, in League Two, though that wasn\u2019t a sure thing either. He had even already signed up to return to school and do his A-levels.\n\nSo that evening, he could have been forgiven for letting the phone ring and dealing with it later. But at the last moment he looked at the screen and saw the call was from Andries Jonker, Arsenal\u2019s academy director.\n\n\u201cI just shot straight up and answered it,\u201d Ballard recalled.\n\n\u201cAndries said: \u2018We have a friendly away at Bayern Munich and we need an extra player. Just for this occasion.\u2019\n\n\u201cSuddenly I was on the plane to Germany. I played centre-back, played one half and had a really good game. Then, as we were in the airport on the way back, Andries offered me a scholarship. It was a crazy few months.\u201d\n\nLooking back, the Sunderland defender understands why they let him go in the first place.\n\nRelated articles:\n\n\u201cI wasn\u2019t very strong, fast, or technically the best, but I always worked really hard,\u201d he said.\n\n\u201cThat\u2019s why I think I got that second opportunity, as I always listened and wanted to get better.\u201d\n\nIn fact, it was the second time he returned to the club, as former academy director Liam Brady had given him a second chance after initially being released.\n\nReturning to the club for a second time, he still had to rely mostly on his determination and drive.\n\n\u201cI had so much work to do to get up to the standard. I was doing lots of gym work, every session working really hard,\u201d he said.\n\nBut over time, he began to see the rewards.\n\n\u201cThere was one year I stepped up to the Under-21s, and things started to come together a bit, as I was performing well with them and also started getting opportunities to go on loan.\u201d\n\nStints at Swindon, Blackpool, and Millwall followed, with Ballard moving up a division each year, which gave him the chance to develop away from the spotlight. Meanwhile, he had also begun playing for Northern Ireland, which boosted his club career, before moving to Sunderland in 2022.\n\nHe recognised the club\u2019s potential and that feeling proved to be right, as they slowly built their way back to the big time, with Ballard eventually playing a key role.\n",
+            "published_at": "2025-10-29T06:00:00.000Z"
+          },
+          {
+            "rank": 4,
+            "title": "Arsenal clean sheet record ended by Dan Ballard in Sunderland draw | Transfermarkt",
+            "url": "https://www.transfermarkt.com/arsenal-defence-breached-by-one-of-their-own-as-mikel-artetas-side-held-by-sunderland/view/news/462666",
+            "excerpt": "# Arsenal defence breached by one of their own as Mikel Arteta's side held by Sunderland \n\nThe old adage about London buses is an apt one for Arsenal. Prior to facing Sunderland, they hadn't conceded a goal in all competitions for six weeks, eight games and 812 minutes. Some 96 minutes later, the ball had been in their net twice. And as the script goes, it had to be one of their own who finally breached the Gunners' goal. Daniel Ballard, now at Sunderland, was a former captain in the Hale End academy as recently as 2022 before leaving without a making a single senior appearance. Fast forward three years, at the Stadium of Light on Saturday evening, Ballard enjoyed a career highlight as he scored the opener against his boyhood team.\n\nStats\n\n D. Ballard Centre-Back \n\nSunderland AFC\n\n Season 25/26\u2013 Premier League \n\nGoals 2\n\nWith 35 minutes on the clock, the Black Cats defender marched forward into the Arsenal 18-yard box, took one cushioned touch of the ball and thundered beyond David Raya with a ferocious right-footed strike. His jubilant celebration said it all: that's what you get for letting me go. Arsenal's steely defence had only shipped three goals in 16 games before this one. Raya, Gabriel Magalhaes and William Saliba have looked impenetrable this season, while Jurrien Timber and Riccardo Calafiori are often comfortable in possession in their hybrid roles. Only Liverpool had beaten them in the Premier League this term and that only came about from a fantastic Dominik Szoboszlai free-kick. But Sunderland, under the guiding hand of R\u00e9gis Le Bris, have been ripping up stereotypes all season.\n\n...\n\nThat was until Brian Brobbey volleyed home in the fourth minute of stoppage time to spark wild celebrations. At the other end, Ballard was heroic again to block Mikel Merino's effort after an equally magnificent Roefs save to salvage a point. It was another spirited display to prove the Black Cats aren't going anywhere quietly, after ending the league leaders' eight-game clean sheet record and taking points off them too.\n\n...\n\n11. Matchday 08/11/25 6:30 PM hours \n\n Sunderland AFC \n\n2:2\n\n Arsenal FC \n\n- Dan Ballard 36' \n\n 1:0 \n- 1:1 \n\n Bukayo Saka 54' \n- 1:2 \n\n Leandro Trossard 74' \n- B. Brobbey 90' \n\n 2:2",
+            "published_at": null
+          },
+          {
+            "rank": 5,
+            "title": "Dan Ballard (footballer)",
+            "url": "https://en.wikipedia.org/wiki/Dan_Ballard_(footballer)",
+            "excerpt": "| Position | Centre-back [3] | | |\n\n...\n\n| Number | 5 | | |\n\n...\n\n| 2007\u20132019 |\n\n...\n\n| Senior career* | | | |\n| Years | Team | Apps | (Gls) |\n\n...\n\n| International career \u2021 | | | |\n\n...\n\nDaniel George Ballard (born 22 September 1999) is a professional footballer who plays as a centre-back for Premier League club Sunderland. Born in England, he plays for the Northern Ireland national team.\n\n...\n\n### Arsenal\n\nBorn in Stevenage, [4] Ballard joined the Arsenal Academy at the age of eight. He signed his first professional contract in June 2018. [5] Having been released on two occasions, Arsenal offered him scholarship terms when he was 16 following an appearance in a friendly match, away at Bayern Munich. [6] \n\n#### Loan to Swindon Town\n\nBallard moved on loan from Arsenal to Swindon Town in July 2019. [7] He made his debut in a 2\u20130 win against Scunthorpe United in the League Two on 3 August 2019, coming off the bench in the 88th minute. [8] [9] He then scored his first career goal in an EFL Trophy tie against Chelsea U21s on 6 August 2019. [10] But his loan spell was cut short after just three appearances due to a severe knee injury that required 5 months of recovery time. [11] \n\n#### Loan to Blackpool\n\nIn October 2020, he moved on loan to Blackpool, signing with the club until January 2021. [12] [13] Ballard made his debut in a 1\u20130 loss against Charlton in League One on 20 October. [14] On 5 January 2021, it was announced that the loan had been extended to the end of the season. [15] He scored his first goal for the club in a 1\u20131 draw against Crewe Alexandra on 2 March 2021. [16] \n\n#### Loan to Millwall\n\nHe moved on loan to Millwall on 1 July 2021. [17] He scored his first goal for the club when he scored against West Bromwich Albion on 11 September 2021 in a 1\u20131 draw. [18] \n\n### Sunderland\n\nOn 30 June 2022, Ballard joined newly promoted Championship club Sunderland for an undisclosed fee, signing a three-year contract. [19] [20] On 16 September 2023, Ballard scored his first goal for Sunderland in a 3\u20131 win against QPR. [21] \n\nHe signed a new deal in July 2024 to extend his time on Wearside until 2028. [22] \n\nOn 13 May 2025, Ballard scored the winning goal (on aggregate) in extra time in the second leg of the 2024\u201325 EFL Championship play-off matchup with Coventry City, setting up a final match with Sheffield United. [23] On 24 May 2025, Sunderland defeated Sheffield United 2\u20131 in the play-off final to earn promotion to the Premier League. [24] \n\nBallard sco",
+            "published_at": "2026-11-12T08:15:07.000Z"
+          }
+        ],
+        "raw": {
+          "requestId": "2d329606ea8be0e022a09bca8b4c4c86",
+          "resolvedSearchType": "",
+          "results": [
+            {
+              "id": "https://www.arsenal.com/news/preview-sunderland-v-arsenal-aFIOD6Z5t7jW",
+              "title": "Preview: Sunderland v Arsenal | Arsenal FC Official Website | Arsenal.com",
+              "url": "https://www.arsenal.com/news/preview-sunderland-v-arsenal-aFIOD6Z5t7jW",
+              "publishedDate": "2025-11-08T09:00:00.000Z",
+              "author": "Jonathon Rogers",
+              "highlights": [
+                "08 Nov 2025\n\n# Preview: Sunderland v Arsenal\n\nJonathon Rogers\n\nWe head to Sunderland for the first time in eight years on Saturday (5.30pm), looking to increase our lead at the top of the Premier League table and create more history in the process.\n\n...\n\nWe must look out for Nordi Mukiele\u2019s long throws [above], and mark Hale End academy graduate Dan Ballard very closely as he has had nine headed shots in 2025/26, second only to Erling Haaland. The diminutive Enzo Le Fee is skilful in wide areas, and our shooting will also need to be clinical against Robin Roefs, who has an 81% save accuracy, preventing 2.7 extra goals."
+              ]
+            },
+            {
+              "id": "https://www.independent.co.uk/sport/football/sunderland-arsenal-result-score-premier-league-b2861516.html",
+              "title": "Sunderland end Arsenal\u2019s winning run \u2014 and show the rest of the Premier League how to stop them | The Independent",
+              "url": "https://www.independent.co.uk/sport/football/sunderland-arsenal-result-score-premier-league-b2861516.html",
+              "publishedDate": "2025-11-08T22:14:56.000Z",
+              "author": "Simon Bird",
+              "highlights": [
+                "Saturday 08 November 2025 22:14 GMT\n\n...\n\nBy the 35th minute just before Dan Ballard opened the scoring, there was a physicality, belligerence and a lack of fear, with the ball in play for just 13 minutes before that goal.\n\n...\n\nArsenal\u2019s defence was breached for the first time in eight games, and 13 and a half hours of play, when their former academy product Ballard gave the Wearside upstarts the lead. \n\nCentre back Ballard joined the Arsenal academy aged 8, earned a professional contract, and had three loan spells, with Swindon, Blackpool and Millwall before Arteta cashed him in, and let him build a blossoming career on Wearside from 2022.\n\nBallard, 26, bustled past Declan Rice in the box, as Nordi Mukiele\u2019s header fell invitingly. He lashed a right foot volley giving David Raya no chance."
+              ],
+              "image": "https://static.independent.co.uk/2025/11/08/20/47/Brian-Brobbey-ptb80808.jpeg?trim=36,0,36,0&width=1200&height=800&crop=1200:800"
+            },
+            {
+              "id": "https://observer.co.uk/news/sport/article/dan-ballard-on-sunderlands-flying-start-what-he-owes-arsenal-and-his-degree-in-trading",
+              "title": "Dan Ballard on Sunderland\u2019s flying start, what he owes Ar...",
+              "url": "https://observer.co.uk/news/sport/article/dan-ballard-on-sunderlands-flying-start-what-he-owes-arsenal-and-his-degree-in-trading",
+              "publishedDate": "2025-10-29T06:00:00.000Z",
+              "author": "Arthur Renard",
+              "highlights": [
+                "One day in 2016, a 16-year-old Daniel Ballard was lying in bed when his phone lit up. He left it ringing, thinking he\u2019d return the call later.\n\nHe wasn\u2019t having the easiest of times, having been released by Arsenal before suffering a broken ankle, which caused other trials to fall through.\n\nNow he was fit again, he was pursuing a scholarship with his home town club Stevenage, in League Two, though that wasn\u2019t a sure thing either. He had even already signed up to return to school and do his A-levels.\n\nSo that evening, he could have been forgiven for letting the phone ring and dealing with it later. But at the last moment he looked at the screen and saw the call was from Andries Jonker, Arsenal\u2019s academy director.\n\n\u201cI just shot straight up and answered it,\u201d Ballard recalled.\n\n\u201cAndries said: \u2018We have a friendly away at Bayern Munich and we need an extra player. Just for this occasion.\u2019\n\n\u201cSuddenly I was on the plane to Germany. I played centre-back, played one half and had a really good game. Then, as we were in the airport on the way back, Andries offered me a scholarship. It was a crazy few months.\u201d\n\nLooking back, the Sunderland defender understands why they let him go in the first place.\n\nRelated articles:\n\n\u201cI wasn\u2019t very strong, fast, or technically the best, but I always worked really hard,\u201d he said.\n\n\u201cThat\u2019s why I think I got that second opportunity, as I always listened and wanted to get better.\u201d\n\nIn fact, it was the second time he returned to the club, as former academy director Liam Brady had given him a second chance after initially being released.\n\nReturning to the club for a second time, he still had to rely mostly on his determination and drive.\n\n\u201cI had so much work to do to get up to the standard. I was doing lots of gym work, every session working really hard,\u201d he said.\n\nBut over time, he began to see the rewards.\n\n\u201cThere was one year I stepped up to the Under-21s, and things started to come together a bit, as I was performing well with them and also started getting opportunities to go on loan.\u201d\n\nStints at Swindon, Blackpool, and Millwall followed, with Ballard moving up a division each year, which gave him the chance to develop away from the spotlight. Meanwhile, he had also begun playing for Northern Ireland, which boosted his club career, before moving to Sunderland in 2022.\n\nHe recognised the club\u2019s potential and that feeling proved to be right, as they slowly built their way back to the big time, with Ballard eventually playing a key role.\n\nAs Sunderland headed into last season\u2019s Championship play-offs, the 26-year-old wasn\u2019t sure he would feature, having just returned from a hamstring injury.\n\n\u201cI kind of expected not to play, so I was very surprised when the gaffer put me in for the semi-final,\u201d he said.\n\nWhat followed was the stuff of dreams. He had man\u2013of-the-match performances against Coventry, culminating in the final minute of extra time in the second leg, when he rose to meet a curling Enzo Le F\u00e9e corner, connecting with the backside of his head to score and send the Stadium of Light into meltdown.\n\n...\n\n\u201cThe last eight years, with the club struggling and even down in League One; everything came out in that one goal. People are still coming up to me now and just say it\u2019s the best day of their lives.\u201d\n\nThe final itself, against Sheffield United, was won in similar fashion after overturning a 1-0 deficit and scoring the winner deep in injury time.\n\n\u201cWe had a slow start, but in the second half we turned it on. It was the same with the late goals, which was sort of the theme of the season, sticking together and rising to the big moments,\u201d he said.\n\nSunderland returned to the Premier League and have now started the season in fine form. Ballard scored another header in the Black Cats\u2019 opening weekend 3-0 victory against West Ham, and said manager R\u00e9gis Le Bris deserves the plaudits he has received in the club\u2019s recent rise.\n\n\u201cHe\u2019s tactically spot on. And he works so hard, with that he sets an example as well,\u201d he said.\n\nNext up for Sunderland is Everton, before they entertain Arsenal next weekend \u2013 Ballard\u2019s first time facing his old club. It will be a special day for the central defender, who has no regrets about leaving The Gunners three years ago.\n\n\u201cI\u2019m just so grateful for everything Arsenal has done for me. I joined them at seven, eight-years-old and left when I was 20,\u201d he said.\n\n\u201cThey gave me every opportunity, even when I probably didn\u2019t deserve them. I didn\u2019t think I would be at the level I am now. I\u2019ll be going into that game full of confidence, especially with the team we\u2019ve got.\n\n\u201cIt\u2019ll be nice to see some of the people I grew up with,\u201d said the defender.\n\n\u201cIt will be a full-circle moment coming back to play against them. It\u2019s probably just Bukayo [Saka] who\u2019s in the team now, but I played a lot with Emile Smith Rowe, Reiss Nelson, and Eddie Nketiah, who moved to other teams.\n\n\u201cBut a lot of the backroom staff are still there. And then there\u2019s Granit Xhaka, who joined us this season. I didn\u2019t think he would remember me, but he did, he said I was a lot smaller back then.\u201dBallard can see he is a late developer, but given his unconventional trajectory, there\u2019s no telling how far he can go.\n\n\u201cAnd when I played at Blackpool in League One, I was just grateful to be there. I didn\u2019t even dream of the Premier League, I didn\u2019t think that was possible. So it is cool to look back and think how it could have gone so differently. If I never got that call from Andries [Jonker] maybe I wouldn't even be playing football, or I would be playing non-league.\u201d\n\nBallard\u2019s story is a testament to perseverance and he embraced support along the way. During his academy years at Arsenal, he was introduced to sport psychologist Kate Green, who showed him the importance of focusing on things beyond football.\n\n\u201cIf you\u2019re not selected or injured and that\u2019s all you\u2019re thinking about, it can eat you up a little bit,\u201d he said.\n\n\u201cHaving other things to fall back on is really important. That\u2019s why I continued my education, doing my A-levels and then studying at the London School of Business and Finance, where I\u2019ve done a trading degree. Giving your mind something else to focus on also helps your football.\u201d"
+              ],
+              "image": "https://cdn.slowdownwiseup.co.uk/media/original_images/64424.jpeg"
+            },
+            {
+              "id": "https://www.transfermarkt.com/arsenal-defence-breached-by-one-of-their-own-as-mikel-artetas-side-held-by-sunderland/view/news/462666",
+              "title": "Arsenal clean sheet record ended by Dan Ballard in Sunderland draw | Transfermarkt",
+              "url": "https://www.transfermarkt.com/arsenal-defence-breached-by-one-of-their-own-as-mikel-artetas-side-held-by-sunderland/view/news/462666",
+              "author": "Joe Krishnan",
+              "highlights": [
+                "# Arsenal defence breached by one of their own as Mikel Arteta's side held by Sunderland \n\nThe old adage about London buses is an apt one for Arsenal. Prior to facing Sunderland, they hadn't conceded a goal in all competitions for six weeks, eight games and 812 minutes. Some 96 minutes later, the ball had been in their net twice. And as the script goes, it had to be one of their own who finally breached the Gunners' goal. Daniel Ballard, now at Sunderland, was a former captain in the Hale End academy as recently as 2022 before leaving without a making a single senior appearance. Fast forward three years, at the Stadium of Light on Saturday evening, Ballard enjoyed a career highlight as he scored the opener against his boyhood team.\n\nStats\n\n D. Ballard Centre-Back \n\nSunderland AFC\n\n Season 25/26\u2013 Premier League \n\nGoals 2\n\nWith 35 minutes on the clock, the Black Cats defender marched forward into the Arsenal 18-yard box, took one cushioned touch of the ball and thundered beyond David Raya with a ferocious right-footed strike. His jubilant celebration said it all: that's what you get for letting me go. Arsenal's steely defence had only shipped three goals in 16 games before this one. Raya, Gabriel Magalhaes and William Saliba have looked impenetrable this season, while Jurrien Timber and Riccardo Calafiori are often comfortable in possession in their hybrid roles. Only Liverpool had beaten them in the Premier League this term and that only came about from a fantastic Dominik Szoboszlai free-kick. But Sunderland, under the guiding hand of R\u00e9gis Le Bris, have been ripping up stereotypes all season.\n\n...\n\nThat was until Brian Brobbey volleyed home in the fourth minute of stoppage time to spark wild celebrations. At the other end, Ballard was heroic again to block Mikel Merino's effort after an equally magnificent Roefs save to salvage a point. It was another spirited display to prove the Black Cats aren't going anywhere quietly, after ending the league leaders' eight-game clean sheet record and taking points off them too.\n\n...\n\n11. Matchday 08/11/25 6:30 PM hours \n\n Sunderland AFC \n\n2:2\n\n Arsenal FC \n\n- Dan Ballard 36' \n\n 1:0 \n- 1:1 \n\n Bukayo Saka 54' \n- 1:2 \n\n Leandro Trossard 74' \n- B. Brobbey 90' \n\n 2:2"
+              ],
+              "image": "https://img.a.transfermarkt.technology/foto/big/sunderland-arsenal-1762631348-182405.jpg?lm=4711"
+            },
+            {
+              "id": "https://en.wikipedia.org/wiki/Dan_Ballard_(footballer)",
+              "title": "Dan Ballard (footballer)",
+              "url": "https://en.wikipedia.org/wiki/Dan_Ballard_(footballer)",
+              "publishedDate": "2026-11-12T08:15:07.000Z",
+              "highlights": [
+                "| Position | Centre-back [3] | | |\n\n...\n\n| Number | 5 | | |\n\n...\n\n| 2007\u20132019 |\n\n...\n\n| Senior career* | | | |\n| Years | Team | Apps | (Gls) |\n\n...\n\n| International career \u2021 | | | |\n\n...\n\nDaniel George Ballard (born 22 September 1999) is a professional footballer who plays as a centre-back for Premier League club Sunderland. Born in England, he plays for the Northern Ireland national team.\n\n...\n\n### Arsenal\n\nBorn in Stevenage, [4] Ballard joined the Arsenal Academy at the age of eight. He signed his first professional contract in June 2018. [5] Having been released on two occasions, Arsenal offered him scholarship terms when he was 16 following an appearance in a friendly match, away at Bayern Munich. [6] \n\n#### Loan to Swindon Town\n\nBallard moved on loan from Arsenal to Swindon Town in July 2019. [7] He made his debut in a 2\u20130 win against Scunthorpe United in the League Two on 3 August 2019, coming off the bench in the 88th minute. [8] [9] He then scored his first career goal in an EFL Trophy tie against Chelsea U21s on 6 August 2019. [10] But his loan spell was cut short after just three appearances due to a severe knee injury that required 5 months of recovery time. [11] \n\n#### Loan to Blackpool\n\nIn October 2020, he moved on loan to Blackpool, signing with the club until January 2021. [12] [13] Ballard made his debut in a 1\u20130 loss against Charlton in League One on 20 October. [14] On 5 January 2021, it was announced that the loan had been extended to the end of the season. [15] He scored his first goal for the club in a 1\u20131 draw against Crewe Alexandra on 2 March 2021. [16] \n\n#### Loan to Millwall\n\nHe moved on loan to Millwall on 1 July 2021. [17] He scored his first goal for the club when he scored against West Bromwich Albion on 11 September 2021 in a 1\u20131 draw. [18] \n\n### Sunderland\n\nOn 30 June 2022, Ballard joined newly promoted Championship club Sunderland for an undisclosed fee, signing a three-year contract. [19] [20] On 16 September 2023, Ballard scored his first goal for Sunderland in a 3\u20131 win against QPR. [21] \n\nHe signed a new deal in July 2024 to extend his time on Wearside until 2028. [22] \n\nOn 13 May 2025, Ballard scored the winning goal (on aggregate) in extra time in the second leg of the 2024\u201325 EFL Championship play-off matchup with Coventry City, setting up a final match with Sheffield United. [23] On 24 May 2025, Sunderland defeated Sheffield United 2\u20131 in the play-off final to earn promotion to the Premier League. [24] \n\nBallard scored on his Premier League debut, the second goal in a 3\u20130 win over West Ham United on the opening matchday. [25]"
+              ]
+            }
+          ],
+          "searchTime": 2053.6,
+          "costDollars": {
+            "total": 0.007,
+            "search": {
+              "neural": 0.007
+            }
+          }
+        }
+      }
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "fact_selected",
+      "at_ms": 2883.2,
+      "fact": {
+        "provider": "keenable",
+        "id": "r3-p2",
+        "rank": 3,
+        "title": "Sunderland fight back with late Brobbey equaliser to hold leaders Arsenal",
+        "url": "https://theguardian.com/football/2025/nov/08/sunderland-arsenal-premier-league-match-report",
+        "text": "The goal from Ballard, a former Arsenal academy player, ended a run of eight successive clean sheets in all competitions for Arsenal."
+      }
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "commentary_started",
+      "at_ms": 2883.3,
+      "input": {
+        "event": "Dan Ballard scores for Sunderland against Arsenal.",
+        "fact": {
+          "provider": "keenable",
+          "id": "r3-p2",
+          "rank": 3,
+          "title": "Sunderland fight back with late Brobbey equaliser to hold leaders Arsenal",
+          "url": "https://theguardian.com/football/2025/nov/08/sunderland-arsenal-premier-league-match-report",
+          "text": "The goal from Ballard, a former Arsenal academy player, ended a run of eight successive clean sheets in all competitions for Arsenal."
+        }
+      }
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "commentary_ready",
+      "at_ms": 5137.0,
+      "provider": "keenable",
+      "text": "Dan Ballard has come back to haunt Arsenal there \u2014 a former Arsenal academy player ending their eight-game clean-sheet run.",
+      "source_url": "https://theguardian.com/football/2025/nov/08/sunderland-arsenal-premier-league-match-report"
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "voice_started",
+      "at_ms": 5137.0
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "audio_ready",
+      "at_ms": 5877.9,
+      "character_credits": "62",
+      "text": "Dan Ballard has come back to haunt Arsenal there \u2014 a former Arsenal academy player ending their eight-game clean-sheet run."
+    },
+    {
+      "run_id": "20261115T044137-e472ae",
+      "type": "complete",
+      "at_ms": 5880.4,
+      "usage": {
+        "input_tokens": 523,
+        "output_tokens": 56,
+        "cache_read_tokens": 4352,
+        "cache_write_tokens": 0,
+        "cost_usd": 0.0009706500000000002,
+        "latency_s": 2.338186167005915
+      }
+    }
+  ],
+  "speech_start_s": 9.8779,
+  "speech_end_s": 16.518807000000002,
+  "speech_speed": 1,
+  "origin": "Recorded provider responses and timing; newly generated commentary and voice",
+  "search_source": {
+    "mode": "recorded",
+    "run_id": "20261115T030006-8b943a"
+  },
+  "footage": {
+    "source": "ballard-arsenal.mp4",
+    "start_s": 1.5,
+    "duration_s": 20
+  }
+}

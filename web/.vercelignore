@@ -25,3 +25,6 @@ public/**/*.mp4
 !public/soccer-commentary/showcase-penalty-edited-v2.mp4
 !public/soccer-commentary/showcase-arsenal-edited-v2.mp4
 !public/soccer-commentary/showcase-argentina-edited-v2.mp4
+
+# Keenable outreach replay: match footage and generated analyst audio only.
+!public/soccer-commentary/ballard-live-replay.mp4

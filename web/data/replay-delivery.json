@@ -1,0 +1,35 @@
+{
+  "source": "examples/recorded-agent-demo/render-report.md",
+  "segments": [
+    {
+      "voice": "caller",
+      "start": 1,
+      "end": 2.02,
+      "text": "England driving in!"
+    },
+    {
+      "voice": "caller",
+      "start": 3,
+      "end": 4.07,
+      "text": "Penalty England!"
+    },
+    {
+      "voice": "analyst",
+      "start": 4.12,
+      "end": 7.37,
+      "text": "The challenge drew the referee’s penalty signal in the box."
+    },
+    {
+      "voice": "caller",
+      "start": 10,
+      "end": 11.35,
+      "text": "Kane scores the penalty!"
+    },
+    {
+      "voice": "analyst",
+      "start": 11.89,
+      "end": 15.23,
+      "text": "Kane’s low penalty beats the diving keeper into the left side."
+    }
+  ]
+}

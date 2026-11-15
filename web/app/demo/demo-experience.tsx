@@ -52,7 +52,7 @@ export default function DemoExperience({ clips }: { clips: DemoClip[] }) {
           </div>
           <ShowcaseVideo key={active.id} clip={active} />
         </section>
-        <footer className="showcase-footer"><a href="https://github.com/aarshroongta1/live-soccer-commentary#architecture" target="_blank" rel="noreferrer">How I built it <span aria-hidden="true">↗</span></a>{active.src && <a href={active.src} download>Download clip</a>}</footer>
+        <footer className="showcase-footer"><a href="/demo/replay">Run inspector</a><a href="https://github.com/aarshroongta1/live-soccer-commentary#architecture" target="_blank" rel="noreferrer">How I built it <span aria-hidden="true">↗</span></a>{active.src && <a href={active.src} download>Download clip</a>}</footer>
       </main>
     </div>
   );

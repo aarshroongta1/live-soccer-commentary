@@ -37,6 +37,12 @@ featured clips and requires no API key to watch.
 
 ## Key capabilities
 
+The [20-second Keenable / Exa research demo](examples/keenable-outreach/README.md)
+at `/demo/replay` runs concurrent searches on the goal cue, shows their actual
+responses, and passes a selected source passage to the commentary writer and
+voice. Finish order follows the real requests. A recorded Keenable-first run is
+available at `?mode=replay`; another retained browser run had Exa finish first.
+
 - **Multimodal perception:** sample video frames with OpenCV and produce typed
   action observations with timestamps, uncertainty and supporting-frame references.
 - **Multi-agent orchestration:** separate LangGraph caller and analyst roles,
@@ -313,3 +319,9 @@ docs/                  # Design notes, evaluations and reproduction guides
   and real-time spoken latency are not established by this demo.
 - More agents add requests, delay and failure paths. A general quality advantage
   over a single writer has not been demonstrated.
+
+### Engineering demo / run inspector
+
+Run the original voiced penalty alongside its supporting frames, roster lookup,
+agent decisions and raw trace at `/demo/replay`. See
+[recording instructions](docs/RECORDABLE_REPLAY.md) for setup and a 60–90 second walkthrough.
