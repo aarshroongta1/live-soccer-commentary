@@ -1,0 +1,23 @@
+web/app/demo/keenable/comparison.tsx
+  s_66401525119ae6::t_359d4746df6788 3,157,165-166,171-173,179,181,183,188-189
+web/app/demo/keenable/comparison.css
+  s_66401525119ae6::t_359d4746df6788 10,14,40-41,54,70-71
+examples/keenable-outreach/README.md
+  s_66401525119ae6::t_89d64e62a7a3fb 4-5,20-21,97,110,119-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d81d23a213a2d393450135e81823dd1304003fba",
+  "prompts": {},
+  "sessions": {
+    "s_66401525119ae6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
