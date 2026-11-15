@@ -1,0 +1,85 @@
+src/commentary/replay/preparation.py
+  s_e7f8ed463e957d::t_4ba0b1c20eeac9 14,348-353,356-358
+  s_e7f8ed463e957d::t_39928589f722bc 310-311,325-329,354,377-379,381
+  s_e7f8ed463e957d::t_57e2127888deaf 272,302-304,320-321,343-345,384
+  s_66401525119ae6::t_56a260b66ebb62 306-307,330-341,360-376,380,382-383
+  s_e7f8ed463e957d::t_2ea40ebd90788e 312-316,323-324
+  s_e7f8ed463e957d::t_0814a298e2beab 38,42,317-319,322,342,346-347,355,359
+  s_e7f8ed463e957d::t_6901ebef89486e 305,308-309
+tests/test_search_providers.py
+  s_e7f8ed463e957d::t_11849dae9a1497 26-40,68-87,95-107,109-113,125-137
+  s_e7f8ed463e957d::t_4ba0b1c20eeac9 138-145
+  s_66401525119ae6::t_56a260b66ebb62 146
+  s_e7f8ed463e957d::t_53a070a8987eaa 1-25,41-67,88-94,108,114-124
+web/data/search-comparison.json
+  s_66401525119ae6::t_2cb6749d4f0ef4 23,25,31-32,38-39,45-46,52-53,60,62,64-418
+  s_e7f8ed463e957d::t_ad74319dc38171 423-426
+  s_66401525119ae6::t_89dd234f0997db 1-22,24,26-30,33-37,40-44,47-51,54-59,61,63,419-422,427
+web/app/demo/keenable/comparison.tsx
+  s_e7f8ed463e957d::t_934c8238d7d66b 27-28,53
+  s_e7f8ed463e957d::t_1d937de6c4026a 108
+  s_e7f8ed463e957d::t_5d4e64692ea99e 12,45,95-97
+  s_e7f8ed463e957d::t_13f14820af9314 1-11,13-26,29-44,46-52,54-94,98-107,109-120
+.env.example
+  s_e7f8ed463e957d::t_57e2127888deaf 6-9
+scripts/prepare_outreach_media.py
+  s_e7f8ed463e957d::t_78dbc3cc07aa87 1-24,31,34-35,48-49,67-68,73-80,85-87,103-105,125-133
+  s_e7f8ed463e957d::t_508fad28a402cf 26-28
+  s_e7f8ed463e957d::t_c82ec79f8e527e 25,29-30
+  s_66401525119ae6::t_865d891559e59d 32-33,36-47,50-66,69-72,81-84,88-102,106-124
+src/commentary/search_providers.py
+  s_e7f8ed463e957d::t_ec958c1997e88a 1-37,49-70,74-77,81-104,107-108,118,126
+  s_e7f8ed463e957d::t_0814a298e2beab 38-45,47-48
+  s_e7f8ed463e957d::t_2ea40ebd90788e 46
+  s_e7f8ed463e957d::t_11849dae9a1497 71-73,78-80,105-106,109-117,119-125
+README.md
+  s_e7f8ed463e957d::t_c82ec79f8e527e 40-45
+scripts/render_search_outreach.py
+  s_66401525119ae6::t_865d891559e59d 21-26,31-34,44-49,57-63,69-119,123-128
+  s_e7f8ed463e957d::t_a6627180e092e9 1-20,27-30,35-43,50-56,64-68,129-133
+  s_e7f8ed463e957d::t_56b18aa3eeaa02 120-122
+web/public/soccer-commentary/search-comparison.json
+  s_e7f8ed463e957d::t_ad74319dc38171 1-427
+web/app/demo/keenable/comparison.css
+  s_e7f8ed463e957d::t_13f14820af9314 1-48,50-66
+  s_e7f8ed463e957d::t_1d937de6c4026a 49
+  s_e7f8ed463e957d::t_abc14ddd2c446e 67-69
+web/app/demo/keenable/page.tsx
+  s_e7f8ed463e957d::t_13f14820af9314 1-12
+examples/keenable-outreach/README.md
+  s_e7f8ed463e957d::t_403291b3a212f9 1-151
+scripts/compare_search.py
+  s_e7f8ed463e957d::t_11849dae9a1497 37-51,64-67,72-74,77-80,84-87,92,122-129,163,177-184,189-190,215-226
+  s_e7f8ed463e957d::t_5d4e64692ea99e 100-107
+  s_e7f8ed463e957d::t_403291b3a212f9 88-91
+  s_e7f8ed463e957d::t_86686627defdca 20,24-25,131-141,160-162,164,168,176,185-188
+  s_66401525119ae6::t_f597267659005c 142-159,165-167,170-175
+  s_e7f8ed463e957d::t_4c8b4953a6c061 169
+  s_e7f8ed463e957d::t_b85a13e6e65e1c 209-214
+  s_e7f8ed463e957d::t_3d9375d35a6dda 1-19,21-23,26-36,52-63,68-71,75-76,81-83,96-99,108-121,130,191-208,227-237
+  s_e7f8ed463e957d::t_4ba0b1c20eeac9 93-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd47afcfd4cdfd2cf7add39b069d604a663e5b99",
+  "prompts": {},
+  "sessions": {
+    "s_66401525119ae6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
