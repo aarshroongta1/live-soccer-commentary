@@ -45,6 +45,14 @@ def main() -> None:
             str(source_start),
             "-i",
             str(source),
+            "-f",
+            "lavfi",
+            "-i",
+            "anullsrc=channel_layout=stereo:sample_rate=44100",
+            "-map",
+            "0:v",
+            "-map",
+            "1:a",
             "-t",
             "20",
             "-c:v",
@@ -88,6 +96,7 @@ def main() -> None:
     if speed > 1.2:
         raise ValueError(f"The generated speech cannot fit in 20 seconds: start={start:.2f}s")
     end = start + natural_duration / speed
+    # The prepared match track is digital silence, anchoring the speech timeline.
     output = PUBLIC / "ballard-live-replay.mp4"
     subprocess.run(
         [
@@ -101,9 +110,8 @@ def main() -> None:
             "-i",
             str(audio),
             "-filter_complex",
-            f"[0:a]volume=0.08:enable='between(t,{start:.6f},{end:.6f})'[match];"
             f"[1:a]atempo={speed:.8f},adelay={round(start * 1000)}:all=1[voice];"
-            "[match][voice]amix=inputs=2:normalize=0,atrim=duration=20,"
+            "[0:a][voice]amix=inputs=2:normalize=0,atrim=duration=20,"
             "loudnorm=I=-16:TP=-1.5:LRA=11[out]",
             "-map",
             "0:v",

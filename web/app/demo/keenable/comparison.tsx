@@ -66,8 +66,6 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
   const started = useRef(false);
   const startedAt = useRef(0);
   const dispatched = useRef(false);
-  const originalVolume = useRef(1);
-  const ducked = useRef(false);
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [liveEvents, setLiveEvents] = useState<Packet[]>([]);
@@ -88,10 +86,7 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
   const complete = liveEvents.some(e => e.type === "complete");
   const voicePlaying = mode === "replay" ? Boolean(saved && time >= saved.speech_start_s && time < saved.speech_end_s) : speaking;
 
-  const restoreAudio = useCallback(() => {
-    if (video.current && ducked.current) { ducked.current = false; video.current.volume = originalVolume.current; }
-    setSpeaking(false);
-  }, []);
+  const finishSpeech = useCallback(() => setSpeaking(false), []);
 
   const applyPacket = useCallback((packet: Packet) => {
     if (packet.type === "search_started" && !dispatched.current) { dispatched.current = true; startedAt.current = performance.now() - packet.at_ms; }
@@ -100,16 +95,16 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
     if (packet.type === "audio_ready" && packet.audio_base64) {
       const audio = new Audio(`data:audio/mpeg;base64,${packet.audio_base64}`);
       speech.current = audio;
-      audio.onended = restoreAudio;
-      audio.onerror = () => { restoreAudio(); setError("Could not play the generated commentary."); };
+      audio.onended = finishSpeech;
+      audio.onerror = () => { finishSpeech(); setError("Could not play the generated commentary."); };
       audio.onplay = () => {
         const player = video.current;
-        if (player) { if (!ducked.current) { originalVolume.current = player.volume; ducked.current = true; player.volume = originalVolume.current * .1; } audio.volume = originalVolume.current; audio.muted = player.muted; }
+        if (player) { audio.volume = player.volume; audio.muted = player.muted; }
         setSpeaking(true);
       };
       if (video.current && !video.current.paused) void audio.play().catch(() => setError("Press the video's play control to hear the commentary."));
     }
-  }, [restoreAudio]);
+  }, [finishSpeech]);
 
   const startRun = useCallback(async () => {
     if (started.current || mode !== "live") return;
@@ -157,12 +152,12 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
       <div className="simple-workspace">
         <section className="simple-match" aria-label="Match footage and reviewed event">
           <h2 className="step-label">Sunderland v Arsenal</h2>
-          <div className="simple-video"><video ref={video} src={mode === "live" ? "/soccer-commentary/ballard-original.mp4" : "/soccer-commentary/ballard-live-replay.mp4"} controls playsInline preload="auto"
+          <div className="simple-video"><video ref={video} src={mode === "live" ? "/soccer-commentary/ballard-original.mp4?audio=solo" : "/soccer-commentary/ballard-live-replay.mp4?audio=solo"} controls playsInline preload="auto"
             onPlay={() => { setPlaying(true); if (speech.current && !speech.current.ended) void speech.current.play().catch(() => {}); }}
             onPause={() => { setPlaying(false); speech.current?.pause(); }} onEnded={() => { setPlaying(false); setTime(20); }}
             onSeeked={e => setTime(e.currentTarget.currentTime)} onTimeUpdate={e => { if (!playing) setTime(e.currentTarget.currentTime); }}
-            onVolumeChange={e => { if (!ducked.current) originalVolume.current = e.currentTarget.volume; if (speech.current) speech.current.muted = e.currentTarget.muted; }}
-            onError={() => setError("Match video unavailable.")} aria-label="Match footage with original commentary and generated analyst audio" /></div>
+            onVolumeChange={e => { if (speech.current) { speech.current.volume = e.currentTarget.volume; speech.current.muted = e.currentTarget.muted; } }}
+            onError={() => setError("Match video unavailable.")} aria-label="Match footage with generated commentary" /></div>
           <div className="event-input" data-active={time >= trigger}>
             <header>Reviewed event</header>
             {time >= trigger ? <p><EventWords text={eventText} /></p> : <div className="event-waiting" aria-label="Waiting for goal"><i /><i /></div>}

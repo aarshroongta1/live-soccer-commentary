@@ -29,8 +29,8 @@ The selected provider and result number remain visible at the handoff. Request,
 response, source passage, writer input, generated line, model usage and voice
 credits are retained under `runs/outreach/live/<run_id>/trace.json`.
 
-The video keeps its original match audio. When the AI analyst speaks, that audio
-is lowered, then restored. There is no provider-promotion voiceover and no
+The video excludes the original broadcast audio. Only the generated commentator
+is audible; the live footage uses a silent track so native volume controls still work. There is no provider-promotion voiceover and no
 editorial rewrite of the generated analyst line. The goal/scorer is explicitly
 human-reviewed for this demonstration; it is not a new vision inference claim.
 
@@ -133,13 +133,13 @@ To regenerate the match audio and replay trace from the retained actual run:
 ```
 
 The replay mux places speech at its actual ready offset (9.878 seconds into the
-clip for this revision), preserves exact words, and lowers original audio while it
-plays. No speed change was needed: speech ends at 16.519 seconds. All workflow text
+clip for this revision), preserves exact words, and includes only the generated
+voice. Original broadcast speech is excluded for the entire clip. No speed change was needed: speech ends at 16.519 seconds. All workflow text
 is rendered by the page from the trace, separate from the match video.
 
 To capture the whole workflow manually, record the browser window and use the
 video's normal play control. A recorder with system-audio support is needed to
-capture both audio tracks. The player's fullscreen control shows footage alone.
+capture the generated commentary audio. The player's fullscreen control shows footage alone.
 
 ## CLI
 
