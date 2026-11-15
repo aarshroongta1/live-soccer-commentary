@@ -1,0 +1,19 @@
+scripts/render_search_outreach.py
+  s_e7f8ed463e957d::t_fd7644d852ce55 123-124,130-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b6ddac10386d868e1ab3e0ff48184cb7a1e0fbad",
+  "prompts": {},
+  "sessions": {
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
