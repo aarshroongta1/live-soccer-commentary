@@ -1,0 +1,32 @@
+examples/keenable-outreach/README.md
+  s_e7f8ed463e957d::t_a43de7c794377a 57,60-61,69,102,127
+  s_66401525119ae6::t_edde20d46a3aed 130,132
+web/public/soccer-commentary/live-search-run.json
+  s_66401525119ae6::t_ec86ed51c06d1c 2,6,13,15,20,22,127,129,133,135,255,257,268,270,284,286,288,292,294,297,299-301,304,306,308-310,312-313,317-318
+src/commentary/live_research.py
+  s_66401525119ae6::t_78f817f5457c3c 111-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ff0d1083092dc9dde1d255ba8a4c0dabf2b0ffb",
+  "prompts": {},
+  "sessions": {
+    "s_66401525119ae6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
