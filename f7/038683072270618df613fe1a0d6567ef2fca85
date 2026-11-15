@@ -1,0 +1,50 @@
+web/app/demo/replay/replay.css
+  s_e7f8ed463e957d::t_52e89829b94128 18
+scripts/render_search_outreach.py
+  s_e7f8ed463e957d::t_dd78a146044522 27,55-58,61-66,94,112-118
+  s_66401525119ae6::t_25bdfcedd908d3 82-90,95-111
+  s_e7f8ed463e957d::t_b36c6543bba4be 20,67-68,72-75,138,167
+  s_66401525119ae6::t_c7f36878e0772d 35-50
+web/app/demo/replay/replay.tsx
+  s_e7f8ed463e957d::t_230f854207f0d3 4,13,50
+examples/keenable-outreach/README.md
+  s_e7f8ed463e957d::t_e032a97e467ddd 3-5,7-8,49,51,55-59,105,108-109,117-119
+  s_e7f8ed463e957d::t_3ac5c12d134b09 53
+  s_66401525119ae6::t_aabfd292ebdbcb 54,120
+web/app/demo/keenable/comparison.css
+  s_e7f8ed463e957d::t_91eb8d7cf5089b 74-78
+  s_e7f8ed463e957d::t_40d373a1b5acca 1-73
+  s_66401525119ae6::t_a088b593cf76ec 80-81
+web/app/demo/replay/page.tsx
+  s_e7f8ed463e957d::t_52e89829b94128 5-6,10-13
+web/app/demo/keenable/comparison.tsx
+  s_e7f8ed463e957d::t_230f854207f0d3 4,39,129
+  s_e7f8ed463e957d::t_159ff22f97c3af 5-6,9-12,15,18-21,23-34,44-45,47-69,71-80,83-88,90-92,100-102,109-112,114,116-125,128,130-143,145,148,150,152,154-164,166-168
+  s_e7f8ed463e957d::t_2548db35c389a8 70,146-147,153
+README.md
+  s_e7f8ed463e957d::t_3ac5c12d134b09 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f7038683072270618df613fe1a0d6567ef2fca85",
+  "prompts": {},
+  "sessions": {
+    "s_66401525119ae6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
