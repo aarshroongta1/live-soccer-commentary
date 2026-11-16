@@ -74,7 +74,6 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState("");
   const [speaking, setSpeaking] = useState(false);
-  const [provider, setProvider] = useState("keenable");
   const events = useMemo(() => mode === "replay" ? (time >= trigger ? saved?.events.filter(e => e.at_ms <= (time - trigger) * 1000) ?? [] : []) : liveEvents, [mode, time, saved, liveEvents]);
   const returns = events.filter(e => e.type === "search_returned");
   const fact = events.find(e => e.type === "fact_selected")?.fact;
@@ -194,6 +193,5 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
 
       {error && <p className="simple-error" role="alert">{error}</p>}
     </main>
-    <details className="simple-inspector"><summary>Raw data</summary><div className="simple-inspector-controls"><select value={provider} onChange={e => setProvider(e.target.value)} aria-label="Inspect provider"><option value="keenable">Keenable</option><option value="exa">Exa</option></select>{!shareable && <><a href="/demo/replay?mode=replay">recorded run</a><a href="/demo/replay">live run</a></>}<a href="/soccer-commentary/live-search-run.json" download>trace.json</a></div>{!shareable && <p>Two search calls, up to $0.05 across two model calls, one voice call capped at 240 characters. No retries. Three live runs per server session.</p>}<pre>{JSON.stringify(returns.find(e => e.provider === provider)?.search?.raw ?? {}, null, 2)}</pre><pre>{JSON.stringify({ commentary_input: input, delivery: saved?.delivery, events: events.map(e => e.audio_base64 ? { ...e, audio_base64: "(audio attached)" } : e) }, null, 2)}</pre></details>
   </div>;
 }
