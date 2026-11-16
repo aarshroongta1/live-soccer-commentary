@@ -1,0 +1,25 @@
+scripts/prepare_search_exchange.py
+  s_66401525119ae6::t_941f724d74f22e 3,37-103,114,241
+web/app/demo/keenable/comparison.tsx
+  s_66401525119ae6::t_941f724d74f22e 157
+web/public/soccer-commentary/live-search-run.json
+  s_66401525119ae6::t_941f724d74f22e 337-338,340-342,350-351,353-355,367-368,376-377,379-381
+examples/keenable-outreach/README.md
+  s_66401525119ae6::t_a464f047a56360 117-122,149,153,159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a28586e66a361145b12dbbabf4e9a4a04d32a93f",
+  "prompts": {},
+  "sessions": {
+    "s_66401525119ae6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
