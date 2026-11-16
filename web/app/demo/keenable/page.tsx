@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function KeenableDemo() {
-  return <Comparison data={comparison} mode="replay" shareable />;
+  return <Comparison data={comparison} mode="replay" />;
 }

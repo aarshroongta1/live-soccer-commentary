@@ -60,7 +60,7 @@ function SearchResponse({ name, result, pending, elapsed, selected, first }: { n
   </section>;
 }
 
-export default function Comparison({ data, mode = "live", shareable = false }: { data: ComparisonData; mode?: "live" | "replay"; shareable?: boolean }) {
+export default function Comparison({ data, mode = "live" }: { data: ComparisonData; mode?: "live" | "replay" }) {
   const video = useRef<HTMLVideoElement>(null);
   const speech = useRef<HTMLAudioElement | null>(null);
   const request = useRef<AbortController | null>(null);
@@ -150,7 +150,6 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
 
   return <div className="search-demo">
     <main className="outreach-stage simple-replay" data-time={time.toFixed(3)}>
-      <header className="simple-header"><span>{shareable ? "commentary" : <a href="/demo">commentary</a>} / {mode === "live" ? "live" : saved?.search_source ? "saved searches" : "replay"}</span></header>
       <div className="simple-workspace">
         <section className="simple-match" aria-label="Match footage and reviewed event">
           <h2 className="step-label">Sunderland v Arsenal</h2>

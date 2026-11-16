@@ -79,8 +79,8 @@ The model generated, and the voice speaks, this exact line:
 
 This text was not supplied as a target answer or rewritten after generation.
 The original two live runs remain in the audit folders, including the Exa-first
-counterexample. The UI labels the revised version “saved searches”; the search
-timings are recorded, while the commentary and voice are newly generated.
+counterexample. The published trace retains the source run ID; the search timings are recorded,
+while the commentary and voice are newly generated.
 
 This is live research about historical footage. Search results are from today's
 indexes; source passages used by the researcher must have publication dates no
@@ -132,7 +132,7 @@ reach the writer, and that promotional narration cannot reach voice synthesis.
 
 Open **http://localhost:3000/demo/replay?mode=replay**. This replays the first
 run's search timing with the revised generated commentary and speech; playback
-does not make live search/model calls. The header labels this as saved searches.
+does not make live search/model calls. The published trace includes its recorded-search provenance.
 
 - Source footage: [Arsenal's official highlights](https://www.youtube.com/watch?v=SXHoDl2twPg), source seconds 1.5–21.5 (the goal precedes the four-second reviewed cue).
 - Browser player: `web/public/soccer-commentary/ballard-live-replay.mp4`.

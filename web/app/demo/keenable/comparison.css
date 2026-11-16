@@ -3,8 +3,6 @@
 .search-demo button,.search-demo select { font:inherit; color:inherit; background:transparent; border:1px solid #45474c; border-radius:3px; padding:6px 12px; cursor:pointer; }
 .search-demo :focus-visible { outline:2px solid var(--event); outline-offset:4px; }
 .search-demo a { color:#aabed8; text-underline-offset:3px; }
-.simple-header { border-bottom:1px solid #33363b; padding-bottom:18px; font-size:13px; color:#a0a3aa; }
-.simple-header a { text-decoration:none; }
 .simple-workspace { position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.12fr) minmax(0,.85fr); gap:4vw; width:100%; max-width:1800px; margin:clamp(28px,10vh,110px) auto auto; padding:0 0 32px; align-items:start; }
 .simple-workspace > section { min-width:0; }
 .step-label { margin:0 0 24px; color:#c4c9d1; font-size:13px; font-weight:500; }
