@@ -1,0 +1,37 @@
+scripts/prepare_search_exchange.py
+  s_66401525119ae6::t_28e668c352d498 65-76,79-82,92-99,165-168,224-227
+  s_e7f8ed463e957d::t_897896a6e03b0d 1-17,19-64,77-78,83-91,100-164,169-223,228-245
+  s_e7f8ed463e957d::t_6ae784a4b807fc 18
+web/app/demo/keenable/comparison.css
+  s_66401525119ae6::t_567417c61e2660 13
+web/app/demo/keenable/comparison.tsx
+  s_66401525119ae6::t_567417c61e2660 12-13,88-89,158,164,197
+examples/keenable-outreach/README.md
+  s_e7f8ed463e957d::t_da6639b6870fe5 3,32-38,112-118,139,142-144,147-155
+web/public/soccer-commentary/live-search-run.json
+  s_66401525119ae6::t_7d6239c08a59dc 318-319,329-384
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e538be6afdebbefe7d64662b20e35207634a4448",
+  "prompts": {},
+  "sessions": {
+    "s_66401525119ae6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
