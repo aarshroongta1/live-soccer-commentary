@@ -1,246 +1,208 @@
 # AI Football Commentary
 
-[**Commentary showcase**](https://www.aarshroongta.com/projects/soccer-commentary) ·
-[**Keenable search demo**](https://www.aarshroongta.com/demo/keenable) ·
-[Architecture](#architecture) · [Quick start](#quick-start) ·
-[Usage](#usage) · [Evaluation](#evaluation) · [Project structure](#project-structure)
+[**Keenable demo**](https://www.aarshroongta.com/demo/keenable) ·
+[**Commentary clips**](https://www.aarshroongta.com/projects/soccer-commentary) ·
+[Architecture](#architecture) · [Quick start](#quick-start) · [Evaluation](#evaluation)
 
-A multimodal, multi-agent prototype that turns football footage into play-by-play
-and analysis. A visual observer supplies timestamped evidence; independent caller
-and analyst agents decide what to say; deterministic code controls their turns.
-Keenable supplies web evidence for the research path, so commentary can connect
-an observed event to relevant player history or team form.
+AI commentary for short football clips, with a play-by-play caller and an analyst.
+A vision agent watches the footage, Keenable finds relevant background, and the
+speaking agents decide what to say. Python code handles timing and checks what
+each agent is allowed to use.
 
-Built with **Python, LangGraph, Pydantic, asyncio, OpenCV and Next.js**.
-The focus is engineering around existing models: orchestration, grounded tool use,
-evaluation, failure analysis and inspectable execution.
+Built with Python, LangGraph, Pydantic, asyncio, OpenCV and Next.js. Generation
+uses existing models; there is no training or fine-tuning.
 
-## Demo
+## Demos
 
-The public showcase has three short clips with edited commentary, two AI voices
-and captions. After feedback on sparse and weak original narration, the scripts
-were rewritten against the footage and timed across the whole sequence.
+### Keenable: from a goal to a better commentary line
 
-| Example | Duration | Presentation |
-| --- | --- | --- |
-| England–France penalty | 19s | Edited build-up and analysis; original Kane goal-call recording retained. |
-| Arsenal–Norwich finish | 18s | Rewritten play-by-play follows the passing move into the finish. |
-| Argentina–France attack | 20s | Rewritten counterattack call starts at the opening, followed by analysis. |
+The [20-second demo](https://www.aarshroongta.com/demo/keenable) follows Dan Ballard's
+goal against Arsenal. Keenable returns a source passage explaining that he came
+through Arsenal's academy and ended their run of eight clean sheets. The commentary
+writer uses it to generate:
 
-**These scripts are editorially rewritten showcase material, not unedited agent
-output or evidence of a measured agent-quality improvement.** The source runs,
-failed attempts and previous automatic scripts remain in
-[the demo artifacts](examples/portfolio-demo/README.md). The edited scripts and
-release checks are in [the showcase record](examples/portfolio-demo/edited-showcase/README.md).
-All clips are prepared before playback; they do not measure live spoken latency.
+> Dan Ballard has come back to haunt Arsenal there — a former Arsenal academy player ending their eight-game clean-sheet run.
 
-Media is git-ignored and is not included in a fresh clone. The app falls back to
-saved commentary when a video is unavailable. See [media setup](docs/PORTFOLIO.md)
-for expected files and optional remote video URLs. The live demo hosts the three
-featured clips and requires no API key to watch.
+You can follow the event, search query, both providers' responses, selected passage
+and generated line beside the match video. Keenable and Exa receive the same query;
+the first successful response goes to the researcher without waiting for the other.
+Search latency matters here because writing and voice synthesis still have to
+finish while the goal is worth talking about.
 
-## Key capabilities
+The public page replays real saved responses and timings with a prepared two-voice
+exchange. It makes no API calls. The goal and scorer are human reviewed for this
+demo. Keenable finished first in the displayed run; Exa finished first in another
+retained run, so this is an example, not a general speed benchmark.
 
-The [20-second Keenable / Exa demo](https://www.aarshroongta.com/demo/keenable)
-shows the research handoff: goal event → shared search query → actual provider
-responses → selected evidence → spoken commentary. Public playback uses saved
-responses and timings. The [local live mode](examples/keenable-outreach/README.md)
-at `/demo/replay` makes concurrent requests and starts research from the first
-successful response.
+See [the demo notes](examples/keenable-outreach/README.md) for actual outputs,
+provider settings, timing records and instructions for running it live locally.
 
-- **Multimodal perception:** sample video frames with OpenCV and produce typed
-  action observations with timestamps, uncertainty and supporting-frame references.
-- **Multi-agent orchestration:** separate LangGraph caller and analyst roles,
-  each with its own prompt, evidence permissions and bounded tool loop.
-- **Web-grounded research:** Keenable retrieves source excerpts; a researcher
-  selects supporting evidence before the commentary writer uses it. Exa shares
-  the same adapter contract for comparison.
-- **Structured outputs and grounding:** Pydantic contracts and application checks
-  enforce evidence visibility, citation validity, role permissions and word budgets.
-- **Async coordination:** the causal replay runtime handles deadlines,
-  cancellation, goal priority and stale-result rejection with asyncio.
-- **Evaluation and observability:** a fixed 15-clip development suite, scripted
-  regression tests, saved decisions, rejected turns and per-run token costs.
-- **Cost control:** explicit dollar/call caps, reservations for maximum output,
-  and no automatic provider retries in the bounded development runner.
+### Commentary clips
+
+The [commentary page](https://www.aarshroongta.com/projects/soccer-commentary) has
+three clips with two voices and captions:
+
+| Clip | Length |
+| --- | ---: |
+| England–France penalty | 19s |
+| Arsenal–Norwich finish | 18s |
+| Argentina–France attack | 20s |
+
+These scripts were edited against the footage after the initial narration proved
+too sparse. They are prepared demos, not unedited agent output or measurements
+of live speech latency. The penalty clip keeps the original generated goal call.
+[Original runs and failures](examples/portfolio-demo/README.md) and
+[edited scripts](examples/portfolio-demo/edited-showcase/README.md) are kept separately.
 
 ## Architecture
 
-### Recorded commentary pipeline
+### Watching and calling the play
 
 ```mermaid
 flowchart LR
-    V["Video<br/>frames"] --> O["Vision<br/>observer"]
-    R["Optional<br/>squad context"] -.-> O
-    O --> E["Timestamped<br/>evidence"]
+    V[Video frames] --> O[Vision observer]
+    R[Optional squad context] -.-> O
+    O --> E[Timestamped observations]
     R -.-> E
     E --> C[Coordinator]
     C --> P[Caller]
     C --> A[Analyst]
-    P --> G["Evidence +<br/>timing checks"]
+    P --> G[Evidence and timing checks]
     A --> G
-    G --> S["Captions +<br/>run trace"]
+    G --> S[Commentary plan and trace]
 ```
 
-The observer proposes what happened; the language agents choose the commentary.
-The coordinator owns timing and admission checks. It is ordinary Python, not an
-LLM supervisor. The frontend plays saved results without making model calls.
+| Component | Job |
+| --- | --- |
+| Observer | Report actions, uncertainty and supporting frames. It can request a crop or roster context to help identify a player. |
+| Researcher | Find cited player and team background for the analyst. |
+| Caller | React to immediate play using visual evidence. |
+| Analyst | Explain supported movement or add relevant background. |
+| Coordinator | Schedule turns, prioritize goals, reject stale results and check role permissions. |
 
-### Keenable: search evidence for commentary
+The coordinator is ordinary Python. LangGraph runs each speaking agent's tool
+loop; asyncio handles pending work, deadlines and cancellation.
 
-Keenable sits between the event and the research agent. It retrieves context;
-the commentary writer turns that evidence into a reaction to the play.
+### Where Keenable fits
 
 ```mermaid
 flowchart LR
     E[Reviewed goal event] --> Q[Shared search query]
-    Q --> K[Keenable search]
+    Q --> K[Keenable]
     Q --> X[Exa comparison]
     K --> R[First successful response]
     X --> R
-    R --> F[Researcher selects a source passage]
+    R --> F[Select source passage]
     F --> W[Commentary writer]
     E --> W
     W --> T[Voice synthesis]
 ```
 
-In the demo, Dan Ballard scores for Sunderland against Arsenal. Keenable returns
-a passage connecting him to Arsenal's academy and the end of Arsenal's eight-game
-clean-sheet run. The researcher selects that passage, and the writer receives
-the exact text, source URL and reviewed goal event. Its generated line is:
+[`search_providers.py`](src/commentary/search_providers.py) puts Keenable snippets
+and Exa highlights into the same `SearchRun` format. It keeps the request, raw
+response, ranked sources and client elapsed time for each provider.
 
-> Dan Ballard has come back to haunt Arsenal there — a former Arsenal academy player ending their eight-game clean-sheet run.
+[`live_research.py`](src/commentary/live_research.py) runs both searches concurrently.
+The researcher selects a passage ID, and code copies the exact passage and URL
+from the response. The writer receives that evidence and the reviewed event;
+its exact output goes to voice synthesis. The selector and writer use
+`gpt-5.4-mini`; voice synthesis uses ElevenLabs `eleven_flash_v2_5`.
 
-[`search_providers.py`](src/commentary/search_providers.py) normalizes Keenable
-snippets and Exa highlights into the same `SearchRun` contract, retaining each
-provider's request, raw response, ranked sources and client elapsed time.
-[`live_research.py`](src/commentary/live_research.py) runs the searches concurrently
-and starts passage selection as soon as the first successful response arrives,
-without waiting for the other provider. That matters for live commentary: search,
-writing and voice synthesis all have to fit before the moment passes.
+The main pipeline can also pass a `SearchRun` to
+[`prepare_research`](src/commentary/replay/preparation.py). It checks supporting
+quotes against returned excerpts and builds a dated `ResearchBrief` for the
+analyst's `research` tool. Saved briefs and model-native web search also work.
+Research supplies background; visual evidence is still needed to establish the action.
 
-The existing research preparation path also accepts a `SearchRun` through
-[`prepare_research`](src/commentary/replay/preparation.py), checks supporting
-quotes against returned excerpts, and produces a cited `ResearchBrief` for the
-analyst's `research` tool. Saved briefs and model-native web search remain supported.
-Search evidence supplies background; it does not establish what happened on pitch.
+### How an agent takes a turn
 
-The public demo replays a Keenable-first run; another retained run had Exa finish
-first. These are individual request timings, not a general benchmark. The goal
-and scorer in this demo are human reviewed, and public playback makes no API calls.
-See the [implementation and timing record](examples/keenable-outreach/README.md)
-for provider settings, actual outputs and reproduction steps.
+Each speaking agent gets the available observations, recent dialogue and remaining
+word and action budgets. It returns a Pydantic `AgentAction`: `tool`, `speak` or
+`abstain`. Code executes allowed tool requests and returns the result to that agent.
+The tools are `recent_events`, `player_context` and analyst-only `research`.
+This protocol is managed by the application rather than provider-native tool calling.
 
-### Agent responsibilities
-
-| Component | Responsibility | Boundary |
-| --- | --- | --- |
-| Researcher | Prepare cited player/team context; select source evidence from Keenable or the comparison provider for event-triggered commentary. | Research cannot prove an on-pitch action or identify a player by itself. |
-| Observer | Propose timestamped actions, supporting frames and readable identity cues. The replay observer can request a bounded crop and roster context. | Unclear actions remain uncertain; identity must be linked to the observed action. |
-| Caller | React to immediate play and confirmed goal observations. | Requires visual evidence; cannot use research or announce uncertain/replay actions as live play. |
-| Analyst | Explain supported movement or add relevant context. | Complements the caller; may abstain when there is no useful supported point. |
-| Coordinator | Schedule turns and enforce evidence/time/role constraints. | A structurally valid observation can still be visually wrong. |
-
-### One speaking-agent turn
-
-```mermaid
-flowchart LR
-    S["Evidence snapshot +<br/>recent dialogue"] --> D{Agent action}
-    D -->|Request context| T[Allowed read-only tool]
-    T -->|Result within action budget| S
-    D -->|Speak| V["Validate citations,<br/>role and word budget"]
-    D -->|Abstain| Q[Record no speech]
-    V -->|Pass| K[Keep line + audit trace]
-    V -->|Fail| Q
-```
-
-Each role receives a snapshot of available observations, recent dialogue and
-remaining action/word budgets. It returns a typed `AgentAction`: `tool`, `speak`
-or `abstain`. The application executes permitted tools and routes their results
-back to the same role through LangGraph.
-
-The read-only tools are `recent_events`, `player_context`, and analyst-only
-`research`. This is an **application-managed structured action protocol**, rather
-than provider-native function calling. Context retrieval is scoped to the supplied
-evidence/research; a squad lookup does not establish who performed an action.
-
-Every spoken line carries evidence references. For example, the saved penalty run
-retained this `SpeechLine`:
+Spoken lines reference their evidence. For example:
 
 ```json
 {
   "voice": "caller",
   "text": "Kane scores! Low to the left, and England have the goal",
-  "evidence_ids": [
-    "recorded-4"
-  ],
+  "evidence_ids": ["recorded-4"],
   "research_ids": []
 }
 ```
 
-Checks reject unavailable evidence, wrong-role citations, exact repeats about the same evidence,
-and oversized drafts. An optional reviewer can request bounded revisions; it is
-**disabled in the selected examples** after an observed false rejection.
+Checks reject unavailable evidence, citations the role cannot use, repeated coverage
+of the same evidence and lines over the word budget. The optional model reviewer
+is disabled in the selected examples after it rejected valid goal calls.
 
-### Recorded preparation vs. causal replay
+### Recorded runs and causal replay
 
-| Path | Evidence and scheduling | Output |
-| --- | --- | --- |
-| Recorded preparation | Vision sees the whole short clip. Speaking turns receive evidence according to source timestamps; code reserves reading time. | Precomputed commentary plan, captions and trace. |
-| Causal replay prototype | Frames arrive over a replay clock. asyncio manages pending work, deadlines, cancellation and stale results. | Execution trace and text with simulated speech occupancy. |
+The recorded path lets vision see the whole clip, then gives speaking agents
+evidence according to source timestamps. It produces a saved commentary plan.
 
-These paths share role agents and contracts, but have different timing semantics.
-See [the replay design](docs/REPLAY.md) for the asynchronous runtime.
+The causal replay prototype feeds frames over a replay clock and handles work as
+it arrives. It records text and simulates how long speech occupies a turn. Both
+paths share the role agents and contracts. See [the replay design](docs/REPLAY.md).
 
 ## Quick start
 
-### Requirements
+You need Node.js 22+ and npm for the web app. Python tools need Python 3.12+ and
+[uv](https://docs.astral.sh/uv/). Rendering also needs FFmpeg with subtitle support
+and ffprobe; the Python `demo` extra includes a compatible FFmpeg binary.
 
-- Python 3.12+ and [uv](https://docs.astral.sh/uv/).
-- Node.js 22+ and npm; CI uses Node 22.
-- FFmpeg with subtitle support and ffprobe for media rendering. The Python `demo`
-  extra provides a compatible bundled FFmpeg binary.
-
-### Run the web demo
-
-From the repository root:
+From the repo root:
 
 ```bash
 npm ci --prefix web
 npm run dev --prefix web
 ```
 
-Open **http://127.0.0.1:3000/demo**. No API key is needed to browse saved output.
-The optional run inspector is at `/demo/engineering/runs`.
+| Local route | What it shows |
+| --- | --- |
+| `/demo` | Saved commentary clips |
+| `/demo/keenable` | Saved Keenable / Exa replay |
+| `/demo/replay` | Live search comparison; playback triggers paid calls when configured |
+| `/demo/replay?run=penalty` | Original penalty run with frames, tool calls and agent decisions |
+| `/demo/engineering/runs` | Saved-run inspector |
 
-### Set up the Python tools
+Start at **http://127.0.0.1:3000/demo**. Saved output needs no API keys.
+Media is gitignored, so a fresh clone needs the assets restored to play the videos.
+The commentary page falls back to saved text when footage is missing.
+See [media setup](docs/PORTFOLIO.md) and [penalty recording instructions](docs/RECORDABLE_REPLAY.md).
+
+Install the Python tools with:
 
 ```bash
 uv sync --extra demo --dev
 ```
 
-For paid model generation only, copy `.env.example` to `.env` and set
-`OPENAI_API_KEY`. Browsing, caption rendering and the scripted diagnostic do not
-require model credentials. Existing models are used; no weights are trained or
-fine-tuned.
+For generation, copy `.env.example` to `.env`. Set `OPENAI_API_KEY` for research,
+vision and writing. The live search demo also needs `KEENABLE_API_KEY`,
+`EXA_API_KEY`, `ELEVENLABS_API_KEY` and the voice IDs documented in `.env.example`.
+Keys stay on the server. Live mode allows one active run and three runs per server
+session. Each run allows two model calls with a combined $0.05 cap and up to
+240 characters of voice input.
+Search and voice charges are separate from the model cap.
 
 ## Usage
 
-### Run a free diagnostic
+### Check the coordination without paid calls
 
 ```bash
 uv run python scripts/replay_commentary.py --diagnostic --rate 10 \
   --out runs/replay/diagnostic.json
 ```
 
-This uses fictional observations and a scripted backend to exercise coordination
-and tool use. It checks control flow, not perception or natural commentary quality.
+This uses fictional observations and a scripted backend. It checks scheduling and
+tool use, not vision or commentary quality.
 
-### Prepare a recorded clip
+### Generate commentary for a recorded clip
 
-This example expects the matching Argentina–France footage at the local path shown.
-Its tracked input files contain team/kit metadata and an empty research brief;
-no target commentary or evaluation labels enter the agents.
+This example needs the Argentina–France footage at the path below. The tracked
+inputs contain team and kit metadata and an empty research brief. Target commentary
+and evaluation labels are kept out of agent inputs.
 
 ```bash
 uv run python scripts/prepare_agent_demo.py \
@@ -253,18 +215,15 @@ uv run python scripts/prepare_agent_demo.py \
   --out-dir runs/my-demo
 ```
 
-The command is a **dry run by default**. Add `--spend` to enable generation after
-configuring credentials. Choose a new output directory for each attempt; the
-runner refuses to overwrite an existing one. The recorded path supports clips up
-to 30 seconds.
+This is a dry run until you add `--spend`. Use a new output directory each time;
+the runner refuses to overwrite one. Clips can be up to 30 seconds long.
 
-A completed run saves `observations.json`, `plan.json`, `result.json` and captured
-provider responses. They preserve the source hash, model choices, exact words,
-role/tool decisions, rejected turns, usage and budget accounting.
+A completed run saves `observations.json`, `plan.json`, `result.json` and provider
+responses, including source hashes, models, exact words, tool decisions, rejected
+turns, usage and costs. The bounded runner reserves the maximum output cost before
+calling a model and does not retry providers automatically.
 
-### Render captions without voice synthesis
-
-After generating a plan:
+### Render captions
 
 ```bash
 uv run python scripts/render_text_demo.py \
@@ -273,56 +232,46 @@ uv run python scripts/render_text_demo.py \
   --out runs/my-demo/captioned.mp4 --label ''
 ```
 
-Rendering uses local FFmpeg, strips source audio and makes no model or TTS calls.
-Caption intervals estimate reading time; they are not measured speech latency.
-Plans, edits and render reports remain separate, so presentation changes can be
-compared with the original model output.
+This uses local FFmpeg, removes source audio and makes no model or voice calls.
+Caption timing estimates reading time. Plans, edits and render reports stay separate
+so you can compare the presentation with the original output.
 
 ## Evaluation
 
-The fixed development selection is
-[`examples/action-suite.json`](examples/action-suite.json): **15 clips, 112.5
-seconds**, spanning routine play, dribbles, tackles, saves, goals and decisions.
-Reference labels and target commentary stay outside runtime inputs.
+The development set is [15 clips totaling 112.5 seconds](examples/action-suite.json),
+covering routine play, dribbles, tackles, saves, goals and decisions. Checks cover
+perception, identity, factual grounding, timing and dialogue. The draft labels
+still need human review before they can be used as a held-out test set.
 
-The evaluation separates perception, identity, factual grounding, timing and
-dialogue. Draft labels are not human-approved held-out ground truth.
+Some things found during development:
 
-### Findings and iterations
+- Lines often could not fit after their supporting frames arrived. Per-turn word
+  budgets and timing feedback made that constraint explicit.
+- Role checks handled uncertain and replay evidence differently across comparison
+  paths. Those checks were aligned, and the failed results were kept.
+- The model reviewer rejected “Kane scores!” twice. Disabling it restored the goal
+  call in a comparison using the same footage and saved evidence, with 9 model
+  calls instead of 17. Reported token cost fell from $0.01796 to $0.00871, but the
+  first call moved from 1s to 3s.
+- A false goal observation reached both writers. Citation checks passed because
+  both used the same faulty evidence. Valid structure does not verify the pixels.
 
-| Finding | Engineering response |
-| --- | --- |
-| Drafts could not fit after their supporting frames arrived. | Added explicit per-turn word budgets and more actionable timing feedback. |
-| Uncertain/replay evidence was handled inconsistently between comparison paths. | Aligned role-permission checks; retained the original failed results. |
-| A reviewer rejected even “Kane scores!” twice. | Disabled the optional reviewer in the selected penalty run, retaining deterministic checks. |
-| A false visual goal reached both writers through shared evidence. | Traced the upstream failure and preserved it as a limitation; schema/citation checks do not independently verify pixels. |
+The text pilot had 12 usable perception inputs; 5 of 24 writer attempts passed
+structural checks. Integration failures and inconsistent validation prevented
+a useful architecture comparison.
 
-The text pilot had **12 usable perception inputs; 5 of 24 attempted writer arms
-passed structural checks**. Integration failures and a validation asymmetry
-prevented a meaningful architecture-quality ranking. These are diagnostic counts,
-not an accuracy score. See [the full trial](docs/TEXT_EVALUATION_TRIAL.md).
+Details: [text trial](docs/TEXT_EVALUATION_TRIAL.md),
+[penalty comparison](examples/portfolio-demo/iteration.json) and
+[release runs and costs](examples/portfolio-demo/release/README.md).
 
-### A retained before/after example
+## Current limitations
 
-The two penalty attempts use the same footage, saved evidence and research, with
-unedited generated words:
-
-| Observed measure | Reviewer enabled | Reviewer disabled |
-| --- | --- | --- |
-| Caller announces the goal | No | Yes |
-| Model calls | 17 | 9 |
-| Reported token cost | $0.01796 | $0.00871 |
-| First call | 1s | 3s |
-
-The later run restored the caller-to-analyst handoff, but started later. This is
-one development pair with uncontrolled generation variation, not proof of a
-suite-wide quality or cost improvement. The
-[comparison record](examples/portfolio-demo/iteration.json) retains input hashes,
-outputs and tradeoffs.
-
-Four additional fresh-vision demo attempts cost **$0.27827** in reported tokens
-under a **$0.80** combined cap. Both selected outputs and failures remain in
-[the release record](examples/portfolio-demo/release/README.md).
+- Vision can misread actions and player identities, especially with small or unclear
+  shirt details. Agreement between writers does not verify a shared observation.
+- The replay prototype simulates speech timing. Production streaming and live
+  spoken latency still need testing.
+- Multiple agents add calls and delay. The evaluations so far do not establish
+  better commentary quality than a single writer.
 
 ## Development
 
@@ -335,48 +284,30 @@ npm run lint --prefix web
 npm run build --prefix web
 ```
 
-Regression tests use scripted backends and make no paid model calls.
-[GitHub Actions](.github/workflows/ci.yml) runs Python tests/lint/type checks and
-web lint/build checks. Stop an existing production web server before rebuilding
-over its `.next` output.
+Regression tests use scripted backends and make no paid calls.
+[CI](.github/workflows/ci.yml) runs Python tests, lint and type checks, plus web lint
+and build checks. Stop an existing production web server before rebuilding its
+`.next` output.
 
 ## Project structure
 
 ```text
 src/commentary/
-  search_providers.py  # Keenable / Exa retrieval adapters and source records
-  live_research.py     # Concurrent search → cited passage → commentary → voice
+  search_providers.py  # Keenable / Exa adapters and source records
+  live_research.py     # Concurrent search, passage selection, writing and voice
   replay/
     agents.py          # LangGraph role loops and read-only tools
     contracts.py       # Pydantic actions, snapshots and speech contracts
-    recorded.py        # Full-context vision and source-timed preparation
+    recorded.py        # Recorded vision and commentary preparation
     runtime.py         # Async causal replay coordinator
-    preparation.py     # Replay vision and pre-match research
-    evaluation.py      # Replay evaluation checks
+    preparation.py     # Vision, identity and research preparation
+    evaluation.py      # Replay checks
   llm/
-    openai_backend.py  # Responses API / structured-output adapter
-    budget.py          # Call limits and concurrency-safe reservations
-scripts/               # Preparation, comparison, diagnostics and rendering CLIs
-examples/              # Selected runs, evaluation inputs and retained failures
+    openai_backend.py  # Responses API and structured outputs
+    budget.py          # Call limits and cost reservations
+scripts/               # Preparation, comparison, diagnostics and rendering
+examples/              # Saved runs, evaluation inputs and failures
 tests/                 # Offline regression tests
-web/                   # Next.js showcase and optional saved-run inspector
-docs/                  # Design notes, evaluations and reproduction guides
+web/                   # Next.js demo and run inspectors
+docs/                  # Design notes and reproduction guides
 ```
-
-## Current limitations
-
-- Vision can confidently misclassify events; downstream agreement is not
-  independent verification. Player identity is especially sensitive to small or
-  unreadable shirt details.
-- The featured clips are selected development output with disclosed source cuts
-  and light edits, not an untouched end-to-end benchmark.
-- The replay prototype simulates speech occupancy. Production streaming quality
-  and real-time spoken latency are not established by this demo.
-- More agents add requests, delay and failure paths. A general quality advantage
-  over a single writer has not been demonstrated.
-
-### Engineering demo / run inspector
-
-Run the original voiced penalty alongside its supporting frames, roster lookup,
-agent decisions and raw trace at `/demo/replay?run=penalty`. See
-[recording instructions](docs/RECORDABLE_REPLAY.md) for setup and a 60–90 second walkthrough.
