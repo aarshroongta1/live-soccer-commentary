@@ -1,6 +1,6 @@
 """Prepare a two-voice replay around the exact recorded research line.
 
-One bounded caller-writing call and four TTS calls on first use; reuse saved
+One bounded caller-writing call and two TTS calls on first use; reuse saved
 artifacts thereafter. Search responses, timings, and the research line stay intact.
 """
 
@@ -34,6 +34,73 @@ class CallerDraft(BaseModel):
     closing: str = Field(min_length=1, max_length=70)
 
 
+def synthesize_exchange(plan_path: Path, out: Path) -> None:
+    """One continuous performance per voice, then reuse the existing aligned cuts."""
+    plan = json.loads(plan_path.read_text())
+    characters = sum(len(line["text"]) for line in plan["lines"]) + len(plan["lines"]) - 2
+    if characters > 420:
+        raise ValueError("Exchange exceeds the 420-character voice budget")
+    audio_root = out / "audio"
+    audio_root.mkdir(exist_ok=True)
+    manifest, rows, blocks = {}, [], []
+    for role in ("caller", "analyst"):
+        voice_plan = {**plan, "lines": [line for line in plan["lines"] if line["voice"] == role]}
+        voice_path = out / f"{role}-plan.json"
+        voice_path.write_text(json.dumps(voice_plan, indent=2) + "\n")
+        voice_audio = audio_root / role
+        if not (voice_audio / "manifest.json").exists():
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "scripts/synthesize_demo.py"),
+                    "--plan",
+                    str(voice_path),
+                    "--out-dir",
+                    str(voice_audio),
+                    "--max-characters",
+                    "420",
+                    "--continuous",
+                    "--spend",
+                    "--caller-voice",
+                    os.environ["ELEVENLABS_ANALYST_VOICE"],
+                    "--analyst-voice",
+                    os.environ["ELEVENLABS_CALLER_VOICE"],
+                ],
+                check=True,
+                cwd=ROOT,
+            )
+        recorded = json.loads((voice_audio / "synthesis-audit.json").read_text())
+        manifest.update(json.loads((voice_audio / "manifest.json").read_text()))
+        blocks.extend(recorded["blocks"])
+        for line in voice_plan["lines"]:
+            block = next(b for b in recorded["blocks"] if line["id"] in b["line_ids"])
+            rows.append(
+                {
+                    "id": line["id"],
+                    "voice": role,
+                    "voice_id": block["voice_id"],
+                    "text": line["text"],
+                    "credit_headers": {},
+                    "block_sha256": block.get("audio_sha256"),
+                }
+            )
+    if set(manifest) != {line["id"] for line in plan["lines"]}:
+        raise ValueError("Continuous synthesis did not produce every planned line")
+    (audio_root / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    (audio_root / "synthesis-audit.json").write_text(
+        json.dumps(
+            {
+                "model": "eleven_flash_v2_5",
+                "mode": "one_performance_per_voice",
+                "lines": rows,
+                "blocks": blocks,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
+
+
 async def prepare(trace: Path, out: Path, spend: bool) -> None:
     audit = json.loads(trace.read_text())
     events = audit["events"]
@@ -44,7 +111,7 @@ async def prepare(trace: Path, out: Path, spend: bool) -> None:
     manifest_path = out / "audio/manifest.json"
     if not spend and not manifest_path.exists():
         print(
-            "Dry run: one GPT-5.4-mini call capped at $0.03, four Flash TTS calls "
+            "Dry run: one GPT-5.4-mini call capped at $0.03, two Flash TTS calls "
             "capped at 420 characters, zero searches. Pass --spend to prepare."
         )
         return
@@ -171,26 +238,7 @@ async def prepare(trace: Path, out: Path, spend: bool) -> None:
         plan_path.write_text(json.dumps(plan, indent=2) + "\n")
         (out / "budget.json").write_text(json.dumps(budget.report(), indent=2) + "\n")
     if not manifest_path.exists():
-        # Swap the acoustic casting for this demo, without changing global roles.
-        subprocess.run(
-            [
-                sys.executable,
-                str(ROOT / "scripts/synthesize_demo.py"),
-                "--plan",
-                str(plan_path),
-                "--out-dir",
-                str(out / "audio"),
-                "--max-characters",
-                "420",
-                "--caller-voice",
-                os.environ["ELEVENLABS_ANALYST_VOICE"],
-                "--analyst-voice",
-                os.environ["ELEVENLABS_CALLER_VOICE"],
-                "--spend",
-            ],
-            check=True,
-            cwd=ROOT,
-        )
+        synthesize_exchange(plan_path, out)
     subprocess.run(
         [
             sys.executable,

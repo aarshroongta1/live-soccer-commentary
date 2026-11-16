@@ -154,7 +154,7 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
       <div className="simple-workspace">
         <section className="simple-match" aria-label="Match footage and reviewed event">
           <h2 className="step-label">Sunderland v Arsenal</h2>
-          <div className="simple-video"><video ref={video} src={mode === "live" ? "/soccer-commentary/ballard-original.mp4?audio=exchange-v1" : "/soccer-commentary/ballard-live-replay.mp4?audio=exchange-v1"} controls playsInline preload="auto"
+          <div className="simple-video"><video ref={video} src={mode === "live" ? "/soccer-commentary/ballard-original.mp4?audio=exchange-v2" : "/soccer-commentary/ballard-live-replay.mp4?audio=exchange-v2"} controls playsInline preload="auto"
             onPlay={() => { setPlaying(true); if (speech.current && !speech.current.ended) void speech.current.play().catch(() => {}); }}
             onPause={() => { setPlaying(false); speech.current?.pause(); }} onEnded={() => { setPlaying(false); setTime(20); }}
             onSeeked={e => setTime(e.currentTarget.currentTime)} onTimeUpdate={e => { if (!playing) setTime(e.currentTarget.currentTime); }}

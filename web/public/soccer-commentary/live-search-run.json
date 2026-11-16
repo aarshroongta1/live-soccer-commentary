@@ -334,12 +334,12 @@
       "voice_id": "8aumr1JnqELHfstCHQOk",
       "text": "Sunderland launch it long into the Arsenal penalty area,",
       "at_s": 0.15,
-      "end_s": 3.168594,
-      "input_duration_s": 3.018594,
+      "end_s": 2.599501,
+      "input_duration_s": 2.449501,
       "speed": 1.0,
-      "audio_sha256": "71b2a5401ce599eea02f611bd2d1b734bed5f3bbbd9c5d61cfbf16e7866ec889",
-      "provider_character_cost": "28",
-      "exported_rms_dbfs": -16.77
+      "audio_sha256": "3798a4e8c9a4ea6bd06bb776476c60d17bec59660df5bdc52ddb976ab0ef5c95",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.43
     },
     {
       "id": "goal",
@@ -347,12 +347,12 @@
       "voice_id": "8aumr1JnqELHfstCHQOk",
       "text": "And it\u2019s Dan Ballard! He\u2019s scored for Sunderland, and he\u2019s absolutely loving that moment!",
       "at_s": 4.05,
-      "end_s": 8.229592,
-      "input_duration_s": 4.179592,
+      "end_s": 8.607506,
+      "input_duration_s": 4.557506,
       "speed": 1.0,
-      "audio_sha256": "6e123f329b1f35f4e3292f04d0e11e8e45c7fd2f3e981261c7dcf56bc40a9c64",
-      "provider_character_cost": "44",
-      "exported_rms_dbfs": -16.57
+      "audio_sha256": "8bfa7302d30c421eb0270ab703377e4397a5a5732c1bdbb1cfd7294e2e36a31a",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -18.08
     },
     {
       "id": "context",
@@ -364,8 +364,8 @@
       "input_duration_s": 6.408707,
       "speed": 1.0,
       "audio_sha256": "8dd10ca5833b50fbdedcba8810048394f90943b83dc3b135de29dbdef9127562",
-      "provider_character_cost": "62",
-      "exported_rms_dbfs": -18.72
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -18.15
     },
     {
       "id": "closing",
@@ -373,12 +373,12 @@
       "voice_id": "8aumr1JnqELHfstCHQOk",
       "text": "What a moment for Sunderland.",
       "at_s": 18.0,
-      "end_s": 19.346757,
-      "input_duration_s": 1.346757,
+      "end_s": 19.584376,
+      "input_duration_s": 1.584376,
       "speed": 1.0,
-      "audio_sha256": "4232ef75f7b145e3ee7dce8baac1ae0c13e4aab41cbe4697e077ae8aabce7a22",
-      "provider_character_cost": "15",
-      "exported_rms_dbfs": -15.71
+      "audio_sha256": "154f5f2782cbcb3c765830e99454a9db9407cd126a693f0d415474fffdf88326",
+      "provider_character_cost": null,
+      "exported_rms_dbfs": -16.98
     }
   ],
   "delivery_origin": "Prepared two-voice exchange around the exact recorded research line; voice casting swapped at user request"

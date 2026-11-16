@@ -114,7 +114,12 @@ The prepared two-voice exchange adds one `gpt-5.4-mini` caller-writing call
 It reuses the existing researcher output and both configured voice IDs. All four
 utterances fit without speeding them up. Generation inputs, raw model output,
 TTS requests, exact voice IDs, hashes, word timings, and the mux report are saved
-in `runs/outreach/exchange/20261116-two-voice/`. The public trace's `delivery`
+in `runs/outreach/exchange/20261116-two-voice-consistent/`.
+The opening, goal reaction, and closing are now cut from one continuous supporting-
+voice performance, ensuring the closing uses the opening person's voice. This
+consistency update used 88 voice credits, reusing all words and the existing
+research-line audio; no new model or search calls. Fresh generation uses two
+continuous voice performances, one per voice, instead of four independent calls. The public trace's `delivery`
 field describes this arrangement separately from the original search/model events.
 These calls and earlier development work remain within the authorized $1 cap.
 
@@ -141,17 +146,17 @@ To regenerate the full exchange and replay trace from the retained actual run:
 ```bash
 .venv/bin/python scripts/prepare_search_exchange.py \
   --trace runs/outreach/live/20261115T044137-e472ae/trace.json \
-  --out-dir runs/outreach/exchange/20261116-two-voice
+  --out-dir runs/outreach/exchange/20261116-two-voice-consistent
 ```
 
 With saved artifacts present this command makes no paid calls. For a fresh output
-directory, `--spend` authorizes one caller-writing call capped at $0.03 and four
+directory, `--spend` authorizes one caller-writing call capped at $0.03 and two
 voice calls capped at 420 total characters. Existing synthesis and mux helpers are
 reused; no model or TTS retries occur.
 
 The context line starts at the retained ready cue, 9.878 seconds into the clip,
 and now ends at 16.287 seconds in the other voice. The last caller phrase ends at
-19.347 seconds. Original broadcast speech is excluded for the entire clip. All
+19.584 seconds. Original broadcast speech is excluded for the entire clip. All
 workflow text is HTML rendered by the page, separate from the match video.
 
 To capture the whole workflow manually, record the browser window and use the
