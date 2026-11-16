@@ -1,11 +1,15 @@
 # AI Football Commentary
 
-[**Live demo**](https://www.aarshroongta.com/projects/soccer-commentary) · [Architecture](#architecture) · [Quick start](#quick-start) ·
+[**Commentary showcase**](https://www.aarshroongta.com/projects/soccer-commentary) ·
+[**Keenable search demo**](https://www.aarshroongta.com/demo/keenable) ·
+[Architecture](#architecture) · [Quick start](#quick-start) ·
 [Usage](#usage) · [Evaluation](#evaluation) · [Project structure](#project-structure)
 
 A multimodal, multi-agent prototype that turns football footage into play-by-play
 and analysis. A visual observer supplies timestamped evidence; independent caller
 and analyst agents decide what to say; deterministic code controls their turns.
+Keenable supplies web evidence for the research path, so commentary can connect
+an observed event to relevant player history or team form.
 
 Built with **Python, LangGraph, Pydantic, asyncio, OpenCV and Next.js**.
 The focus is engineering around existing models: orchestration, grounded tool use,
@@ -37,16 +41,20 @@ featured clips and requires no API key to watch.
 
 ## Key capabilities
 
-The [20-second Keenable / Exa research demo](examples/keenable-outreach/README.md)
-at `/demo/replay` runs concurrent searches on the goal cue, shows their actual
-responses, and passes a selected source passage to the commentary writer and
-voice. Finish order follows the real requests. A recorded Keenable-first run is
-available at `?mode=replay`; another retained browser run had Exa finish first.
+The [20-second Keenable / Exa demo](https://www.aarshroongta.com/demo/keenable)
+shows the research handoff: goal event → shared search query → actual provider
+responses → selected evidence → spoken commentary. Public playback uses saved
+responses and timings. The [local live mode](examples/keenable-outreach/README.md)
+at `/demo/replay` makes concurrent requests and starts research from the first
+successful response.
 
 - **Multimodal perception:** sample video frames with OpenCV and produce typed
   action observations with timestamps, uncertainty and supporting-frame references.
 - **Multi-agent orchestration:** separate LangGraph caller and analyst roles,
   each with its own prompt, evidence permissions and bounded tool loop.
+- **Web-grounded research:** Keenable retrieves source excerpts; a researcher
+  selects supporting evidence before the commentary writer uses it. Exa shares
+  the same adapter contract for comparison.
 - **Structured outputs and grounding:** Pydantic contracts and application checks
   enforce evidence visibility, citation validity, role permissions and word budgets.
 - **Async coordination:** the causal replay runtime handles deadlines,
@@ -78,11 +86,56 @@ The observer proposes what happened; the language agents choose the commentary.
 The coordinator owns timing and admission checks. It is ordinary Python, not an
 LLM supervisor. The frontend plays saved results without making model calls.
 
+### Keenable: search evidence for commentary
+
+Keenable sits between the event and the research agent. It retrieves context;
+the commentary writer turns that evidence into a reaction to the play.
+
+```mermaid
+flowchart LR
+    E[Reviewed goal event] --> Q[Shared search query]
+    Q --> K[Keenable search]
+    Q --> X[Exa comparison]
+    K --> R[First successful response]
+    X --> R
+    R --> F[Researcher selects a source passage]
+    F --> W[Commentary writer]
+    E --> W
+    W --> T[Voice synthesis]
+```
+
+In the demo, Dan Ballard scores for Sunderland against Arsenal. Keenable returns
+a passage connecting him to Arsenal's academy and the end of Arsenal's eight-game
+clean-sheet run. The researcher selects that passage, and the writer receives
+the exact text, source URL and reviewed goal event. Its generated line is:
+
+> Dan Ballard has come back to haunt Arsenal there — a former Arsenal academy player ending their eight-game clean-sheet run.
+
+[`search_providers.py`](src/commentary/search_providers.py) normalizes Keenable
+snippets and Exa highlights into the same `SearchRun` contract, retaining each
+provider's request, raw response, ranked sources and client elapsed time.
+[`live_research.py`](src/commentary/live_research.py) runs the searches concurrently
+and starts passage selection as soon as the first successful response arrives,
+without waiting for the other provider. That matters for live commentary: search,
+writing and voice synthesis all have to fit before the moment passes.
+
+The existing research preparation path also accepts a `SearchRun` through
+[`prepare_research`](src/commentary/replay/preparation.py), checks supporting
+quotes against returned excerpts, and produces a cited `ResearchBrief` for the
+analyst's `research` tool. Saved briefs and model-native web search remain supported.
+Search evidence supplies background; it does not establish what happened on pitch.
+
+The public demo replays a Keenable-first run; another retained run had Exa finish
+first. These are individual request timings, not a general benchmark. The goal
+and scorer in this demo are human reviewed, and public playback makes no API calls.
+See the [implementation and timing record](examples/keenable-outreach/README.md)
+for provider settings, actual outputs and reproduction steps.
+
 ### Agent responsibilities
 
 | Component | Responsibility | Boundary |
 | --- | --- | --- |
-| Researcher | Prepare optional cited, dated squad/team context before the match cutoff. | Research cannot prove an on-pitch action or identify a player by itself. |
+| Researcher | Prepare cited player/team context; select source evidence from Keenable or the comparison provider for event-triggered commentary. | Research cannot prove an on-pitch action or identify a player by itself. |
 | Observer | Propose timestamped actions, supporting frames and readable identity cues. The replay observer can request a bounded crop and roster context. | Unclear actions remain uncertain; identity must be linked to the observed action. |
 | Caller | React to immediate play and confirmed goal observations. | Requires visual evidence; cannot use research or announce uncertain/replay actions as live play. |
 | Analyst | Explain supported movement or add relevant context. | Complements the caller; may abstain when there is no useful supported point. |
@@ -291,6 +344,8 @@ over its `.next` output.
 
 ```text
 src/commentary/
+  search_providers.py  # Keenable / Exa retrieval adapters and source records
+  live_research.py     # Concurrent search → cited passage → commentary → voice
   replay/
     agents.py          # LangGraph role loops and read-only tools
     contracts.py       # Pydantic actions, snapshots and speech contracts
@@ -323,5 +378,5 @@ docs/                  # Design notes, evaluations and reproduction guides
 ### Engineering demo / run inspector
 
 Run the original voiced penalty alongside its supporting frames, roster lookup,
-agent decisions and raw trace at `/demo/replay`. See
+agent decisions and raw trace at `/demo/replay?run=penalty`. See
 [recording instructions](docs/RECORDABLE_REPLAY.md) for setup and a 60–90 second walkthrough.
