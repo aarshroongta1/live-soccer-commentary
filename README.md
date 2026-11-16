@@ -1,43 +1,17 @@
 # AI Football Commentary
 
-[**Keenable demo**](https://www.aarshroongta.com/demo/keenable) ·
 [**Commentary clips**](https://www.aarshroongta.com/projects/soccer-commentary) ·
 [Architecture](#architecture) · [Quick start](#quick-start) · [Evaluation](#evaluation)
 
 AI commentary for short football clips, with a play-by-play caller and an analyst.
-A vision agent watches the footage, Keenable finds relevant background, and the
+A vision agent watches the footage, a researcher finds relevant background, and the
 speaking agents decide what to say. Python code handles timing and checks what
 each agent is allowed to use.
 
 Built with Python, LangGraph, Pydantic, asyncio, OpenCV and Next.js. Generation
 uses existing models; there is no training or fine-tuning.
 
-## Demos
-
-### Keenable: from a goal to a better commentary line
-
-The [20-second demo](https://www.aarshroongta.com/demo/keenable) follows Dan Ballard's
-goal against Arsenal. Keenable returns a source passage explaining that he came
-through Arsenal's academy and ended their run of eight clean sheets. The commentary
-writer uses it to generate:
-
-> Dan Ballard has come back to haunt Arsenal there — a former Arsenal academy player ending their eight-game clean-sheet run.
-
-You can follow the event, search query, both providers' responses, selected passage
-and generated line beside the match video. Keenable and Exa receive the same query;
-the first successful response goes to the researcher without waiting for the other.
-Search latency matters here because writing and voice synthesis still have to
-finish while the goal is worth talking about.
-
-The public page replays real saved responses and timings with a prepared two-voice
-exchange. It makes no API calls. The goal and scorer are human reviewed for this
-demo. Keenable finished first in the displayed run; Exa finished first in another
-retained run, so this is an example, not a general speed benchmark.
-
-See [the demo notes](examples/keenable-outreach/README.md) for actual outputs,
-provider settings, timing records and instructions for running it live locally.
-
-### Commentary clips
+## Demo
 
 The [commentary page](https://www.aarshroongta.com/projects/soccer-commentary) has
 three clips with two voices and captions:
@@ -67,6 +41,9 @@ flowchart LR
     E --> C[Coordinator]
     C --> P[Caller]
     C --> A[Analyst]
+    W[Web search] --> B[Researcher]
+    B --> F[Cited background]
+    F -.-> A
     P --> G[Evidence and timing checks]
     A --> G
     G --> S[Commentary plan and trace]
@@ -83,36 +60,24 @@ flowchart LR
 The coordinator is ordinary Python. LangGraph runs each speaking agent's tool
 loop; asyncio handles pending work, deadlines and cancellation.
 
-### Where Keenable fits
+### Research
 
-```mermaid
-flowchart LR
-    E[Reviewed goal event] --> Q[Shared search query]
-    Q --> K[Keenable]
-    Q --> X[Exa comparison]
-    K --> R[First successful response]
-    X --> R
-    R --> F[Select source passage]
-    F --> W[Commentary writer]
-    E --> W
-    W --> T[Voice synthesis]
-```
+The researcher uses Keenable for web retrieval. The
+[`search adapter`](src/commentary/search_providers.py) returns ranked excerpts,
+source URLs and request timings as a `SearchRun`; Exa uses the same format for
+comparison. Saved briefs and model-native web search are also supported.
 
-[`search_providers.py`](src/commentary/search_providers.py) puts Keenable snippets
-and Exa highlights into the same `SearchRun` format. It keeps the request, raw
-response, ranked sources and client elapsed time for each provider.
+[`prepare_research`](src/commentary/replay/preparation.py) checks supporting quotes
+against returned excerpts and builds a dated `ResearchBrief` for the analyst's
+`research` tool. Background facts can add context to a goal, but visual evidence
+is still needed to establish the action.
 
-[`live_research.py`](src/commentary/live_research.py) runs both searches concurrently.
-The researcher selects a passage ID, and code copies the exact passage and URL
-from the response. The writer receives that evidence and the reviewed event;
-its exact output goes to voice synthesis. The selector and writer use
-`gpt-5.4-mini`; voice synthesis uses ElevenLabs `eleven_flash_v2_5`.
-
-The main pipeline can also pass a `SearchRun` to
-[`prepare_research`](src/commentary/replay/preparation.py). It checks supporting
-quotes against returned excerpts and builds a dated `ResearchBrief` for the
-analyst's `research` tool. Saved briefs and model-native web search also work.
-Research supplies background; visual evidence is still needed to establish the action.
+The [event-triggered path](src/commentary/live_research.py) starts with the first
+successful search response, selects an exact source passage, then passes it and
+the reviewed event to the writer. Selection and writing use `gpt-5.4-mini`, followed
+by ElevenLabs `eleven_flash_v2_5` for speech. Search runs concurrently so writing
+can start without waiting for both providers. See the
+[search workflow notes](examples/keenable-outreach/README.md) for settings and timing records.
 
 ### How an agent takes a turn
 
@@ -162,7 +127,7 @@ npm run dev --prefix web
 | Local route | What it shows |
 | --- | --- |
 | `/demo` | Saved commentary clips |
-| `/demo/keenable` | Saved Keenable / Exa replay |
+| `/demo/replay?mode=replay` | Saved search and commentary workflow |
 | `/demo/replay` | Live search comparison; playback triggers paid calls when configured |
 | `/demo/replay?run=penalty` | Original penalty run with frames, tool calls and agent decisions |
 | `/demo/engineering/runs` | Saved-run inspector |
@@ -179,7 +144,7 @@ uv sync --extra demo --dev
 ```
 
 For generation, copy `.env.example` to `.env`. Set `OPENAI_API_KEY` for research,
-vision and writing. The live search demo also needs `KEENABLE_API_KEY`,
+vision and writing. The live research path also needs `KEENABLE_API_KEY`,
 `EXA_API_KEY`, `ELEVENLABS_API_KEY` and the voice IDs documented in `.env.example`.
 Keys stay on the server. Live mode allows one active run and three runs per server
 session. Each run allows two model calls with a combined $0.05 cap and up to
