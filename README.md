@@ -153,21 +153,7 @@ Search and voice charges are separate from the model cap.
 
 ## Usage
 
-### Check the coordination without paid calls
-
-```bash
-uv run python scripts/replay_commentary.py --diagnostic --rate 10 \
-  --out runs/replay/diagnostic.json
-```
-
-This uses fictional observations and a scripted backend. It checks scheduling and
-tool use, not vision or commentary quality.
-
-### Generate commentary for a recorded clip
-
-This example needs the Argentina–France footage at the path below. The tracked
-inputs contain team and kit metadata and an empty research brief. Target commentary
-and evaluation labels are kept out of agent inputs.
+With the footage restored and `OPENAI_API_KEY` set, generate a commentary plan:
 
 ```bash
 uv run python scripts/prepare_agent_demo.py \
@@ -175,20 +161,29 @@ uv run python scripts/prepare_agent_demo.py \
   --start 12 --duration 28 \
   --teams examples/portfolio-demo/release/argentina-teams.json \
   --research examples/portfolio-demo/release/argentina-research.json \
-  --observer-model gpt-5.4-mini --speaker-model gpt-5.4-mini \
   --no-review --max-usd 0.20 --max-model-calls 24 \
-  --out-dir runs/my-demo
+  --out-dir runs/my-demo --spend
 ```
 
-This is a dry run until you add `--spend`. Use a new output directory each time;
-the runner refuses to overwrite one. Clips can be up to 30 seconds long.
+This runs vision and dialogue generation with `gpt-5.4-mini`, capped at $0.20 and
+24 model calls. Omit `--spend` to validate the inputs without calling a model.
+Use a new output directory for each run. For another match, change the footage,
+clip window and team/research JSON files. Clips can be up to 30 seconds long.
 
-A completed run saves `observations.json`, `plan.json`, `result.json` and provider
-responses, including source hashes, models, exact words, tool decisions, rejected
-turns, usage and costs. The bounded runner reserves the maximum output cost before
-calling a model and does not retry providers automatically.
+The output directory contains:
 
-### Render captions
+| File | What to inspect |
+| --- | --- |
+| `observations.json` | What the observer saw, supporting-frame timestamps and identity lookups |
+| `plan.json` | Commentary lines, speakers, timestamps and evidence references |
+| `result.json` | Agent decisions, rejected turns, errors and budget usage |
+| `response-*.json` | Captured provider responses |
+
+To try dialogue changes on the same footage, add
+`--reuse-vision runs/my-demo/observations.json` and choose a new output directory.
+This reuses the visual observations while rerunning identity resolution and dialogue.
+
+Render the plan as a captioned video:
 
 ```bash
 uv run python scripts/render_text_demo.py \
@@ -197,35 +192,79 @@ uv run python scripts/render_text_demo.py \
   --out runs/my-demo/captioned.mp4 --label ''
 ```
 
-This uses local FFmpeg, removes source audio and makes no model or voice calls.
-Caption timing estimates reading time. Plans, edits and render reports stay separate
-so you can compare the presentation with the original output.
+Rendering is local, removes source audio and makes no paid calls. Caption timing
+estimates reading time. The generated plan stays unchanged by rendering or later edits.
 
 ## Evaluation
 
+The evaluation harness follows a run from observations through tool calls to spoken
+lines. It saves the failures alongside the output, so changes to prompts, models or
+scheduling can be checked against the same inputs.
+
 The development set is [15 clips totaling 112.5 seconds](examples/action-suite.json),
-covering routine play, dribbles, tackles, saves, goals and decisions. Checks cover
-perception, identity, factual grounding, timing and dialogue. The draft labels
-still need human review before they can be used as a held-out test set.
+covering routine play, dribbles, tackles, saves, goals and decisions. Reference labels
+and target commentary stay outside agent inputs. The labels still need human review.
 
-Some things found during development:
+### What the harness checks
 
-- Lines often could not fit after their supporting frames arrived. Per-turn word
-  budgets and timing feedback made that constraint explicit.
-- Role checks handled uncertain and replay evidence differently across comparison
-  paths. Those checks were aligned, and the failed results were kept.
-- The model reviewer rejected “Kane scores!” twice. Disabling it restored the goal
-  call in a comparison using the same footage and saved evidence, with 9 model
-  calls instead of 17. Reported token cost fell from $0.01796 to $0.00871, but the
-  first call moved from 1s to 3s.
-- A false goal observation reached both writers. Citation checks passed because
-  both used the same faulty evidence. Valid structure does not verify the pixels.
+[`evaluate_replay.py`](scripts/evaluate_replay.py) scores a saved replay against a
+separate reference file. Its [scorecard](src/commentary/replay/evaluation.py) reports:
 
-The text pilot had 12 usable perception inputs; 5 of 24 writer attempts passed
-structural checks. Integration failures and inconsistent validation prevented
-a useful architecture comparison.
+| Area | Checks and measurements |
+| --- | --- |
+| Recognition | One-to-one event/time matches, missed events, unmatched detections, action and ball-path confusions |
+| Identity and grounding | Resolved player names, unknown or future evidence citations, research citation IDs |
+| Timing and dialogue | Event-to-scheduled-speech delay (p50/p95), cited-event coverage, overlaps and interruptions |
+| Execution | Tool calls, timeouts, stale results, rejected turns, provider errors and budget stops |
 
-Details: [text trial](docs/TEXT_EVALUATION_TRIAL.md),
+Timing uses the run's speech clock, which is simulated in the causal replay prototype.
+Event matches and valid citations are mechanical checks. Factual meaning, useful
+analysis and natural dialogue require separate source review using the
+[text review rubric](docs/TEXT_EVALUATION.md).
+
+Run a complete synthetic replay and score it without footage, keys or paid calls:
+
+```bash
+uv run python scripts/replay_commentary.py --diagnostic --rate 10 \
+  --out runs/eval/smoke.json
+uv run python scripts/evaluate_replay.py \
+  --run runs/eval/smoke.json \
+  --reference examples/replay-evaluation/diagnostic.json \
+  --out runs/eval/scorecard.json
+```
+
+This exercises the coordinator, agent tool loops and scoring with scripted agents.
+[Regression tests](tests/test_replay_runtime.py) also cover delayed responses,
+goal interruptions, stale work, cancellation and evidence arriving out of order.
+
+### Comparing writers
+
+[`compare_text.py`](scripts/compare_text.py) compares a joint writer with separate
+caller/analyst agents using identical saved observations, identities and research.
+It checks source hashes and clip windows, holds the model and resource limits fixed
+across both paths, and exports anonymized pairs for review. Each attempt retains
+prompt/input hashes, raw responses, rejected drafts, usage and cost. Failed and
+missing runs stay in the report.
+
+This isolates writing and coordination from changes in perception. It is an offline
+text comparison; it does not measure live speech delivery.
+
+### What it caught
+
+| Finding | Change or consequence |
+| --- | --- |
+| Drafts could not fit after their supporting frames arrived. | Added per-evidence word allowances and explicit timing feedback. |
+| The writer paths applied different checks to uncertain and replay evidence. | Aligned the checks; kept the original results out of architecture rankings. |
+| The model reviewer rejected “Kane scores!” twice. | Disabled it in the selected penalty run while keeping code-based checks. |
+| Both writers announced a goal from the same false observation. | Source review traced the mistake to perception; valid citations had not caught it. |
+
+The first text pilot had 12 usable perception inputs and 5 of 24 writer attempts
+passed structural checks. Those counts describe execution, not commentary accuracy.
+In one penalty comparison, disabling the reviewer reduced model calls from 17 to 9
+and token cost from $0.01796 to $0.00871, but moved the first call from 1s to 3s.
+These results guide debugging; they do not establish an overall quality improvement.
+
+See the [trial report](docs/TEXT_EVALUATION_TRIAL.md),
 [penalty comparison](examples/portfolio-demo/iteration.json) and
 [release runs and costs](examples/portfolio-demo/release/README.md).
 
