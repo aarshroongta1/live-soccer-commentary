@@ -1,6 +1,6 @@
 # Live search → fact → commentary
 
-Public replay: **https://soccer-commentary-demo.vercel.app/demo/keenable**.
+Public replay: **https://www.aarshroongta.com/demo/keenable**.
 This route always uses saved search events and generated audio, with selectable
 workflow text and no live API calls. It needs no login or API keys. The normal
 localhost route below still runs the live pipeline.
@@ -29,9 +29,13 @@ The selected provider and result number remain visible at the handoff. Request,
 response, source passage, writer input, generated line, model usage and voice
 credits are retained under `runs/outreach/live/<run_id>/trace.json`.
 
-The video excludes the original broadcast audio. Only the generated commentator
-is audible; the live footage uses a silent track so native volume controls still work. There is no provider-promotion voiceover and no
-editorial rewrite of the generated analyst line. The goal/scorer is explicitly
+The replay excludes the original broadcast audio and uses a prepared two-voice
+exchange: buildup, goal reaction, the exact research line, and a short closing
+reaction. The research line uses the configured lead voice; surrounding caller
+phrases use the supporting voice, as requested. Only one speaks at a time, at
+natural speed. Caller phrases were generated from human-reviewed visual cues,
+with no new web searches. Their actual words appear under the player while spoken.
+The search responses and original model research line are unchanged. The goal/scorer is explicitly
 human-reviewed for this demonstration; it is not a new vision inference claim.
 
 ## Actual outputs and timing
@@ -105,6 +109,13 @@ $0.00326175 in model tokens, $0.007 Exa search cost, one free Keenable credit,
 and 70 voice credits. TTS did not return an account-specific dollar invoice.
 The revised saved-search evaluation made zero new search API calls. Its two
 `gpt-5.4-mini` calls cost $0.00097065 (including cached input) and the voice used 62 character credits.
+The prepared two-voice exchange adds one `gpt-5.4-mini` caller-writing call
+($0.0005445) and four `eleven_flash_v2_5` calls (149 character credits total).
+It reuses the existing researcher output and both configured voice IDs. All four
+utterances fit without speeding them up. Generation inputs, raw model output,
+TTS requests, exact voice IDs, hashes, word timings, and the mux report are saved
+in `runs/outreach/exchange/20261116-two-voice/`. The public trace's `delivery`
+field describes this arrangement separately from the original search/model events.
 These calls and earlier development work remain within the authorized $1 cap.
 
 Regression tests use mocked providers and ScriptedBackend, never paid calls.
@@ -125,17 +136,23 @@ does not make live search/model calls. The header labels this as saved searches.
 The original broadcast media and generated audio/video stay gitignored.
 The published trace includes full provider responses and exact event records.
 
-To regenerate the match audio and replay trace from the retained actual run:
+To regenerate the full exchange and replay trace from the retained actual run:
 
 ```bash
-.venv/bin/python scripts/prepare_live_search_replay.py \
-  --trace runs/outreach/live/20261115T044137-e472ae/trace.json
+.venv/bin/python scripts/prepare_search_exchange.py \
+  --trace runs/outreach/live/20261115T044137-e472ae/trace.json \
+  --out-dir runs/outreach/exchange/20261116-two-voice
 ```
 
-The replay mux places speech at its actual ready offset (9.878 seconds into the
-clip for this revision), preserves exact words, and includes only the generated
-voice. Original broadcast speech is excluded for the entire clip. No speed change was needed: speech ends at 16.519 seconds. All workflow text
-is rendered by the page from the trace, separate from the match video.
+With saved artifacts present this command makes no paid calls. For a fresh output
+directory, `--spend` authorizes one caller-writing call capped at $0.03 and four
+voice calls capped at 420 total characters. Existing synthesis and mux helpers are
+reused; no model or TTS retries occur.
+
+The context line starts at the retained ready cue, 9.878 seconds into the clip,
+and now ends at 16.287 seconds in the other voice. The last caller phrase ends at
+19.347 seconds. Original broadcast speech is excluded for the entire clip. All
+workflow text is HTML rendered by the page, separate from the match video.
 
 To capture the whole workflow manually, record the browser window and use the
 video's normal play control. A recorder with system-audio support is needed to

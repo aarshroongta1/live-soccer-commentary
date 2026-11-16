@@ -9,7 +9,8 @@ type Hit = { rank: number; title: string; url: string; excerpt: string };
 type Search = { provider: string; elapsed_ms: number; results: Hit[]; raw: unknown; request: unknown };
 type Fact = { provider: string; rank: number; title: string; url: string; text: string; id: string };
 type Packet = { type: string; at_ms: number; provider?: string; query?: string; search?: Search; fact?: Fact; input?: { event: string; fact: Fact }; text?: string; audio_base64?: string; message?: string; run_id?: string };
-type SavedRun = { events: Packet[]; query: string; speech_start_s: number; speech_end_s: number; search_source?: { mode: string; run_id: string } | null };
+type Delivery = { id: string; voice: "caller" | "analyst"; text: string; at_s: number; end_s: number };
+type SavedRun = { delivery?: Delivery[]; events: Packet[]; query: string; speech_start_s: number; speech_end_s: number; search_source?: { mode: string; run_id: string } | null };
 const trigger = 4;
 const displayName = (name: string) => name === "keenable" ? "Keenable" : "Exa";
 
@@ -84,6 +85,8 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
   const query = events.find(e => e.query)?.query || data.query;
   const flowClock = mode === "replay" ? Math.max(0, time - trigger) * 1000 : elapsed;
   const complete = liveEvents.some(e => e.type === "complete");
+  const spoken = mode === "replay" ? saved?.delivery?.find(line => time >= line.at_s && time < line.end_s) : undefined;
+  const playByPlay = spoken?.voice === "caller" ? spoken.text : "";
   const voicePlaying = mode === "replay" ? Boolean(saved && time >= saved.speech_start_s && time < saved.speech_end_s) : speaking;
 
   const finishSpeech = useCallback(() => setSpeaking(false), []);
@@ -152,12 +155,13 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
       <div className="simple-workspace">
         <section className="simple-match" aria-label="Match footage and reviewed event">
           <h2 className="step-label">Sunderland v Arsenal</h2>
-          <div className="simple-video"><video ref={video} src={mode === "live" ? "/soccer-commentary/ballard-original.mp4?audio=solo" : "/soccer-commentary/ballard-live-replay.mp4?audio=solo"} controls playsInline preload="auto"
+          <div className="simple-video"><video ref={video} src={mode === "live" ? "/soccer-commentary/ballard-original.mp4?audio=exchange-v1" : "/soccer-commentary/ballard-live-replay.mp4?audio=exchange-v1"} controls playsInline preload="auto"
             onPlay={() => { setPlaying(true); if (speech.current && !speech.current.ended) void speech.current.play().catch(() => {}); }}
             onPause={() => { setPlaying(false); speech.current?.pause(); }} onEnded={() => { setPlaying(false); setTime(20); }}
             onSeeked={e => setTime(e.currentTarget.currentTime)} onTimeUpdate={e => { if (!playing) setTime(e.currentTarget.currentTime); }}
             onVolumeChange={e => { if (speech.current) { speech.current.volume = e.currentTarget.volume; speech.current.muted = e.currentTarget.muted; } }}
             onError={() => setError("Match video unavailable.")} aria-label="Match footage with generated commentary" /></div>
+          <p className="play-by-play" aria-label="Spoken play-by-play">{playByPlay}</p>
           <div className="event-input" data-active={time >= trigger}>
             <header>Reviewed event</header>
             {time >= trigger ? <p><EventWords text={eventText} /></p> : <div className="event-waiting" aria-label="Waiting for goal"><i /><i /></div>}
@@ -190,6 +194,6 @@ export default function Comparison({ data, mode = "live", shareable = false }: {
 
       {error && <p className="simple-error" role="alert">{error}</p>}
     </main>
-    <details className="simple-inspector"><summary>Raw data</summary><div className="simple-inspector-controls"><select value={provider} onChange={e => setProvider(e.target.value)} aria-label="Inspect provider"><option value="keenable">Keenable</option><option value="exa">Exa</option></select>{!shareable && <><a href="/demo/replay?mode=replay">recorded run</a><a href="/demo/replay">live run</a></>}<a href="/soccer-commentary/live-search-run.json" download>trace.json</a></div>{!shareable && <p>Two search calls, up to $0.05 across two model calls, one voice call capped at 240 characters. No retries. Three live runs per server session.</p>}<pre>{JSON.stringify(returns.find(e => e.provider === provider)?.search?.raw ?? {}, null, 2)}</pre><pre>{JSON.stringify({ commentary_input: input, events: events.map(e => e.audio_base64 ? { ...e, audio_base64: "(audio attached)" } : e) }, null, 2)}</pre></details>
+    <details className="simple-inspector"><summary>Raw data</summary><div className="simple-inspector-controls"><select value={provider} onChange={e => setProvider(e.target.value)} aria-label="Inspect provider"><option value="keenable">Keenable</option><option value="exa">Exa</option></select>{!shareable && <><a href="/demo/replay?mode=replay">recorded run</a><a href="/demo/replay">live run</a></>}<a href="/soccer-commentary/live-search-run.json" download>trace.json</a></div>{!shareable && <p>Two search calls, up to $0.05 across two model calls, one voice call capped at 240 characters. No retries. Three live runs per server session.</p>}<pre>{JSON.stringify(returns.find(e => e.provider === provider)?.search?.raw ?? {}, null, 2)}</pre><pre>{JSON.stringify({ commentary_input: input, delivery: saved?.delivery, events: events.map(e => e.audio_base64 ? { ...e, audio_base64: "(audio attached)" } : e) }, null, 2)}</pre></details>
   </div>;
 }
