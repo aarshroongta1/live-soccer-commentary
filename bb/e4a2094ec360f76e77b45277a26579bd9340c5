@@ -1,0 +1,23 @@
+examples/keenable-outreach/README.md
+  s_e7f8ed463e957d::t_bf8c755bba2811 82-83,135
+web/app/demo/keenable/comparison.tsx
+  s_e7f8ed463e957d::t_b30fe79827ca17 63
+web/app/demo/keenable/page.tsx
+  s_e7f8ed463e957d::t_7cd6fb451bfb63 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bbe4a2094ec360f76e77b45277a26579bd9340c5",
+  "prompts": {},
+  "sessions": {
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
