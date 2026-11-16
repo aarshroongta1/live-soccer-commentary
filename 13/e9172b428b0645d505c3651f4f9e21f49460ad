@@ -1,0 +1,19 @@
+README.md
+  s_e7f8ed463e957d::t_430fba978cba6e 3-5,11-12,44-49,55-57,89-133,138,347-348,381
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "13e9172b428b0645d505c3651f4f9e21f49460ad",
+  "prompts": {},
+  "sessions": {
+    "s_e7f8ed463e957d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1dc9e-020d-7d02-8850-1e7fee6ff2ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
