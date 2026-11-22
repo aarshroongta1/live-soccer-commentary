@@ -1,0 +1,1355 @@
+{
+  "mode": "causal_replay",
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          0.5,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+      "actor": null,
+      "action": {
+        "type": "interception",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 2.5,
+      "kind": "play",
+      "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_flight",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          2.5
+        ]
+      }
+    },
+    {
+      "id": "v2-o1",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+      "actor": null,
+      "action": {
+        "type": "save",
+        "certainty": "confirmed",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_flight",
+          "keeper_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          3.5,
+          4.0
+        ]
+      }
+    },
+    {
+      "id": "v2-o2",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+      "actor": null,
+      "action": {
+        "type": "clearance",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_contact",
+          "player_challenge",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          4.5,
+          5.0,
+          5.5
+        ]
+      }
+    }
+  ],
+  "speech": [
+    {
+      "id": "speech-1",
+      "line": {
+        "voice": "analyst",
+        "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+        "evidence_ids": [
+          "v1-o1",
+          "v1-o2",
+          "v1-o3"
+        ],
+        "research_ids": []
+      },
+      "snapshot_version": 1,
+      "event_at_s": 2.5,
+      "started_s": 8.008828416001052,
+      "ended_s": 15.67549508266772,
+      "interrupted": false
+    },
+    {
+      "id": "speech-2",
+      "line": {
+        "voice": "caller",
+        "text": "A sharp save, and the defender slides in to clear the danger.",
+        "evidence_ids": [
+          "v2-o1",
+          "v2-o2"
+        ],
+        "research_ids": []
+      },
+      "snapshot_version": 2,
+      "event_at_s": 5.0,
+      "started_s": 15.927280125004472,
+      "ended_s": 19.927280125004472,
+      "interrupted": false
+    }
+  ],
+  "trace": [
+    {
+      "event": "observation_started",
+      "at_s": 2.501473790995078,
+      "role": null,
+      "data": {
+        "cutoff_s": 2.5,
+        "frame_timestamps": [
+          0.0,
+          0.5,
+          1.0,
+          1.5,
+          2.0,
+          2.5
+        ]
+      }
+    },
+    {
+      "event": "observation_available",
+      "at_s": 5.977120541007025,
+      "role": null,
+      "data": {
+        "cutoff_s": 2.5,
+        "snapshot_version": 1,
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 1.0,
+            "kind": "play",
+            "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+            "actor": null,
+            "action": {
+              "type": "carry",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "ball_contact",
+                "ball_motion",
+                "ball_on_ground",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                0.5,
+                1.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 2.0,
+            "kind": "play",
+            "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+            "actor": null,
+            "action": {
+              "type": "interception",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "ball_motion",
+                "ball_on_ground",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                1.5,
+                2.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 2.5,
+            "kind": "play",
+            "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+            "actor": null,
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                2.5
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "observation_started",
+      "at_s": 5.977166374999797,
+      "role": null,
+      "data": {
+        "cutoff_s": 5.5,
+        "frame_timestamps": [
+          3.0,
+          3.5,
+          4.0,
+          4.5,
+          5.0,
+          5.5
+        ]
+      }
+    },
+    {
+      "event": "turn_started",
+      "at_s": 5.97743891600112,
+      "role": "caller",
+      "data": {
+        "snapshot_version": 1,
+        "cutoff_s": 2.5
+      }
+    },
+    {
+      "event": "turn_started",
+      "at_s": 5.977670791005949,
+      "role": "analyst",
+      "data": {
+        "snapshot_version": 1,
+        "cutoff_s": 2.5
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 2.5,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "abstain",
+          "tool": null,
+          "line": null,
+          "reason": "The latest action is uncertain, so the caller must abstain and leave it for replay."
+        },
+        "usage": {
+          "input_tokens": 1013,
+          "output_tokens": 44,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00012330000000000002,
+          "latency_s": 1.8576574589969823
+        },
+        "model": "gpt-6-luna",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "abstained",
+      "at_s": 7.850474416001816,
+      "role": "caller",
+      "data": {
+        "reason": "The latest action is uncertain, so the caller must abstain and leave it for replay."
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 2.5,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "reason": ""
+        },
+        "usage": {
+          "input_tokens": 1052,
+          "output_tokens": 82,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00014619999999999998,
+          "latency_s": 2.0143155830010073
+        },
+        "model": "gpt-6-luna",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "speech_queued",
+      "at_s": 8.008818999995128,
+      "role": "analyst",
+      "data": {
+        "snapshot_version": 1
+      }
+    },
+    {
+      "event": "speech_started",
+      "at_s": 8.008902290996048,
+      "role": "analyst",
+      "data": {
+        "speech": {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008828416001052,
+          "ended_s": 15.67549508266772,
+          "interrupted": false
+        }
+      }
+    },
+    {
+      "event": "observation_available",
+      "at_s": 8.866983415995492,
+      "role": null,
+      "data": {
+        "cutoff_s": 5.5,
+        "snapshot_version": 2,
+        "observations": [
+          {
+            "id": "v2-o1",
+            "at_s": 4.0,
+            "kind": "play",
+            "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+            "actor": null,
+            "action": {
+              "type": "save",
+              "certainty": "confirmed",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "keeper_contact",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                3.5,
+                4.0
+              ]
+            }
+          },
+          {
+            "id": "v2-o2",
+            "at_s": 5.0,
+            "kind": "play",
+            "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+            "actor": null,
+            "action": {
+              "type": "clearance",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_on_ground",
+                "ball_contact",
+                "player_challenge",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                4.5,
+                5.0,
+                5.5
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "observation_started",
+      "at_s": 8.867028916007257,
+      "role": null,
+      "data": {
+        "cutoff_s": 7.5,
+        "frame_timestamps": [
+          6.0,
+          6.5,
+          7.0,
+          7.5
+        ]
+      }
+    },
+    {
+      "event": "turn_started",
+      "at_s": 8.867634124995675,
+      "role": "caller",
+      "data": {
+        "snapshot_version": 2,
+        "cutoff_s": 5.5
+      }
+    },
+    {
+      "event": "turn_started",
+      "at_s": 8.868089249997865,
+      "role": "analyst",
+      "data": {
+        "snapshot_version": 2,
+        "cutoff_s": 5.5
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 5.5,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "reason": ""
+        },
+        "usage": {
+          "input_tokens": 1103,
+          "output_tokens": 79,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0001498,
+          "latency_s": 1.6236800409969874
+        },
+        "model": "gpt-6-luna",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "speech_queued",
+      "at_s": 10.508449125001789,
+      "role": "analyst",
+      "data": {
+        "snapshot_version": 2
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 5.5,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "reason": ""
+        },
+        "usage": {
+          "input_tokens": 1064,
+          "output_tokens": 64,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0001384,
+          "latency_s": 1.735843250004109
+        },
+        "model": "gpt-6-luna",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "speech_queued",
+      "at_s": 10.618119165999815,
+      "role": "caller",
+      "data": {
+        "snapshot_version": 2
+      }
+    },
+    {
+      "event": "observer_error",
+      "at_s": 11.638817625003867,
+      "role": null,
+      "data": {
+        "error": "ValueError",
+        "message": "action evidence must use exact supplied frame timestamps"
+      }
+    },
+    {
+      "event": "speech_ended",
+      "at_s": 15.677053624996915,
+      "role": "analyst",
+      "data": {
+        "speech_id": "speech-1"
+      }
+    },
+    {
+      "event": "speech_started",
+      "at_s": 15.927632374994573,
+      "role": "caller",
+      "data": {
+        "speech": {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.927280125004472,
+          "ended_s": 19.927280125004472,
+          "interrupted": false
+        }
+      }
+    },
+    {
+      "event": "speech_ended",
+      "at_s": 19.93103258300107,
+      "role": "caller",
+      "data": {
+        "speech_id": "speech-2"
+      }
+    },
+    {
+      "event": "turn_stale",
+      "at_s": 20.179035624998505,
+      "role": "analyst",
+      "data": {
+        "reason": "expired before speech"
+      }
+    }
+  ],
+  "metadata": {
+    "duration_s": 8,
+    "speech_timing": "simulated",
+    "speech_timing_method": "word_count",
+    "rate": 1.0,
+    "deadlines": "replay_seconds",
+    "max_inflight_observers": 1,
+    "max_inflight_roles": 2,
+    "source_clip": "clips/action-sources/pl-saves.mp4",
+    "source_start_s": 10,
+    "source_sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+    "sample_fps": 2,
+    "models": {
+      "observer": "gpt-5.4-mini",
+      "caller": "gpt-6-luna",
+      "analyst": "gpt-6-luna"
+    },
+    "config": {
+      "batch_s": 3,
+      "rate": 1.0,
+      "turn_timeout_s": 8,
+      "observer_timeout_s": 12,
+      "max_age_s": 12,
+      "speech_words_per_second": 3.0,
+      "drain_s": 15,
+      "line_gap_s": 0.25,
+      "max_batch_frames": 8,
+      "max_context_observations": 64,
+      "fast_goal_calls": false
+    },
+    "observer_audit": [
+      {
+        "cutoff_s": 2.5,
+        "frames_at_s": [
+          0.0,
+          0.5,
+          1.0,
+          1.5,
+          2.0,
+          2.5
+        ],
+        "context_frames_at_s": [],
+        "initial": {
+          "observations": [
+            {
+              "id": "obs1",
+              "at_s": 1.0,
+              "kind": "play",
+              "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 11,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "ball_carrier",
+                "resolved_name": null
+              },
+              "action": {
+                "type": "carry",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "ball_on_ground",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  0.5,
+                  1.0
+                ]
+              }
+            },
+            {
+              "id": "obs2",
+              "at_s": 2.0,
+              "kind": "play",
+              "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+              "actor": null,
+              "action": {
+                "type": "interception",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_motion",
+                  "ball_on_ground",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  1.5,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "obs3",
+              "at_s": 2.5,
+              "kind": "play",
+              "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "aerial",
+                "cues": [
+                  "ball_flight",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  2.5
+                ]
+              }
+            }
+          ],
+          "inspection": null
+        },
+        "ball_path_downgrades": [],
+        "inspection": null,
+        "inspection_status": "not_requested",
+        "status": "complete",
+        "resolved": [
+          {
+            "id": "v1-o1",
+            "at_s": 1.0,
+            "kind": "play",
+            "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+            "actor": null,
+            "action": {
+              "type": "carry",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "ball_contact",
+                "ball_motion",
+                "ball_on_ground",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                0.5,
+                1.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 2.0,
+            "kind": "play",
+            "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+            "actor": null,
+            "action": {
+              "type": "interception",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "ball_motion",
+                "ball_on_ground",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                1.5,
+                2.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 2.5,
+            "kind": "play",
+            "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+            "actor": null,
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                2.5
+              ]
+            }
+          }
+        ],
+        "raw": {
+          "observations": [
+            {
+              "id": "obs1",
+              "at_s": 1.0,
+              "kind": "play",
+              "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+              "actor": {
+                "side": "away",
+                "shirt_number": 11,
+                "shirt_name": null,
+                "identity_source": "shirt_number",
+                "action_role": "ball_carrier",
+                "resolved_name": null
+              },
+              "action": {
+                "type": "carry",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_contact",
+                  "ball_motion",
+                  "ball_on_ground",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  0.5,
+                  1.0
+                ]
+              }
+            },
+            {
+              "id": "obs2",
+              "at_s": 2.0,
+              "kind": "play",
+              "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+              "actor": null,
+              "action": {
+                "type": "interception",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_motion",
+                  "ball_on_ground",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  1.5,
+                  2.0
+                ]
+              }
+            },
+            {
+              "id": "obs3",
+              "at_s": 2.5,
+              "kind": "play",
+              "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+              "actor": null,
+              "action": {
+                "type": "unknown",
+                "certainty": "uncertain",
+                "ball_path": "aerial",
+                "cues": [
+                  "ball_flight",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  2.5
+                ]
+              }
+            }
+          ],
+          "inspection": null
+        },
+        "usage": {
+          "input_tokens": 4881,
+          "output_tokens": 320,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00510075,
+          "latency_s": 3.473564499989152
+        }
+      },
+      {
+        "cutoff_s": 5.5,
+        "frames_at_s": [
+          3.0,
+          3.5,
+          4.0,
+          4.5,
+          5.0,
+          5.5
+        ],
+        "context_frames_at_s": [
+          2.0,
+          2.5
+        ],
+        "initial": {
+          "observations": [
+            {
+              "id": "3.5-4.0-save",
+              "at_s": 4.0,
+              "kind": "play",
+              "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+              "actor": null,
+              "action": {
+                "type": "save",
+                "certainty": "confirmed",
+                "ball_path": "aerial",
+                "cues": [
+                  "ball_flight",
+                  "keeper_contact",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  3.5,
+                  4.0
+                ]
+              }
+            },
+            {
+              "id": "4.5-5.5-clearance",
+              "at_s": 5.0,
+              "kind": "play",
+              "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+              "actor": null,
+              "action": {
+                "type": "clearance",
+                "certainty": "confirmed",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_on_ground",
+                  "ball_contact",
+                  "player_challenge",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  4.5,
+                  5.0,
+                  5.5
+                ]
+              }
+            }
+          ],
+          "inspection": null
+        },
+        "ball_path_downgrades": [],
+        "inspection": null,
+        "inspection_status": "not_requested",
+        "status": "complete",
+        "resolved": [
+          {
+            "id": "v2-o1",
+            "at_s": 4.0,
+            "kind": "play",
+            "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+            "actor": null,
+            "action": {
+              "type": "save",
+              "certainty": "confirmed",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "keeper_contact",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                3.5,
+                4.0
+              ]
+            }
+          },
+          {
+            "id": "v2-o2",
+            "at_s": 5.0,
+            "kind": "play",
+            "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+            "actor": null,
+            "action": {
+              "type": "clearance",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_on_ground",
+                "ball_contact",
+                "player_challenge",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                4.5,
+                5.0,
+                5.5
+              ]
+            }
+          }
+        ],
+        "raw": {
+          "observations": [
+            {
+              "id": "3.5-4.0-save",
+              "at_s": 4.0,
+              "kind": "play",
+              "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+              "actor": null,
+              "action": {
+                "type": "save",
+                "certainty": "confirmed",
+                "ball_path": "aerial",
+                "cues": [
+                  "ball_flight",
+                  "keeper_contact",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  3.5,
+                  4.0
+                ]
+              }
+            },
+            {
+              "id": "4.5-5.5-clearance",
+              "at_s": 5.0,
+              "kind": "play",
+              "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+              "actor": null,
+              "action": {
+                "type": "clearance",
+                "certainty": "confirmed",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_on_ground",
+                  "ball_contact",
+                  "player_challenge",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  4.5,
+                  5.0,
+                  5.5
+                ]
+              }
+            }
+          ],
+          "inspection": null
+        },
+        "usage": {
+          "input_tokens": 5943,
+          "output_tokens": 206,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00538425,
+          "latency_s": 2.8871232500096085
+        }
+      },
+      {
+        "cutoff_s": 7.5,
+        "frames_at_s": [
+          6.0,
+          6.5,
+          7.0,
+          7.5
+        ],
+        "context_frames_at_s": [
+          5.0,
+          5.5
+        ],
+        "initial": {
+          "observations": [
+            {
+              "id": "6.0-1",
+              "at_s": 6.0,
+              "kind": "play",
+              "description": "The ball is loose in the penalty area after a blocked or deflected attempt, with the goalkeeper and defenders scrambling toward it.",
+              "actor": null,
+              "action": {
+                "type": "block",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_motion",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  5.5,
+                  6.0
+                ]
+              }
+            },
+            {
+              "id": "7.0-1",
+              "at_s": 7.0,
+              "kind": "play",
+              "description": "The ball continues rolling away from goal toward the right side of the box as nearby players reposition.",
+              "actor": null,
+              "action": {
+                "type": "ball_recovery",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_on_ground",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  6.5,
+                  7.0
+                ]
+              }
+            },
+            {
+              "id": "7.5-1",
+              "at_s": 7.5,
+              "kind": "play",
+              "description": "A dark-shirted defender has possession near the top-right of the box while attackers and the referee move around the area.",
+              "actor": null,
+              "action": {
+                "type": "carry",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_contact",
+                  "ball_on_ground",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  7.0,
+                  7.5
+                ]
+              }
+            }
+          ],
+          "inspection": null
+        },
+        "ball_path_downgrades": [
+          {
+            "id": "6.0-1",
+            "reported": "ground",
+            "accepted": "unknown",
+            "reason": "missing_corresponding_visual_cue"
+          }
+        ],
+        "inspection": null,
+        "inspection_status": "not_requested",
+        "status": "failed",
+        "resolved": [],
+        "raw": {
+          "observations": [
+            {
+              "id": "6.0-1",
+              "at_s": 6.0,
+              "kind": "play",
+              "description": "The ball is loose in the penalty area after a blocked or deflected attempt, with the goalkeeper and defenders scrambling toward it.",
+              "actor": null,
+              "action": {
+                "type": "block",
+                "certainty": "uncertain",
+                "ball_path": "unknown",
+                "cues": [
+                  "ball_motion",
+                  "player_challenge"
+                ],
+                "support_at_s": [
+                  5.5,
+                  6.0
+                ]
+              }
+            },
+            {
+              "id": "7.0-1",
+              "at_s": 7.0,
+              "kind": "play",
+              "description": "The ball continues rolling away from goal toward the right side of the box as nearby players reposition.",
+              "actor": null,
+              "action": {
+                "type": "ball_recovery",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_on_ground",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  6.5,
+                  7.0
+                ]
+              }
+            },
+            {
+              "id": "7.5-1",
+              "at_s": 7.5,
+              "kind": "play",
+              "description": "A dark-shirted defender has possession near the top-right of the box while attackers and the referee move around the area.",
+              "actor": null,
+              "action": {
+                "type": "carry",
+                "certainty": "uncertain",
+                "ball_path": "ground",
+                "cues": [
+                  "ball_contact",
+                  "ball_on_ground",
+                  "ball_motion"
+                ],
+                "support_at_s": [
+                  7.0,
+                  7.5
+                ]
+              }
+            }
+          ],
+          "inspection": null
+        },
+        "error_type": "ValueError",
+        "usage": {
+          "input_tokens": 4889,
+          "output_tokens": 277,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00491325,
+          "latency_s": 2.7686384160042508
+        }
+      }
+    ],
+    "role_audit": [
+      {
+        "event": "agent_action",
+        "at_s": 2.5,
+        "role": "caller",
+        "data": {
+          "step": 1,
+          "action": {
+            "kind": "abstain",
+            "tool": null,
+            "line": null,
+            "reason": "The latest action is uncertain, so the caller must abstain and leave it for replay."
+          },
+          "usage": {
+            "input_tokens": 1013,
+            "output_tokens": 44,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00012330000000000002,
+            "latency_s": 1.8576574589969823
+          },
+          "model": "gpt-6-luna",
+          "timestamp_basis": "snapshot_cutoff"
+        }
+      },
+      {
+        "event": "agent_action",
+        "at_s": 2.5,
+        "role": "analyst",
+        "data": {
+          "step": 1,
+          "action": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "analyst",
+              "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2",
+                "v1-o3"
+              ],
+              "research_ids": []
+            },
+            "reason": ""
+          },
+          "usage": {
+            "input_tokens": 1052,
+            "output_tokens": 82,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.00014619999999999998,
+            "latency_s": 2.0143155830010073
+          },
+          "model": "gpt-6-luna",
+          "timestamp_basis": "snapshot_cutoff"
+        }
+      },
+      {
+        "event": "agent_action",
+        "at_s": 5.5,
+        "role": "analyst",
+        "data": {
+          "step": 1,
+          "action": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "analyst",
+              "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+              "evidence_ids": [
+                "v2-o1",
+                "v2-o2"
+              ],
+              "research_ids": []
+            },
+            "reason": ""
+          },
+          "usage": {
+            "input_tokens": 1103,
+            "output_tokens": 79,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.0001498,
+            "latency_s": 1.6236800409969874
+          },
+          "model": "gpt-6-luna",
+          "timestamp_basis": "snapshot_cutoff"
+        }
+      },
+      {
+        "event": "agent_action",
+        "at_s": 5.5,
+        "role": "caller",
+        "data": {
+          "step": 1,
+          "action": {
+            "kind": "speak",
+            "tool": null,
+            "line": {
+              "voice": "caller",
+              "text": "A sharp save, and the defender slides in to clear the danger.",
+              "evidence_ids": [
+                "v2-o1",
+                "v2-o2"
+              ],
+              "research_ids": []
+            },
+            "reason": ""
+          },
+          "usage": {
+            "input_tokens": 1064,
+            "output_tokens": 64,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "cost_usd": 0.0001384,
+            "latency_s": 1.735843250004109
+          },
+          "model": "gpt-6-luna",
+          "timestamp_basis": "snapshot_cutoff"
+        }
+      }
+    ],
+    "usage_cumulative": {
+      "input_tokens": 28834,
+      "output_tokens": 1682,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "cost_usd": 0.02368635,
+      "latency_s": 4.727076708004461
+    },
+    "usage_before": {
+      "input_tokens": 8889,
+      "output_tokens": 610,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "cost_usd": 0.0077304,
+      "latency_s": 4.727076708004461
+    },
+    "spend_guard": {
+      "max_usd": 0.1,
+      "max_calls": 30,
+      "attempts": 11,
+      "reported_usd": 0.02368635,
+      "unsettled_reservations_usd": 0,
+      "unsettled_requests": 0,
+      "basis": "counted input + maximum output at standard token rates, 25% margin",
+      "hosted_tools_allowed": false
+    },
+    "observer_prompt_sha256": "864592a2de82d26d8faa2282c66b7c9efa94276f3de5af860970001c800fbffc",
+    "role_prompt_sha256": {
+      "caller": "c0a7a9f269d116c88cc88d78ea022fb2be0cdd0d14669b3351100ede590db805",
+      "analyst": "3659411e1ba90588fd9969669e25d2465c77a649b06853b8801424ee5e95d636"
+    }
+  }
+}

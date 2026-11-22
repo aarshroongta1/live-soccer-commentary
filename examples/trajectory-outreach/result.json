@@ -1,0 +1,2333 @@
+{
+  "title": "A correct line can still miss its moment",
+  "run_date": "2026-11-22",
+  "source_sha256": "13a7816298db99c5e6dc688307edc07e64cabe1856c1279dc048318452a33156",
+  "source_original": "runs/replay/recognition-pass-20261107/save.json",
+  "source_revision": "08c0497",
+  "new_api_calls": 0,
+  "new_cost_usd": 0,
+  "timing": "Simulated speech, word count / 3 words per second; no new audio",
+  "baseline_fidelity_error_s": 0.0017944583426761085,
+  "recorded_caller_started_s": 15.927280125004472,
+  "baseline": {
+    "mode": "causal_replay",
+    "observations": [
+      {
+        "id": "v1-o1",
+        "at_s": 1.0,
+        "kind": "play",
+        "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+        "actor": null,
+        "action": {
+          "type": "carry",
+          "certainty": "uncertain",
+          "ball_path": "ground",
+          "cues": [
+            "ball_contact",
+            "ball_motion",
+            "ball_on_ground",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            0.5,
+            1.0
+          ]
+        }
+      },
+      {
+        "id": "v1-o2",
+        "at_s": 2.0,
+        "kind": "play",
+        "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+        "actor": null,
+        "action": {
+          "type": "interception",
+          "certainty": "uncertain",
+          "ball_path": "ground",
+          "cues": [
+            "ball_motion",
+            "ball_on_ground",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            1.5,
+            2.0
+          ]
+        }
+      },
+      {
+        "id": "v1-o3",
+        "at_s": 2.5,
+        "kind": "play",
+        "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+        "actor": null,
+        "action": {
+          "type": "unknown",
+          "certainty": "uncertain",
+          "ball_path": "aerial",
+          "cues": [
+            "ball_flight",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            2.5
+          ]
+        }
+      },
+      {
+        "id": "v2-o1",
+        "at_s": 4.0,
+        "kind": "play",
+        "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+        "actor": null,
+        "action": {
+          "type": "save",
+          "certainty": "confirmed",
+          "ball_path": "aerial",
+          "cues": [
+            "ball_flight",
+            "keeper_contact",
+            "ball_motion"
+          ],
+          "support_at_s": [
+            3.5,
+            4.0
+          ]
+        }
+      },
+      {
+        "id": "v2-o2",
+        "at_s": 5.0,
+        "kind": "play",
+        "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+        "actor": null,
+        "action": {
+          "type": "clearance",
+          "certainty": "confirmed",
+          "ball_path": "ground",
+          "cues": [
+            "ball_on_ground",
+            "ball_contact",
+            "player_challenge",
+            "ball_motion"
+          ],
+          "support_at_s": [
+            4.5,
+            5.0,
+            5.5
+          ]
+        }
+      }
+    ],
+    "speech": [
+      {
+        "id": "speech-1",
+        "line": {
+          "voice": "analyst",
+          "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+          "evidence_ids": [
+            "v1-o1",
+            "v1-o2",
+            "v1-o3"
+          ],
+          "research_ids": []
+        },
+        "snapshot_version": 1,
+        "event_at_s": 2.5,
+        "started_s": 8.008818999995128,
+        "ended_s": 15.675485666661796,
+        "interrupted": false
+      },
+      {
+        "id": "speech-2",
+        "line": {
+          "voice": "caller",
+          "text": "A sharp save, and the defender slides in to clear the danger.",
+          "evidence_ids": [
+            "v2-o1",
+            "v2-o2"
+          ],
+          "research_ids": []
+        },
+        "snapshot_version": 2,
+        "event_at_s": 5.0,
+        "started_s": 15.925485666661796,
+        "ended_s": 19.925485666661796,
+        "interrupted": false
+      }
+    ],
+    "trace": [
+      {
+        "event": "speech_started",
+        "at_s": 8.008818999995128,
+        "role": "analyst",
+        "data": {
+          "speech": {
+            "id": "speech-1",
+            "line": {
+              "voice": "analyst",
+              "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2",
+                "v1-o3"
+              ],
+              "research_ids": []
+            },
+            "snapshot_version": 1,
+            "event_at_s": 2.5,
+            "started_s": 8.008818999995128,
+            "ended_s": 15.675485666661796,
+            "interrupted": false
+          }
+        }
+      },
+      {
+        "event": "speech_ended",
+        "at_s": 15.675485666661796,
+        "role": "analyst",
+        "data": {
+          "speech_id": "speech-1"
+        }
+      },
+      {
+        "event": "speech_started",
+        "at_s": 15.925485666661796,
+        "role": "caller",
+        "data": {
+          "speech": {
+            "id": "speech-2",
+            "line": {
+              "voice": "caller",
+              "text": "A sharp save, and the defender slides in to clear the danger.",
+              "evidence_ids": [
+                "v2-o1",
+                "v2-o2"
+              ],
+              "research_ids": []
+            },
+            "snapshot_version": 2,
+            "event_at_s": 5.0,
+            "started_s": 15.925485666661796,
+            "ended_s": 19.925485666661796,
+            "interrupted": false
+          }
+        }
+      },
+      {
+        "event": "speech_ended",
+        "at_s": 19.925485666661796,
+        "role": "caller",
+        "data": {
+          "speech_id": "speech-2"
+        }
+      },
+      {
+        "event": "turn_stale",
+        "at_s": 20.175485666661796,
+        "role": "analyst",
+        "data": {
+          "reason": "expired before speech"
+        }
+      }
+    ],
+    "metadata": {},
+    "metrics": {
+      "caller_ready_s": 10.618119165999815,
+      "caller_started_s": 15.925485666661796,
+      "caller_floor_wait_s": 5.307366500661981,
+      "caller_event_age_s": 10.925485666661796,
+      "caller_preserved": true,
+      "analyst_spoken_words_estimate": 23.000000000000004
+    }
+  },
+  "yielding": {
+    "mode": "causal_replay",
+    "observations": [
+      {
+        "id": "v1-o1",
+        "at_s": 1.0,
+        "kind": "play",
+        "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+        "actor": null,
+        "action": {
+          "type": "carry",
+          "certainty": "uncertain",
+          "ball_path": "ground",
+          "cues": [
+            "ball_contact",
+            "ball_motion",
+            "ball_on_ground",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            0.5,
+            1.0
+          ]
+        }
+      },
+      {
+        "id": "v1-o2",
+        "at_s": 2.0,
+        "kind": "play",
+        "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+        "actor": null,
+        "action": {
+          "type": "interception",
+          "certainty": "uncertain",
+          "ball_path": "ground",
+          "cues": [
+            "ball_motion",
+            "ball_on_ground",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            1.5,
+            2.0
+          ]
+        }
+      },
+      {
+        "id": "v1-o3",
+        "at_s": 2.5,
+        "kind": "play",
+        "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+        "actor": null,
+        "action": {
+          "type": "unknown",
+          "certainty": "uncertain",
+          "ball_path": "aerial",
+          "cues": [
+            "ball_flight",
+            "player_challenge"
+          ],
+          "support_at_s": [
+            2.5
+          ]
+        }
+      },
+      {
+        "id": "v2-o1",
+        "at_s": 4.0,
+        "kind": "play",
+        "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+        "actor": null,
+        "action": {
+          "type": "save",
+          "certainty": "confirmed",
+          "ball_path": "aerial",
+          "cues": [
+            "ball_flight",
+            "keeper_contact",
+            "ball_motion"
+          ],
+          "support_at_s": [
+            3.5,
+            4.0
+          ]
+        }
+      },
+      {
+        "id": "v2-o2",
+        "at_s": 5.0,
+        "kind": "play",
+        "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+        "actor": null,
+        "action": {
+          "type": "clearance",
+          "certainty": "confirmed",
+          "ball_path": "ground",
+          "cues": [
+            "ball_on_ground",
+            "ball_contact",
+            "player_challenge",
+            "ball_motion"
+          ],
+          "support_at_s": [
+            4.5,
+            5.0,
+            5.5
+          ]
+        }
+      }
+    ],
+    "speech": [
+      {
+        "id": "speech-1",
+        "line": {
+          "voice": "analyst",
+          "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+          "evidence_ids": [
+            "v1-o1",
+            "v1-o2",
+            "v1-o3"
+          ],
+          "research_ids": []
+        },
+        "snapshot_version": 1,
+        "event_at_s": 2.5,
+        "started_s": 8.008818999995128,
+        "ended_s": 10.618119165999815,
+        "interrupted": true
+      },
+      {
+        "id": "speech-2",
+        "line": {
+          "voice": "caller",
+          "text": "A sharp save, and the defender slides in to clear the danger.",
+          "evidence_ids": [
+            "v2-o1",
+            "v2-o2"
+          ],
+          "research_ids": []
+        },
+        "snapshot_version": 2,
+        "event_at_s": 5.0,
+        "started_s": 10.618119165999815,
+        "ended_s": 14.618119165999815,
+        "interrupted": false
+      },
+      {
+        "id": "speech-3",
+        "line": {
+          "voice": "analyst",
+          "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+          "evidence_ids": [
+            "v2-o1",
+            "v2-o2"
+          ],
+          "research_ids": []
+        },
+        "snapshot_version": 2,
+        "event_at_s": 5.0,
+        "started_s": 14.868119165999815,
+        "ended_s": 22.868119165999815,
+        "interrupted": false
+      }
+    ],
+    "trace": [
+      {
+        "event": "speech_started",
+        "at_s": 8.008818999995128,
+        "role": "analyst",
+        "data": {
+          "speech": {
+            "id": "speech-1",
+            "line": {
+              "voice": "analyst",
+              "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2",
+                "v1-o3"
+              ],
+              "research_ids": []
+            },
+            "snapshot_version": 1,
+            "event_at_s": 2.5,
+            "started_s": 8.008818999995128,
+            "ended_s": 15.675485666661796,
+            "interrupted": false
+          }
+        }
+      },
+      {
+        "event": "speech_interrupted",
+        "at_s": 10.618119165999815,
+        "role": "analyst",
+        "data": {
+          "speech_id": "speech-1",
+          "reason": "ready caller cites a newer confirmed major action"
+        }
+      },
+      {
+        "event": "speech_started",
+        "at_s": 10.618119165999815,
+        "role": "caller",
+        "data": {
+          "speech": {
+            "id": "speech-2",
+            "line": {
+              "voice": "caller",
+              "text": "A sharp save, and the defender slides in to clear the danger.",
+              "evidence_ids": [
+                "v2-o1",
+                "v2-o2"
+              ],
+              "research_ids": []
+            },
+            "snapshot_version": 2,
+            "event_at_s": 5.0,
+            "started_s": 10.618119165999815,
+            "ended_s": 14.618119165999815,
+            "interrupted": false
+          }
+        }
+      },
+      {
+        "event": "speech_ended",
+        "at_s": 14.618119165999815,
+        "role": "caller",
+        "data": {
+          "speech_id": "speech-2"
+        }
+      },
+      {
+        "event": "speech_started",
+        "at_s": 14.868119165999815,
+        "role": "analyst",
+        "data": {
+          "speech": {
+            "id": "speech-3",
+            "line": {
+              "voice": "analyst",
+              "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+              "evidence_ids": [
+                "v2-o1",
+                "v2-o2"
+              ],
+              "research_ids": []
+            },
+            "snapshot_version": 2,
+            "event_at_s": 5.0,
+            "started_s": 14.868119165999815,
+            "ended_s": 22.868119165999815,
+            "interrupted": false
+          }
+        }
+      },
+      {
+        "event": "speech_ended",
+        "at_s": 22.868119165999815,
+        "role": "analyst",
+        "data": {
+          "speech_id": "speech-3"
+        }
+      }
+    ],
+    "metadata": {},
+    "metrics": {
+      "caller_ready_s": 10.618119165999815,
+      "caller_started_s": 10.618119165999815,
+      "caller_floor_wait_s": 0.0,
+      "caller_event_age_s": 5.618119165999815,
+      "caller_preserved": true,
+      "analyst_spoken_words_estimate": 31.82790049801406
+    }
+  },
+  "sweep": [
+    {
+      "analyst_delay_s": 0,
+      "caller_delay_s": 0,
+      "baseline": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 15.925485666661796,
+        "caller_floor_wait_s": 5.307366500661981,
+        "caller_event_age_s": 10.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 10.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 5.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 31.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 15.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.925485666661796,
+          "ended_s": 19.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 10.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 10.618119165999815,
+          "ended_s": 14.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 14.868119165999815,
+          "ended_s": 22.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0,
+      "caller_delay_s": 0.5,
+      "baseline": {
+        "caller_ready_s": 11.118119165999815,
+        "caller_started_s": 15.925485666661796,
+        "caller_floor_wait_s": 4.807366500661981,
+        "caller_event_age_s": 10.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 11.118119165999815,
+        "caller_started_s": 11.118119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 6.118119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 33.32790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 15.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.925485666661796,
+          "ended_s": 19.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 11.118119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 11.118119165999815,
+          "ended_s": 15.118119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.368119165999815,
+          "ended_s": 23.368119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0,
+      "caller_delay_s": 1,
+      "baseline": {
+        "caller_ready_s": 11.618119165999815,
+        "caller_started_s": 15.925485666661796,
+        "caller_floor_wait_s": 4.307366500661981,
+        "caller_event_age_s": 10.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 11.618119165999815,
+        "caller_started_s": 11.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 6.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 34.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 15.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.925485666661796,
+          "ended_s": 19.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 11.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 11.618119165999815,
+          "ended_s": 15.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.868119165999815,
+          "ended_s": 23.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0,
+      "caller_delay_s": 2,
+      "baseline": {
+        "caller_ready_s": 12.618119165999815,
+        "caller_started_s": 15.925485666661796,
+        "caller_floor_wait_s": 3.3073665006619812,
+        "caller_event_age_s": 10.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 12.618119165999815,
+        "caller_started_s": 12.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 7.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 37.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 15.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.925485666661796,
+          "ended_s": 19.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 12.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 12.618119165999815,
+          "ended_s": 16.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.868119165999815,
+          "ended_s": 24.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0,
+      "caller_delay_s": 4,
+      "baseline": {
+        "caller_ready_s": 14.618119165999815,
+        "caller_started_s": 15.925485666661796,
+        "caller_floor_wait_s": 1.3073665006619812,
+        "caller_event_age_s": 10.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 14.618119165999815,
+        "caller_started_s": 14.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 9.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 19.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 15.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.925485666661796,
+          "ended_s": 19.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.008818999995128,
+          "ended_s": 14.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 14.618119165999815,
+          "ended_s": 18.618119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0.5,
+      "caller_delay_s": 0,
+      "baseline": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 16.425485666661796,
+        "caller_floor_wait_s": 5.807366500661981,
+        "caller_event_age_s": 11.425485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 10.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 5.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 30.32790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 16.175485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.425485666661796,
+          "ended_s": 20.425485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 10.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 10.618119165999815,
+          "ended_s": 14.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 14.868119165999815,
+          "ended_s": 22.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0.5,
+      "caller_delay_s": 0.5,
+      "baseline": {
+        "caller_ready_s": 11.118119165999815,
+        "caller_started_s": 16.425485666661796,
+        "caller_floor_wait_s": 5.307366500661981,
+        "caller_event_age_s": 11.425485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 11.118119165999815,
+        "caller_started_s": 11.118119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 6.118119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 31.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 16.175485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.425485666661796,
+          "ended_s": 20.425485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 11.118119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 11.118119165999815,
+          "ended_s": 15.118119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.368119165999815,
+          "ended_s": 23.368119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0.5,
+      "caller_delay_s": 1,
+      "baseline": {
+        "caller_ready_s": 11.618119165999815,
+        "caller_started_s": 16.425485666661796,
+        "caller_floor_wait_s": 4.807366500661981,
+        "caller_event_age_s": 11.425485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 11.618119165999815,
+        "caller_started_s": 11.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 6.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 33.32790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 16.175485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.425485666661796,
+          "ended_s": 20.425485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 11.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 11.618119165999815,
+          "ended_s": 15.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.868119165999815,
+          "ended_s": 23.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0.5,
+      "caller_delay_s": 2,
+      "baseline": {
+        "caller_ready_s": 12.618119165999815,
+        "caller_started_s": 16.425485666661796,
+        "caller_floor_wait_s": 3.8073665006619812,
+        "caller_event_age_s": 11.425485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 12.618119165999815,
+        "caller_started_s": 12.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 7.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 36.32790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 16.175485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.425485666661796,
+          "ended_s": 20.425485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 12.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 12.618119165999815,
+          "ended_s": 16.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.868119165999815,
+          "ended_s": 24.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 0.5,
+      "caller_delay_s": 4,
+      "baseline": {
+        "caller_ready_s": 14.618119165999815,
+        "caller_started_s": 16.425485666661796,
+        "caller_floor_wait_s": 1.8073665006619812,
+        "caller_event_age_s": 11.425485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 14.618119165999815,
+        "caller_started_s": 14.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 9.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 18.32790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 16.175485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.425485666661796,
+          "ended_s": 20.425485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 8.508818999995128,
+          "ended_s": 14.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 14.618119165999815,
+          "ended_s": 18.618119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 1,
+      "caller_delay_s": 0,
+      "baseline": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 16.925485666661796,
+        "caller_floor_wait_s": 6.307366500661981,
+        "caller_event_age_s": 11.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 10.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 5.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 28.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 16.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.925485666661796,
+          "ended_s": 20.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 10.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 10.618119165999815,
+          "ended_s": 14.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 14.868119165999815,
+          "ended_s": 22.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 1,
+      "caller_delay_s": 0.5,
+      "baseline": {
+        "caller_ready_s": 11.118119165999815,
+        "caller_started_s": 16.925485666661796,
+        "caller_floor_wait_s": 5.807366500661981,
+        "caller_event_age_s": 11.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 11.118119165999815,
+        "caller_started_s": 11.118119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 6.118119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 30.32790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 16.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.925485666661796,
+          "ended_s": 20.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 11.118119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 11.118119165999815,
+          "ended_s": 15.118119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.368119165999815,
+          "ended_s": 23.368119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 1,
+      "caller_delay_s": 1,
+      "baseline": {
+        "caller_ready_s": 11.618119165999815,
+        "caller_started_s": 16.925485666661796,
+        "caller_floor_wait_s": 5.307366500661981,
+        "caller_event_age_s": 11.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 11.618119165999815,
+        "caller_started_s": 11.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 6.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 31.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 16.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.925485666661796,
+          "ended_s": 20.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 11.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 11.618119165999815,
+          "ended_s": 15.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 15.868119165999815,
+          "ended_s": 23.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 1,
+      "caller_delay_s": 2,
+      "baseline": {
+        "caller_ready_s": 12.618119165999815,
+        "caller_started_s": 16.925485666661796,
+        "caller_floor_wait_s": 4.307366500661981,
+        "caller_event_age_s": 11.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 12.618119165999815,
+        "caller_started_s": 12.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 7.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 34.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 16.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.925485666661796,
+          "ended_s": 20.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 12.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 12.618119165999815,
+          "ended_s": 16.618119165999815,
+          "interrupted": false
+        },
+        {
+          "id": "speech-3",
+          "line": {
+            "voice": "analyst",
+            "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.868119165999815,
+          "ended_s": 24.868119165999815,
+          "interrupted": false
+        }
+      ]
+    },
+    {
+      "analyst_delay_s": 1,
+      "caller_delay_s": 4,
+      "baseline": {
+        "caller_ready_s": 14.618119165999815,
+        "caller_started_s": 16.925485666661796,
+        "caller_floor_wait_s": 2.3073665006619812,
+        "caller_event_age_s": 11.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 14.618119165999815,
+        "caller_started_s": 14.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 9.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 16.82790049801406
+      },
+      "baseline_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 16.675485666661796,
+          "interrupted": false
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 16.925485666661796,
+          "ended_s": 20.925485666661796,
+          "interrupted": false
+        }
+      ],
+      "yielding_speech": [
+        {
+          "id": "speech-1",
+          "line": {
+            "voice": "analyst",
+            "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+            "evidence_ids": [
+              "v1-o1",
+              "v1-o2",
+              "v1-o3"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 1,
+          "event_at_s": 2.5,
+          "started_s": 9.008818999995128,
+          "ended_s": 14.618119165999815,
+          "interrupted": true
+        },
+        {
+          "id": "speech-2",
+          "line": {
+            "voice": "caller",
+            "text": "A sharp save, and the defender slides in to clear the danger.",
+            "evidence_ids": [
+              "v2-o1",
+              "v2-o2"
+            ],
+            "research_ids": []
+          },
+          "snapshot_version": 2,
+          "event_at_s": 5.0,
+          "started_s": 14.618119165999815,
+          "ended_s": 18.618119165999815,
+          "interrupted": false
+        }
+      ]
+    }
+  ],
+  "sensitivity": [
+    {
+      "words_per_second": 2.5,
+      "baseline": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": null,
+        "caller_floor_wait_s": null,
+        "caller_event_age_s": null,
+        "caller_preserved": false,
+        "analyst_spoken_words_estimate": 46.99999999999999
+      },
+      "yielding": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 10.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 5.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 30.52325041501171
+      }
+    },
+    {
+      "words_per_second": 3,
+      "baseline": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 15.925485666661796,
+        "caller_floor_wait_s": 5.307366500661981,
+        "caller_event_age_s": 10.925485666661796,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.000000000000004
+      },
+      "yielding": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 10.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 5.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 31.82790049801406
+      }
+    },
+    {
+      "words_per_second": 3.5,
+      "baseline": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 14.8302475714237,
+        "caller_floor_wait_s": 4.212128405423885,
+        "caller_event_age_s": 9.8302475714237,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 23.0
+      },
+      "yielding": {
+        "caller_ready_s": 10.618119165999815,
+        "caller_started_s": 10.618119165999815,
+        "caller_floor_wait_s": 0.0,
+        "caller_event_age_s": 5.618119165999815,
+        "caller_preserved": true,
+        "analyst_spoken_words_estimate": 33.1325505810164
+      }
+    }
+  ],
+  "observations": [
+    {
+      "event": "observation_available",
+      "at_s": 5.977120541007025,
+      "role": null,
+      "data": {
+        "cutoff_s": 2.5,
+        "snapshot_version": 1,
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 1.0,
+            "kind": "play",
+            "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+            "actor": null,
+            "action": {
+              "type": "carry",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "ball_contact",
+                "ball_motion",
+                "ball_on_ground",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                0.5,
+                1.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 2.0,
+            "kind": "play",
+            "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+            "actor": null,
+            "action": {
+              "type": "interception",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "ball_motion",
+                "ball_on_ground",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                1.5,
+                2.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 2.5,
+            "kind": "play",
+            "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+            "actor": null,
+            "action": {
+              "type": "unknown",
+              "certainty": "uncertain",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                2.5
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "observation_available",
+      "at_s": 8.866983415995492,
+      "role": null,
+      "data": {
+        "cutoff_s": 5.5,
+        "snapshot_version": 2,
+        "observations": [
+          {
+            "id": "v2-o1",
+            "at_s": 4.0,
+            "kind": "play",
+            "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+            "actor": null,
+            "action": {
+              "type": "save",
+              "certainty": "confirmed",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "keeper_contact",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                3.5,
+                4.0
+              ]
+            }
+          },
+          {
+            "id": "v2-o2",
+            "at_s": 5.0,
+            "kind": "play",
+            "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+            "actor": null,
+            "action": {
+              "type": "clearance",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_on_ground",
+                "ball_contact",
+                "player_challenge",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                4.5,
+                5.0,
+                5.5
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "One development clip; 15 correlated timing variants, not independent trials.",
+    "Fixed saved VLM observations and model text; no new perception or generation.",
+    "Evidence is model-reported. Earlier analyst text overstates uncertain observations.",
+    "Only the speech floor ran. Changed history could change later generated words.",
+    "Mid-sentence interruption is a cost; no word-boundary audio or listener study ran.",
+    "No Trajectory API, Continual Grading, training, RL, or model improvement was tested.",
+    "Policy and initial preference are agent-authored; no human expert labels collected.",
+    "Eight-second clip; clock includes processing and drain after footage ends."
+  ]
+}
