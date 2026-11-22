@@ -1,0 +1,145 @@
+{
+  "id": "late-save-call",
+  "title": "Choose what to air when the save call becomes ready",
+  "task": "At the recorded caller-ready time, choose which line (if any) should cut into the older analyst turn. Explain how timeliness, concision, and interruption affect your choice.",
+  "source": "examples/trajectory-outreach/source-replay.json",
+  "source_sha256": "13a7816298db99c5e6dc688307edc07e64cabe1856c1279dc048318452a33156",
+  "replay_clock_s": 10.618119165999815,
+  "latest_evidence_cutoff_s": 5.5,
+  "latest_cited_action_at_s": 5.0,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          0.5,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it.",
+      "actor": null,
+      "action": {
+        "type": "interception",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 2.5,
+      "kind": "play",
+      "description": "The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_flight",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          2.5
+        ]
+      }
+    },
+    {
+      "id": "v2-o1",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal.",
+      "actor": null,
+      "action": {
+        "type": "save",
+        "certainty": "confirmed",
+        "ball_path": "aerial",
+        "cues": [
+          "ball_flight",
+          "keeper_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          3.5,
+          4.0
+        ]
+      }
+    },
+    {
+      "id": "v2-o2",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "A defender slides in near the six-yard area and knocks the loose ball away from goal.",
+      "actor": null,
+      "action": {
+        "type": "clearance",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_on_ground",
+          "ball_contact",
+          "player_challenge",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          4.5,
+          5.0,
+          5.5
+        ]
+      }
+    }
+  ],
+  "currently_speaking": {
+    "text": "Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.",
+    "started_s": 8.008828416001052,
+    "estimated_end_s": 15.67549508266772
+  },
+  "options": [
+    {
+      "id": "A",
+      "text": "A sharp save, and the defender slides in to clear the danger.",
+      "voice": "caller",
+      "origin": "Exact saved caller draft in source trace."
+    },
+    {
+      "id": "B",
+      "text": "The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.",
+      "voice": "analyst",
+      "origin": "Exact newer analyst draft in source trace."
+    },
+    {
+      "id": "C",
+      "text": "Do not cut in; let the current analyst finish.",
+      "voice": null,
+      "origin": "Authored abstention / no-interruption option."
+    }
+  ],
+  "review_prompt": "Write your preferred option and why in the native feedback field; rewrite or reject the options if needed.",
+  "provenance_note": "Saved VLM descriptions, not independently verified facts. Earlier analyst overstates uncertain evidence. Eight-second clip; source clock includes processing/drain; speech duration is simulated. No new model call."
+}

@@ -1,0 +1,109 @@
+{
+  "id": "after-goal-reaction",
+  "title": "Choose what adds value after the goal has already been called",
+  "task": "The caller has just said \"Harry Kane scores for England!\". Choose the analyst's next contribution or remain silent. Explain what makes the line useful at this moment.",
+  "source": "examples/text-comparison/inputs/penalty.json",
+  "source_sha256": "da11fc13c1c554ded99608ba6cff66cb2af6b3ea1854a51dc40f3d7e9337ac5f",
+  "cutoff_s": 6.5,
+  "observations": [
+    {
+      "id": "v1-o1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "goal_line_crossing",
+          "keeper_contact"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "v1-o2",
+      "at_s": 3.5,
+      "kind": "goal",
+      "description": "The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": "Harry Kane"
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          2.0,
+          3.0,
+          3.5
+        ]
+      }
+    },
+    {
+      "id": "v1-o3",
+      "at_s": 5.5,
+      "kind": "celebration",
+      "description": "England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          5.5,
+          6.5
+        ]
+      }
+    }
+  ],
+  "recent_spoken_lines": [
+    "Harry Kane scores for England!"
+  ],
+  "options": [
+    {
+      "id": "A",
+      "text": "Kane scores!",
+      "voice": "analyst",
+      "origin": "Exact saved caller words repurposed as an analyst option to test repetition; authored role change."
+    },
+    {
+      "id": "B",
+      "text": "The finish was low and driven across goal, forcing the keeper into a full dive before it went in.",
+      "voice": "analyst",
+      "origin": "Exact saved analyst line in runs/replay/researched-identity-20261107-final/penalty-replay.json."
+    },
+    {
+      "id": "C",
+      "text": "Stay silent.",
+      "voice": null,
+      "origin": "Authored abstention option."
+    }
+  ],
+  "review_prompt": "Write your preferred option and why in the native feedback field; rewrite or reject the options if needed.",
+  "provenance_note": "Constructed review checkpoint using retained observation/line artifacts. Prior-line completion is assumed for this review, not a replayed latency measurement. No fresh perception or Trajectory generation."
+}
