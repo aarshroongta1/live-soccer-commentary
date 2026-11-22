@@ -1,0 +1,31 @@
+examples/trajectory-preferences/penalty-reaction.json
+  s_6c0a54f243d293::t_954794693f1108 1-90
+examples/trajectory-preferences/README.md
+  s_6c0a54f243d293::t_568b9c4f11b12c 1-101
+examples/trajectory-preferences/late-save-call.json
+  s_6c0a54f243d293::t_79a0aacb9b8dc5 1-145
+examples/trajectory-preferences/.gitignore
+  s_6c0a54f243d293::t_ee0780048c93e3 1-2
+scripts/trajectory_preferences.py
+  s_6c0a54f243d293::t_ee0780048c93e3 1-21,30-40,44-50,62-66,69-76,80-88,92-93,98-101,103-117,128-133
+  s_6c0a54f243d293::t_1ab404cad7dbc0 22-29,41-43,51-61,67-68,77-79,89-91,94-97,118-127
+  s_6c0a54f243d293::t_2faa840f5987b2 102
+examples/trajectory-preferences/after-goal-reaction.json
+  s_6c0a54f243d293::t_79a0aacb9b8dc5 1-109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "536e87c20a8ea2251c7dc490e0c1fd4273f92335",
+  "prompts": {},
+  "sessions": {
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
