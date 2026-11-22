@@ -1,0 +1,45 @@
+examples/trajectory-outreach/result.json
+  s_412fe6107f6f3f::t_8ef510ef4db920 1-536,629-647,740-758,851-869,962-980,1056-1074,1167-1185,1278-1296,1389-1407,1500-1518,1594-1612,1705-1723,1816-1834,1927-1945,2038-2056,2132-2323,2325,2329,2332-2333
+  s_6c0a54f243d293::t_04a32f8389c65c 537-628,648-739,759-850,870-961,981-1055,1075-1166,1186-1277,1297-1388,1408-1499,1519-1593,1613-1704,1724-1815,1835-1926,1946-2037,2057-2131
+  s_6c0a54f243d293::t_3c4f458b1552d2 2324,2326-2328,2330-2331
+tests/test_airtime_experiment.py
+  s_6c0a54f243d293::t_a3803f2e134acb 1-9,13-26,28-32,38,42-76,85-93,96-97,101-103,105-107
+  s_6c0a54f243d293::t_63549c9349e572 77-84
+  s_6c0a54f243d293::t_49d4f6c6aef70e 10-12,104
+  s_6c0a54f243d293::t_3c4f458b1552d2 27,33-37,39-41,94-95,98-100
+examples/trajectory-outreach/source-replay.json
+  s_412fe6107f6f3f::t_8ef510ef4db920 1-1355
+scripts/airtime_experiment.py
+  s_6c0a54f243d293::t_e61fb74ad7601d 1-28,37-55,59,62-70,80-101,113-120,123-133,135-136,155-158,162-163,166,170-172,177-178,180,184,187-198,210-213
+  s_6c0a54f243d293::t_49d4f6c6aef70e 164-165,179,181-183,185-186
+  s_6c0a54f243d293::t_3c4f458b1552d2 29-36,56-58,60-61,71-79,102-112,121-122,134,137-154,159-161,167-169,173-176,199-209
+src/commentary/replay/airtime.py
+  s_6c0a54f243d293::t_e61fb74ad7601d 1-5,16-53,57-61
+  s_6c0a54f243d293::t_3c4f458b1552d2 6-15,54-56
+examples/trajectory-outreach/README.md
+  s_6c0a54f243d293::t_6b7f885282ccd7 1-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3069712166013b8da4f545e05e4f6f7086cef7d",
+  "prompts": {},
+  "sessions": {
+    "s_412fe6107f6f3f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
