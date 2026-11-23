@@ -13,6 +13,11 @@ uses existing models; there is no training or fine-tuning.
 
 ## Demo
 
+The [learning-from-corrections experiment](https://www.aarshroongta.com/demo/noeri)
+turns one earlier commentary correction into a saved lesson, then compares the
+same model on three different clips with and without it. All outputs, including
+a regression, are retained in [the experiment record](examples/lesson-memory/README.md).
+
 The [commentary page](https://www.aarshroongta.com/projects/soccer-commentary) has
 three clips with two voices and captions:
 

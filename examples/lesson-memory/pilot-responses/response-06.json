@@ -1,0 +1,160 @@
+{
+  "tag": "save_baseline",
+  "response": {
+    "id": "resp_0f73d287e5f32604006b03dddab37887d2bc5fe8114fa0fa60",
+    "created_at": 1795415514.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Write one final OFFLINE recorded-football two-voice script after the complete\nclip has been observed. Return 7\u201312 chronological lines using caller and analyst voices.\nWrite spoken broadcast dialogue, not descriptions of footage. The caller follows action;\nthe analyst responds with why it matters. Plan key goal and delivery cues first, then fit\nbuildup and analyst turns around them.\nCaller lines must cite relevant visual evidence_ids available at or before at_s; analyst\nlines use visual evidence and/or research_ids. Caller lines never cite research. Keep all\nfactual qualifiers grounded in cited IDs. For a typical 40-second clip, use three distinct\nsubstantial analyst turns, distributed as meaningful responses rather than fillers. Aim for\nroughly 60/40 caller/analyst word balance without forcing a statistic into an unrelated gap.\nKeep total script words at or below clip_duration_s * 2.3. Analyst turns are normally 6\u201312\nwords; caller turns stay short outside the final attack. Avoid repetitive empty narration,\ncaption-like scoreboard narration, and coach-gesture filler. Connect research to current\nplay rather than standalone trivia, and preserve its all-competitions/competition/time scope\nexactly. Use at most two research facts. At least one analyst line must cite a play or goal\ndirectly, without research_ids. Do not use \"caption confirms\" phrasing.\n\nTell a coherent action story: buildup, visible delivery into the area, visible shot, then\nthe first clear ball-in-net goal. Start the goal call at the first clear net evidence and\nopen it with \"Goal!\" or \"It's in!\". If shot-to-goal is under one second, combine them rather\nthan forcing separate bursts. Use terse 1\u20134 word bursts only in the final attack. Do not\ninvent names, body parts, targets, tactical intent, or score details. Before drafting, scan\nthe observations for actor.resolved_name and plan natural, prominent named moments wherever\nthe cited evidence and timing permit. Prefer a supported named action to a generic team line\nfor the same moment. Give a named player whose running or celebrating is visible a meaningful\nreaction: that is valid commentary, not inherently filler. Integrate distinct observed\nidentities across the clip when evidence and timing allow, prioritizing named actions and a\nmeaningful post-goal named reaction. Do not impose a player-name quota, force every available\nname, or turn this into a roll call. Use a player name only when a cited observation has\nactor.resolved_name, and only for that same observed action; never take a name from a\ndescription, pack, research fact, or another observation. A later celebration can support\nthat named player's visible reaction, but cannot identify the earlier scorer or finish; never\ntransfer a celebration identity to an earlier action. For both caller and analyst, never use\nkit-color or stripe labels, or generic \"runner\", \"player\", or \"attacker\" placeholders, as a\nspoken identity stand-in. When an actor is unnamed, use a supported team or nationality (for\nexample, \"Argentina\" or \"the French\") when available, or write an action-led sentence that\nomits the person. Never say \"first time\" or \"first-time\" unless the cited visual description\nexplicitly establishes that there was no intervening touch. Research facts retain their exact\nstated scope; use them only where relevant.\nEvery line must be a complete sentence except a terse attack burst. Choose evidence and\nwording; deterministic code places each line at the earliest legal timestamp at or after\nyour requested at_s and its cited evidence. Keep each line under 25 words and within the\nclip duration. A caller goal cue that opens with \"Goal!\" or \"It's in!\" should request the\nfirst cited goal evidence; its requested reaction slot is pinned and cannot be delayed by\nearlier script. Research never grants identity attribution. Return the final words exactly;\nthey will never be rewritten in code.\nOffline reaction experiment: return just one caller line and optionally one analyst\nline, at most 35 words total. This overrides line-count, voice-balance and scheduling\nrequirements above. No timestamps are being planned or measured in this experiment.\nUse complete saved observations to react to the outcome and explain one supported\ndetail if useful. Cite supplied observation IDs. No research is supplied.\n",
+    "metadata": {},
+    "model": "gpt-5.4-mini-2026-03-17",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0f73d287e5f32604006b03dddb4c1c87d2a68465d88e70a06e",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"lines\":[{\"voice\":\"caller\",\"text\":\"Driven across!\",\"evidence_ids\":[\"v1-o1\"]},{\"voice\":\"analyst\",\"text\":\"That low service forces the keeper into an urgent save at full stretch.\",\"evidence_ids\":[\"v1-o1\",\"v1-o2\"]}]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message",
+        "phase": "final_answer"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "completed_at": 1795415515.0,
+    "conversation": null,
+    "max_output_tokens": 600,
+    "max_tool_calls": null,
+    "moderation": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_diagnostics": null,
+    "prompt_cache_key": null,
+    "prompt_cache_options": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "current_turn",
+      "effort": "none",
+      "generate_summary": null,
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "name": "Calls",
+        "schema_": {
+          "$defs": {
+            "Call": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_ids": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Evidence Ids",
+                  "type": "array"
+                },
+                "text": {
+                  "title": "Text",
+                  "type": "string"
+                },
+                "voice": {
+                  "title": "Voice",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "voice",
+                "text",
+                "evidence_ids"
+              ],
+              "title": "Call",
+              "type": "object"
+            }
+          },
+          "additionalProperties": false,
+          "properties": {
+            "lines": {
+              "items": {
+                "$ref": "#/$defs/Call"
+              },
+              "title": "Lines",
+              "type": "array"
+            }
+          },
+          "required": [
+            "lines"
+          ],
+          "title": "Calls",
+          "type": "object"
+        },
+        "type": "json_schema",
+        "description": null,
+        "strict": true
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1348,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "cache_write_tokens_details": {
+          "ttl_12h_tokens": 0,
+          "ttl_30m_tokens": 0
+        }
+      },
+      "output_tokens": 68,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1416
+    },
+    "user": null,
+    "access_programs": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "frequency_penalty": 0.0,
+    "image": {
+      "context_compression": "disabled"
+    },
+    "input_transformations": [],
+    "presence_penalty": 0.0,
+    "store": true,
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    }
+  }
+}

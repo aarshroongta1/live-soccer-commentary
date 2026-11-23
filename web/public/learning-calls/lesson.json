@@ -1,0 +1,5 @@
+{
+  "principle": "Do not upgrade a plausible sequence into a specific factual detail unless the evidence clearly shows it; if the visual support only confirms the outcome, describe the outcome without adding unsupported touches, deflections, or contact details.",
+  "apply_when": "Use this when commentating on shots, saves, rebounds, or any replay where the ball’s final result is clear but intermediate contact is ambiguous or not visibly confirmed.",
+  "preserve": "Keep legitimate, directly observed elements such as shot direction, scoring result, goalkeeper movement, and net/goal-line crossing when they are supported by the footage."
+}

@@ -1,0 +1,432 @@
+{
+  "protocol": "lesson-memory-v1",
+  "model": "gpt-5.4-mini",
+  "source_path": "examples/evaluation-results/researched-handoff-20261107.json",
+  "source_sha256": "6d4acd72820fa69045ac0b6df7786c5d3a213b6f654730e2b3cc4c3928b7a4e5",
+  "failure": {
+    "observations": [
+      {
+        "id": "v1-o1",
+        "at_s": 0.0,
+        "kind": "play",
+        "description": "England are awarded and taking a penalty kick; the ball is placed on the spot with the referee indicating the restart and players waiting around the area.",
+        "actor": null,
+        "action": {
+          "type": "penalty_kick",
+          "certainty": "confirmed",
+          "ball_path": "ground",
+          "cues": [
+            "restart_setup",
+            "referee_signal",
+            "ball_on_ground"
+          ],
+          "support_at_s": [
+            0.0,
+            1.0,
+            2.0
+          ]
+        }
+      },
+      {
+        "id": "v1-o2",
+        "at_s": 1.0,
+        "kind": "goal",
+        "description": "The penalty is struck low toward the left side and the ball crosses into the net despite the goalkeeper diving the other way.",
+        "actor": {
+          "side": "home",
+          "shirt_number": 9,
+          "shirt_name": null,
+          "identity_source": "shirt_number",
+          "action_role": "shooter",
+          "resolved_name": "Harry Kane"
+        },
+        "action": {
+          "type": "goal",
+          "certainty": "confirmed",
+          "ball_path": "unknown",
+          "cues": [
+            "ball_motion",
+            "goal_line_crossing",
+            "ball_in_net",
+            "keeper_contact"
+          ],
+          "support_at_s": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        }
+      },
+      {
+        "id": "v1-o3",
+        "at_s": 3.0,
+        "kind": "celebration",
+        "description": "An England player runs away from goal celebrating after the equalising penalty goal; the scoreboard now shows 1-1.",
+        "actor": null,
+        "action": {
+          "type": "unknown",
+          "certainty": "uncertain",
+          "ball_path": "unknown",
+          "cues": [],
+          "support_at_s": [
+            3.0,
+            3.5,
+            4.5,
+            5.5,
+            6.5
+          ]
+        }
+      }
+    ],
+    "call": {
+      "voice": "analyst",
+      "text": "The key detail is the low penalty finish into the left side, with the keeper diving the wrong way and only getting a touch as it went in.",
+      "evidence_ids": [
+        "v1-o2"
+      ],
+      "research_ids": []
+    },
+    "correction": "Analyst invented a keeper touch from an unsupported visual cue.",
+    "reviewer": "coding-agent review retained on 2026-11-07; not a human label"
+  },
+  "cases": [
+    {
+      "id": "goal",
+      "input_path": "examples/text-comparison/inputs/goal.json",
+      "source_sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913",
+      "source_start_s": 12.0,
+      "duration_s": 6.5,
+      "payload": {
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 1.0,
+            "kind": "play",
+            "description": "A ball is swung into the six-yard box and players converge in front of goal; the exact contact is hard to see.",
+            "actor": null,
+            "action": {
+              "type": "cross",
+              "certainty": "uncertain",
+              "ball_path": "aerial",
+              "cues": [
+                "ball_flight",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                0.0,
+                1.0
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 2.5,
+            "kind": "play",
+            "description": "The ball drops in the crowded goalmouth and is redirected toward the goal line amid a scramble.",
+            "actor": null,
+            "action": {
+              "type": "shot",
+              "certainty": "uncertain",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_motion",
+                "goal_line_crossing",
+                "player_challenge"
+              ],
+              "support_at_s": [
+                2.5,
+                3.5
+              ]
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 3.5,
+            "kind": "goal",
+            "description": "The ball is visible inside the net after crossing the line, with defenders and the goalkeeper in the goalmouth.",
+            "actor": null,
+            "action": {
+              "type": "goal",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_in_net",
+                "goal_line_crossing"
+              ],
+              "support_at_s": [
+                3.5,
+                4.5
+              ]
+            }
+          }
+        ]
+      },
+      "input_sha256": "48f579b22383f3e7b4e31c6c83c46c6acad0a13215b7d066c24bca8029297b1c",
+      "arms": [
+        {
+          "arm": "baseline",
+          "system_sha256": "51e9c1163b48ffa19be23104d2dde9fbbc0b2a3a739ab10bf5b3cdc7ebb00e9c",
+          "status": "failed",
+          "error": "goal_baseline: unparseable output after $0.002 (status completed, 115 of 600 output tokens): 1 validation error for Calls\nlines\n  List should have at most 2 items after validation, not 4 [type=too_long, input_value=[{'voice': 'caller', 'tex...idence_ids': ['v1-o3']}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_long"
+        },
+        {
+          "arm": "memory",
+          "system_sha256": "b5f8fb8ab1d4bffbb306054d932be2ae987e3a02a4d78d9ce7a562891ebad1fe",
+          "status": "failed",
+          "error": "goal_memory: unparseable output after $0.002 (status completed, 123 of 600 output tokens): 1 validation error for Calls\nlines\n  List should have at most 2 items after validation, not 4 [type=too_long, input_value=[{'voice': 'caller', 'tex...idence_ids': ['v1-o3']}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_long"
+        }
+      ]
+    },
+    {
+      "id": "dribble",
+      "input_path": "examples/text-comparison/inputs/dribble.json",
+      "source_sha256": "c47f518aac13032e44dc63018cc11e0a8c412412b612f895439812531efdcc5b",
+      "source_start_s": 7.5,
+      "duration_s": 6.5,
+      "payload": {
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 2.5,
+            "kind": "play",
+            "description": "A Barcelona attacker drives into the left side of the penalty area with the ball under control while a Bayern defender closes from behind and the goalkeeper sets himself near the near post.",
+            "actor": null,
+            "action": {
+              "type": "carry",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_contact",
+                "ball_motion",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                1.5,
+                2.5
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 3.5,
+            "kind": "play",
+            "description": "The attacker releases a left-footed shot from inside the box; the ball travels toward the far side of goal and the goalkeeper dives across, but the ball continues past him.",
+            "actor": null,
+            "action": {
+              "type": "shot",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_contact",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                3.5,
+                4.5
+              ]
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 4.5,
+            "kind": "goal",
+            "description": "The ball crosses the goal line and finishes in the net inside the left side of the goal.",
+            "actor": null,
+            "action": {
+              "type": "goal",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "ball_in_net",
+                "goal_line_crossing"
+              ],
+              "support_at_s": [
+                4.5,
+                5.0,
+                6.0
+              ]
+            }
+          }
+        ]
+      },
+      "input_sha256": "927cec195d98c228794b3813859a55b87a91ac2b10eb6c2dd35b86114889e762",
+      "arms": [
+        {
+          "arm": "memory",
+          "system_sha256": "b5f8fb8ab1d4bffbb306054d932be2ae987e3a02a4d78d9ce7a562891ebad1fe",
+          "status": "failed",
+          "error": "dribble_memory: unparseable output after $0.002 (status completed, 180 of 600 output tokens): 1 validation error for Calls\nlines\n  List should have at most 2 items after validation, not 6 [type=too_long, input_value=[{'voice': 'caller', 'tex...idence_ids': ['v1-o3']}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_long"
+        },
+        {
+          "arm": "baseline",
+          "system_sha256": "51e9c1163b48ffa19be23104d2dde9fbbc0b2a3a739ab10bf5b3cdc7ebb00e9c",
+          "status": "generated",
+          "lines": [
+            {
+              "voice": "caller",
+              "text": "Barcelona breaks through!",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2",
+                "v1-o3"
+              ]
+            },
+            {
+              "voice": "analyst",
+              "text": "A controlled carry, then the left-footed finish beats the dive.",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2",
+                "v1-o3"
+              ]
+            }
+          ],
+          "citation_ids_valid": true
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "input_path": "examples/text-comparison/inputs/save.json",
+      "source_sha256": "38c71cc6a53190f54bbe23894913d30ea1f3c52b4453f33451b755af935201e5",
+      "source_start_s": 10.0,
+      "duration_s": 8.0,
+      "payload": {
+        "observations": [
+          {
+            "id": "v1-o1",
+            "at_s": 4.5,
+            "kind": "play",
+            "description": "A low ball is driven across the face of goal from the right side, skimming into the six-yard area as the goalkeeper moves left to cover.",
+            "actor": null,
+            "action": {
+              "type": "cross",
+              "certainty": "confirmed",
+              "ball_path": "ground",
+              "cues": [
+                "ball_motion",
+                "ball_on_ground"
+              ],
+              "support_at_s": [
+                3.0,
+                4.5
+              ]
+            }
+          },
+          {
+            "id": "v1-o2",
+            "at_s": 5.5,
+            "kind": "play",
+            "description": "The goalkeeper dives low and makes contact with the ball, deflecting the close-range attempt away from the goalmouth.",
+            "actor": null,
+            "action": {
+              "type": "save",
+              "certainty": "confirmed",
+              "ball_path": "unknown",
+              "cues": [
+                "keeper_contact",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                5.5,
+                6.5
+              ]
+            }
+          },
+          {
+            "id": "v1-o3",
+            "at_s": 6.5,
+            "kind": "play",
+            "description": "After the save, the ball is loose in front of the area with defenders and attackers converging, but no clear follow-up contact is visible.",
+            "actor": null,
+            "action": {
+              "type": "ball_recovery",
+              "certainty": "uncertain",
+              "ball_path": "ground",
+              "cues": [
+                "ball_on_ground",
+                "ball_motion"
+              ],
+              "support_at_s": [
+                6.5,
+                7.5
+              ]
+            }
+          }
+        ]
+      },
+      "input_sha256": "539a0e918d051f937a23c62b40e77335d064c7030f3989f1068d1891f2fb7e02",
+      "arms": [
+        {
+          "arm": "baseline",
+          "system_sha256": "51e9c1163b48ffa19be23104d2dde9fbbc0b2a3a739ab10bf5b3cdc7ebb00e9c",
+          "status": "generated",
+          "lines": [
+            {
+              "voice": "caller",
+              "text": "Driven across!",
+              "evidence_ids": [
+                "v1-o1"
+              ]
+            },
+            {
+              "voice": "analyst",
+              "text": "That low service forces the keeper into an urgent save at full stretch.",
+              "evidence_ids": [
+                "v1-o1",
+                "v1-o2"
+              ]
+            }
+          ],
+          "citation_ids_valid": true
+        },
+        {
+          "arm": "memory",
+          "system_sha256": "b5f8fb8ab1d4bffbb306054d932be2ae987e3a02a4d78d9ce7a562891ebad1fe",
+          "status": "generated",
+          "lines": [
+            {
+              "voice": "caller",
+              "text": "Low ball across!",
+              "evidence_ids": [
+                "v1-o1"
+              ]
+            },
+            {
+              "voice": "analyst",
+              "text": "The keeper gets down well and turns it away.",
+              "evidence_ids": [
+                "v1-o2"
+              ]
+            }
+          ],
+          "citation_ids_valid": true
+        }
+      ]
+    }
+  ],
+  "status": "generated_pending_review",
+  "limits": {
+    "max_usd": 0.2,
+    "max_calls": 7,
+    "retries": 0
+  },
+  "review": "pending; no automated semantic pass rate",
+  "writer_system": "Write one final OFFLINE recorded-football two-voice script after the complete\nclip has been observed. Return 7\u201312 chronological lines using caller and analyst voices.\nWrite spoken broadcast dialogue, not descriptions of footage. The caller follows action;\nthe analyst responds with why it matters. Plan key goal and delivery cues first, then fit\nbuildup and analyst turns around them.\nCaller lines must cite relevant visual evidence_ids available at or before at_s; analyst\nlines use visual evidence and/or research_ids. Caller lines never cite research. Keep all\nfactual qualifiers grounded in cited IDs. For a typical 40-second clip, use three distinct\nsubstantial analyst turns, distributed as meaningful responses rather than fillers. Aim for\nroughly 60/40 caller/analyst word balance without forcing a statistic into an unrelated gap.\nKeep total script words at or below clip_duration_s * 2.3. Analyst turns are normally 6\u201312\nwords; caller turns stay short outside the final attack. Avoid repetitive empty narration,\ncaption-like scoreboard narration, and coach-gesture filler. Connect research to current\nplay rather than standalone trivia, and preserve its all-competitions/competition/time scope\nexactly. Use at most two research facts. At least one analyst line must cite a play or goal\ndirectly, without research_ids. Do not use \"caption confirms\" phrasing.\n\nTell a coherent action story: buildup, visible delivery into the area, visible shot, then\nthe first clear ball-in-net goal. Start the goal call at the first clear net evidence and\nopen it with \"Goal!\" or \"It's in!\". If shot-to-goal is under one second, combine them rather\nthan forcing separate bursts. Use terse 1\u20134 word bursts only in the final attack. Do not\ninvent names, body parts, targets, tactical intent, or score details. Before drafting, scan\nthe observations for actor.resolved_name and plan natural, prominent named moments wherever\nthe cited evidence and timing permit. Prefer a supported named action to a generic team line\nfor the same moment. Give a named player whose running or celebrating is visible a meaningful\nreaction: that is valid commentary, not inherently filler. Integrate distinct observed\nidentities across the clip when evidence and timing allow, prioritizing named actions and a\nmeaningful post-goal named reaction. Do not impose a player-name quota, force every available\nname, or turn this into a roll call. Use a player name only when a cited observation has\nactor.resolved_name, and only for that same observed action; never take a name from a\ndescription, pack, research fact, or another observation. A later celebration can support\nthat named player's visible reaction, but cannot identify the earlier scorer or finish; never\ntransfer a celebration identity to an earlier action. For both caller and analyst, never use\nkit-color or stripe labels, or generic \"runner\", \"player\", or \"attacker\" placeholders, as a\nspoken identity stand-in. When an actor is unnamed, use a supported team or nationality (for\nexample, \"Argentina\" or \"the French\") when available, or write an action-led sentence that\nomits the person. Never say \"first time\" or \"first-time\" unless the cited visual description\nexplicitly establishes that there was no intervening touch. Research facts retain their exact\nstated scope; use them only where relevant.\nEvery line must be a complete sentence except a terse attack burst. Choose evidence and\nwording; deterministic code places each line at the earliest legal timestamp at or after\nyour requested at_s and its cited evidence. Keep each line under 25 words and within the\nclip duration. A caller goal cue that opens with \"Goal!\" or \"It's in!\" should request the\nfirst cited goal evidence; its requested reaction slot is pinned and cannot be delayed by\nearlier script. Research never grants identity attribution. Return the final words exactly;\nthey will never be rewritten in code.\nOffline reaction experiment: return just one caller line and optionally one analyst\nline, at most 35 words total. This overrides line-count, voice-balance and scheduling\nrequirements above. No timestamps are being planned or measured in this experiment.\nUse complete saved observations to react to the outcome and explain one supported\ndetail if useful. Cite supplied observation IDs. No research is supplied.\n",
+  "lesson": {
+    "principle": "Do not upgrade a plausible sequence into a specific factual detail unless the evidence clearly shows it; if the visual support only confirms the outcome, describe the outcome without adding unsupported touches, deflections, or contact details.",
+    "apply_when": "Use this when commentating on shots, saves, rebounds, or any replay where the ball\u2019s final result is clear but intermediate contact is ambiguous or not visibly confirmed.",
+    "preserve": "Keep legitimate, directly observed elements such as shot direction, scoring result, goalkeeper movement, and net/goal-line crossing when they are supported by the footage."
+  },
+  "lesson_sha256": "48d44753d6494fca01328cee5c434c6989d2031f205decbd530c391a10719827",
+  "budget": {
+    "max_usd": 0.2,
+    "max_calls": 7,
+    "attempts": 7,
+    "reported_usd": 0.010257749999999998,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  }
+}

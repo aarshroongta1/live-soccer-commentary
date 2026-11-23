@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Learning from the last call | Aarsh Roongta</title>
+  <meta name="description" content="One past commentary correction becomes a saved lesson. Compare the same model on three different clips, with and without that memory—including a regression.">
+  <meta name="theme-color" content="#f5f8fc">
+  <link rel="stylesheet" href="/learning-calls/style.css">
+  <script src="/learning-calls/app.js" defer></script>
+</head>
+<body>
+<header><a href="/">Aarsh Roongta</a><a href="/projects/soccer-commentary">Soccer commentary project</a></header>
+<main>
+  <section class="intro">
+    <h1>Can the next call learn<br>from the last one?</h1>
+    <p>A football commentary agent adds a detail it cannot support. A correction becomes a saved lesson, then follows the same model into three different clips.</p>
+    <p class="replay-note">Replay a recorded experiment. The calls below are real, saved model outputs; clicking makes no API calls.</p>
+  </section>
+
+  <section class="learning" aria-labelledby="past-title">
+    <div class="past">
+      <p class="step">Earlier call · England–France</p>
+      <h2 id="past-title">A touch that wasn’t established.</h2>
+      <blockquote id="past-call">Loading the earlier call…</blockquote>
+      <div class="correction"><h3>The correction</h3><p>The observation describes the keeper diving the other way. An audit tag says <code>keeper_contact</code>, but that does not establish a touch. The analyst turned it into a fact.</p></div>
+      <details><summary>Inspect the original observation</summary><p id="past-observation"></p><p id="past-cues" class="small"></p></details>
+      <button id="save-lesson" disabled>Save the lesson</button>
+      <p id="save-status" class="small" role="status">A model distilled the earlier correction before the next calls were generated.</p>
+    </div>
+    <div class="memory" id="memory">
+      <div class="memory-heading"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h10l3 3v15H5V3h1m3 0v6h7V3M8 21v-8h8v8"/></svg><h2>Lesson memory</h2><span id="memory-state">Ready to save</span></div>
+      <p id="principle"></p>
+      <details><summary>When to use it—and what to preserve</summary><h3>Apply when</h3><p id="apply-when"></p><h3>Preserve</h3><p id="preserve"></p></details>
+      <p class="small">The saved lesson contains no player names, next-clip answers, or reference labels. Model weights stay unchanged.</p>
+      <a href="#next-call" id="compare-link">Compare the next call</a>
+    </div>
+  </section>
+
+  <section class="comparison" id="next-call" aria-labelledby="next-title">
+    <div class="section-head"><div><p class="step">Different clips · same model and observations</p><h2 id="next-title">What carries over?</h2></div><p class="small" id="model-label"></p></div>
+    <div class="case-tabs" role="group" aria-label="Choose a comparison clip" id="case-tabs"></div>
+    <div class="case-context"><h3 id="case-title"></h3><p id="case-description"></p><details><summary>Read what the writer actually received</summary><div id="observations"></div></details></div>
+    <div class="calls">
+      <article class="call baseline"><h3>Without lesson memory</h3><div id="baseline-lines"></div><p class="word-count" id="baseline-count"></p></article>
+      <article class="call learned" id="learned"><h3>With the saved lesson</h3><div id="memory-lines"></div><p class="word-count" id="memory-count"></p><div class="cover" id="cover"><p>Carry the correction forward.</p><button id="reveal">Use the saved lesson</button></div></article>
+    </div>
+    <div class="review" id="review" hidden><span id="verdict"></span><div><h3 id="review-summary"></h3><p id="review-baseline"></p><p id="review-memory"></p></div></div>
+    <p class="small">Exact generated wording, including any inline citations. Review compares claims with the supplied observations; it does not independently verify the video.</p>
+  </section>
+
+  <section class="finding"><h2>A useful lesson can also go too far.</h2><p>The save comparison removes an unsupported near-post detail while retaining the actual save. On the Barcelona clip, the same lesson adds unnecessary uncertainty and repetitive analysis. A memory should earn its place through checks on subsequent tasks.</p><p>This is a small application-level learning loop: past failure, correction, persistent instruction, then new calls. It is an experiment in improving an agent’s behavior with existing models.</p></section>
+
+  <section class="method"><h2>What actually ran</h2><p>GPT-5.4 Mini distilled one lesson from a retained November 7 failure and its coding-agent correction. That lesson was frozen before this comparison. Three development clips were selected in advance: a crowded goalmouth, a dribble and finish, and a real-save control. Each received one baseline call and one memory call, with the same model, observations, output schema, and compact writer instructions. Only the saved lesson changed.</p>
+    <details><summary>Results, costs, and limitations</summary><div class="method-details">
+      <p>This compares a compact experimental writer, not the repo’s current production role prompts. It uses saved model perception and complete clip context. No fresh vision, search, speech, training, or RL ran. All three clips belong to the existing 15-clip development suite; they are not an independent benchmark.</p>
+      <p>Two memory scripts meet the 35-word target; the Barcelona memory script does not. Citation-ID checks only establish that IDs exist. They do not prove factual support. The favorable save pair is one stochastic sample, not evidence of a repeatable accuracy gain.</p>
+      <p>An initial pilot exposed conflicting legacy script-length instructions. Three of its six writer outputs failed parsing. Those failures are retained. After the format fix, the same frozen lesson was reused for all six new writer calls, without retries or selecting a winning generation.</p>
+      <p id="cost"></p><p>Correction and comparison review were performed by coding agents. No independent human ratings were collected. A future iteration should refine the overly broad lesson and test that revision on different cases.</p>
+      <p class="downloads"><a href="/learning-calls/data.json" download>Complete comparison</a><a href="/learning-calls/lesson.json" download>Saved lesson</a><a href="/learning-calls/pilot.json" download>Original pilot</a><a href="https://github.com/aarshroongta1/live-soccer-commentary/tree/main/examples/lesson-memory">Reproduce and inspect raw responses</a></p>
+    </div></details>
+  </section>
+  <aside class="connection"><h2>Why I built this</h2><p>Noeri’s work on specialized agents that improve from real tasks and corrections prompted this experiment. The question here is deliberately small: can an agent carry a useful correction into its next job, and can we catch when that lesson hurts? This runs independently of Noeri and uses no Noeri API.</p><a href="https://noeri.ai/#product">Noeri’s product</a></aside>
+  <footer><a href="/demo/keenable">Search workflow</a><a href="/demo/auctor">Feedback review</a><a href="/demo/namespace">CI diagnosis</a><span>Aarsh Roongta · November 2026</span></footer>
+</main>
+<p id="error" role="alert" hidden>Could not load the experiment. <a href="/learning-calls/data.json">Open the saved data.</a></p>
+<noscript>This comparison needs JavaScript. <a href="/learning-calls/data.json">Read the saved results.</a></noscript>
+</body></html>
