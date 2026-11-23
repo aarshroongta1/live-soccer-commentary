@@ -9,18 +9,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / "examples/trajectory-preferences"
 RUNTIME = DIRECTORY / "spec"
-RECEIPT = DIRECTORY / "spec-upload.json"
 
 
 def prepare() -> list[dict]:
     tasks = []
     for name in ("penalty-reaction", "late-save-call", "after-goal-reaction"):
         case = json.loads((DIRECTORY / f"{name}.json").read_text())
-        observations = "\n".join(
-            f"- {o['id']} at {o['at_s']}s: {o['description']} "
-            f"[observer certainty: {o.get('action', {}).get('certainty', 'unspecified')}]"
-            for o in case["observations"]
-        )
+        observation_lines = []
+        for observation in case["observations"]:
+            actor = observation.get("actor") or {}
+            identity = (
+                f" Resolved actor: {actor['resolved_name']}; action role: {actor['action_role']}."
+                if actor.get("resolved_name")
+                else ""
+            )
+            observation_lines.append(
+                f"- {observation['id']} at {observation['at_s']}s: "
+                f"{observation['description']}{identity} "
+                f"[observer certainty: "
+                f"{observation.get('action', {}).get('certainty', 'unspecified')}]"
+            )
+        observations = "\n".join(observation_lines)
         options = "\n".join(f"{o['id']}. {o['text']}" for o in case["options"])
         context = case.get("recent_spoken_lines", [])
         if case.get("currently_speaking"):
@@ -55,7 +64,11 @@ def prepare() -> list[dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--upload", action="store_true")
+    parser.add_argument("--revision", choices=("v1", "v2"), default="v1")
     args = parser.parse_args()
+    receipt_path = DIRECTORY / (
+        "spec-upload.json" if args.revision == "v1" else "spec-upload-v2.json"
+    )
     tasks = prepare()
     from trajectory import BenchmarkSpec, Client, TaskSpec
     from trajectory.lib import DockerfileBuild, start_push
@@ -85,9 +98,9 @@ def main() -> None:
     if not args.upload:
         print(manifest.model_dump_json(indent=2))
         return
-    if RECEIPT.exists():
+    if receipt_path.exists():
         print("Existing upload receipt; resume it instead of submitting again:")
-        print(RECEIPT.read_text())
+        print(receipt_path.read_text())
         return
     workspace = json.loads((DIRECTORY / "workspace.json").read_text())
     with Client(max_retries=0, timeout=30) as client:
@@ -100,7 +113,7 @@ def main() -> None:
             agent_id=workspace["agent_id"],
             root=RUNTIME,
             build_images=True,
-            idempotency_key="commentary-editorial-preferences-v1",
+            idempotency_key=f"commentary-editorial-preferences-{args.revision}",
             upload_max_retries=0,
         )
         receipt = {
@@ -108,7 +121,7 @@ def main() -> None:
             "agent_id": workspace["agent_id"],
             "organization_key": workspace["organization_key"],
         }
-        RECEIPT.write_text(json.dumps(receipt, indent=2) + "\n")
+        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
         print(json.dumps(receipt), flush=True)
         print("Agent:", PlatformLinks(workspace["organization_key"]).agent(workspace["agent_id"]))
         print("Upload started. No diagnostic, evaluation, training, or inference submitted.")

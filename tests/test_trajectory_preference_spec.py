@@ -97,3 +97,22 @@ def test_model_error_produces_no_grade(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(RuntimeError, match="simulated provider failure"):
         harness.main()
     assert endings == ["ERROR"]
+
+
+def test_readable_prompt_preserves_actor_identity_and_causal_cutoff(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    uploader_spec = importlib.util.spec_from_file_location(
+        "commentary_spec_uploader", ROOT / "scripts/upload_commentary_spec.py"
+    )
+    assert uploader_spec and uploader_spec.loader
+    uploader = importlib.util.module_from_spec(uploader_spec)
+    uploader_spec.loader.exec_module(uploader)
+    monkeypatch.setattr(uploader, "RUNTIME", tmp_path)
+    tasks = uploader.prepare()
+    prompt = tasks[0]["messages"][0]["content"]
+    assert "Resolved actor: Harry Kane; action role: shooter" in prompt
+    assert "Resolved actor: Harry Kane; action role: scorer" in prompt
+    assert "v1-o3" not in prompt  # This celebration observation is after the task cutoff.
+    assert "There is no supplied human preference or reference answer" in prompt

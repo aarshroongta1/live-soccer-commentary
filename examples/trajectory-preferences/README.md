@@ -1,5 +1,10 @@
 # Commentary preferences in the actual Trajectory product
 
+**Current workflow:** see [the video review and feedback comparison](../commentary-editor/README.md).
+The notes below preserve the earlier setup and text-only prototypes; their
+"no model calls yet" statements describe those historical stages, not the current account.
+The current workflow uses actual human feedback and visual inputs on a new clip.
+
 This follows the user's corrected experiment: show commentary alternatives for a
 match moment, let **the user** choose what they like, and retain their reason.
 It is separate from the earlier local scheduling demo.

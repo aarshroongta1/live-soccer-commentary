@@ -1,3 +1,4 @@
 workspace.json
 feedback-export.json
-spec-upload.json
+spec-upload*.json
+native-runs.json
