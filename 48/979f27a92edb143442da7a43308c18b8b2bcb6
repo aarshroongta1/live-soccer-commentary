@@ -1,0 +1,79 @@
+examples/lesson-memory/lesson.json
+  s_2963c320c6e123::t_9ef4d4d1f64c92 1-5
+examples/lesson-memory/pilot-responses/response-01.json
+  s_fe8358175950fc::t_b6cfbddaa1594c 1-138
+examples/lesson-memory/pilot-responses/response-02.json
+  s_fe8358175950fc::t_a6c2849f99d667 1-160
+examples/lesson-memory/pilot-responses/response-03.json
+  s_fe8358175950fc::t_b6f19b76c95198 1-160
+examples/lesson-memory/pilot-responses/response-04.json
+  s_fe8358175950fc::t_554a2fee345f90 1-160
+examples/lesson-memory/pilot-responses/response-05.json
+  s_fe8358175950fc::t_fe14f49648e733 1-160
+examples/lesson-memory/pilot-responses/response-06.json
+  s_fe8358175950fc::t_3ea9dda261acff 1-160
+examples/lesson-memory/pilot-responses/response-07.json
+  s_fe8358175950fc::t_76f61ede9b2312 1-160
+examples/lesson-memory/pilot.json
+  s_2963c320c6e123::t_e8a902b3055b7e 1-432
+examples/lesson-memory/response-01.json
+  s_2963c320c6e123::t_1dc60ce2fb560f 1-160
+examples/lesson-memory/response-02.json
+  s_2963c320c6e123::t_e4dc55fa699d00 1-160
+examples/lesson-memory/response-03.json
+  s_2963c320c6e123::t_27d235c15789da 1-160
+examples/lesson-memory/response-04.json
+  s_2963c320c6e123::t_994417eceee94f 1-160
+examples/lesson-memory/response-05.json
+  s_2963c320c6e123::t_c7b553bbf4dade 1-160
+examples/lesson-memory/response-06.json
+  s_2963c320c6e123::t_226df2dac1704d 1-160
+examples/lesson-memory/result.json
+  s_fe8358175950fc::t_5550a95b00f55e 1-516
+scripts/lesson_experiment.py
+  s_fe8358175950fc::t_1e7606e8e37152 1-206
+web/public/learning-calls/app.js
+  s_2963c320c6e123::t_ad1bae4c660573 1-108
+web/public/learning-calls/data.json
+  s_fe8358175950fc::t_4468af5bdb29f3 1-516
+web/public/learning-calls/index.html
+  s_2963c320c6e123::t_b3acaf82d52854 1-67
+web/public/learning-calls/lesson.json
+  s_fe8358175950fc::t_7093def6e6b81f 1-5
+web/public/learning-calls/pilot.json
+  s_fe8358175950fc::t_62cf9b0cbeed04 1-432
+web/public/learning-calls/style.css
+  s_2963c320c6e123::t_c5aa0b7819e3d8 1
+README.md
+  s_fe8358175950fc::t_31f4bfc4b06945 16-20
+examples/lesson-memory/README.md
+  s_fe8358175950fc::t_ae22e2ca15583a 1-92
+src/commentary/lesson_memory.py
+  s_2963c320c6e123::t_6ca4727c3d8aad 1-34
+tests/test_lesson_memory.py
+  s_fe8358175950fc::t_7904afd5fa23f6 1-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "48979f27a92edb143442da7a43308c18b8b2bcb6",
+  "prompts": {},
+  "sessions": {
+    "s_2963c320c6e123": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a2070a-b606-7571-87be-813021edbfe4",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_fe8358175950fc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a2070a-b606-7571-87be-813021edbfe4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
