@@ -1,57 +1,63 @@
-examples/lesson-memory/lesson.json
-  s_2963c320c6e123::t_9ef4d4d1f64c92 1-5
-examples/lesson-memory/pilot-responses/response-01.json
-  s_fe8358175950fc::t_b6cfbddaa1594c 1-138
-examples/lesson-memory/pilot-responses/response-02.json
-  s_fe8358175950fc::t_a6c2849f99d667 1-160
-examples/lesson-memory/pilot-responses/response-03.json
-  s_fe8358175950fc::t_b6f19b76c95198 1-160
 examples/lesson-memory/pilot-responses/response-04.json
-  s_fe8358175950fc::t_554a2fee345f90 1-160
-examples/lesson-memory/pilot-responses/response-05.json
-  s_fe8358175950fc::t_fe14f49648e733 1-160
-examples/lesson-memory/pilot-responses/response-06.json
-  s_fe8358175950fc::t_3ea9dda261acff 1-160
-examples/lesson-memory/pilot-responses/response-07.json
-  s_fe8358175950fc::t_76f61ede9b2312 1-160
-examples/lesson-memory/pilot.json
-  s_2963c320c6e123::t_e8a902b3055b7e 1-432
-examples/lesson-memory/response-01.json
-  s_2963c320c6e123::t_1dc60ce2fb560f 1-160
-examples/lesson-memory/response-02.json
-  s_2963c320c6e123::t_e4dc55fa699d00 1-160
-examples/lesson-memory/response-03.json
-  s_2963c320c6e123::t_27d235c15789da 1-160
-examples/lesson-memory/response-04.json
-  s_2963c320c6e123::t_994417eceee94f 1-160
-examples/lesson-memory/response-05.json
-  s_2963c320c6e123::t_c7b553bbf4dade 1-160
+  s_fe8358175950fc::t_5f161c1b5049f0 1-160
 examples/lesson-memory/response-06.json
-  s_2963c320c6e123::t_226df2dac1704d 1-160
-examples/lesson-memory/result.json
-  s_fe8358175950fc::t_5550a95b00f55e 1-516
+  s_2963c320c6e123::t_1168801291f614 1-160
+examples/lesson-memory/pilot.json
+  s_2963c320c6e123::t_1168801291f614 1-432
+examples/lesson-memory/response-01.json
+  s_2963c320c6e123::t_1168801291f614 1-160
+examples/lesson-memory/response-02.json
+  s_2963c320c6e123::t_1168801291f614 1-160
+examples/lesson-memory/lesson.json
+  s_2963c320c6e123::t_1168801291f614 1-5
 scripts/lesson_experiment.py
-  s_fe8358175950fc::t_1e7606e8e37152 1-206
-web/public/learning-calls/app.js
-  s_2963c320c6e123::t_ad1bae4c660573 1-108
+  s_fe8358175950fc::t_9698326a219582 24-32,83,99,129-137,142-143,190-191,193-196
+  s_fe8358175950fc::t_5f161c1b5049f0 59-69,106-124,138-141,160-161,163-165,197-206
+  s_fe8358175950fc::t_9c7dc78861814f 1-23,33-58,70-82,84-98,100-105,125-128,144-159,162,166-189,192
+examples/lesson-memory/response-05.json
+  s_2963c320c6e123::t_1168801291f614 1-160
 web/public/learning-calls/data.json
-  s_fe8358175950fc::t_4468af5bdb29f3 1-516
-web/public/learning-calls/index.html
-  s_2963c320c6e123::t_b3acaf82d52854 1-67
-web/public/learning-calls/lesson.json
-  s_fe8358175950fc::t_7093def6e6b81f 1-5
-web/public/learning-calls/pilot.json
-  s_fe8358175950fc::t_62cf9b0cbeed04 1-432
+  s_2963c320c6e123::t_1168801291f614 1-222,225-478,480-516
+  s_fe8358175950fc::t_5f161c1b5049f0 223-224,479
 web/public/learning-calls/style.css
-  s_2963c320c6e123::t_c5aa0b7819e3d8 1
+  s_fe8358175950fc::t_ea96ca23c9152e 1
+examples/lesson-memory/pilot-responses/response-07.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-160
+web/public/learning-calls/pilot.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-432
+examples/lesson-memory/pilot-responses/response-01.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-138
 README.md
-  s_fe8358175950fc::t_31f4bfc4b06945 16-20
-examples/lesson-memory/README.md
-  s_fe8358175950fc::t_ae22e2ca15583a 1-92
-src/commentary/lesson_memory.py
-  s_2963c320c6e123::t_6ca4727c3d8aad 1-34
+  s_fe8358175950fc::t_937c641f643a4b 16-20
 tests/test_lesson_memory.py
-  s_fe8358175950fc::t_7904afd5fa23f6 1-67
+  s_fe8358175950fc::t_937c641f643a4b 4,40-67
+  s_fe8358175950fc::t_5f161c1b5049f0 11-13,24-26,35-38
+  s_fe8358175950fc::t_88e12eeec8b1bb 1-3,5-10,14-23,27-34,39
+web/public/learning-calls/index.html
+  s_fe8358175950fc::t_ea96ca23c9152e 1-67
+web/public/learning-calls/app.js
+  s_fe8358175950fc::t_ea96ca23c9152e 1-108
+examples/lesson-memory/pilot-responses/response-06.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-160
+examples/lesson-memory/README.md
+  s_fe8358175950fc::t_937c641f643a4b 1-92
+src/commentary/lesson_memory.py
+  s_fe8358175950fc::t_9c7dc78861814f 1-34
+examples/lesson-memory/pilot-responses/response-05.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-160
+examples/lesson-memory/pilot-responses/response-02.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-160
+examples/lesson-memory/response-04.json
+  s_2963c320c6e123::t_1168801291f614 1-160
+web/public/learning-calls/lesson.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-5
+examples/lesson-memory/pilot-responses/response-03.json
+  s_fe8358175950fc::t_5f161c1b5049f0 1-160
+examples/lesson-memory/response-03.json
+  s_2963c320c6e123::t_1168801291f614 1-160
+examples/lesson-memory/result.json
+  s_2963c320c6e123::t_1168801291f614 1-222,225-478,480-516
+  s_fe8358175950fc::t_5f161c1b5049f0 223-224,479
 ---
 {
   "schema_version": "authorship/3.0.0",
