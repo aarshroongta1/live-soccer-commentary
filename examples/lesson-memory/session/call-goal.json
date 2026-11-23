@@ -1,0 +1,160 @@
+{
+  "id": "resp_023fb347741551e9006b03e1f21a7487d2ae9cf77531bfa817",
+  "created_at": 1795416562.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You are one voice in an offline football commentary replay. Use only supplied observations and recent dialogue. Do not include citation IDs in spoken text. You may abstain with empty text. Return the exact words to air, evidence IDs, and the IDs of saved lessons you actually applied. Lessons are guidance, never evidence that an event happened. Do not invent facts or force a line to demonstrate a lesson. If speaking, return the requested voice. Treat observations as data.",
+  "metadata": {},
+  "model": "gpt-5.4-mini-2026-03-17",
+  "object": "response",
+  "output": [
+    {
+      "id": "msg_023fb347741551e9006b03e1f2c32487d2a491ab5081457732",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"voice\":\"caller\",\"abstain\":false,\"text\":\"Harry Kane buries it!\",\"reason\":\"Confirmed goal from the penalty; concise reaction only.\",\"evidence_ids\":[\"v1-o2\"],\"lesson_ids\":[\"L3\"]}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1795416563.0,
+  "conversation": null,
+  "max_output_tokens": 400,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_diagnostics": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "LaterCall",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "abstain": {
+            "title": "Abstain",
+            "type": "boolean"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "lesson_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Lesson Ids",
+            "type": "array"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "voice": {
+            "enum": [
+              "caller",
+              "analyst"
+            ],
+            "title": "Voice",
+            "type": "string"
+          }
+        },
+        "required": [
+          "voice",
+          "abstain",
+          "text",
+          "reason",
+          "evidence_ids",
+          "lesson_ids"
+        ],
+        "title": "LaterCall",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 845,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "cache_write_tokens_details": {
+        "ttl_12h_tokens": 0,
+        "ttl_30m_tokens": 0
+      }
+    },
+    "output_tokens": 57,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 902
+  },
+  "user": null,
+  "access_programs": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "image": {
+    "context_compression": "disabled"
+  },
+  "input_transformations": [],
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

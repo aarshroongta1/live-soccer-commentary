@@ -2,6 +2,10 @@
 
 Public demo: https://www.aarshroongta.com/demo/noeri
 
+The main UI now shows [a cumulative call history](session/README.md): multiple
+earlier calls save lessons that later calls reference, over the same penalty
+footage. The three-clip comparison below remains available as an earlier experiment.
+
 One reviewed past failure becomes a model-written, persistent instruction for
 three different clips. This is a small application-level memory experiment using
 existing models, inspired by Noeri's work on agents that improve from experience.
@@ -89,5 +93,6 @@ line with and without it. Full caller/analyst outputs and the other two cases
 are under one disclosure. The experiment persisted the lesson to disk and
 actually supplied it to the model before generating calls.
 
-No new broadcast media is published. All generated words, the full lesson, and
-the failed pilot remain inspectable. No outreach message has been sent.
+The cumulative replay adds a muted window of the existing penalty footage.
+All generated words, the full lesson, and the failed pilot remain inspectable.
+No outreach message has been sent.
