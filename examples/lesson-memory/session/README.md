@@ -2,9 +2,11 @@
 
 Public replay: https://www.aarshroongta.com/demo/noeri
 
-The UI shows six calls, the same penalty footage, and three lessons accumulating
-from earlier corrections. Later calls receive cumulative memory plus their own
-preceding dialogue. Green highlights show the lesson IDs returned by the model.
+The UI shows three exact bad calls, each directly paired with its saved lesson,
+and three later calls or decisions. Everything is visible immediately; a single
+penalty video is independently playable. Later calls received cumulative memory
+plus their own preceding dialogue. Green highlights show the lesson IDs returned
+by the model.
 This replaces the clip comparison as the main experience; the earlier three-clip
 experiment, including its regression, is retained in the parent directory.
 
@@ -36,9 +38,9 @@ restored from the preceding outputs and verified against their original pre-call
 hashes. `original-capture.json` preserves the uncorrected record, and the recorder
 now snapshots the list. No model calls or generated words were replaced.
 
-The same source window is repeated so viewers can follow earlier takes and later
-calls without switching between clips. It is not one causal run through a match.
-Playback pacing is authored for readability; it does not represent API timings.
+The single source window gives visual context for all the earlier takes and
+later calls. There is no staged walkthrough or playback gate. This is not one
+causal run through a match, and video timing does not represent API timings.
 No speech was synthesized. The seven-second source window starts at 50.5 seconds
 in `clips/action-sources/england-france-penalties.mp4`. The source-file hash is in
 `session.json`. The footage is muted and has no added commentary captions.

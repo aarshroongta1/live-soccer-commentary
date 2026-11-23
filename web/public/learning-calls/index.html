@@ -3,47 +3,43 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Commentary that remembers | Aarsh Roongta</title>
-<meta name="description" content="Watch lessons accumulate from earlier commentary calls, then see later calls reference that memory. One penalty sequence, a visible call history.">
+<meta name="description" content="See three bad commentary calls beside the lessons saved from them, then the later calls using that memory. All visible at once.">
 <meta name="theme-color" content="#18191b">
 <link rel="stylesheet" href="/learning-calls/style.css"><script src="/learning-calls/app.js" defer></script>
 </head>
 <body>
 <main>
-  <div class="session-heading"><h1>England–France · commentary memory</h1><span>Same penalty. Earlier takes, then a later pass.</span></div>
-  <nav id="history" aria-label="Call history"></nav>
   <div class="workspace">
-    <section class="footage" aria-labelledby="call-heading">
-      <h2 class="column-title" id="call-heading">Earlier call 1</h2>
-      <div class="player"><video id="match" src="/learning-calls/penalty.mp4" muted playsinline preload="auto" aria-label="England–France penalty footage, without audio"></video><span id="video-label">Earlier take</span></div>
-      <div class="controls"><button id="play" disabled>Play history</button><button id="next" disabled>Next call</button><span id="position">1 / 6</span></div>
-      <div class="spoken"><div class="label" id="speaker">Analyst</div><p id="past-call">Loading the saved calls…</p></div>
-      <div class="correction" id="correction" hidden><div class="label" id="correction-label">Correction</div><p id="correction-text"></p></div>
+    <section class="footage" aria-labelledby="match-title">
+      <h1 id="match-title">England–France</h1>
+      <video id="match" src="/learning-calls/penalty.mp4" controls muted playsinline preload="auto" aria-label="Seven-second England–France penalty footage, without audio"></video>
+      <p class="caption">Same penalty. Earlier takes supplied the corrections; a later pass received the saved lessons.</p>
+      <p class="key"><span class="bad-key">Unsupported or repetitive words</span><span class="used-key">Lesson referenced in a later call</span></p>
     </section>
 
-    <section class="memory-column" aria-labelledby="memory-heading">
-      <div class="column-heading"><h2 class="column-title" id="memory-heading">Memory</h2><span id="memory-count">0 lessons</span></div>
-      <div id="memory-list"></div>
-      <p class="memory-status" id="memory-status" role="status">Corrections from earlier calls will become saved lessons here.</p>
+    <section class="past" aria-labelledby="past-title">
+      <h2 class="column-title" id="past-title">Bad calls and what they taught it</h2>
+      <div id="pairs"><p class="loading">Loading the saved calls…</p></div>
     </section>
 
-    <section class="later" aria-labelledby="later-heading">
-      <h2 class="column-title" id="later-heading">Later calls</h2>
-      <div id="waiting"><p>Review the earlier calls.<br>The saved lessons carry into the next pass.</p><button id="jump" disabled>Jump to later calls</button></div>
-      <div id="later-content" hidden>
-        <div class="context"><div class="label">Current moment</div><p id="moment"></p></div>
-        <div class="references"><div class="label">Lessons referenced by this call</div><div id="used-lessons"></div></div>
-        <div class="new-call"><div class="label" id="later-speaker"></div><p id="later-call"></p></div>
-        <p id="call-reason"></p>
-      </div>
+    <section class="later" aria-labelledby="later-title">
+      <h2 class="column-title" id="later-title">Later calls with that memory</h2>
+      <div id="later-calls"></div>
+      <p class="caption">All three lessons were supplied. Green marks the lesson IDs the model itself referenced.</p>
     </section>
   </div>
   <div class="bottom">
-    <input id="clock" type="range" min="0" max="58" step="0.1" value="0" aria-label="Replay the history of calls and saved lessons">
-    <p>Saved model outputs · paced replay, not live generation · no audio</p>
-    <details><summary>What actually ran</summary><p>The first three calls are exact retained outputs from earlier takes of this same penalty. Two corrections were retained from the repo; the third is a new coding-agent editorial review. Their review order is reconstructed here. GPT-5.4 Mini distilled each correction into a lesson, saving cumulative memory after each one.</p><p>Three new model calls then received all three lessons, the saved observations, and the preceding new dialogue. The highlighted lesson IDs are the model’s own references. They show what it reported applying, not independent proof of causality. One lesson may remain available without being referenced.</p><p>All calls were generated offline. The footage repeats the same seven-second penalty sequence to show the earlier takes and later pass. Replay pacing is for readability; this is not continuous match time, measured model latency, or unseen transfer. No new vision, TTS, training, or Noeri API calls ran.</p><p id="cost"></p><p><a href="/learning-calls/session.json" download>Full call history and model inputs</a> · <a href="https://github.com/aarshroongta1/live-soccer-commentary/tree/main/examples/lesson-memory/session">Raw responses and reproduction</a> · <a href="/learning-calls/data.json" download>Earlier three-clip experiment, including regression</a></p></details>
+    <p>Actual saved model outputs · GPT-5.4 Mini · no live generation</p>
+    <details><summary>Full run and limits</summary>
+      <p>The three bad calls are exact retained outputs from earlier takes of the same penalty. Two corrections were retained from the repo; the repetition correction is a new coding-agent editorial review. A model distilled each correction into a lesson and saved cumulative memory after each one.</p>
+      <p>Three new calls received all three lessons, saved observations and preceding new dialogue. The lesson IDs are self-reported references, not independent proof of causality. This is a later pass over a familiar event, not evidence of unseen transfer. The analyst still partly repeats the outcome.</p>
+      <p>No fresh vision, TTS, training, or Noeri API calls ran. The footage is muted. All generated words shown here are unchanged.</p>
+      <p id="cost"></p>
+      <p><a href="/learning-calls/session.json" download>Exact inputs and outputs</a> · <a href="https://github.com/aarshroongta1/live-soccer-commentary/tree/main/examples/lesson-memory/session">Raw responses and code</a> · <a href="/learning-calls/data.json" download>Earlier comparison, including regression</a></p>
+    </details>
     <a href="/projects/soccer-commentary">Soccer commentary project</a>
   </div>
 </main>
-<p id="error" role="alert" hidden>Could not load the history. <a href="/learning-calls/session.json">Read the saved run.</a></p>
-<noscript>This replay needs JavaScript. <a href="/learning-calls/session.json">Read the call history.</a></noscript>
+<p id="error" role="alert" hidden>Could not load the calls. <a href="/learning-calls/session.json">Read the saved run.</a></p>
+<noscript><p>This view needs JavaScript. <a href="/learning-calls/session.json">Read the saved calls.</a></p></noscript>
 </body></html>
