@@ -1,0 +1,46 @@
+scripts/upload_commentary_spec.py
+  s_412fe6107f6f3f::t_d45e79f1258367 29-37,71-83,98-103,106-110
+  s_6c0a54f243d293::t_d9d7d2887020b4 1-28,38-70,84-97,104-105,111-118
+examples/trajectory-preferences/spec/tasks.json
+  s_412fe6107f6f3f::t_d45e79f1258367 1-29
+examples/trajectory-preferences/spec/Dockerfile
+  s_6c0a54f243d293::t_d9d7d2887020b4 1-5
+tests/test_trajectory_preference_spec.py
+  s_6c0a54f243d293::t_19d4c73dc84222 29-33,43-51
+  s_6c0a54f243d293::t_a58cb6d3935fab 1-28,34-42,52-99
+examples/trajectory-preferences/spec/.dockerignore
+  s_6c0a54f243d293::t_d9d7d2887020b4 1-4
+examples/trajectory-preferences/README.md
+  s_6c0a54f243d293::t_8e88ad34eff92b 43-45
+  s_6c0a54f243d293::t_975bb9bec03a9c 27-42,46-78,89-90
+examples/trajectory-preferences/.gitignore
+  s_6c0a54f243d293::t_d9d7d2887020b4 3
+examples/trajectory-preferences/spec/harness.py
+  s_412fe6107f6f3f::t_d45e79f1258367 49-51,59-61
+  s_6c0a54f243d293::t_a58cb6d3935fab 40,42-44
+  s_6c0a54f243d293::t_d9d7d2887020b4 1-39,41,45-48,52-58,62-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "472afc5e24119180bab6d6f245dbd8406874c93c",
+  "prompts": {},
+  "sessions": {
+    "s_412fe6107f6f3f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
