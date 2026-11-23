@@ -18,6 +18,9 @@ lessons accumulating from earlier calls, then being referenced by later calls
 over the same penalty footage. The [saved call history](examples/lesson-memory/session/README.md)
 includes exact model inputs and outputs. An earlier three-clip comparison,
 including a regression, remains in [the experiment record](examples/lesson-memory/README.md).
+The subsequent [later-in-the-match transfer test](examples/lesson-memory/transfer/README.md)
+did not establish a recognition improvement from memory. The existing public
+memory view should not be interpreted as evidence of successful transfer.
 
 The [commentary page](https://www.aarshroongta.com/projects/soccer-commentary) has
 three clips with two voices and captions:

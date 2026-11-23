@@ -2,6 +2,11 @@
 
 Public demo: https://www.aarshroongta.com/demo/noeri
 
+**Latest finding:** the [later-incident transfer test](transfer/README.md) did
+not establish improved recognition from memory. The current public view is an
+illustration of saved lessons and later calls on a familiar incident, not proof
+that lessons improve new events. No learning-success redesign was published.
+
 The main UI now shows [a cumulative call history](session/README.md): multiple
 earlier calls save lessons that later calls reference, over the same penalty
 footage. The three-clip comparison below remains available as an earlier experiment.
