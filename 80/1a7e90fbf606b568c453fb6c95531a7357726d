@@ -1,11 +1,11 @@
-examples/lesson-memory/README.md
-  s_2963c320c6e123::t_352b7c03d084b8 86-90
 web/public/learning-calls/app.js
-  s_2963c320c6e123::t_8db3c513aa0d42 4-8,11-15,20-25,27-48
+  s_2963c320c6e123::t_56e2aa06b4b15c 4-8,11-15,20-25,27-48
 web/public/learning-calls/index.html
-  s_2963c320c6e123::t_7f7dc732e026cd 4-8,12-27,29-40,42-55,57-72,74-77
+  s_fe8358175950fc::t_47af0c05c8442e 4-8,12-27,29-40,42-55,57-72,74-77
 web/public/learning-calls/style.css
-  s_2963c320c6e123::t_fa4e50f35f5a7a 1
+  s_fe8358175950fc::t_8a0e72f2c4a91b 1
+examples/lesson-memory/README.md
+  s_2963c320c6e123::t_85b5272929e0c8 86-90
 ---
 {
   "schema_version": "authorship/3.0.0",
@@ -18,6 +18,14 @@ web/public/learning-calls/style.css
         "tool": "claude",
         "id": "01a2070a-b606-7571-87be-813021edbfe4",
         "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_fe8358175950fc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a2070a-b606-7571-87be-813021edbfe4",
+        "model": "gpt-6.1-sol"
       },
       "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
     }
