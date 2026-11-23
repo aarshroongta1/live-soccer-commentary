@@ -1,0 +1,29 @@
+[
+  {
+    "id": "penalty-reaction",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Choose what to air just after a verified penalty goal\n\nSelect the next commentary line at this moment. Choose A, B, or silence; explain what you value. There is no pre-filled preferred answer.\n\nAvailable observations (saved model reports):\n- v1-o1 at 1.0s: England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net. [observer certainty: confirmed]\n- v1-o2 at 3.5s: The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth. [observer certainty: confirmed]\n\nRecent dialogue:\nNone.\n\nCommentary options:\nA. Kane scores!\nB. Harry Kane scores for England!\nC. Stay silent.\n\nRecommend A, B, or C and briefly explain. Consider grounding, what has already been said, timing, and whether silence is better. There is no supplied human preference or reference answer. Return only JSON: {\"choice\":\"A|B|C\",\"reason\":\"your explanation\"}. Use at most 60 words for the reason."
+      }
+    ]
+  },
+  {
+    "id": "late-save-call",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Choose what to air when the save call becomes ready\n\nAt the recorded caller-ready time, choose which line (if any) should cut into the older analyst turn. Explain how timeliness, concision, and interruption affect your choice.\n\nAvailable observations (saved model reports):\n- v1-o1 at 1.0s: Aston Villa attacker at the top of the box nudges the ball rightward under pressure as Arsenal defenders close in. [observer certainty: uncertain]\n- v1-o2 at 2.0s: The ball is poked or deflected toward the inside-right edge of the penalty area, with defenders and an attacker converging on it. [observer certainty: uncertain]\n- v1-o3 at 2.5s: The ball pops up off the ground in the same attacking area after the challenge, staying live near the penalty arc. [observer certainty: uncertain]\n- v2-o1 at 4.0s: The goalkeeper dives left and gets a hand to the shot, pushing the ball away from the center of goal. [observer certainty: confirmed]\n- v2-o2 at 5.0s: A defender slides in near the six-yard area and knocks the loose ball away from goal. [observer certainty: confirmed]\n\nRecent dialogue:\nCurrently speaking: Villa worked the ball right under pressure, but Arsenal’s challenge disrupted the move and sent it loose toward the edge of the area.\n\nCommentary options:\nA. A sharp save, and the defender slides in to clear the danger.\nB. The goalkeeper’s touch pushed the shot away from the middle, and a defender reacted quickly to clear the loose ball near the six-yard area.\nC. Do not cut in; let the current analyst finish.\n\nRecommend A, B, or C and briefly explain. Consider grounding, what has already been said, timing, and whether silence is better. There is no supplied human preference or reference answer. Return only JSON: {\"choice\":\"A|B|C\",\"reason\":\"your explanation\"}. Use at most 60 words for the reason.\nThe caller-ready clock is 10.618s; the latest cited action occurred at 5.0s. This clock includes processing/drain after an eight-second clip."
+      }
+    ]
+  },
+  {
+    "id": "after-goal-reaction",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Choose what adds value after the goal has already been called\n\nThe caller has just said \"Harry Kane scores for England!\". Choose the analyst's next contribution or remain silent. Explain what makes the line useful at this moment.\n\nAvailable observations (saved model reports):\n- v1-o1 at 1.0s: England's shot is driven low toward the left side of the goal, with the France goalkeeper diving across but the ball continuing into the net. [observer certainty: confirmed]\n- v1-o2 at 3.5s: The ball has clearly crossed into the net, and the England forward runs away in celebration while the goalkeeper stands back in the goalmouth. [observer certainty: confirmed]\n- v1-o3 at 5.5s: England's number 9 sprints toward the camera and celebrates after the goal, with teammates following behind. [observer certainty: uncertain]\n\nRecent dialogue:\nHarry Kane scores for England!\n\nCommentary options:\nA. Kane scores!\nB. The finish was low and driven across goal, forcing the keeper into a full dive before it went in.\nC. Stay silent.\n\nRecommend A, B, or C and briefly explain. Consider grounding, what has already been said, timing, and whether silence is better. There is no supplied human preference or reference answer. Return only JSON: {\"choice\":\"A|B|C\",\"reason\":\"your explanation\"}. Use at most 60 words for the reason."
+      }
+    ]
+  }
+]
