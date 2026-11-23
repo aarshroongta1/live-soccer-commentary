@@ -1,0 +1,99 @@
+examples/lesson-memory/README.md
+  s_fe8358175950fc::t_ed473fba404cf3 5-9
+examples/lesson-memory/transfer/result.json
+  s_fe8358175950fc::t_0aed27694492da 644-645,647-648,651-936
+  s_2963c320c6e123::t_0bfda9f51486ec 1-643,646,649-650,937
+examples/lesson-memory/transfer/scoreboard/scorecheck-late-1.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-198
+examples/lesson-memory/transfer/escalation-expanded/escalation.json
+  s_fe8358175950fc::t_0aed27694492da 1-141
+scripts/escalate_transfer.py
+  s_fe8358175950fc::t_8d6b5f47c70ff7 55,118,135
+  s_fe8358175950fc::t_745ae0f50e6aff 1-47,56-76,80,89-94,98,100-102,110-112,121-134,136-138
+  s_2963c320c6e123::t_0c49dea26a07d1 48-54,77-79,81-88,95-97,99,103-109,113-117,119-120
+examples/lesson-memory/transfer/prompt-only/late-1-baseline.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+examples/lesson-memory/transfer/prompt-only/transfer.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-490
+examples/lesson-memory/transfer/scoreboard/verified-late-2.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+examples/lesson-memory/transfer/prompt-only/late-1-memory.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+scripts/transfer_memory.py
+  s_fe8358175950fc::t_31314d78d57e43 53-58,62-63,66-70,73-83,101-103,105-112,120-123,127-133,138-143
+  s_fe8358175950fc::t_f6348b1fc258d6 1-52,59-61,64-65,71-72,84-100,104,113-119,124-126,134-137,144-167
+scripts/verify_transfer.py
+  s_fe8358175950fc::t_a15db5a423fe76 39-40
+  s_fe8358175950fc::t_20caa2608c1008 1-18,20-24,26-38,41-45,53-75,88-92,99-112,121-122,131-132,140-142,151,154,169-170,173-181,187-189
+  s_fe8358175950fc::t_7469c5943d993e 25,152-153,155,171-172
+  s_2963c320c6e123::t_7f6954b876ff8c 19,46-52,76-87,93-98,113-120,123-130,133-139,143-150,156-168,182,186
+  s_6c0a54f243d293::t_90b0c3d017ff9f 183-185
+examples/lesson-memory/transfer/prompt-only/earlier-control-baseline.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+examples/lesson-memory/transfer/escalation-expanded/verifier-late-1.json
+  s_fe8358175950fc::t_0aed27694492da 1-158
+examples/lesson-memory/transfer/escalation-initial/verifier-late-1.json
+  s_fe8358175950fc::t_0aed27694492da 1-145
+examples/lesson-memory/transfer/escalation-initial/escalation.json
+  s_fe8358175950fc::t_0aed27694492da 1-131
+examples/lesson-memory/transfer/prompt-only/late-2-memory.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+tests/test_transfer_memory.py
+  s_2963c320c6e123::t_92dbd80a1dc1f3 43
+  s_fe8358175950fc::t_dafd4ae4c2156b 1-42,44-66
+src/commentary/scoreboard.py
+  s_fe8358175950fc::t_a15db5a423fe76 1-25
+examples/lesson-memory/transfer/prompt-only/earlier-control-memory.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+examples/lesson-memory/transfer/scoreboard/scorecheck-earlier-control.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-198
+examples/lesson-memory/transfer/README.md
+  s_fe8358175950fc::t_dafd4ae4c2156b 1-120
+examples/lesson-memory/transfer/scoreboard/verified-late-1.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+examples/lesson-memory/transfer/prompt-only/late-2-baseline.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-163
+examples/lesson-memory/transfer/scoreboard/verification.json
+  s_2963c320c6e123::t_0bfda9f51486ec 1-266
+examples/lesson-memory/transfer/escalation-initial/verifier-earlier-control.json
+  s_fe8358175950fc::t_0aed27694492da 1-158
+web/public/learning-calls/transfer.json
+  s_fe8358175950fc::t_0aed27694492da 644-645,647-648,651-936
+  s_2963c320c6e123::t_0bfda9f51486ec 1-643,646,649-650,937
+README.md
+  s_fe8358175950fc::t_ed473fba404cf3 21-23
+examples/lesson-memory/transfer/escalation-expanded/verifier-earlier-control.json
+  s_fe8358175950fc::t_0aed27694492da 1-158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e3fc4ed06937714a6955c968591b14668797edd5",
+  "prompts": {},
+  "sessions": {
+    "s_2963c320c6e123": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a2070a-b606-7571-87be-813021edbfe4",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_fe8358175950fc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a2070a-b606-7571-87be-813021edbfe4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
