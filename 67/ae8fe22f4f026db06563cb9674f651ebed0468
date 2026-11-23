@@ -1,0 +1,23 @@
+web/app/demo/editor/review.tsx
+  s_6c0a54f243d293::t_213902d0b7ee2b 47,88,96,120,128,132,136-139,141-142,145-146,152-153,155-157,159,161-206,208,210-218
+web/app/demo/editor/page.tsx
+  s_6c0a54f243d293::t_109c6a63f740ca 7-8
+web/app/demo/editor/review.css
+  s_6c0a54f243d293::t_0f58ff58d3fa3f 1-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "67ae8fe22f4f026db06563cb9674f651ebed0468",
+  "prompts": {},
+  "sessions": {
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
