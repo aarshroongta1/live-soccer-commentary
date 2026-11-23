@@ -83,10 +83,11 @@ actual outputs, and usage. `response-*.json` retains the six raw provider result
 
 The canonical buildless UI lives in `web/public/learning-calls/`. Mirror that
 directory into `../personal-website/public/learning-calls/`; `/demo/noeri` is a
-Vercel rewrite. The static page replays saved results without API calls. Its
-Save lesson action stores the already-generated lesson in browser local storage;
-it does not trigger distillation or generation. The experiment itself persisted
-the lesson to disk and actually supplied it to the model before generating calls.
+Vercel rewrite. The static page shows saved results without API calls. Its
+main view shows the earlier mistake, the exact saved lesson, and the next caller
+line with and without it. Full caller/analyst outputs and the other two cases
+are under one disclosure. The experiment persisted the lesson to disk and
+actually supplied it to the model before generating calls.
 
 No new broadcast media is published. All generated words, the full lesson, and
 the failed pilot remain inspectable. No outreach message has been sent.
