@@ -1,0 +1,81 @@
+scripts/export_commentary_editor.py
+  s_6c0a54f243d293::t_9f1e9a07d5f6a2 1-80
+  s_412fe6107f6f3f::t_8f70c2a96fe206 81-107
+web/app/demo/editor/review.css
+  s_6c0a54f243d293::t_07c39b20fb72d5 1
+web/app/api/commentary-editor/route.ts
+  s_6c0a54f243d293::t_82cf0c99d0a344 1-9,11-38,41-54
+  s_6c0a54f243d293::t_d6b0418e00aa18 10
+  s_6c0a54f243d293::t_f5d3eddb21d907 39-40
+web/.vercelignore
+  s_6c0a54f243d293::t_9d294f4e89c83d 31
+web/app/demo/editor/review.tsx
+  s_6c0a54f243d293::t_1a19610499eeb2 12-13,169,173
+  s_6c0a54f243d293::t_d6b0418e00aa18 42
+  s_6c0a54f243d293::t_ffd23c9e3ca083 48-55,61-66,95-98
+  s_6c0a54f243d293::t_07c39b20fb72d5 1-8,11,14-35,41,43-45,56-60,67-94,99-123,131-136,138-153,155-160,163,165-168,170-172,174-175,177-179,183-187
+  s_6c0a54f243d293::t_9f1e9a07d5f6a2 9-10,36-40,46-47,124-130,137,154,161-162,164,176,180-182
+scripts/upload_commentary_spec.py
+  s_6c0a54f243d293::t_b2c7fc29a7794c 18-22,25-32,67,69-71,101,103,116,124
+  s_412fe6107f6f3f::t_e226936d424fb9 23-24
+scripts/prepare_commentary_editor.py
+  s_6c0a54f243d293::t_d6b0418e00aa18 1-20,23,25,31-37,42-43,83-94,98-102,127-134
+  s_412fe6107f6f3f::t_4e670cd0392dd5 21-22,24,26-30,38-41,95-97,103-126
+  s_6c0a54f243d293::t_1a19610499eeb2 44-82
+web/public/editor-review/session.json
+  s_6c0a54f243d293::t_9f1e9a07d5f6a2 1
+tests/test_commentary_editor.py
+  s_412fe6107f6f3f::t_efa3a98e2db7b6 13-15,32-37,47-49,55-56,76-78,86-92,99-101
+  s_6c0a54f243d293::t_9d294f4e89c83d 1-12,16-31,38-46,50-54,57-75,79-85,93-98,102-152
+scripts/commentary_editor.py
+  s_412fe6107f6f3f::t_d66973dc089650 155-165
+  s_6c0a54f243d293::t_82cf0c99d0a344 1-44,50-52,59-60,66-83,87,90-91,95-98,104-108,114-116,121-139,166-168,171-173,182-185,200-203,210-213,221-223,227-248,254-256,266-267,269-280,282-284,288,296-309,320
+  s_6c0a54f243d293::t_1a19610499eeb2 146-149,178-179,224-226
+  s_6c0a54f243d293::t_9d294f4e89c83d 45-49,53-58,61-65,84-86,88-89,92-94,99-103,109-113,117-120,140-145,150-154,169-170,174-177,180-181,186-199,204-209,214-220,249-253,257-265,268,281,285-287,289-295,310-319
+scripts/run_commentary_reviews.py
+  s_6c0a54f243d293::t_b2c7fc29a7794c 24,62-64,84-86,108-110,147
+  s_6c0a54f243d293::t_abf4d8ffa97ed1 1-23,33-39,42,55-61,65-77,81-83,87,94-96,100-104,114-124,129-135,138-142,154-159
+  s_6c0a54f243d293::t_87d6acde5b7358 25-32,40-41,43-54,78-80,88-93,97-99,105-107,111-113,125-128,136-137,143-146,148-153
+examples/trajectory-preferences/spec/tasks.json
+  s_412fe6107f6f3f::t_e226936d424fb9 7,25
+tests/test_trajectory_preference_spec.py
+  s_6c0a54f243d293::t_97b2fc81bc7130 100-102,105-118
+  s_412fe6107f6f3f::t_45c08a4a914653 103-104
+examples/trajectory-preferences/.gitignore
+  s_6c0a54f243d293::t_b2c7fc29a7794c 3
+  s_6c0a54f243d293::t_abf4d8ffa97ed1 4
+web/app/demo/editor/page.tsx
+  s_6c0a54f243d293::t_07c39b20fb72d5 1-11
+examples/trajectory-preferences/README.md
+  s_412fe6107f6f3f::t_3c6249b07a17fa 3-7
+web/data/editor-review.json
+  s_412fe6107f6f3f::t_d66973dc089650 32-55
+  s_412fe6107f6f3f::t_a0322e3e23b5e4 1-31,56-57
+examples/commentary-editor/README.md
+  s_6c0a54f243d293::t_d6b0418e00aa18 1-13,16-34,51-86
+  s_412fe6107f6f3f::t_3c6249b07a17fa 14-15,35-50,87-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "52c459df455dfc8353b24ffa1ea3e2f4f3509fde",
+  "prompts": {},
+  "sessions": {
+    "s_412fe6107f6f3f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
