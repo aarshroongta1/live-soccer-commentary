@@ -1,0 +1,33 @@
+examples/lesson-memory/session/README.md
+  s_fe8358175950fc::t_95d6352f14ad5a 5-9,41-43
+web/public/learning-calls/app.js
+  s_2963c320c6e123::t_3b6eab55e37eb1 17-46
+web/public/learning-calls/index.html
+  s_2963c320c6e123::t_261cd9889d5b7c 6,13-17,20-22,25-28,32-39,43-44
+web/public/learning-calls/style.css
+  s_2963c320c6e123::t_0b1aa85cf2a86b 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "63f71c0ea1c989af56e0109b6a172bd4cc9c72b6",
+  "prompts": {},
+  "sessions": {
+    "s_2963c320c6e123": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a2070a-b606-7571-87be-813021edbfe4",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_fe8358175950fc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a2070a-b606-7571-87be-813021edbfe4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
