@@ -1,37 +1,43 @@
-examples/lesson-memory/session/call-explain.json
-  s_2963c320c6e123::t_b07b7d7a625d27 1-160
-examples/lesson-memory/session/call-follow-up.json
-  s_2963c320c6e123::t_20a5019ed91bf6 1-160
-examples/lesson-memory/session/call-goal.json
-  s_2963c320c6e123::t_3409234eeaaffb 1-160
-examples/lesson-memory/session/lesson-L1.json
-  s_2963c320c6e123::t_6a14ab5eea7b68 1-135
-examples/lesson-memory/session/lesson-L2.json
-  s_2963c320c6e123::t_7342784b72d04a 1-135
-examples/lesson-memory/session/lesson-L3.json
-  s_2963c320c6e123::t_b0081f09c65140 1-135
-examples/lesson-memory/session/original-capture.json
-  s_2963c320c6e123::t_816326de105439 1-685
-examples/lesson-memory/session/session.json
-  s_2963c320c6e123::t_ff71adff32c058 1-673
-scripts/memory_session.py
-  s_2963c320c6e123::t_f8be1439ea06f7 1-227
-web/public/learning-calls/app.js
-  s_2963c320c6e123::t_983b267cd7dd1c 3-12,24,26-82,85-167,169
-web/public/learning-calls/index.html
-  s_fe8358175950fc::t_0c4463e8427123 5-6,12-13,15-20,23-26,29-36,40-44,47-49
-web/public/learning-calls/session.json
-  s_2963c320c6e123::t_8e3970f83fa301 1-673
-web/public/learning-calls/style.css
-  s_fe8358175950fc::t_0d2ec4eda16714 1
 README.md
-  s_fe8358175950fc::t_2fdff0b35e4409 16-20
-examples/lesson-memory/README.md
-  s_2963c320c6e123::t_b04752c2b16609 5-8,96-98
-examples/lesson-memory/session/README.md
-  s_fe8358175950fc::t_5df46ff5c160b7 1-80
+  s_fe8358175950fc::t_0764728cc05c78 16-20
+scripts/memory_session.py
+  s_fe8358175950fc::t_8c169b0bfea510 180
+  s_2963c320c6e123::t_6ec052e3a375f7 40-43,48-51,56-59,75-77,79-86,89-94,114-116,118-125,136-139,141-148,154-164,176-179,181-189,193-198
+  s_fe8358175950fc::t_109234da980fb9 1-39,44-47,52-55,60-74,78,87-88,95-113,117,126-135,140,149-153,165-175,190-192,199-227
+examples/lesson-memory/session/call-follow-up.json
+  s_2963c320c6e123::t_6ec052e3a375f7 1-160
+web/public/learning-calls/session.json
+  s_fe8358175950fc::t_8c169b0bfea510 364,671-672
+  s_2963c320c6e123::t_6ec052e3a375f7 1-363,365-670,673
+examples/lesson-memory/session/call-explain.json
+  s_2963c320c6e123::t_6ec052e3a375f7 1-160
+examples/lesson-memory/session/call-goal.json
+  s_2963c320c6e123::t_6ec052e3a375f7 1-160
 tests/test_memory_session.py
-  s_2963c320c6e123::t_0e23bb97f434d9 1-47
+  s_fe8358175950fc::t_f5c5f0b712dfb5 1-47
+examples/lesson-memory/session/README.md
+  s_fe8358175950fc::t_0764728cc05c78 32-38
+  s_fe8358175950fc::t_f5c5f0b712dfb5 1-31,39-80
+examples/lesson-memory/session/lesson-L1.json
+  s_2963c320c6e123::t_6ec052e3a375f7 1-135
+examples/lesson-memory/session/lesson-L3.json
+  s_2963c320c6e123::t_6ec052e3a375f7 1-135
+examples/lesson-memory/session/lesson-L2.json
+  s_2963c320c6e123::t_6ec052e3a375f7 1-135
+examples/lesson-memory/README.md
+  s_fe8358175950fc::t_f5c5f0b712dfb5 5-8,96-98
+examples/lesson-memory/session/original-capture.json
+  s_fe8358175950fc::t_8c169b0bfea510 1-685
+examples/lesson-memory/session/session.json
+  s_2963c320c6e123::t_6ec052e3a375f7 1-363,365-670,673
+  s_fe8358175950fc::t_8c169b0bfea510 364,671-672
+web/public/learning-calls/app.js
+  s_2963c320c6e123::t_79edf88ded9823 12,24,26-74,85
+  s_2963c320c6e123::t_4dfa03ceae7170 3-11,75-82,86-167,169
+web/public/learning-calls/index.html
+  s_fe8358175950fc::t_5436f463899c1b 5-6,12-13,15-20,23-26,29-36,40-44,47-49
+web/public/learning-calls/style.css
+  s_fe8358175950fc::t_0c2770739caef0 1
 ---
 {
   "schema_version": "authorship/3.0.0",
