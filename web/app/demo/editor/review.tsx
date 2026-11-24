@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 type Decision = "keep" | "rewrite" | "reject";
 type Review = { decision: Decision; reason: string; rewrite: string | null; trajectory_url: string };
 type Take = { label: string; text: string; trajectory_url: string };
-type Session = { connected?: boolean; review?: Review; takes?: Take[]; comparison_status?: string;
+type Session = { policy?: string; connected?: boolean; review?: Review; takes?: Take[]; comparison_status?: string;
   vote?: { choice: string; reason: string }; reveal?: Record<string, string>; error?: string;
   recorded?: boolean; recorded_order?: Record<string, string>; owner_vote?: {choice: string; reason: string} };
 type Data = { title: string; proposed: string; video_url: string; start_s: number; end_s: number;
@@ -167,6 +167,7 @@ export default function Editor({ data }: { data: Data }) {
           <label htmlFor="reason">Reason</label>
           <textarea id="reason" rows={2} maxLength={1200} value={reason} disabled={!loaded || busy || !!session.comparison_status} onChange={e => { setReason(e.target.value); change(); }} />
         </div>
+        {session.policy && <div className="editor-field"><label>Preference inferred from your review</label><p>{session.policy}</p></div>}
         <div className="editor-actions">
           {!session.recorded && !session.comparison_status && <button className="editor-primary" disabled={!loaded || busy} onClick={save}>{busy ? "Saving…" : "Save review"}</button>}
           {session.review && <a href={session.recorded ? "/editor-review/evidence.json" : session.review.trajectory_url} target="_blank" rel="noreferrer">{session.recorded ? "Evidence" : "View in Trajectory"}</a>}
@@ -199,7 +200,7 @@ export default function Editor({ data }: { data: Data }) {
             </label>)}</fieldset>
             <label htmlFor="vote-reason">Reason</label>
             <textarea id="vote-reason" rows={2} maxLength={1200} value={voteReason} disabled={busy || !!session.vote} onChange={e => setVoteReason(e.target.value)} />
-            {!session.vote && <button className="editor-primary" disabled={busy || !vote || !voteReason.trim()} onClick={saveVote}>{busy ? "Saving…" : session.recorded ? "Reveal" : "Save and reveal"}</button>}
+            {!session.vote && <button className="editor-primary" disabled={busy || !vote || !voteReason.trim()} onClick={saveVote}>{busy ? "Saving…" : session.reveal ? "Save judgment" : "Save and reveal"}</button>}
             {session.vote && <p className="editor-result">Your choice: {session.vote.choice}. {session.vote.reason}</p>}
             {session.reveal && session.owner_vote && <p className="editor-result">Original review: {session.owner_vote.choice}. {session.owner_vote.reason}</p>}
           </div>
@@ -210,7 +211,7 @@ export default function Editor({ data }: { data: Data }) {
     <footer className="editor-footer">
       <details><summary>Details</summary>
         <p>{data.source_origin} The line begins at {data.start_s.toFixed(1)}s. Edit and comparison previews use a browser voice.</p>
-        <p>The comparison uses the same model, frames, and background for both takes. Only one receives your saved feedback. Take order is randomized. No model training runs; one example does not establish improvement.</p>
+        <p>The comparison uses the same model, frames, and background for both takes. The revised take uses a preference inferred from your saved review, plus an instruction to favor one relevant background fact. The first attempt using raw feedback did not add background context; both attempts are in the evidence. This is learning through saved instructions, with no model training. No human preference between the final takes has been recorded.</p>
         {data.transfer.research_limit && <p>{data.transfer.research_limit}</p>}
         {!session.connected && !session.recorded && <p>This preview saves decisions in your browser. Live Trajectory capture is available in the connected local session.</p>}
       </details>

@@ -1,1 +1,35 @@
-{"recorded": false}
+{
+  "recorded": true,
+  "review": {
+    "decision": "keep",
+    "reason": "uses relevant facts about the player's career and how the team has been performing to enrich the commentary",
+    "rewrite": null,
+    "original_line": "Dan Ballard has come back to haunt Arsenal there — a former Arsenal academy player ending their eight-game clean-sheet run.",
+    "source_run_id": "20261115T044137-e472ae",
+    "reviewed_at": "2026-11-23T18:29:10.429283+00:00",
+    "trajectory_url": ""
+  },
+  "comparison_status": "complete",
+  "takes": [
+    {
+      "label": "A",
+      "text": "Messi drives inside from the right and, with defenders backpedaling, finds the low finish across goal.",
+      "trajectory_url": ""
+    },
+    {
+      "label": "B",
+      "text": "Messi, in his 100th UEFA appearance, drives Barcelona through the middle and the finish is placed beyond the keeper.",
+      "trajectory_url": ""
+    }
+  ],
+  "recorded_order": {
+    "A": "baseline",
+    "B": "with_feedback"
+  },
+  "reveal": {
+    "A": "baseline",
+    "B": "with_feedback"
+  },
+  "policy": "I like concise commentary that adds relevant career context and team performance context when it enriches the line.",
+  "owner_vote": null
+}

@@ -1,0 +1,110 @@
+{
+  "review": {
+    "decision": "keep",
+    "reason": "uses relevant facts about the player's career and how the team has been performing to enrich the commentary",
+    "rewrite": null,
+    "original_line": "Dan Ballard has come back to haunt Arsenal there — a former Arsenal academy player ending their eight-game clean-sheet run.",
+    "source_run_id": "20261115T044137-e472ae",
+    "reviewed_at": "2026-11-23T18:29:10.429283+00:00",
+    "trajectory_url": ""
+  },
+  "order": {
+    "A": "baseline",
+    "B": "with_feedback"
+  },
+  "human_judgment": null,
+  "policy": {
+    "policy": "I like concise commentary that adds relevant career context and team performance context when it enriches the line.",
+    "mechanism": "Model-distilled preference applied as an explicit editorial instruction",
+    "policy_trajectory_id": "traj_8bcbf1a0b8dc49c5ac684ad002d2871c",
+    "shared_input_sha256": "232753860419666bf2774394200bc26da90920571aab5121ed838185077f2311"
+  },
+  "earlier_attempt": {
+    "baseline": {
+      "text": "Messi drives inside from the right and, with defenders backpedaling, finds the low finish across goal.",
+      "trajectory_id": "traj_5db928bac6ec47eea2e8307f07044c4e"
+    },
+    "with_feedback": {
+      "text": "Messi has drifted into space between the lines, and Bayern’s back line is caught retreating toward its own box.",
+      "trajectory_id": "traj_d2f8d4f51e7844329f8534590fc0364f"
+    }
+  },
+  "frames": [
+    7.5,
+    9.0,
+    10.5,
+    12.0,
+    13.5,
+    15.0
+  ],
+  "frame_sha256": [
+    "d3d69b3ae69e7cfbac6fe196adea75587ab58901c3addefb1e3b42d1743d6376",
+    "46d9967459d3b3d4a04fdc8d956321abb10515c62f47d5b5a4780271e802ccfb",
+    "6547a2e54e8050f8a804f913b526f1880130e8f4672ec2c086027da348044fd7",
+    "13f167075bb50bc512fe64dc1720c14334150142865804d999cbf99f726f5b67",
+    "10d937d252b22a3cec17650836548e87c1726e930d5f2d6147e9cc79408f4a1d",
+    "cd27bfcdfeb7f55219384054acef962046457a3febf58bed779ba8318fd626ec"
+  ],
+  "shared_context": {
+    "reviewed_identity": "This is the retained Barcelona–Bayern clip from 6 May 2015. Barcelona's number 10 is Lionel Messi, as identified in the project's previous manual footage review. Identity is supplied, not inferred anew.",
+    "research": [
+      {
+        "id": "uefa-appearance",
+        "text": "Messi was poised for his 100th appearance in UEFA competition.",
+        "url": "https://www.uefa.com/uefachampionsleague/news/0221-0e9b4410dadd-a53b12c8f28f-1000--barcelona-v-bayern-munchen-preview/",
+        "published": "2015-05-05"
+      },
+      {
+        "id": "barcelona-form",
+        "text": "Barcelona entered the match after scoring 14 goals in their last two games and keeping five consecutive clean sheets.",
+        "url": "https://www.uefa.com/uefachampionsleague/news/0221-0e9b4410dadd-a53b12c8f28f-1000--barcelona-v-bayern-munchen-preview/",
+        "published": "2015-05-05"
+      },
+      {
+        "id": "guardiola-return",
+        "text": "Bayern coach Josep Guardiola was returning to Barcelona for the first time with Bayern, after four years coaching Barcelona.",
+        "url": "https://www.uefa.com/uefachampionsleague/news/0221-0e9b4410dadd-a53b12c8f28f-1000--barcelona-v-bayern-munchen-preview/",
+        "published": "2015-05-05"
+      }
+    ]
+  },
+  "runs": {
+    "baseline": {
+      "trajectory_id": "traj_5db928bac6ec47eea2e8307f07044c4e",
+      "model": "openai/gpt-5.4-mini",
+      "text": "Messi drives inside from the right and, with defenders backpedaling, finds the low finish across goal.",
+      "termination_reason": "ENV_DONE",
+      "usage": {
+        "prompt_tokens": 1552,
+        "completion_tokens": 26,
+        "total_tokens": 1578,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": null
+      },
+      "input_messages_sha256": "232753860419666bf2774394200bc26da90920571aab5121ed838185077f2311"
+    },
+    "with_feedback": {
+      "trajectory_id": "traj_1aaeb961f29b41949f8489df6984cdca",
+      "model": "openai/gpt-5.4-mini",
+      "text": "Messi, in his 100th UEFA appearance, drives Barcelona through the middle and the finish is placed beyond the keeper.",
+      "termination_reason": "ENV_DONE",
+      "usage": {
+        "prompt_tokens": 1637,
+        "completion_tokens": 29,
+        "total_tokens": 1666,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": null
+      },
+      "input_messages_sha256": "d02a65300e53d2585c64a75d07f06d1408e56534398a3826daaad13a8e49734b"
+    }
+  },
+  "limits": [
+    "One development comparison; no general improvement or training claim.",
+    "Both runs receive identical six frames, identity context, and research facts.",
+    "The revised run receives a model-distilled preference plus an application-authored instruction to prioritize one relevant background fact.",
+    "The second task's background pool was prepared after the first review.",
+    "Raw-feedback transfer did not add background context. One explicit policy revision followed; both attempts are retained. No human comparison judgment has been recorded.",
+    "First clip uses retained TTS; take previews use a browser voice.",
+    "New vision and inference ran via Trajectory; no model weights were updated."
+  ]
+}

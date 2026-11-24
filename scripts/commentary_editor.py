@@ -65,8 +65,10 @@ def public_state(state: dict) -> dict:
             }
             for label, arm in state["order"].items()
         ]
-        if state.get("vote"):
+        if state.get("vote") or state.get("policy_revision"):
             result["reveal"] = state["order"]
+        if state.get("policy_revision"):
+            result["policy"] = state["policy_revision"].get("policy")
     return result
 
 
@@ -123,19 +125,9 @@ def record_review(client, state: dict, body: dict) -> dict:
     return public_state(state)
 
 
-def compare(client, state: dict) -> dict:
+def visual_input():
     from trajectory.lib import ImageInput
-    from trajectory.lib.platform_links import PlatformLinks
 
-    if not state.get("review"):
-        raise ValueError("Save your review to Trajectory first.")
-    if state.get("comparison_status") == "complete":
-        return public_state(state)
-    if state.get("comparison_status"):
-        raise ValueError("A comparison attempt is already recorded. Inspect it before retrying.")
-    review = state["review"]
-    native = client.get(f"/api/v1/agents/{AGENT}/traces/{review['trajectory_id']}", cast_to=dict)
-    feedback = json.loads(native["feedback_text"])
     # New footage only; no target commentary, reference labels, or future frames.
     content = [
         {
@@ -171,6 +163,22 @@ def compare(client, state: dict) -> dict:
         frame_hashes.append(hashlib.sha256(path.read_bytes()).hexdigest())
         content.append({"type": "text", "text": f"Frame at {at:.1f}s"})
         content.append(ImageInput.from_path(path).part())
+    return content, frame_hashes, research
+
+
+def compare(client, state: dict) -> dict:
+    from trajectory.lib.platform_links import PlatformLinks
+
+    if not state.get("review"):
+        raise ValueError("Save your review to Trajectory first.")
+    if state.get("comparison_status") == "complete":
+        return public_state(state)
+    if state.get("comparison_status"):
+        raise ValueError("A comparison attempt is already recorded. Inspect it before retrying.")
+    review = state["review"]
+    native = client.get(f"/api/v1/agents/{AGENT}/traces/{review['trajectory_id']}", cast_to=dict)
+    feedback = json.loads(native["feedback_text"])
+    content, frame_hashes, research = visual_input()
     state.update(
         comparison_status="started",
         comparison={},
