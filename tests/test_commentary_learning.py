@@ -39,7 +39,10 @@ def test_only_explicit_valid_choices_are_accepted(choice):
         )
 
 
-def test_missing_reason_cannot_be_inferred():
+def test_missing_reason_stays_empty():
     capture = module("scripts/commentary_learning_reviews.py", "learning_capture_reason")
-    with pytest.raises(ValueError):
-        capture.validate({"choice": 0, "reason": ""}, {"options": ["line", "[SILENCE]"]})
+    result = capture.validate(
+        {"choice": 0, "reason": "", "request_id": "64a17e4a-c637-4234-9a96-d6307f7cd488"},
+        {"options": ["line", "[SILENCE]"]},
+    )
+    assert result["reason"] == ""

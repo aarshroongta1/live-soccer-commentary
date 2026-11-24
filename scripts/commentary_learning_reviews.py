@@ -23,8 +23,8 @@ def validate(body, case):
     if type(index) is not int or not 0 <= index < len(case["options"]):
         raise ValueError("Choose the line you would air, including silence if appropriate.")
     reason = str(body.get("reason", "")).strip()
-    if not reason or len(reason) > 1200:
-        raise ValueError("Add a short reason for your choice.")
+    if len(reason) > 1200:
+        raise ValueError("Keep your reason under 1200 characters.")
     return {"choice": index, "reason": reason, "request_id": str(UUID(body.get("request_id", "")))}
 
 
@@ -74,8 +74,10 @@ def main():
                 "split": case["split"],
                 "options": frozen["options"],
                 "decision_at_s": case["decision_at_s"],
-                "source_generation_trajectory_id": frozen["trajectory_id"],
-                "task_prompt": "Choose the commentary you would air at second 15.",
+                "source_generation_trajectory_id": frozen.get("trajectory_id"),
+                "source_record": frozen.get("source_record"),
+                "choice_provenance": frozen.get("provenance", "Recorded model output"),
+                "task_prompt": "Choose the commentary you would air at this moment.",
             },
         )
         client.trajectories.complete(tid, termination_reason="ENV_DONE")

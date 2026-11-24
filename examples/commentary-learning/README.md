@@ -1,5 +1,17 @@
 # Native commentary choice learning
 
+Current status: the 20-second review batch was rejected by the user for generic
+options and overly long footage per line. It is archived in
+`runs/commentary-learning/rejected-20s-batch/` and will not train anything. The
+local page now shows three **8-second pilot moments**, using retained normal
+generated commentary plus two explicitly assistant-authored editorial alternatives.
+No preferred labels are assigned. Reasons are optional. `prepare_commentary_pilot.py`
+builds this set; the uploader explicitly refuses a pilot catalog. The full
+train/test set must be rebuilt around short single-line moments after quality
+feedback. The original experiment plan below is superseded where it refers to
+20-second review chunks.
+
+
 Owner review: http://127.0.0.1:3010/demo/trajectory-training
 
 This experiment was explicitly authorized by Aarsh after the original project

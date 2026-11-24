@@ -1,216 +1,63 @@
 {
-  "version": 1,
-  "training_footage_s": 200,
-  "test_footage_s": 60,
-  "target_id": "test-01",
+  "version": 2,
+  "phase": "pilot",
+  "training_footage_s": 0,
+  "test_footage_s": 0,
+  "target_id": null,
   "cases": [
     {
-      "id": "train-01",
-      "split": "train",
-      "title": "Possession",
-      "source_start_s": 0,
-      "video_url": "/commentary-learning/train-01.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
+      "id": "pilot-ballard",
+      "title": "After Ballard\u2019s goal",
+      "split": "pilot",
+      "video_url": "/commentary-learning/pilot-ballard.mp4",
+      "duration_s": 8,
+      "decision_at_s": 1.4,
+      "context": "The goal has already been called. Choose the next analyst line.",
+      "role": "Analyst",
+      "source_start_s": 10,
       "options": [
-        "The defense is compacting centrally, forcing play wide along the left side.",
+        "Ballard never made a first-team appearance for Arsenal. He\u2019s made his mark against them now.",
         "[SILENCE]",
-        "Still probing down the wing.",
-        "He drives it toward the box, looking for a crossing chance."
+        "Arsenal\u2019s eight-game clean-sheet run is over. And it\u2019s one of their own who ends it.",
+        "Dan Ballard has come back to haunt Arsenal there \u2014 a former Arsenal academy player ending their eight-game clean-sheet run."
       ],
-      "normal_line": "He drives it toward the box, looking for a crossing chance."
+      "normal_line": "Dan Ballard has come back to haunt Arsenal there \u2014 a former Arsenal academy player ending their eight-game clean-sheet run."
     },
     {
-      "id": "train-02",
-      "split": "train",
-      "title": "Possession",
-      "source_start_s": 20,
-      "video_url": "/commentary-learning/train-02.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
+      "id": "pilot-arsenal",
+      "title": "Arsenal\u2019s finish",
+      "split": "pilot",
+      "video_url": "/commentary-learning/pilot-arsenal.mp4",
+      "duration_s": 8,
+      "decision_at_s": 3,
+      "context": "Choose the immediate goal call, as the ball goes in.",
+      "role": "Caller",
+      "source_start_s": 94,
       "options": [
-        "Slow build-up, patient and measured.",
-        "[SILENCE]",
-        "The wide circulation is pulling defenders across, creating space centrally for a potential switch or through ball.",
-        "They\u2019re probing down the right, looking for an opening against a compact defensive block."
-      ],
-      "normal_line": "They\u2019re probing down the right, looking for an opening against a compact defensive block."
-    },
-    {
-      "id": "train-03",
-      "split": "train",
-      "title": "Possession",
-      "source_start_s": 40,
-      "video_url": "/commentary-learning/train-03.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "[SILENCE]",
-        "Still no clear finish, but pressure is building.",
-        "The wide recycling pulls defenders across and opens a potential shooting angle from the edge.",
-        "They\u2019re probing patiently around the box, looking for a gap in the crowded defense."
-      ],
-      "normal_line": "They\u2019re probing patiently around the box, looking for a gap in the crowded defense."
-    },
-    {
-      "id": "train-04",
-      "split": "train",
-      "title": "Chelsea vs Burnley",
-      "source_start_s": 0,
-      "video_url": "/commentary-learning/train-04.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "[SILENCE]",
-        "Chelsea build patiently around the Burnley box, looking for a way through.",
-        "Burnley are compact, defending deep and crowding the penalty area.",
-        "Still locked together at Stamford Bridge."
-      ],
-      "normal_line": "Chelsea build patiently around the Burnley box, looking for a way through."
-    },
-    {
-      "id": "train-05",
-      "split": "train",
-      "title": "Chelsea vs Burnley",
-      "source_start_s": 20,
-      "video_url": "/commentary-learning/train-05.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "Burnley are compact centrally, forcing Chelsea wide and slowing the attack.",
-        "Chelsea keep probing in the final third, but Burnley\u2019s back line holds firm.",
-        "Pressure still on.",
+        "Arsenal score! He gets away from his marker and rolls it beyond the keeper.",
+        "He\u2019s beaten his man\u2014and beaten the goalkeeper! Arsenal score.",
+        "And Arsenal\u2019s number 7 finishes it!",
         "[SILENCE]"
       ],
-      "normal_line": "Chelsea keep probing in the final third, but Burnley\u2019s back line holds firm."
+      "normal_line": "And Arsenal\u2019s number 7 finishes it!"
     },
     {
-      "id": "train-06",
-      "split": "train",
-      "title": "Chelsea vs Burnley",
-      "source_start_s": 40,
-      "video_url": "/commentary-learning/train-06.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
+      "id": "pilot-kane",
+      "title": "Kane\u2019s penalty",
+      "split": "pilot",
+      "video_url": "/commentary-learning/pilot-kane.mp4",
+      "duration_s": 8,
+      "decision_at_s": 3,
+      "context": "Choose the immediate reaction to the penalty going in.",
+      "role": "Caller",
+      "source_start_s": 49,
       "options": [
-        "Birmingham have bodies forward, but Chelsea\u2019s compact shape is blocking the central lanes.",
-        "[SILENCE]",
-        "Chelsea scramble to hold firm as the ball flashes across the box.",
-        "Danger still in the area."
-      ],
-      "normal_line": "Chelsea scramble to hold firm as the ball flashes across the box."
-    },
-    {
-      "id": "train-07",
-      "split": "train",
-      "title": "Everton",
-      "source_start_s": 0,
-      "video_url": "/commentary-learning/train-07.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "What a scramble in the six-yard box!",
-        "[SILENCE]",
-        "Their wide overload and cutback open the defense at the near post.",
-        "Everton pounce in stoppage time, and the box is in chaos!"
-      ],
-      "normal_line": "Everton pounce in stoppage time, and the box is in chaos!"
-    },
-    {
-      "id": "train-08",
-      "split": "train",
-      "title": "Everton",
-      "source_start_s": 20,
-      "video_url": "/commentary-learning/train-08.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "He\u2019s keeping order after that crowded challenge inside the area.",
-        "[SILENCE]",
-        "Hold on, the referee is sorting this out.",
-        "The referee steps in as tempers flare in the box."
-      ],
-      "normal_line": "The referee steps in as tempers flare in the box."
-    },
-    {
-      "id": "train-09",
-      "split": "train",
-      "title": "France vs Jamaica",
-      "source_start_s": 0,
-      "video_url": "/commentary-learning/train-09.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "Still goalless, and the scramble ends with a stoppage.",
-        "France keep the pressure on, but Jamaica\u2019s defense and goalkeeper just about smother the danger.",
-        "Jamaica stay compact in the box, cutting out the central run and forcing France into a crowded finish.",
+        "Harry Kane! England are level!",
+        "Kane scores! Low into the corner, and England have their equaliser.",
+        "Kane scores the penalty!",
         "[SILENCE]"
       ],
-      "normal_line": "France keep the pressure on, but Jamaica\u2019s defense and goalkeeper just about smother the danger."
-    },
-    {
-      "id": "train-10",
-      "split": "train",
-      "title": "France vs Jamaica",
-      "source_start_s": 20,
-      "video_url": "/commentary-learning/train-10.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "France have broken into the box, and Jamaica are scrambling to recover.",
-        "[SILENCE]",
-        "A strong right-side overload there, stretching Jamaica\u2019s back line before the finish.",
-        "Danger in the six-yard area!"
-      ],
-      "normal_line": "France have broken into the box, and Jamaica are scrambling to recover."
-    },
-    {
-      "id": "test-01",
-      "split": "test",
-      "title": "Argentina vs France",
-      "source_start_s": 0,
-      "video_url": "/commentary-learning/test-01.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "France are compact and retreating quickly, closing central passing lanes.",
-        "Still danger here on the left.",
-        "[SILENCE]",
-        "Argentina work it down the left, probing for an opening around the box."
-      ],
-      "normal_line": "Argentina work it down the left, probing for an opening around the box."
-    },
-    {
-      "id": "test-02",
-      "split": "test",
-      "title": "Portugal vs Spain",
-      "source_start_s": 0,
-      "video_url": "/commentary-learning/test-02.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "All eyes on this set piece now.",
-        "A huge free-kick moment here as Portugal line up from dangerous range.",
-        "Spain\u2019s wall is tightly packed, so the taker may look for a curling effort.",
-        "[SILENCE]"
-      ],
-      "normal_line": "A huge free-kick moment here as Portugal line up from dangerous range."
-    },
-    {
-      "id": "test-03",
-      "split": "test",
-      "title": "Betis vs Barcelona",
-      "source_start_s": 0,
-      "video_url": "/commentary-learning/test-03.mp4",
-      "duration_s": 20,
-      "decision_at_s": 15,
-      "options": [
-        "Still all Barcelona in possession.",
-        "Betis are defending deep, forcing Barcelona to circulate the ball wide and patient.",
-        "Barcelona probe from the right, looking for a gap in Betis' compact block.",
-        "[SILENCE]"
-      ],
-      "normal_line": "Barcelona probe from the right, looking for a gap in Betis' compact block."
+      "normal_line": "Kane scores the penalty!"
     }
   ]
 }

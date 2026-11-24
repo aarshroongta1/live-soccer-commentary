@@ -15,6 +15,8 @@ def main():
     from trajectory.lib.platform_links import PlatformLinks
 
     catalog = json.loads((RUNS / "catalog.json").read_text())
+    if catalog.get("phase") == "pilot":
+        raise ValueError("Pilot quality review only: freeze the full train/test set before upload")
     choices = json.loads((RUNS / "choices.json").read_text())
     reviews = json.loads((RUNS / "reviews.json").read_text())
     if set(reviews) != {c["id"] for c in catalog["cases"]}:
