@@ -1,0 +1,42 @@
+examples/commentary-editor/README.md
+  s_6c0a54f243d293::t_e6ed9279050d51 1-63
+scripts/commentary_editor.py
+  s_412fe6107f6f3f::t_565d389506f34b 68,70-71,128,166-181
+scripts/export_commentary_editor.py
+  s_412fe6107f6f3f::t_e50e3ce8e2085b 113-114,119-120
+  s_6c0a54f243d293::t_e6ed9279050d51 112,115-116,118,121-122
+  s_412fe6107f6f3f::t_57fff2bd3c7ec3 3,18-19,30-42,79-80,87-94,130-132
+scripts/finish_commentary_learning.py
+  s_6c0a54f243d293::t_e6ed9279050d51 34-36,46-47,49-51,53-56,58-61,64-68,70-75,77-92,100-102,104-127,131-137,145-154,156-160,163-173
+  s_6c0a54f243d293::t_5626f4258d9144 1-33,37-45,48,52,57,62-63,69,76,93-99,103,128-130,138-144,155,161-162,174-177
+web/app/demo/editor/review.tsx
+  s_6c0a54f243d293::t_ce9643e7471a4a 8,170,203,214
+web/public/editor-review/evidence.json
+  s_6c0a54f243d293::t_cbb1bdf522f565 1-110
+web/public/editor-review/session.json
+  s_6c0a54f243d293::t_2b6032d6dd153e 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6d5c787e9451e7f184d9dd53a41778c8fa564e9f",
+  "prompts": {},
+  "sessions": {
+    "s_412fe6107f6f3f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
