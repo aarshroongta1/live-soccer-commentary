@@ -1,0 +1,33 @@
+examples/commentary-learning/README.md
+  s_6c0a54f243d293::t_f41bfd0dc23b9c 3-14
+scripts/commentary_learning_reviews.py
+  s_6c0a54f243d293::t_8ed43d49a06873 26-27,77-80
+tests/test_commentary_learning.py
+  s_6c0a54f243d293::t_8ed43d49a06873 42,44-48
+scripts/upload_commentary_learning.py
+  s_6c0a54f243d293::t_8ed43d49a06873 18-19
+scripts/prepare_commentary_pilot.py
+  s_6c0a54f243d293::t_8ed43d49a06873 2-42,45-46,51-53,58-170,173-198,201-204
+  s_6c0a54f243d293::t_f41bfd0dc23b9c 43-44,47-50,54-57,171-172,199-200
+  s_6c0a54f243d293::t_05886c8ae4555a 1,205
+web/app/demo/trajectory-training/review.tsx
+  s_6c0a54f243d293::t_8ed43d49a06873 4,31,42-43,46,49,59,62,70
+web/public/commentary-learning/catalog.json
+  s_6c0a54f243d293::t_d3cdd5937373a2 2-6,9-39,42,45-53,55-57,60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a6b638c74309360ff1b4d8e550492864c5e0250c",
+  "prompts": {},
+  "sessions": {
+    "s_6c0a54f243d293": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a204e9-6656-76f0-af94-74c3330dc84a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
