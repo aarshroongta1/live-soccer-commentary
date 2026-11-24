@@ -1,0 +1,630 @@
+{
+  "version": 1,
+  "target_id": "test-01",
+  "cases": [
+    {
+      "id": "train-01",
+      "split": "train",
+      "title": "Possession",
+      "source": "clips/action-sources/liga-f-routine.mp4",
+      "source_start_s": 0,
+      "source_sha256": "fde153afd6fe81eae352f5f2f2947293b1e3ba75f11ce72e73b6016892e8652c",
+      "video_url": "/commentary-learning/train-01.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-01/3.jpg",
+          "sha256": "82a3fd55e61fb8e5f35e28c8035cabd9a5c326bfe67c5018ccf5292da18ac0d6"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-01/6.jpg",
+          "sha256": "4c2030514383e80b85216db232b3a6662f66ce1d38251ceb63a7aef58b7ccb84"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-01/9.jpg",
+          "sha256": "7c678c7e43e87717d7bc78fc865dc8326a9deac883bd7843bcb3e1711cf65a6d"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-01/12.jpg",
+          "sha256": "8177c25a1e646d4b2f8bb144c489ecd8a3b0909501c40076a61d76c754819486"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-01/15.jpg",
+          "sha256": "05421e928f410fad81d075da2e73894fd39ba709814e3c2a802cc446282b68a5"
+        }
+      ],
+      "trajectory_id": "traj_8ece1307ea054e31be7e6df401661c30",
+      "observation": "The attacking team works the ball down the left flank toward the edge of the penalty area. Defenders are retreating into shape, with one player near the byline and several white shirts inside the box. The goalkeeper stands set near the goalmouth as the move continues.",
+      "options": [
+        "The defense is compacting centrally, forcing play wide along the left side.",
+        "[SILENCE]",
+        "Still probing down the wing.",
+        "He drives it toward the box, looking for a crossing chance."
+      ],
+      "normal_line": "He drives it toward the box, looking for a crossing chance.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-02",
+      "split": "train",
+      "title": "Possession",
+      "source": "clips/action-sources/liga-f-routine.mp4",
+      "source_start_s": 20,
+      "source_sha256": "fde153afd6fe81eae352f5f2f2947293b1e3ba75f11ce72e73b6016892e8652c",
+      "video_url": "/commentary-learning/train-02.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-02/3.jpg",
+          "sha256": "2ee2ea45499c03fe13f1eb07d584c5c969dcada9a5a2331fae0b417fe8c6926d"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-02/6.jpg",
+          "sha256": "85271c53bff1fa180a68ebfe48759cadbd3e7bbf62123fd5d6cc0e7c67367cf3"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-02/9.jpg",
+          "sha256": "f260dd01b783763c44b3e28f0f44202c21a9dd7dca128ffb6f3de1a6531836f1"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-02/12.jpg",
+          "sha256": "32ff19d840204c47f9ae14dfb1960b16353d5d5068646dc6385a9d206a75a928"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-02/15.jpg",
+          "sha256": "f6a7a4c36b1f7c7360d5ab9e94836905e738103b6dd171dbf65ae6d5dafa50eb"
+        }
+      ],
+      "trajectory_id": "traj_a3f6f66b2ac74bf4a4407d10aafcb35d",
+      "observation": "At the top of the final third, the team in striped shirts works the ball down the right side while the white-shirted defense shifts across and holds its shape. Several attackers are stationed centrally, waiting for a cross or cutback as the ball is moved laterally.",
+      "options": [
+        "Slow build-up, patient and measured.",
+        "[SILENCE]",
+        "The wide circulation is pulling defenders across, creating space centrally for a potential switch or through ball.",
+        "They\u2019re probing down the right, looking for an opening against a compact defensive block."
+      ],
+      "normal_line": "They\u2019re probing down the right, looking for an opening against a compact defensive block.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-03",
+      "split": "train",
+      "title": "Possession",
+      "source": "clips/action-sources/liga-f-routine.mp4",
+      "source_start_s": 40,
+      "source_sha256": "fde153afd6fe81eae352f5f2f2947293b1e3ba75f11ce72e73b6016892e8652c",
+      "video_url": "/commentary-learning/train-03.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-03/3.jpg",
+          "sha256": "d98df3437bebdb2aecb5646a275f000bd3c95d65b27133a1194034ea421f4705"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-03/6.jpg",
+          "sha256": "255021d8aa0e88dcad339a858d25188294c22616808d6bcb068b675e6494b50b"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-03/9.jpg",
+          "sha256": "0b11e97b5dcfb57d9ededb6cab3c0bf613b634f36d2f153850b5c92d1e944d21"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-03/12.jpg",
+          "sha256": "f39a94b07ebd249608ddaba5374c857fb02a6c1e8ced8b1ea70212d185171b1f"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-03/15.jpg",
+          "sha256": "fd578486e5483c3062ba0c59bf61d20e8de4e9e0c8dadaca5ddfc91000e35e39"
+        }
+      ],
+      "trajectory_id": "traj_2d7eff5d4d4c440fb2cff629aacfd0f4",
+      "observation": "An attacking team in striped shirts works the ball along the edge of the penalty area, with white-shirted defenders packed inside the box. The ball is shifted laterally toward the right side as players jostle for space and a possible shooting lane near goal.",
+      "options": [
+        "[SILENCE]",
+        "Still no clear finish, but pressure is building.",
+        "The wide recycling pulls defenders across and opens a potential shooting angle from the edge.",
+        "They\u2019re probing patiently around the box, looking for a gap in the crowded defense."
+      ],
+      "normal_line": "They\u2019re probing patiently around the box, looking for a gap in the crowded defense.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-04",
+      "split": "train",
+      "title": "Chelsea vs Burnley",
+      "source": "clips/action-sources/chelsea-burnley-2015.webm",
+      "source_start_s": 0,
+      "source_sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913",
+      "video_url": "/commentary-learning/train-04.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-04/3.jpg",
+          "sha256": "c4de02435669d922466acdf3ffd84164ad98ddfd2cf72c08a195fb67d0928575"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-04/6.jpg",
+          "sha256": "fb9e96432bb06cead89f751e7b1a15649360a01b594e4f142ed972d0f0c20ac3"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-04/9.jpg",
+          "sha256": "222b20513d752ff974caf8daaf1b2a08a7c755b7a9f7b48ee7df71b303c3d23e"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-04/12.jpg",
+          "sha256": "7ae0069627f450ddb727443ff7421a547f589ab733c91bc8d67045b2fa27a208"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-04/15.jpg",
+          "sha256": "a6654430fb316724f4a118011bbd37bde84f875739d4cb2bc944198db8e0d299"
+        }
+      ],
+      "trajectory_id": "traj_3664ff1a76dd42698c57f8311376c90f",
+      "observation": "Chelsea and Burnley are at Stamford Bridge, with players walking out for the match and then a Chelsea attacking phase developing near Burnley\u2019s penalty area. Several players are packed into the box as Chelsea probe from the right side, with the score still level on the broadcast graphic.",
+      "options": [
+        "[SILENCE]",
+        "Chelsea build patiently around the Burnley box, looking for a way through.",
+        "Burnley are compact, defending deep and crowding the penalty area.",
+        "Still locked together at Stamford Bridge."
+      ],
+      "normal_line": "Chelsea build patiently around the Burnley box, looking for a way through.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-05",
+      "split": "train",
+      "title": "Chelsea vs Burnley",
+      "source": "clips/action-sources/chelsea-burnley-2015.webm",
+      "source_start_s": 20,
+      "source_sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913",
+      "video_url": "/commentary-learning/train-05.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-05/3.jpg",
+          "sha256": "726ba379337dfd17adead931353f11fda9442cc5de328836bf9957ddb87a689d"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-05/6.jpg",
+          "sha256": "3380e0d064c182597c99052a534afdb625bc8a0413a0f62355697aad43031a8f"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-05/9.jpg",
+          "sha256": "732d66c5dd1c03e04884cadf28096c4e284a2c71e9d226b1d755418fcb96639e"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-05/12.jpg",
+          "sha256": "4eaa96676a41101ac1a511ddc1c34246fb531613e8494f93b19cb1c90fbf0e83"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-05/15.jpg",
+          "sha256": "5114f765cb3ba49eb607018e96a0f61ef15a98e85ea78856de2ee202c700b206"
+        }
+      ],
+      "trajectory_id": "traj_a2208f34201541d98c79f0699c069699",
+      "observation": "Chelsea are attacking around the edge of the Burnley box, with several defenders retreating and the referee nearby. The ball is played into the area, then the view shifts to a wider chase toward the right side and finally a close-up of Burnley defenders after a stoppage or foul-like moment.",
+      "options": [
+        "Burnley are compact centrally, forcing Chelsea wide and slowing the attack.",
+        "Chelsea keep probing in the final third, but Burnley\u2019s back line holds firm.",
+        "Pressure still on.",
+        "[SILENCE]"
+      ],
+      "normal_line": "Chelsea keep probing in the final third, but Burnley\u2019s back line holds firm.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-06",
+      "split": "train",
+      "title": "Chelsea vs Burnley",
+      "source": "clips/action-sources/chelsea-burnley-2015.webm",
+      "source_start_s": 40,
+      "source_sha256": "bdc29dbf87afff8c8979515a71034c689203b4c138f92ee20ab105214d502913",
+      "video_url": "/commentary-learning/train-06.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-06/3.jpg",
+          "sha256": "a887e712d39dd658ebc9dda5ca69b642d2bd2e5f81ac7be36a64472669c2586b"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-06/6.jpg",
+          "sha256": "e24b4eee2b46b485c0bb3d64e71a25d3452cf4de7bb601d5305a07eac7882f4e"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-06/9.jpg",
+          "sha256": "f153c755fea2ba118522925375d72fd2e5a789e80013203b42592115a96de10e"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-06/12.jpg",
+          "sha256": "04f8d06ddf1fa58f89a10d995d060eacdfe2904ff9acf37ec2d84ee8118fd705"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-06/15.jpg",
+          "sha256": "384a53022b0dec765472559f3e4ddd855b2b0ab0bf2bd54b338b22c87f53ab9a"
+        }
+      ],
+      "trajectory_id": "traj_44b9b79721d94bdb822cbd05f896a63e",
+      "observation": "Chelsea defend a burst of pressure inside their penalty area, with multiple blue shirts packed centrally and the goalkeeper positioned near his left post. A visiting attacker is on the right side of the box as the ball is worked across goal, but no shot is clearly shown entering the net.",
+      "options": [
+        "Birmingham have bodies forward, but Chelsea\u2019s compact shape is blocking the central lanes.",
+        "[SILENCE]",
+        "Chelsea scramble to hold firm as the ball flashes across the box.",
+        "Danger still in the area."
+      ],
+      "normal_line": "Chelsea scramble to hold firm as the ball flashes across the box.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-07",
+      "split": "train",
+      "title": "Everton",
+      "source": "clips/action-sources/everton-var-offside.webm",
+      "source_start_s": 0,
+      "source_sha256": "72714f9de63a5e5b5a53f05544111568ff17ba4cd7bd9219f7287561dacfaf2f",
+      "video_url": "/commentary-learning/train-07.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-07/3.jpg",
+          "sha256": "99605b04a8431d210ae7b11b117b4beb5fdf2501bac313de704c839368d042fc"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-07/6.jpg",
+          "sha256": "b6f42b45290aa3aba25b4bf75c317faf8ca5b6697c1e9a66b209c8e3bc89d71b"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-07/9.jpg",
+          "sha256": "72bfeaf9445afc4dcac64b78d58556283abd70be87ce2ced4043224a38c3de1f"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-07/12.jpg",
+          "sha256": "cf2f537b69c8ee782990c05a75a257e884e6c7c40117e1e065454bfe114ee921"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-07/15.jpg",
+          "sha256": "bc8ab0f5602ac243362896e6b326be6fefacd5b423941d21ad4373f71e7290a6"
+        }
+      ],
+      "trajectory_id": "traj_af526048b48b478f9e4a1813219bae05",
+      "observation": "In stoppage time, Everton attack down the right and deliver a low cross into a crowded penalty area. A blue attacker meets it near the six-yard box as several red defenders scramble, and the ball is bundled goalward amid raised arms and reactions from the crowd.",
+      "options": [
+        "What a scramble in the six-yard box!",
+        "[SILENCE]",
+        "Their wide overload and cutback open the defense at the near post.",
+        "Everton pounce in stoppage time, and the box is in chaos!"
+      ],
+      "normal_line": "Everton pounce in stoppage time, and the box is in chaos!",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-08",
+      "split": "train",
+      "title": "Everton",
+      "source": "clips/action-sources/everton-var-offside.webm",
+      "source_start_s": 20,
+      "source_sha256": "72714f9de63a5e5b5a53f05544111568ff17ba4cd7bd9219f7287561dacfaf2f",
+      "video_url": "/commentary-learning/train-08.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-08/3.jpg",
+          "sha256": "1e2f9ebb5bb2206a56e1d27e1691213b0b1c5963de389cc746242958f0b52c32"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-08/6.jpg",
+          "sha256": "77d43c6b0ce4d9de547c23ce248be5a4107e305bcb7835e61a54701dd4928723"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-08/9.jpg",
+          "sha256": "98c21618d08f1973acfd1a139092b3692edd4a10c00fda0ca40f106d4fa90902"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-08/12.jpg",
+          "sha256": "51662cc2597b4c6029a39e5b70cb294f04418bb31a9d1f7612269cc0c4e8c56f"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-08/15.jpg",
+          "sha256": "e20a12b4eea07f50bb09bf471cdde0bffa5eebdd7c714b98ffc842d4db998a2c"
+        }
+      ],
+      "trajectory_id": "traj_f5cd559eab474373ade86b61a0d54ebf",
+      "observation": "In stoppage time, several players are tangled on the ground after a crowded challenge. The referee is nearby, speaking to a red-shirted player and gesturing calmly as play remains halted.",
+      "options": [
+        "He\u2019s keeping order after that crowded challenge inside the area.",
+        "[SILENCE]",
+        "Hold on, the referee is sorting this out.",
+        "The referee steps in as tempers flare in the box."
+      ],
+      "normal_line": "The referee steps in as tempers flare in the box.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-09",
+      "split": "train",
+      "title": "France vs Jamaica",
+      "source": "clips/action-sources/france-jamaica.webm",
+      "source_start_s": 0,
+      "source_sha256": "eb36d6b6b1af7660dbf152d078e67458ab4a3bdcc38920648ee1c8255978180f",
+      "video_url": "/commentary-learning/train-09.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-09/3.jpg",
+          "sha256": "c2de8dde85874ac476618752e5453b39dc07f98a4510bf272dd5eb2953018f08"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-09/6.jpg",
+          "sha256": "014ee7f2ff5613e4eb2d73736d924a6175954f6218302d84a15fcae4ec3d5d10"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-09/9.jpg",
+          "sha256": "886630afe149f0e94d433bf679344dcb1e1e287640ab5194a19430c3bc971609"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-09/12.jpg",
+          "sha256": "42b8b4f879286265da069927e7e694797103597de3d32cf4d54292e8636b20ad"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-09/15.jpg",
+          "sha256": "e4a2d22e76be57e4d8e3a0d3ec570bb7a5043e796412c6bc7ef797f430b161ba"
+        }
+      ],
+      "trajectory_id": "traj_8ce461a3a9b04c59bad8dbf040a67cfa",
+      "observation": "France are pressing around Jamaica\u2019s box, with several players clustered near the penalty spot as a cross or loose ball causes panic. The Jamaica goalkeeper comes out to collect amid traffic, and later a Jamaica defender lies on the ground inside the six-yard area after the scramble.",
+      "options": [
+        "Still goalless, and the scramble ends with a stoppage.",
+        "France keep the pressure on, but Jamaica\u2019s defense and goalkeeper just about smother the danger.",
+        "Jamaica stay compact in the box, cutting out the central run and forcing France into a crowded finish.",
+        "[SILENCE]"
+      ],
+      "normal_line": "France keep the pressure on, but Jamaica\u2019s defense and goalkeeper just about smother the danger.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "train-10",
+      "split": "train",
+      "title": "France vs Jamaica",
+      "source": "clips/action-sources/france-jamaica.webm",
+      "source_start_s": 20,
+      "source_sha256": "eb36d6b6b1af7660dbf152d078e67458ab4a3bdcc38920648ee1c8255978180f",
+      "video_url": "/commentary-learning/train-10.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/train-10/3.jpg",
+          "sha256": "322b911441672093cda6c9ede65a15adc1ab3cb47ec656c9c0363b3c1c6f3a37"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/train-10/6.jpg",
+          "sha256": "6f3444e71512c8c2664f0b20cd76329588b2614478f2b6406de14acd864fb918"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/train-10/9.jpg",
+          "sha256": "158915eef6213787ed484a3cfd7582561b533baf648d2d8923eb9734175af4c7"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/train-10/12.jpg",
+          "sha256": "f4daa1e9ed82de7b41ac2edb74ba48c64aa7ff0836432a0bd8ce77208d9f302b"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/train-10/15.jpg",
+          "sha256": "880976289d384638e651079344377943f31fcf025cfc672c8c48e93574a16100"
+        }
+      ],
+      "trajectory_id": "traj_dcbc7bd826654a7cb29d0edd4a2c29dc",
+      "observation": "France work the ball into the right side of Jamaica\u2019s penalty area, with a blue attacker driving toward the byline. Defenders retreat into the box, the goalkeeper sets near the near post, and the attack ends with a close-range attempt or blocked effort at goal.",
+      "options": [
+        "France have broken into the box, and Jamaica are scrambling to recover.",
+        "[SILENCE]",
+        "A strong right-side overload there, stretching Jamaica\u2019s back line before the finish.",
+        "Danger in the six-yard area!"
+      ],
+      "normal_line": "France have broken into the box, and Jamaica are scrambling to recover.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "test-01",
+      "split": "test",
+      "title": "Argentina vs France",
+      "source": "clips/demo-sources/argentina-france-dimaria.mp4",
+      "source_start_s": 0,
+      "source_sha256": "5ee52be809d60caf3655bcd95d4a9ce2fb0e8ac0bb808924e5a6e25df4553f24",
+      "video_url": "/commentary-learning/test-01.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/test-01/3.jpg",
+          "sha256": "ee1a370ed8acb1123bc6d0054e174874ddec57d393357304c447b1e0e8e40a0d"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/test-01/6.jpg",
+          "sha256": "02d3d52b669310f7c22d3b271c74ef48b17345e0053805cb1320a45fb6dd69d5"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/test-01/9.jpg",
+          "sha256": "f557db1ee4cf0d799b46dbb21b5487f35b15df68a6ca03cc4e847b0957c0d1a5"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/test-01/12.jpg",
+          "sha256": "1b3b3ffe0d0cd885bc5ccc0c93042eeba4ca51b788904e147f79d8051f4e5388"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/test-01/15.jpg",
+          "sha256": "983a3121db80627fd5171aea08f63704603438cf57bd64d2e617b8200fe9d6c6"
+        }
+      ],
+      "trajectory_id": "traj_e881c34fd40f4b2cbf4d0508dcc19a5a",
+      "observation": "Argentina are attacking down the left flank near France\u2019s box, with several white shirts recovering and dark shirts circulating the ball. The referee is nearby as the move reaches the edge of the penalty area, but no shot is shown in these frames.",
+      "options": [
+        "France are compact and retreating quickly, closing central passing lanes.",
+        "Still danger here on the left.",
+        "[SILENCE]",
+        "Argentina work it down the left, probing for an opening around the box."
+      ],
+      "normal_line": "Argentina work it down the left, probing for an opening around the box.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "test-02",
+      "split": "test",
+      "title": "Portugal vs Spain",
+      "source": "clips/demo-sources/portugal-spain-live.mp4",
+      "source_start_s": 0,
+      "source_sha256": "ce81a00b525a1c2de5490520d1a51534082dfb46874f2cae0c1a8e36ded65bf6",
+      "video_url": "/commentary-learning/test-02.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/test-02/3.jpg",
+          "sha256": "547437fab4a64f0c6e74e34f26f780a99be75fe065404c5d8cfec228bc8847b2"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/test-02/6.jpg",
+          "sha256": "52d460548c4ba103d0dc4940c35b807ad77f86e22a39c0f8116e7bf05db6e335"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/test-02/9.jpg",
+          "sha256": "93dc467bb97df3b363409f2d6fcea19ef4bea169935ecec80e25fb058e215bc7"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/test-02/12.jpg",
+          "sha256": "7d814704e8ab934aace28ae3709ee9084604dc1c187d02235f792ab4ff896c2f"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/test-02/15.jpg",
+          "sha256": "120fd478c60d3cb7efa144d2301fe42b3ab403e13e97df801c7c7ddf3c410598"
+        }
+      ],
+      "trajectory_id": "traj_aabedf2e7e574107b5ea980fe105ce57",
+      "observation": "Portugal have a free kick just outside the penalty area, with a packed Spanish wall set and the goalkeeper ready. The attacker in red stands over the ball, focused before the restart in a tense late stage.",
+      "options": [
+        "All eyes on this set piece now.",
+        "A huge free-kick moment here as Portugal line up from dangerous range.",
+        "Spain\u2019s wall is tightly packed, so the taker may look for a curling effort.",
+        "[SILENCE]"
+      ],
+      "normal_line": "A huge free-kick moment here as Portugal line up from dangerous range.",
+      "model": "openai/gpt-5.4-mini"
+    },
+    {
+      "id": "test-03",
+      "split": "test",
+      "title": "Betis vs Barcelona",
+      "source": "clips/demo-sources/betis-barcelona-ferran.mp4",
+      "source_start_s": 0,
+      "source_sha256": "3f8a83ca41486aafeb4fe2b04be63bcc7de6d22ddaf9bf2939082f11f690cd64",
+      "video_url": "/commentary-learning/test-03.mp4",
+      "duration_s": 20,
+      "decision_at_s": 15,
+      "frames": [
+        {
+          "at_s": 3.0,
+          "path": "runs/commentary-learning/test-03/3.jpg",
+          "sha256": "704f49fb2129854ae365f014686930f508c803ce25c03fe430a8c9286c2543f1"
+        },
+        {
+          "at_s": 6.0,
+          "path": "runs/commentary-learning/test-03/6.jpg",
+          "sha256": "ee15e8a509f39ee709ab9f6a239d083f5bc8101b0d393daae51ac29da771e90f"
+        },
+        {
+          "at_s": 9.0,
+          "path": "runs/commentary-learning/test-03/9.jpg",
+          "sha256": "f2472306dab2f6238e6b772c6df7b69365de476bc97f722a7cf36fde12860aca"
+        },
+        {
+          "at_s": 12.0,
+          "path": "runs/commentary-learning/test-03/12.jpg",
+          "sha256": "c5d976c14e70f4966447e94c5311959888b7582e25324fbf245df5565ff0d390"
+        },
+        {
+          "at_s": 15.0,
+          "path": "runs/commentary-learning/test-03/15.jpg",
+          "sha256": "fa8dfa1a3862a57a7ba5eb92d68505d358c4c76f5ddc156bb90e806fbe981d39"
+        }
+      ],
+      "trajectory_id": "traj_bf0affb183a84f3eb730f87ec98068a7",
+      "observation": "Barcelona in pink are working the ball around Betis' penalty area, with several defenders compact inside the box. The attack shifts rightward as a pass is played toward the edge of the area, while Betis hold a narrow defensive shape and the referee stays nearby.",
+      "options": [
+        "Still all Barcelona in possession.",
+        "Betis are defending deep, forcing Barcelona to circulate the ball wide and patient.",
+        "Barcelona probe from the right, looking for a gap in Betis' compact block.",
+        "[SILENCE]"
+      ],
+      "normal_line": "Barcelona probe from the right, looking for a gap in Betis' compact block.",
+      "model": "openai/gpt-5.4-mini"
+    }
+  ]
+}
