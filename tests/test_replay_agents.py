@@ -14,7 +14,7 @@ from commentary.llm.base import Parsed, Usage
 from commentary.llm.fake import ScriptedBackend
 from commentary.recorded_demo import Observation, ObservedActor
 from commentary.recorded_research import ResearchBrief, ResearchFact
-from commentary.replay.agents import RoleAgents
+from commentary.replay.agents import RoleAgents, _event_data
 from commentary.replay.contracts import (
     AgentAction,
     ReviewResult,
@@ -22,6 +22,15 @@ from commentary.replay.contracts import (
     SpeechLine,
     ToolCall,
 )
+
+
+def test_unresolved_shirt_number_is_not_passed_as_a_spoken_identity():
+    observation = Observation(
+        id="carry", at_s=1, kind="play", description="Argentina’s number 9 carries forward."
+    )
+    payload = _event_data(observation)
+    assert payload["description"] == "Argentina’s player carries forward."
+    assert observation.description == "Argentina’s number 9 carries forward."
 
 
 def snapshot() -> RuntimeSnapshot:

@@ -1,0 +1,46 @@
+{
+  "attempts": [
+    {
+      "clip": "argentina",
+      "attempt": 1,
+      "selected": false,
+      "reported_usd": 0.02033
+    },
+    {
+      "clip": "arsenal",
+      "attempt": 1,
+      "selected": false,
+      "reported_usd": 0.0251475
+    },
+    {
+      "clip": "penalty",
+      "attempt": 1,
+      "selected": true,
+      "reported_usd": 0.04388249999999999
+    },
+    {
+      "clip": "argentina",
+      "attempt": 2,
+      "selected": false,
+      "reported_usd": 0.043414499999999995
+    },
+    {
+      "clip": "arsenal",
+      "attempt": 2,
+      "selected": true,
+      "reported_usd": 0.026330000000000006
+    },
+    {
+      "clip": "argentina",
+      "attempt": 3,
+      "selected": true,
+      "reported_usd": 0.018295
+    }
+  ],
+  "reported_model_usd": 0.1773995,
+  "experiment_maximum_usd": 1.0,
+  "model_reservations_usd": 0.7,
+  "tts_max_characters": 1200,
+  "tts_conservative_usd_per_1000_characters": 0.25,
+  "words_edited": false
+}

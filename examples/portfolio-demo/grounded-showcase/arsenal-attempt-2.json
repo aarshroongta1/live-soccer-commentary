@@ -1,0 +1,924 @@
+{
+  "source": {
+    "path": "clips/demo-sources/arsenal-team-goals.mp4",
+    "start_s": 89.0,
+    "duration_s": 18.0,
+    "sha256": "b555373ae88ad325f0b1a6f7508531ff3bda92f04c9b34fce1bbb0d78a779867"
+  },
+  "research": {
+    "fixture": "Arsenal v Norwich City",
+    "as_of": "2013-10-18",
+    "facts": [],
+    "squads": []
+  },
+  "budget": {
+    "max_usd": 0.12,
+    "max_calls": 12,
+    "attempts": 6,
+    "reported_usd": 0.026330000000000006,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "mode": "recorded_preparation",
+  "reviewer_enabled": false,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "Arsenal's left-sided attacker carries the ball along the ground toward the outside of the penalty area with Norwich defenders retreating.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "An Arsenal attacker in the left channel nudges a short grounded pass inside toward a teammate at the top-left edge of the box.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Arsenal number 7 receives and dribbles diagonally between converging Norwich defenders just outside the penalty area.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          4.0,
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "Arsenal number 7 shoots low from inside the box after breaking through the defensive line, sending the ball past the diving goalkeeper.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 8.0,
+      "kind": "goal",
+      "description": "The shot from Arsenal number 7 finishes in the net at the far side of goal.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 10.0,
+      "kind": "replay",
+      "description": "Replay from a closer angle shows Arsenal number 7 driving at a Norwich defender down the left edge of the area.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          10.0,
+          11.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 15.0,
+      "kind": "replay",
+      "description": "Replay from behind the goal shows the grounded shot rolling beyond the goalkeeper toward the open net.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          15.0,
+          16.0,
+          17.0
+        ]
+      }
+    }
+  ],
+  "raw_observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "Arsenal's left-sided attacker carries the ball along the ground toward the outside of the penalty area with Norwich defenders retreating.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "An Arsenal attacker in the left channel nudges a short grounded pass inside toward a teammate at the top-left edge of the box.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Arsenal number 7 receives and dribbles diagonally between converging Norwich defenders just outside the penalty area.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "ball_carrier",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          4.0,
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "Arsenal number 7 shoots low from inside the box after breaking through the defensive line, sending the ball past the diving goalkeeper.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 8.0,
+      "kind": "goal",
+      "description": "The shot from Arsenal number 7 finishes in the net at the far side of goal.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 10.0,
+      "kind": "replay",
+      "description": "Replay from a closer angle shows Arsenal number 7 driving at a Norwich defender down the left edge of the area.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "ball_carrier",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          10.0,
+          11.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 15.0,
+      "kind": "replay",
+      "description": "Replay from behind the goal shows the grounded shot rolling beyond the goalkeeper toward the open net.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          15.0,
+          16.0,
+          17.0
+        ]
+      }
+    }
+  ],
+  "identity_steps": [],
+  "identity_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0,
+    "latency_s": 0.0
+  },
+  "vision_reuse": "runs/portfolio-release/arsenal-2/observations.json",
+  "dialogue": {
+    "lines": [
+      {
+        "id": "line-1",
+        "at_s": 2.0,
+        "voice": "caller",
+        "text": "Arsenal come forward down the left.",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-2",
+        "at_s": 4.658,
+        "voice": "analyst",
+        "text": "Norwich are backing off here.",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-3",
+        "at_s": 8.0,
+        "voice": "caller",
+        "text": "And Arsenal have scored!",
+        "evidence_ids": [
+          "recorded-5"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-4",
+        "at_s": 10.738,
+        "voice": "analyst",
+        "text": "He drives right through them, and the finish stays low across goal.",
+        "evidence_ids": [
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "research_ids": []
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "source_at_s": 2.0,
+        "word_budget": 9,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 1,
+          "cutoff_s": 2.0,
+          "line": {
+            "voice": "caller",
+            "text": "Arsenal come forward down the left.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported caller description of the confirmed carry, under 9 words and without unsupported detail.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 2.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Arsenal come forward down the left.",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported caller description of the confirmed carry, under 9 words and without unsupported detail."
+                },
+                "usage": {
+                  "input_tokens": 1152,
+                  "output_tokens": 70,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00393,
+                  "latency_s": 3.7778104999997595
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 3.7901852499999222
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 4.657692307692308,
+        "word_budget": 7,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 1,
+          "cutoff_s": 4.657692307692308,
+          "line": {
+            "voice": "analyst",
+            "text": "Norwich are backing off here.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds one supported explanatory point about the defenders retreating, without repeating the caller or inventing detail.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 4.657692307692308,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "Norwich are backing off here.",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Adds one supported explanatory point about the defenders retreating, without repeating the caller or inventing detail."
+                },
+                "usage": {
+                  "input_tokens": 1237,
+                  "output_tokens": 72,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0041725,
+                  "latency_s": 2.1814788749979925
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 5.976106750000326
+      },
+      {
+        "role": "caller",
+        "source_at_s": 6.930769230769231,
+        "word_budget": 1,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 3,
+          "cutoff_s": 6.930769230769231,
+          "line": null,
+          "reason": "No fresh supported caller line fits the 1-word budget without repeating the recent call or inventing outcome beyond the latest confirmed dribble.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 6.930769230769231,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "abstain",
+                  "tool": null,
+                  "line": null,
+                  "reason": "No fresh supported caller line fits the 1-word budget without repeating the recent call or inventing outcome beyond the latest confirmed dribble."
+                },
+                "usage": {
+                  "input_tokens": 1394,
+                  "output_tokens": 53,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00428,
+                  "latency_s": 2.0866385830013314
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 8.066411332998541
+      },
+      {
+        "role": "caller",
+        "source_at_s": 8.0,
+        "word_budget": 9,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 5,
+          "cutoff_s": 8.0,
+          "line": {
+            "voice": "caller",
+            "text": "And Arsenal have scored!",
+            "evidence_ids": [
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction to the confirmed goal, without inventing identity or extra mechanics, and not repeating prior lines.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 8.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "And Arsenal have scored!",
+                    "evidence_ids": [
+                      "recorded-5"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported scoring reaction to the confirmed goal, without inventing identity or extra mechanics, and not repeating prior lines."
+                },
+                "usage": {
+                  "input_tokens": 1429,
+                  "output_tokens": 73,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0046675,
+                  "latency_s": 2.2537700410030084
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 10.324395457999344
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 10.73846153846154,
+        "word_budget": 14,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 5,
+          "cutoff_s": 10.73846153846154,
+          "line": {
+            "voice": "analyst",
+            "text": "He drives right through them, and the finish stays low across goal.",
+            "evidence_ids": [
+              "recorded-3",
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds one new supported explanation of how the goal happened, without repeating the caller or naming an unresolved player.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 10.73846153846154,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "He drives right through them, and the finish stays low across goal.",
+                    "evidence_ids": [
+                      "recorded-3",
+                      "recorded-4",
+                      "recorded-5"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Adds one new supported explanation of how the goal happened, without repeating the caller or naming an unresolved player."
+                },
+                "usage": {
+                  "input_tokens": 1456,
+                  "output_tokens": 90,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00499,
+                  "latency_s": 2.2433042919983563
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 12.570770291000372
+      },
+      {
+        "role": "caller",
+        "source_at_s": 15.703846153846154,
+        "word_budget": 5,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 6,
+          "cutoff_s": 15.703846153846154,
+          "line": null,
+          "reason": "Caller already announced the goal, and no fresh immediate supported action beyond the replay should be repeated.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 15.703846153846154,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "abstain",
+                  "tool": null,
+                  "line": null,
+                  "reason": "Caller already announced the goal, and no fresh immediate supported action beyond the replay should be repeated."
+                },
+                "usage": {
+                  "input_tokens": 1446,
+                  "output_tokens": 45,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00429,
+                  "latency_s": 1.524400208996667
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 14.09857883299992
+      }
+    ],
+    "preparation_duration_s": 14.098610707998887,
+    "source_duration_s": 18.0,
+    "words": 27,
+    "timing": "Source-video seconds; word-count estimates until audio is measured."
+  },
+  "role_audit": [
+    {
+      "event": "agent_action",
+      "at_s": 2.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Arsenal come forward down the left.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported caller description of the confirmed carry, under 9 words and without unsupported detail."
+        },
+        "usage": {
+          "input_tokens": 1152,
+          "output_tokens": 70,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00393,
+          "latency_s": 3.7778104999997595
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 4.657692307692308,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "Norwich are backing off here.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds one supported explanatory point about the defenders retreating, without repeating the caller or inventing detail."
+        },
+        "usage": {
+          "input_tokens": 1237,
+          "output_tokens": 72,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0041725,
+          "latency_s": 2.1814788749979925
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 6.930769230769231,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "abstain",
+          "tool": null,
+          "line": null,
+          "reason": "No fresh supported caller line fits the 1-word budget without repeating the recent call or inventing outcome beyond the latest confirmed dribble."
+        },
+        "usage": {
+          "input_tokens": 1394,
+          "output_tokens": 53,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00428,
+          "latency_s": 2.0866385830013314
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 8.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "And Arsenal have scored!",
+            "evidence_ids": [
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction to the confirmed goal, without inventing identity or extra mechanics, and not repeating prior lines."
+        },
+        "usage": {
+          "input_tokens": 1429,
+          "output_tokens": 73,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0046675,
+          "latency_s": 2.2537700410030084
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 10.73846153846154,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "He drives right through them, and the finish stays low across goal.",
+            "evidence_ids": [
+              "recorded-3",
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds one new supported explanation of how the goal happened, without repeating the caller or naming an unresolved player."
+        },
+        "usage": {
+          "input_tokens": 1456,
+          "output_tokens": 90,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00499,
+          "latency_s": 2.2433042919983563
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 15.703846153846154,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "abstain",
+          "tool": null,
+          "line": null,
+          "reason": "Caller already announced the goal, and no fresh immediate supported action beyond the replay should be repeated."
+        },
+        "usage": {
+          "input_tokens": 1446,
+          "output_tokens": 45,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00429,
+          "latency_s": 1.524400208996667
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    }
+  ],
+  "generation_elapsed_s": 14.104688749997877
+}

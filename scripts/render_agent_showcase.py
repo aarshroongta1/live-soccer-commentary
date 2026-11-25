@@ -7,6 +7,7 @@ excerpt decisions are retained in examples/portfolio-demo/agent-showcase.
 
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 from pathlib import Path
@@ -25,14 +26,17 @@ from render_text_demo import caption_rows
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build(name: str, version: int) -> dict:
-    plan_path = ROOT / f"examples/portfolio-demo/agent-showcase/{name}-plan.json"
+def build(name: str, version: int, *, grounded: bool = False) -> dict:
+    release = "grounded-showcase" if grounded else "agent-showcase"
+    prefix = "grounded" if grounded else "authentic"
+    tag = "grounded-v1" if grounded else "balanced-v1"
+    plan_path = ROOT / f"examples/portfolio-demo/{release}/{name}-plan.json"
     plan = read_plan(plan_path)
-    work = ROOT / f"runs/demo/authentic-v{version}/{name}"
+    work = ROOT / f"runs/demo/{prefix}-v{version}/{name}"
     manifest = work / "audio/manifest.json"
     saved = json.loads(manifest.read_text())
     captions, base = work / "measured.ass", work / "measured.mp4"
-    output = ROOT / f"web/public/soccer-commentary/agent-{name}-balanced-v1.mp4"
+    output = ROOT / f"web/public/soccer-commentary/agent-{name}-{tag}.mp4"
     if any(p.exists() for p in (captions, base, output, output.with_suffix(".narration.json"))):
         raise ValueError("refusing to overwrite showcase artifacts")
     header = caption_rows(plan, "")[0].split("Dialogue:", 1)[0]
@@ -127,5 +131,13 @@ def build(name: str, version: int) -> dict:
 
 
 if __name__ == "__main__":
-    for name, version in (("penalty", 3), ("arsenal", 3), ("argentina", 2)):
-        build(name, version)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--grounded", action="store_true")
+    args = parser.parse_args()
+    selected = (
+        (("penalty", 1), ("arsenal", 2), ("argentina", 3))
+        if args.grounded
+        else (("penalty", 3), ("arsenal", 3), ("argentina", 2))
+    )
+    for name, version in selected:
+        build(name, version, grounded=args.grounded)

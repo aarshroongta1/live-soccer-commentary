@@ -1,0 +1,775 @@
+{
+  "source": {
+    "path": "clips/demo-sources/argentina-france-dimaria.mp4",
+    "start_s": 20.0,
+    "duration_s": 20.0,
+    "sha256": "5ee52be809d60caf3655bcd95d4a9ce2fb0e8ac0bb808924e5a6e25df4553f24"
+  },
+  "research": {
+    "fixture": "Argentina v France",
+    "as_of": "2022-12-17",
+    "facts": [],
+    "squads": []
+  },
+  "budget": {
+    "max_usd": 0.12,
+    "max_calls": 12,
+    "attempts": 6,
+    "reported_usd": 0.043414499999999995,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "mode": "recorded_preparation",
+  "reviewer_enabled": false,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "An Argentina player in stripes carries the ball forward near midfield while France defenders close in and the ball is nudged ahead into space.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 8.0,
+      "kind": "play",
+      "description": "Argentina's number 11 reaches the ball inside the attacking third and winds up for a left-footed strike as France's goalkeeper sets himself near the right side of the goal.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0,
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 9.0,
+      "kind": "play",
+      "description": "The France goalkeeper dives low to his left and gets hands to the shot, deflecting the ball away from goal.",
+      "actor": null,
+      "action": {
+        "type": "save",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "keeper_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          9.0,
+          10.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 13.0,
+      "kind": "goal",
+      "description": "Argentina's number 11 turns away celebrating after the ball has gone into the net on the previous attack.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          13.0,
+          14.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 15.0,
+      "kind": "celebration",
+      "description": "Argentina players continue celebrating in the stands-side camera view after the scoreline changes to 2-0.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          15.0,
+          16.0,
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 19.0,
+      "kind": "play",
+      "description": "A close-up shows France's goalkeeper in a neon yellow kit, still reacting after the goal.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          19.0
+        ]
+      }
+    }
+  ],
+  "raw_observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 2.0,
+      "kind": "play",
+      "description": "An Argentina player in stripes carries the ball forward near midfield while France defenders close in and the ball is nudged ahead into space.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 8.0,
+      "kind": "play",
+      "description": "Argentina's number 11 reaches the ball inside the attacking third and winds up for a left-footed strike as France's goalkeeper sets himself near the right side of the goal.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 11,
+        "shirt_name": "DI MARIA",
+        "identity_source": "shirt_name",
+        "action_role": "shooter",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0,
+          9.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 9.0,
+      "kind": "play",
+      "description": "The France goalkeeper dives low to his left and gets hands to the shot, deflecting the ball away from goal.",
+      "actor": null,
+      "action": {
+        "type": "save",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "keeper_contact",
+          "ball_motion"
+        ],
+        "support_at_s": [
+          9.0,
+          10.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 13.0,
+      "kind": "goal",
+      "description": "Argentina's number 11 turns away celebrating after the ball has gone into the net on the previous attack.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 11,
+        "shirt_name": "DI MARIA",
+        "identity_source": "shirt_name",
+        "action_role": "visible_player",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net"
+        ],
+        "support_at_s": [
+          13.0,
+          14.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 15.0,
+      "kind": "celebration",
+      "description": "Argentina players continue celebrating in the stands-side camera view after the scoreline changes to 2-0.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          15.0,
+          16.0,
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 19.0,
+      "kind": "play",
+      "description": "A close-up shows France's goalkeeper in a neon yellow kit, still reacting after the goal.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          19.0
+        ]
+      }
+    }
+  ],
+  "identity_steps": [],
+  "vision_usage": {
+    "input_tokens": 25032,
+    "output_tokens": 589,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0214245,
+    "latency_s": 6.6246094169982825
+  },
+  "identity_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0,
+    "latency_s": 0.0
+  },
+  "generation_duration_s": 6.6264958339997975,
+  "normalizations": [],
+  "model": "gpt-5.4-mini",
+  "system": "Observe only the currently available football images. Return up to ten chronological, concrete observations, using exact CURRENT batch timestamps.\nBefore selecting observations, compare the ball and participants across frames: contact,\nmovement, then the visible outcome. Prioritize a shot/header/save, tackle/interception,\nrestart, or referee decision over repeated reactions. Keep an early clear on-ball action\nwhen it precedes the decisive incident, rather than describing only the aftermath.\nUse the supplied team/kit mapping to distinguish attackers from defenders and keeper.\nEarlier observations are context, not new frame evidence: use them to notice a repeated\nincident from another angle. A replay of an already seen goal is not another live goal.\nEmpty output\nis better than several unknown observations describing the same people gesturing.\nChoose scene kind carefully. A referee decision and players protesting are play, not\ncelebration. A close camera angle is not by itself a replay. Label replay only with visible\nrepeat-action/transition evidence; do not announce that action as new live play.\nAttach an actor only for a readable shirt number/name or action-linked graphic at that\nobservation; otherwise actor=null. Preserve readable run-up/kick identities rather than\nonly repeated celebrations. Do not set resolved_name or guess identity from fame,\nkit, team lists or a different action. A celebration cannot identify an earlier scorer.\nCopy shirt_name literally as visible on the shirt/graphic; never expand it to a full roster\nname. Read a number from the image, not from the roster.\nActively check the action participant for readable shirt identity, rather than defaulting\nto actor=null. When an otherwise clear action has a small potentially readable number/name,\nuse inspect_frame on that participant. If the crop remains unreadable, leave actor=null.\nDo not report clocks, scores or tactical stories. A goal requires the ball clearly inside\nthe net or across the goal line, never poses, crowd noise, raised arms or a scoreboard.\nDescribe only visible actions and keep genuine uncertainty explicit.\nClassify the action separately from scene kind (play, goal, celebration, replay).\nUse one supported action per observation: pass, carry, dribble, cross, shot, header,\nsave, block, tackle, interception, ball_recovery, clearance, goal, foul, offside,\ncorner, throw_in, free_kick, penalty_awarded, penalty_kick, yellow_card, red_card,\nsubstitution, kick_off, goal_kick, or unknown. A carry moves with the ball; a dribble\nbeats/challenges a defender. A header describes head contact, not a guessed outcome.\nSupport each confirmed action with visible cues and exact supplied support_at_s frame\ntimestamps. at_s is when the action occurs; later supplied frames may confirm it.\nAll supporting frames must belong to this batch and remain at or before playback_s.\nUse certainty=uncertain when contact/outcome cannot be\nestablished; type=unknown when no action is identifiable. Empty observations are valid.\nFor any visible ball motion, distinguish ground from aerial only with corresponding\nball_on_ground or ball_flight evidence; otherwise ball_path=unknown. Never call a ball\nlofted from player posture alone. Goal needs ball_in_net or goal_line_crossing evidence.\nA foul/penalty award needs referee signal or explicit graphic, not a collision alone.\nA save needs keeper contact stopping/deflecting an attempt, not a keeper diving alone.\nUse keeper_contact only when the ball visibly touches the keeper. Do not add it to a\nshot or goal because a keeper is present, dives, or goes the wrong way.\nA shot rebounding from the woodwork is not a save without visible keeper contact.\nFor a tackle, look for a challenge on a ball carrier and a resulting touch/dispossession;\nfalling players alone do not establish a tackle or foul. Interception cuts out a pass.\nNear goal, distinguish an attacker's shooting contact from a defender poking/sliding the\nball away. Compare the last controlled touch, challenge, and changed ball direction before\nassigning a shot. A ball moving toward goal alone does not establish who kicked it.\nFor cards, inspect the actual raised card rectangle, not the referee's shirt or player kit.\nUse inspect_frame before confirming red versus yellow when the card is small; the enlarged\ncard's visible color governs the label. Protesting after a card is not celebration.\nOffside needs signal/graphic.\nReplay footage may show a confirmed goal action, but kind MUST remain replay: it is\nnot a new live goal. Celebration alone does not establish scorer or goal outcome.\nDo not infer tactical patterns (counterattack, one-two, pressing) from a single image.\n\nThis is one recorded highlights sequence, prepared before playback. Compare the entire sequence to distinguish live action, repeated replays and reactions. Do not turn another camera angle of a goal into another goal. Cover the early on-ball action and any clear decision/setup, not just the final outcome. Use only necessary supporting frames so late celebrations do not delay evidence. Actor identity must be readable at that observation, never inferred backward.",
+  "dialogue": {
+    "lines": [
+      {
+        "id": "line-1",
+        "at_s": 3.0,
+        "voice": "caller",
+        "text": "Argentina carry it on through midfield.",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-2",
+        "at_s": 5.658,
+        "voice": "analyst",
+        "text": "France are dropping back, and the space opens in front of the carrier.",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-3",
+        "at_s": 11.008,
+        "voice": "caller",
+        "text": "Saved by the keeper!",
+        "evidence_ids": [
+          "recorded-3"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-4",
+        "at_s": 14.0,
+        "voice": "caller",
+        "text": "And Argentina have it in the net!",
+        "evidence_ids": [
+          "recorded-4"
+        ],
+        "research_ids": []
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "source_at_s": 3.0,
+        "word_budget": 9,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 1,
+          "cutoff_s": 3.0,
+          "line": {
+            "voice": "caller",
+            "text": "Argentina carry it on through midfield.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate confirmed action is Argentina advancing with the ball through midfield; concise caller line within word budget and not repeating prior commentary.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 3.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Argentina carry it on through midfield.",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate confirmed action is Argentina advancing with the ball through midfield; concise caller line within word budget and not repeating prior commentary."
+                },
+                "usage": {
+                  "input_tokens": 1150,
+                  "output_tokens": 75,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.004,
+                  "latency_s": 2.5229858340026112
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 2.5335996659996454
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 5.657692307692308,
+        "word_budget": 14,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 1,
+          "cutoff_s": 5.657692307692308,
+          "line": {
+            "voice": "analyst",
+            "text": "France are dropping back, and the space opens in front of the carrier.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds one supported explanatory point about space and defensive retreat without repeating the caller; under 14 words.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 5.657692307692308,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "France are dropping back, and the space opens in front of the carrier.",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Adds one supported explanatory point about space and defensive retreat without repeating the caller; under 14 words."
+                },
+                "usage": {
+                  "input_tokens": 1234,
+                  "output_tokens": 80,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.004285,
+                  "latency_s": 2.250046208002459
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 4.787386750002042
+      },
+      {
+        "role": "caller",
+        "source_at_s": 11.007692307692308,
+        "word_budget": 6,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 3,
+          "cutoff_s": 11.007692307692308,
+          "line": {
+            "voice": "caller",
+            "text": "Saved by the keeper!",
+            "evidence_ids": [
+              "recorded-3"
+            ],
+            "research_ids": []
+          },
+          "reason": "Newest supported immediate action is the confirmed save, and it has not already been announced.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 11.007692307692308,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Saved by the keeper!",
+                    "evidence_ids": [
+                      "recorded-3"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Newest supported immediate action is the confirmed save, and it has not already been announced."
+                },
+                "usage": {
+                  "input_tokens": 1399,
+                  "output_tokens": 67,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0045025,
+                  "latency_s": 1.8320703749996028
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 6.63034291599979
+      },
+      {
+        "role": "caller",
+        "source_at_s": 14.0,
+        "word_budget": 9,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 4,
+          "cutoff_s": 14.0,
+          "line": {
+            "voice": "caller",
+            "text": "And Argentina have it in the net!",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction after prior save call; no verified player identity available, and wording stays within 9 words without adding unsupported details.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 14.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "And Argentina have it in the net!",
+                    "evidence_ids": [
+                      "recorded-4"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported scoring reaction after prior save call; no verified player identity available, and wording stays within 9 words without adding unsupported details."
+                },
+                "usage": {
+                  "input_tokens": 1459,
+                  "output_tokens": 80,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0048475,
+                  "latency_s": 2.597413833002065
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 9.236735665999731
+      },
+      {
+        "role": "caller",
+        "source_at_s": 17.892307692307693,
+        "word_budget": 4,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 5,
+          "cutoff_s": 17.892307692307693,
+          "line": null,
+          "reason": "The confirmed goal has already been called, and the remaining observation is celebration/scoreline information rather than a fresh immediate action for the caller.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 17.892307692307693,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "abstain",
+                  "tool": null,
+                  "line": null,
+                  "reason": "The confirmed goal has already been called, and the remaining observation is celebration/scoreline information rather than a fresh immediate action for the caller."
+                },
+                "usage": {
+                  "input_tokens": 1418,
+                  "output_tokens": 54,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.004355,
+                  "latency_s": 2.082688958998915
+                },
+                "model": "gpt-5.4-2026-03-05",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 11.324002958001074
+      }
+    ],
+    "preparation_duration_s": 11.324082916002226,
+    "source_duration_s": 20.0,
+    "words": 30,
+    "timing": "Source-video seconds; word-count estimates until audio is measured."
+  },
+  "role_audit": [
+    {
+      "event": "agent_action",
+      "at_s": 3.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Argentina carry it on through midfield.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate confirmed action is Argentina advancing with the ball through midfield; concise caller line within word budget and not repeating prior commentary."
+        },
+        "usage": {
+          "input_tokens": 1150,
+          "output_tokens": 75,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.004,
+          "latency_s": 2.5229858340026112
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 5.657692307692308,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "France are dropping back, and the space opens in front of the carrier.",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds one supported explanatory point about space and defensive retreat without repeating the caller; under 14 words."
+        },
+        "usage": {
+          "input_tokens": 1234,
+          "output_tokens": 80,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.004285,
+          "latency_s": 2.250046208002459
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 11.007692307692308,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Saved by the keeper!",
+            "evidence_ids": [
+              "recorded-3"
+            ],
+            "research_ids": []
+          },
+          "reason": "Newest supported immediate action is the confirmed save, and it has not already been announced."
+        },
+        "usage": {
+          "input_tokens": 1399,
+          "output_tokens": 67,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0045025,
+          "latency_s": 1.8320703749996028
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 14.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "And Argentina have it in the net!",
+            "evidence_ids": [
+              "recorded-4"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction after prior save call; no verified player identity available, and wording stays within 9 words without adding unsupported details."
+        },
+        "usage": {
+          "input_tokens": 1459,
+          "output_tokens": 80,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0048475,
+          "latency_s": 2.597413833002065
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 17.892307692307693,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "abstain",
+          "tool": null,
+          "line": null,
+          "reason": "The confirmed goal has already been called, and the remaining observation is celebration/scoreline information rather than a fresh immediate action for the caller."
+        },
+        "usage": {
+          "input_tokens": 1418,
+          "output_tokens": 54,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.004355,
+          "latency_s": 2.082688958998915
+        },
+        "model": "gpt-5.4-2026-03-05",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    }
+  ],
+  "generation_elapsed_s": 20.48514470900045
+}

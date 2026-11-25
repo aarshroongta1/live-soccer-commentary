@@ -31,4 +31,7 @@ public/**/*.mp4
 !public/soccer-commentary/agent-penalty-balanced-v1.mp4
 !public/soccer-commentary/agent-arsenal-balanced-v1.mp4
 !public/soccer-commentary/agent-argentina-balanced-v1.mp4
+!public/soccer-commentary/agent-penalty-grounded-v1.mp4
+!public/soccer-commentary/agent-arsenal-grounded-v1.mp4
+!public/soccer-commentary/agent-argentina-grounded-v1.mp4
 !public/editor-review/messi.mp4

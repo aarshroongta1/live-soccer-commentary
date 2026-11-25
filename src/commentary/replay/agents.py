@@ -8,6 +8,7 @@ to the selected role. The optional reviewer is a drafting aid, not a gold judge.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict
 from typing import Any, TypedDict
 
@@ -116,6 +117,15 @@ class _TurnState(TypedDict):
 def _event_data(observation: Observation) -> dict[str, Any]:
     """Do not expose unresolved roster hints as identities to a speaking agent."""
     result = observation.model_dump(mode="json", exclude={"actor"})
+    if observation.actor is None or not observation.actor.resolved_name:
+        # Observer prose can contain a guessed jersey number even with no
+        # resolved identity. Keep raw evidence in the trace, not in spoken copy.
+        result["description"] = re.sub(
+            r"\bnumber\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven)\b",
+            "player",
+            result["description"],
+            flags=re.IGNORECASE,
+        )
     if observation.actor is not None and observation.actor.resolved_name:
         result["actor"] = {
             "resolved_name": observation.actor.resolved_name,
@@ -262,28 +272,21 @@ class RoleAgents:
                 + "\n"
                 + duty
                 + f"\nRecorded broadcast: at most {limit} words; this is a ceiling, not a target. "
-                "Count the words before submitting. Aim below that ceiling so the other "
-                "commentator has room to answer. A short observation is enough; don't pad it. "
-                "Speak to a viewer watching alongside you. The observations are private notes, "
-                "not a script to paraphrase. Use spoken English, contractions, and varied rhythm. "
-                "Short connected phrases or two sentences are welcome. Keep grammatical articles. "
-                "Carry on from your recent words rather than opening a new miniature report. "
-                "During an approach or run-up, a name or an unfinished phrase can carry "
-                "anticipation into the next call. Don't force every turn to end in a full stop. "
-                "Caller: call what is happening NOW. If the outcome is already visible, "
-                "react to it directly; do not rewind to a run-up or approach in that line. "
-                "Use a verified player's name naturally. Let a major moment sound bigger than "
-                "an ordinary pass, without shouting every line or adding unsupported stakes. "
-                "Analyst: respond to the caller's actual words like a colleague. Add one useful "
-                "detail a viewer could appreciate; avoid a textbook explanation of an obvious "
-                "referee signal, camera direction, or a literal recap of the goal. "
-                "A conversational "
-                "opening is fine when it leads to a new point; avoid stock praise. "
-                "Prefer familiar football idiom over invented phrases or event taxonomies. "
-                "Do not say evidence, confirms, or low confidence as audit language. "
-                "Never manufacture tactics or intent to sound insightful. "
-                "Abstain when the evidence gives you nothing worthwhile to say. "
-                "Do not include stage directions, audio tags, or speaker labels in spoken text."
+                "Use connected spoken English, contractions and varied rhythm. Keep grammatical "
+                "articles; don't compress speech into labels. Count words before submitting. "
+                "Build on what your colleague just said. "
+                "Caller: move with the attack and react when the ball goes in. A verified name "
+                "or a brief pause can build anticipation, without predicting the outcome. "
+                "Analyst: add ONE broad, visibly supported point, rather than repeating the "
+                "call. Use a complete thought, not a tactical essay or a list of observations. "
+                "Keep detail at normal viewing resolution: moving forward, space, pressure, "
+                "a pass across, a shot, a goal. Don't catalogue individual touches, body shape, "
+                "which foot, exact shot placement, defender assignments, or goalkeeper mechanics. "
+                "Omit shirt numbers unless independently resolved; don't guess names. "
+                "Do not infer player intent, tactics, score, stakes or unseen buildup. "
+                "Use restrained football enthusiasm; no stock praise or clever-sounding diagnosis. "
+                "Abstain if there is nothing useful to add. Never manufacture detail or errors "
+                "to sound natural. No stage directions, audio tags or speaker labels."
             )
         parsed = await self.backend.parse(
             model=self.caller_model if role == "caller" else self.analyst_model,

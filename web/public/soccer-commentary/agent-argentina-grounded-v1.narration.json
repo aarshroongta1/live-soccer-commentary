@@ -1,0 +1,80 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/grounded-showcase/argentina-plan.json",
+  "plan_sha256": "6636277a583bb9f78c5541eae53dee92e93e098a23f20ed360395426a79cec91",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/grounded-v3/argentina/measured.mp4",
+  "captioned_video_sha256": "bce07bf9981bbce9fc4c1ec6e7c705f43428297a440a0605babe2697eb3f0589",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/grounded-v3/argentina/audio/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/agent-argentina-grounded-v1.mp4",
+  "output_sha256": "aeba9f452fe09e061d6d0c32e0185cac4a5457fcc426b333cd37e33851be74ff",
+  "duration_s": 17.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Argentina carry it forward through the middle.",
+      "at_s": 2.0,
+      "end_s": 4.275556,
+      "input_duration_s": 2.275556,
+      "speed": 1.0,
+      "audio_sha256": "5692f8eecd7920576569d4572116ab75e15d81219066704a845c041d5633879e",
+      "provider_character_cost": "23",
+      "exported_rms_dbfs": -16.17
+    },
+    {
+      "id": "line-2",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "France are backpedalling here.",
+      "at_s": 5.042,
+      "end_s": 6.481637,
+      "input_duration_s": 1.439637,
+      "speed": 1.0,
+      "audio_sha256": "e6667703f75d9a675a1fa311c7d77651e8807aa4680b5b4dc59e08b8241e9c32",
+      "provider_character_cost": "15",
+      "exported_rms_dbfs": -15.9
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "And it's in for Argentina!",
+      "at_s": 8.0,
+      "end_s": 9.439637,
+      "input_duration_s": 1.439637,
+      "speed": 1.0,
+      "audio_sha256": "d4d2edee075133b9f8d0b9f968406c6029fc95ff5192fd576bd1953f7e5f060c",
+      "provider_character_cost": "13",
+      "exported_rms_dbfs": -18.0
+    },
+    {
+      "id": "line-4",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "That low ball across causes real trouble, and France can't clear it.",
+      "at_s": 11.123,
+      "end_s": 14.791753,
+      "input_duration_s": 3.668753,
+      "speed": 1.0,
+      "audio_sha256": "88d62479b1eb6dc47c07ef6a28042c54c2a9143410087d1edd8dc16e4bedc0e2",
+      "provider_character_cost": "34",
+      "exported_rms_dbfs": -16.31
+    }
+  ],
+  "speaker_seconds": {
+    "caller": 3.7151929999999993,
+    "analyst": 5.108390000000001
+  },
+  "speaker_shares": {
+    "caller": 0.4211,
+    "analyst": 0.5789
+  },
+  "words_edited": false,
+  "note": "Selected agent output on reused perception; saved speech; not live latency. Shares include TTS phrase pauses."
+}

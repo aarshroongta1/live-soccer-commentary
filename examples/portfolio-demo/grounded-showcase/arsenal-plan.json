@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "mode": "recorded_clip",
+  "source": {
+    "basename": "arsenal-team-goals.mp4",
+    "start_s": 89.0,
+    "duration_s": 18.0
+  },
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "Arsenal's left-sided attacker carries the ball along the ground toward the outside of the penalty area with Norwich defenders retreating.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "An Arsenal attacker in the left channel nudges a short grounded pass inside toward a teammate at the top-left edge of the box.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Arsenal number 7 receives and dribbles diagonally between converging Norwich defenders just outside the penalty area.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          4.0,
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "Arsenal number 7 shoots low from inside the box after breaking through the defensive line, sending the ball past the diving goalkeeper.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 8.0,
+      "kind": "goal",
+      "description": "The shot from Arsenal number 7 finishes in the net at the far side of goal.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 10.0,
+      "kind": "replay",
+      "description": "Replay from a closer angle shows Arsenal number 7 driving at a Norwich defender down the left edge of the area.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          10.0,
+          11.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 15.0,
+      "kind": "replay",
+      "description": "Replay from behind the goal shows the grounded shot rolling beyond the goalkeeper toward the open net.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          15.0,
+          16.0,
+          17.0
+        ]
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "at_s": 2.0,
+      "voice": "caller",
+      "text": "Arsenal come forward down the left.",
+      "evidence_ids": [
+        "recorded-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-2",
+      "at_s": 4.658,
+      "voice": "analyst",
+      "text": "Norwich are backing off here.",
+      "evidence_ids": [
+        "recorded-1"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-3",
+      "at_s": 8.0,
+      "voice": "caller",
+      "text": "And Arsenal have scored!",
+      "evidence_ids": [
+        "recorded-5"
+      ],
+      "research_ids": []
+    },
+    {
+      "id": "line-4",
+      "at_s": 10.738,
+      "voice": "analyst",
+      "text": "He drives right through them, and the finish stays low across goal.",
+      "evidence_ids": [
+        "recorded-3",
+        "recorded-4",
+        "recorded-5"
+      ],
+      "research_ids": []
+    }
+  ],
+  "metadata": {
+    "offline": true,
+    "trace": "runs/demo/grounded-v2/arsenal/result.json",
+    "cost": 0.026330000000000006,
+    "models": {
+      "observer": "reused",
+      "caller": "gpt-5.4-2026-03-05",
+      "analyst": "gpt-5.4-2026-03-05"
+    },
+    "research": {
+      "fixture": "Arsenal v Norwich City",
+      "as_of": "2013-10-18",
+      "facts": [],
+      "squads": []
+    },
+    "words_edited": false,
+    "reviewer_enabled": false
+  }
+}

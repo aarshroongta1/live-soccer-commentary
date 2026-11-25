@@ -1,0 +1,93 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/grounded-showcase/penalty-plan.json",
+  "plan_sha256": "efd713eb8cec5c34b0fa95dae739f6f2d1ba4e07e94baf6b6fc96c749b548442",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/grounded-v1/penalty/measured.mp4",
+  "captioned_video_sha256": "001425f22147eb8c887a05f0ea2458155be554a5e562ebed8efd18925000094a",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/grounded-v1/penalty/audio/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/agent-penalty-grounded-v1.mp4",
+  "output_sha256": "458437f03563e24114a629b28011606e2436329c9ce8cdbcde76e3b051605d5f",
+  "duration_s": 20.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "England driving forward",
+      "at_s": 1.0,
+      "end_s": 2.207438,
+      "input_duration_s": 1.207438,
+      "speed": 1.0,
+      "audio_sha256": "7cb9faf2682c4082c64cc28c0a451b82c4851532b6122eb15322936390a1620a",
+      "provider_character_cost": "12",
+      "exported_rms_dbfs": -12.92
+    },
+    {
+      "id": "line-2",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Penalty to England! Big chance now",
+      "at_s": 3.0,
+      "end_s": 5.182676,
+      "input_duration_s": 2.182676,
+      "speed": 1.0,
+      "audio_sha256": "e1399ee8ec08f75a95143bc16eabaac3a7dbfbf1cd40c422e7006fe0dadf7357",
+      "provider_character_cost": "17",
+      "exported_rms_dbfs": -17.17
+    },
+    {
+      "id": "line-3",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "Yeah, that sliding challenge catches them inside the box.",
+      "at_s": 5.658,
+      "end_s": 8.351515,
+      "input_duration_s": 2.693515,
+      "speed": 1.0,
+      "audio_sha256": "2d52fb3722eb81119901e0cf95500779b7a73b814fd479ce7727dbf5707efce4",
+      "provider_character_cost": "29",
+      "exported_rms_dbfs": -18.25
+    },
+    {
+      "id": "line-4",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Kane scores! England have their goal",
+      "at_s": 10.0,
+      "end_s": 11.904036,
+      "input_duration_s": 1.904036,
+      "speed": 1.0,
+      "audio_sha256": "4145e7dd09855d2ef4ca7012f2b8bc384714fd3e07262f42bfa562de1448c67c",
+      "provider_character_cost": "18",
+      "exported_rms_dbfs": -16.2
+    },
+    {
+      "id": "line-5",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "He just sends the keeper the wrong way from the spot.",
+      "at_s": 13.508,
+      "end_s": 16.155075,
+      "input_duration_s": 2.647075,
+      "speed": 1.0,
+      "audio_sha256": "c0abfdef0b6dacf25e0efe75ffd97930c29dec8810cab7af82b5b794948bd2a5",
+      "provider_character_cost": "26",
+      "exported_rms_dbfs": -15.41
+    }
+  ],
+  "speaker_seconds": {
+    "caller": 5.294149999999999,
+    "analyst": 5.34059
+  },
+  "speaker_shares": {
+    "caller": 0.4978,
+    "analyst": 0.5022
+  },
+  "words_edited": false,
+  "note": "Selected agent output on reused perception; saved speech; not live latency. Shares include TTS phrase pauses."
+}

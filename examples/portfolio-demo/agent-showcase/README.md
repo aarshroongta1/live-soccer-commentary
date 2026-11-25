@@ -1,6 +1,9 @@
 # Generated dialogue showcase
 
-The public demo replaces the editorial rewrites with selected role-agent output.
+Rejected preview: superseded by the [connected commentary candidate](../grounded-showcase/README.md)
+after the six-word turns proved too terse. The public site was not changed.
+
+This preview replaced the editorial rewrites with selected role-agent output.
 No generated words were rewritten, deleted, reassigned to another speaker or
 patched after watching the footage. Nine attempts remain here, including failures
 to give the analyst a turn. Selection is development work, not a benchmark.

@@ -22,23 +22,25 @@ The subsequent [later-in-the-match transfer test](examples/lesson-memory/transfe
 did not establish a recognition improvement from memory. The existing public
 memory view should not be interpreted as evidence of successful transfer.
 
-The [commentary page](https://www.aarshroongta.com/projects/soccer-commentary) has
-three clips with two voices and captions:
+The revised demo preview contains three clips with two voices and captions.
+The [public commentary page](https://www.aarshroongta.com/projects/soccer-commentary)
+still uses the earlier editorial versions pending review of the replacement.
 
 | Clip | Length |
 | --- | ---: |
 | England–France penalty | 20s |
 | Arsenal–Norwich finish | 18s |
-| Argentina–France attack | 20s |
+| Argentina–France attack | 17s |
 
 The featured dialogue keeps the exact generated words, including awkward or
 imperfect observations. Shorter turn budgets leave room for both commentators;
-measured caller/analyst speech shares are 39/61, 59/41 and 47/53 respectively.
+measured caller/analyst speech shares are 50/50, 41/59 and 42/58 respectively.
 These are selected outputs on saved perception, voiced before playback, with an
 opening source cut for Argentina. They do not measure live speech latency.
-[All attempts and selection notes](examples/portfolio-demo/agent-showcase/README.md)
+[All attempts and selection notes](examples/portfolio-demo/grounded-showcase/README.md)
 are retained. The earlier [editorial rewrites](examples/portfolio-demo/edited-showcase/README.md)
-remain archived and are no longer the featured clips.
+remain archived. The earlier terse [six-word-turn preview](examples/portfolio-demo/agent-showcase/README.md)
+is retained as a rejected iteration.
 
 ## Architecture
 

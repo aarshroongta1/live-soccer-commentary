@@ -1,0 +1,80 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/grounded-showcase/arsenal-plan.json",
+  "plan_sha256": "5b501865cef1c49ef088148053d509af8ccf1bbe9e0bccb717f24ef30b5cb71a",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/grounded-v2/arsenal/measured.mp4",
+  "captioned_video_sha256": "7772228cfb6e0f77dde4e53bdc83aaced0fc9bb2a54058833875287afa0e64b3",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/grounded-v2/arsenal/audio/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/agent-arsenal-grounded-v1.mp4",
+  "output_sha256": "66ae6a17c5c96481bda1d987b99c1b0fce422615101cd2698c30f8f211b8cf5d",
+  "duration_s": 18.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Arsenal come forward down the left.",
+      "at_s": 2.0,
+      "end_s": 3.857596,
+      "input_duration_s": 1.857596,
+      "speed": 1.0,
+      "audio_sha256": "7e4363346356551f38490ae2b112f4c986e61aaf00673fd6105aaf2d874fdb4c",
+      "provider_character_cost": "18",
+      "exported_rms_dbfs": -15.94
+    },
+    {
+      "id": "line-2",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "Norwich are backing off here.",
+      "at_s": 4.658,
+      "end_s": 6.097637,
+      "input_duration_s": 1.439637,
+      "speed": 1.0,
+      "audio_sha256": "e0ab14eafd514e292dfc6c10c1bf679dfa69e25e3594be8670e6519692cb069c",
+      "provider_character_cost": "15",
+      "exported_rms_dbfs": -15.29
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "And Arsenal have scored!",
+      "at_s": 8.0,
+      "end_s": 9.300317,
+      "input_duration_s": 1.300317,
+      "speed": 1.0,
+      "audio_sha256": "a5209e0cfee2678cd56796ab75a74c0eb164e4a188be2872e203100383e53104",
+      "provider_character_cost": "12",
+      "exported_rms_dbfs": -17.42
+    },
+    {
+      "id": "line-4",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "He drives right through them, and the finish stays low across goal.",
+      "at_s": 10.738,
+      "end_s": 13.895914,
+      "input_duration_s": 3.157914,
+      "speed": 1.0,
+      "audio_sha256": "cd4cd9ef4877a8f1c0bdfc1fb063699c8aa7b6be9ed0b7531d39729fdf3b7e03",
+      "provider_character_cost": "34",
+      "exported_rms_dbfs": -19.34
+    }
+  ],
+  "speaker_seconds": {
+    "caller": 3.1579129999999997,
+    "analyst": 4.597550999999999
+  },
+  "speaker_shares": {
+    "caller": 0.4072,
+    "analyst": 0.5928
+  },
+  "words_edited": false,
+  "note": "Selected agent output on reused perception; saved speech; not live latency. Shares include TTS phrase pauses."
+}

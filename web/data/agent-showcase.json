@@ -6,37 +6,37 @@
     "kind": "automatic",
     "lines": [
       {
+        "at_s": 1.0,
+        "voice": "caller",
+        "text": "England driving forward"
+      },
+      {
         "at_s": 3.0,
         "voice": "caller",
-        "text": "Penalty for England!"
+        "text": "Penalty to England! Big chance now"
       },
       {
-        "at_s": 4.504,
+        "at_s": 5.658,
         "voice": "analyst",
-        "text": "That came from the box challenge."
-      },
-      {
-        "at_s": 9.0,
-        "voice": "caller",
-        "text": "Kane..."
+        "text": "Yeah, that sliding challenge catches them inside the box."
       },
       {
         "at_s": 10.0,
         "voice": "caller",
-        "text": "Kane scores!"
+        "text": "Kane scores! England have their goal"
       },
       {
-        "at_s": 11.969,
+        "at_s": 13.508,
         "voice": "analyst",
-        "text": "Low and left, past the dive"
+        "text": "He just sends the keeper the wrong way from the spot."
       }
     ],
-    "videoPath": "/soccer-commentary/agent-penalty-balanced-v1.mp4",
-    "posterPath": "/soccer-commentary/agent-penalty-balanced-v1.jpg",
-    "planPath": "examples/portfolio-demo/agent-showcase/penalty-plan.json",
+    "videoPath": "/soccer-commentary/agent-penalty-grounded-v1.mp4",
+    "posterPath": "/soccer-commentary/agent-penalty-grounded-v1.jpg",
+    "planPath": "examples/portfolio-demo/grounded-showcase/penalty-plan.json",
     "speaker_shares": {
-      "caller": 0.3858,
-      "analyst": 0.6142
+      "caller": 0.4978,
+      "analyst": 0.5022
     }
   },
   {
@@ -48,70 +48,65 @@
       {
         "at_s": 2.0,
         "voice": "caller",
-        "text": "Arsenal driving left side"
+        "text": "Arsenal come forward down the left."
       },
       {
-        "at_s": 3.888,
+        "at_s": 4.658,
         "voice": "analyst",
-        "text": "Norwich are backing off"
-      },
-      {
-        "at_s": 5.777,
-        "voice": "caller",
-        "text": "Inside pass now"
+        "text": "Norwich are backing off here."
       },
       {
         "at_s": 8.0,
         "voice": "caller",
-        "text": "And Arsenal score!"
+        "text": "And Arsenal have scored!"
       },
       {
-        "at_s": 10.354,
+        "at_s": 10.738,
         "voice": "analyst",
-        "text": "A low finish across the keeper"
+        "text": "He drives right through them, and the finish stays low across goal."
       }
     ],
-    "videoPath": "/soccer-commentary/agent-arsenal-balanced-v1.mp4",
-    "posterPath": "/soccer-commentary/agent-arsenal-balanced-v1.jpg",
-    "planPath": "examples/portfolio-demo/agent-showcase/arsenal-plan.json",
+    "videoPath": "/soccer-commentary/agent-arsenal-grounded-v1.mp4",
+    "posterPath": "/soccer-commentary/agent-arsenal-grounded-v1.jpg",
+    "planPath": "examples/portfolio-demo/grounded-showcase/arsenal-plan.json",
     "speaker_shares": {
-      "caller": 0.5865,
-      "analyst": 0.4135
+      "caller": 0.4072,
+      "analyst": 0.5928
     }
   },
   {
     "id": "generated-argentina",
     "title": "Argentina vs France",
-    "duration_s": 20.0,
+    "duration_s": 17.0,
     "kind": "automatic",
     "lines": [
       {
-        "at_s": 5.0,
+        "at_s": 2.0,
         "voice": "caller",
-        "text": "Argentina’s number 9 driving forward"
+        "text": "Argentina carry it forward through the middle."
       },
       {
-        "at_s": 7.273,
+        "at_s": 5.042,
         "voice": "analyst",
-        "text": "France are backpedalling in numbers"
+        "text": "France are backpedalling here."
       },
       {
-        "at_s": 11.0,
+        "at_s": 8.0,
         "voice": "caller",
-        "text": "Argentina scores at the far post!"
+        "text": "And it's in for Argentina!"
       },
       {
-        "at_s": 14.508,
+        "at_s": 11.123,
         "voice": "analyst",
-        "text": "A simple far-post finish, and the keeper’s stranded."
+        "text": "That low ball across causes real trouble, and France can't clear it."
       }
     ],
-    "videoPath": "/soccer-commentary/agent-argentina-balanced-v1.mp4",
-    "posterPath": "/soccer-commentary/agent-argentina-balanced-v1.jpg",
-    "planPath": "examples/portfolio-demo/agent-showcase/argentina-plan.json",
+    "videoPath": "/soccer-commentary/agent-argentina-grounded-v1.mp4",
+    "posterPath": "/soccer-commentary/agent-argentina-grounded-v1.jpg",
+    "planPath": "examples/portfolio-demo/grounded-showcase/argentina-plan.json",
     "speaker_shares": {
-      "caller": 0.4659,
-      "analyst": 0.5341
+      "caller": 0.4211,
+      "analyst": 0.5789
     }
   }
 ]

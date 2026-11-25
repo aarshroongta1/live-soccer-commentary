@@ -249,9 +249,9 @@ async def prepare_dialogue(
         # contents are never exposed in an earlier speaking agent's snapshot.
         limit = min(18 if role == "caller" else 28, available_words)
         if balanced_speakers:
-            # Brief calls leave a response slot before the next major action.
-            # Never change generated words to manufacture the desired split.
-            limit = min(limit, 6)
+            # Allow connected phrases while leaving room for a colleague's reply.
+            # Balance is checked on rendered speech, not forced equal word counts.
+            limit = min(limit, 9 if role == "caller" else 14)
         view = RuntimeSnapshot(
             version=len(visible),
             cutoff_s=cursor,

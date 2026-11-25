@@ -173,7 +173,8 @@ async def test_balanced_turns_leave_room_for_analysis_before_and_after_goal() ->
     assert [line["voice"] for line in lines] == ["caller", "analyst", "caller", "analyst"]
     assert lines[1]["at_s"] < 10
     assert lines[2]["at_s"] == 10
-    assert all(limit <= 6 for _, limit in limits)
+    assert all(limit <= (9 if role == "caller" else 14) for role, limit in limits)
+    assert any(role == "analyst" and limit > 6 for role, limit in limits)
 
 
 def test_unknown_celebration_tag_is_weakened_without_promoting_a_goal() -> None:
