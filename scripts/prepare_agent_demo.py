@@ -149,7 +149,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             duration_s=args.duration,
             research=research,
             teams=team_names(teams, research),
-            balanced_speakers=args.balanced_speakers,
+            balanced_speakers=getattr(args, "balanced_speakers", False),
         )
         report["role_audit"] = [row.model_dump(mode="json") for row in agents.audit]
         plan = dict(
