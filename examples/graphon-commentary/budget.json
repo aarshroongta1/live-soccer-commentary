@@ -1,0 +1,10 @@
+{
+  "max_usd": 0.03,
+  "max_calls": 2,
+  "attempts": 2,
+  "reported_usd": 0.002001,
+  "unsettled_reservations_usd": 0,
+  "unsettled_requests": 0,
+  "basis": "counted input + maximum output at standard token rates, 25% margin",
+  "hosted_tools_allowed": false
+}

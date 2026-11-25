@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Soccer commentary with Graphon · Aarsh Roongta</title><meta name="description" content="A goal triggers retrieval from saved research. Follow the exact source passage into generated football commentary."><link rel="stylesheet" href="/graphon-commentary/styles.css"></head>
+<body>
+<header class="page-header"><a href="/">Aarsh Roongta</a><span>Recorded demo</span></header>
+<main>
+  <div class="intro"><h1>A bit of history behind the goal</h1><p>Graphon finds background in saved research. The analyst turns it into commentary.</p><div class="actions"><button id="replay" disabled>Play the demo</button><button id="show" class="quiet-button" disabled>Show full run</button><span id="status" role="status">Loading the saved run…</span></div></div>
+  <div class="workspace">
+    <section aria-labelledby="match-title"><h2 id="match-title">Sunderland v Arsenal</h2><p class="section-note">8 November 2025</p><video id="video" controls playsinline preload="metadata" src="/graphon-commentary/match.mp4" aria-label="Sunderland goal with two-voice generated commentary"></video><p class="spoken" id="spoken" aria-label="Current spoken line"></p><div class="event"><h3>Reviewed event</h3><p id="event">Play to the goal.</p></div><details class="archive"><summary>What’s in the archive?</summary><p>Two saved research excerpts published before kick-off. Graphon searches these files, rather than doing a fresh web search.</p><div id="archive"></div></details></section>
+    <section aria-labelledby="retrieval-title"><div class="section-heading"><h2 id="retrieval-title">Graphon</h2><span id="timing" class="time"></span></div><p class="section-note">Search the research archive</p><div class="query"><h3>Query from the event</h3><p id="query">Waiting for the goal.</p></div><div id="retrieval" class="waiting"><h3>Selected source passage</h3><p id="retrieval-empty">The relevant passage will appear here.</p><div id="source" hidden><a id="source-title" target="_blank" rel="noreferrer"></a><p id="source-date" class="source-date"></p><blockquote id="passage"></blockquote><details><summary>Full retrieved passage</summary><pre id="full-passage"></pre></details><details><summary>Both Graphon results</summary><div id="results"></div></details></div></div></section>
+    <section aria-labelledby="analyst-title"><h2 id="analyst-title">Analyst</h2><p class="section-note">Use the event and the source</p><div class="analyst-input"><h3>Input</h3><p id="input-event" class="input-event">Waiting for evidence.</p><blockquote id="input-passage" hidden></blockquote></div><div class="analyst-output"><h3>Spoken commentary <span id="voice-state"></span></h3><p id="output">The background becomes part of the call.</p></div></section>
+  </div>
+  <p class="explanation" id="explanation">Play the clip to follow the source into the call, or show the full run to inspect it.</p>
+  <details class="record"><summary>About this run</summary><div id="record"></div><a href="/graphon-commentary/run.json" download>Download the recorded run</a></details>
+  <p id="error" role="alert" hidden></p>
+</main>
+<footer><span>Saved research → Graphon retrieval → analyst commentary</span><a href="/demo/keenable">Keenable demo</a></footer>
+<script src="/graphon-commentary/app.js" defer></script>
+</body></html>
