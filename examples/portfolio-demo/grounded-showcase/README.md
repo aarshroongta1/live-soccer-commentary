@@ -1,7 +1,7 @@
 # Connected commentary with broad visual detail
 
-Review candidate following rejection of both the polished editorial scripts and
-the terse six-word-turn preview. This is a saved-video preview, not a live demo
+Published following rejection of both the polished editorial scripts and
+the terse six-word-turn preview. This is saved-video playback, not a live demo
 or a measured improvement to perception.
 
 The selected output uses connected phrases, ordinary football reactions, and

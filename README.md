@@ -22,9 +22,8 @@ The subsequent [later-in-the-match transfer test](examples/lesson-memory/transfe
 did not establish a recognition improvement from memory. The existing public
 memory view should not be interpreted as evidence of successful transfer.
 
-The revised demo preview contains three clips with two voices and captions.
 The [public commentary page](https://www.aarshroongta.com/projects/soccer-commentary)
-still uses the earlier editorial versions pending review of the replacement.
+contains three clips with two voices and captions.
 
 | Clip | Length |
 | --- | ---: |
