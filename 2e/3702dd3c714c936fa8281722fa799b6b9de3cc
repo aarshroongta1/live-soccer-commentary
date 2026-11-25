@@ -1,0 +1,101 @@
+examples/portfolio-demo/agent-showcase/arsenal-raw-plan.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-232
+examples/portfolio-demo/agent-showcase/penalty-raw-plan.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-366
+examples/portfolio-demo/agent-showcase/argentina-plan.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-204
+web/app/demo/demo-data.ts
+  s_64de1f200aeca5::t_c28fc1c37fa688 3,41,43-45
+  s_64de1f200aeca5::t_0583371796b0c3 16,23
+web/app/demo/page.tsx
+  s_64de1f200aeca5::t_c28fc1c37fa688 6-7
+web/app/demo/demo-experience.tsx
+  s_64de1f200aeca5::t_c28fc1c37fa688 48,55
+tests/test_recorded_agents.py
+  s_64de1f200aeca5::t_9dab3078d19bc1 176
+  s_64de1f200aeca5::t_ff202e9631b8d2 154,159-163,170-175,177-178
+  s_64de1f200aeca5::t_04d004b4a5a34c 155-158,164-169
+examples/portfolio-demo/agent-showcase/penalty-attempt-1.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-1346
+examples/portfolio-demo/agent-showcase/argentina-attempt-2.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-813
+examples/portfolio-demo/agent-showcase/selection.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-62
+scripts/prepare_agent_demo.py
+  s_64de1f200aeca5::t_ff4c4cfa54f6bb 152
+  s_64de1f200aeca5::t_04d004b4a5a34c 44-48
+examples/portfolio-demo/agent-showcase/argentina-attempt-3.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-763
+examples/portfolio-demo/agent-showcase/arsenal-plan.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-232
+examples/portfolio-demo/agent-showcase/argentina-raw-plan.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-224
+web/public/soccer-commentary/agent-argentina-balanced-v1.narration.json
+  s_64de1f200aeca5::t_e01265f5a31cda 1-80
+src/commentary/replay/agents.py
+  s_64de1f200aeca5::t_ff4c4cfa54f6bb 265-266
+src/commentary/replay/recorded.py
+  s_64de1f200aeca5::t_04d004b4a5a34c 305-308
+  s_64de1f200aeca5::t_9dab3078d19bc1 239,254
+  s_64de1f200aeca5::t_ff4c4cfa54f6bb 181,240,251-253,309
+web/public/soccer-commentary/agent-arsenal-balanced-v1.narration.json
+  s_64de1f200aeca5::t_e01265f5a31cda 1-93
+examples/portfolio-demo/agent-showcase/penalty-plan.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-366
+web/data/agent-showcase.json
+  s_3c21306a01bf51::t_9d2ebf37f8460e 1-34,36-74,76-109,111-117
+  s_3c21306a01bf51::t_2aae559eb11301 35,75,110
+examples/portfolio-demo/agent-showcase/README.md
+  s_64de1f200aeca5::t_458586b844cb45 1-57
+examples/portfolio-demo/agent-showcase/penalty-attempt-3.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-1482
+web/.vercelignore
+  s_64de1f200aeca5::t_c28fc1c37fa688 31-33
+examples/portfolio-demo/agent-showcase/arsenal-attempt-3.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-972
+README.md
+  s_64de1f200aeca5::t_458586b844cb45 30,34-41
+scripts/render_agent_showcase.py
+  s_64de1f200aeca5::t_0e5fd194f92f92 1-6,8-14,23-35,37-41,43-46,51,88,93-94,104,106,125-131
+  s_64de1f200aeca5::t_04d004b4a5a34c 7,15-22,36,42,47-50,52-87,89-92,95-98,103,105
+  s_64de1f200aeca5::t_0583371796b0c3 107,123-124
+  s_3c21306a01bf51::t_7f8d304465eb84 99-102,108-122
+examples/portfolio-demo/agent-showcase/arsenal-attempt-1.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-770
+examples/portfolio-demo/agent-showcase/penalty-attempt-2.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-1550
+web/app/demo/engineering-experience.tsx
+  s_64de1f200aeca5::t_c28fc1c37fa688 17
+examples/portfolio-demo/agent-showcase/argentina-attempt-1.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-613
+web/app/demo/showcase.css
+  s_64de1f200aeca5::t_c28fc1c37fa688 9
+examples/portfolio-demo/agent-showcase/arsenal-attempt-2.json
+  s_64de1f200aeca5::t_8df0c1b3788116 1-929
+web/public/soccer-commentary/agent-penalty-balanced-v1.narration.json
+  s_64de1f200aeca5::t_748345ece6b6ca 1-93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2e3702dd3c714c936fa8281722fa799b6b9de3cc",
+  "prompts": {},
+  "sessions": {
+    "s_3c21306a01bf51": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a211c0-148e-74f1-8a47-043c3101a4bd",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_64de1f200aeca5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a211c0-148e-74f1-8a47-043c3101a4bd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
