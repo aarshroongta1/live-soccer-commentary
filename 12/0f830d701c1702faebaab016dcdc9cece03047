@@ -1,0 +1,19 @@
+scripts/prepare_agent_demo.py
+  s_64de1f200aeca5::t_9f7af6da187964 152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "120f830d701c1702faebaab016dcdc9cece03047",
+  "prompts": {},
+  "sessions": {
+    "s_64de1f200aeca5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a211c0-148e-74f1-8a47-043c3101a4bd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
