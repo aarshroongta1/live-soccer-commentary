@@ -1,0 +1,21 @@
+README.md
+  s_64de1f200aeca5::t_af012cbca0161f 26
+examples/portfolio-demo/grounded-showcase/README.md
+  s_64de1f200aeca5::t_af012cbca0161f 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4989e826890123f40fbfbc142797ab27beba39af",
+  "prompts": {},
+  "sessions": {
+    "s_64de1f200aeca5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a211c0-148e-74f1-8a47-043c3101a4bd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
