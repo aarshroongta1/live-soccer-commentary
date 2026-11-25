@@ -88,6 +88,10 @@ by ElevenLabs `eleven_flash_v2_5` for speech. Search runs concurrently so writin
 can start without waiting for both providers. See the
 [search workflow notes](examples/keenable-outreach/README.md) for settings and timing records.
 
+The [Graphon review archive demo](docs/GRAPHON_DEMO.md) separately searches eight
+existing failure and experiment reports. It retrieves versioned passages for
+offline debugging; those retrospective reports do not enter runtime commentary.
+
 ### How an agent takes a turn
 
 Each speaking agent gets the available observations, recent dialogue and remaining

@@ -1,0 +1,353 @@
+{
+  "workspaceId": "wspxw6nmll3ic5d",
+  "bucketId": "bktrkijHHuLD9",
+  "bucket": "commentary-review-demo",
+  "indexAtQuery": {
+    "status": "ready",
+    "counts": {
+      "preparing": 0,
+      "sending": 0,
+      "queued": 0,
+      "indexing": 2,
+      "ready": 6,
+      "failed": 0,
+      "unsupported": 0
+    },
+    "unfinished": [
+      {
+        "key": "examples/keenable-outreach/README.md.txt",
+        "state": "indexing",
+        "stage": "processing"
+      },
+      {
+        "key": "examples/lesson-memory/transfer/README.md.txt",
+        "state": "indexing",
+        "stage": "processing"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "id": "false-goal",
+      "query": "Why can a goal call have valid evidence citations and still be false?",
+      "expected_source": "docs/FALSE_GOAL_INVESTIGATION.md",
+      "search": {
+        "results": [
+          {
+            "key": "docs/TEXT_EVALUATION_TRIAL.md.txt",
+            "versionId": "ver_6220e89f169343ffbca98231bd53708e",
+            "contentType": "text/plain",
+            "rank": 1,
+            "score": 0.014754098360655738,
+            "spans": [
+              {
+                "key": "docs/TEXT_EVALUATION_TRIAL.md.txt",
+                "versionId": "ver_6220e89f169343ffbca98231bd53708e",
+                "unit": "chars",
+                "start": 3133,
+                "end": 5267
+              }
+            ]
+          },
+          {
+            "key": "docs/FALSE_GOAL_INVESTIGATION.md.txt",
+            "versionId": "ver_91d252642f1f4084b258a3959c25e36f",
+            "contentType": "text/plain",
+            "rank": 2,
+            "score": 0.014400921658986175,
+            "spans": [
+              {
+                "key": "docs/FALSE_GOAL_INVESTIGATION.md.txt",
+                "versionId": "ver_91d252642f1f4084b258a3959c25e36f",
+                "unit": "chars",
+                "start": 0,
+                "end": 3159
+              }
+            ]
+          },
+          {
+            "key": "docs/FALSE_GOAL_INVESTIGATION.md.txt",
+            "versionId": "ver_91d252642f1f4084b258a3959c25e36f",
+            "contentType": "text/plain",
+            "rank": 3,
+            "score": 0.013954326923076923,
+            "spans": [
+              {
+                "key": "docs/FALSE_GOAL_INVESTIGATION.md.txt",
+                "versionId": "ver_91d252642f1f4084b258a3959c25e36f",
+                "unit": "chars",
+                "start": 3161,
+                "end": 4985
+              }
+            ]
+          }
+        ],
+        "nextCursor": "eyJhZnRlciI6eyJjb3JlX2N1cnNvciI6eyJlbmQiOjMsImdyb3VwcyI6IkFhSVJaTDVSY3gyRnlFdjZTNFV1ZEFBRUFRQUV3VnNBQUFBQlA0dzRsZkFPNzdRQm9oRmt2XzV6Z0lEZGtIZ1FuMmNfQUFVQkFBVEJWZ0FBQUFFX2pDZTh3Sks0N2dHaUVXUy1sbkpicEpuV0JTX1gzaG9BQmdFQUJNRlhBQUFBQWotTHVBYzVsMkJfQWFJUlpMNldjbHVrbWRZRkw5ZmVHZ0FIQVFBRXdWY0FBQUFCUDRzaEhSX0lyV29Cb2hGa3YwRjA5SmFuUVBaVUdITDNBQWdCQUFUQldBQUFBQUVfaWxZNHYtSG1td0dpRVdUQmluR212bzR4MUxUZmxsMEFDUUVBQk1GVkFBQUFBVC1LQWNwd2ZsVFNBYUlSWkxfLWM0Q0EzWkI0RUo5blB3QUtBUUFFd1ZZQUFBQUNQNG4zT1EwcWJFQUJvaEZrdjBGMDlKYW5RUFpVR0hMM0FBc0JBQVRCV0FBQUFBSV9pUEw1RDNGX2RBR2lFV1RBMW5SZnEwZ2xNeF9qc3VZQURBRUFCTUZjQUFBQUFEOTlRZFFkUWRRZEFhSVJaTF8tYzRDQTNaQjRFSjluUHdBTkFRQUV3VllBQUFBQVAzeGJYMC1Pa29NQm9oRmt2MEYwOUphblFQWlVHSEwzQUE0QkFBVEJXQUFBQUFBX2V4c2JHeHNiR3dHaUVXUy1sbkpicEpuV0JTX1gzaG9BRHdFQUJNRlhBQUFBQUQ5NVA5TWN3WlA5QWFJUlpMNVJjeDJGeUV2NlM0VXVkQUFRQVFBRXdWc0FBQUFBUDNoQXJIYVJoQXM9In0sImludGVycHJldGVkIjpudWxsLCJwaW4iOnsiY29ycHVzX2lkIjoiMDFhMjExNjQtYmQ4My03MGFjLWEyNjEtOTQ2YTc1ZDNjOTAxIiwid2F0ZXJtYXJrIjo2fX0sImV4cGlyZXMiOjE3OTU1OTEwMzcsImZpbHRlcnMiOnsiY29sbGVjdGlvbiI6IjAxYTIxMTY0LWJkODMtNzBhYy1hMjYxLTk0NmE3NWQzYzkwMSIsInJlcXVlc3QiOiJkZmNiMTU5NjNmNmYwNmRhYWVjZGZlMWZjMWY3ZDc1MDdlOWM2ODA2NmVmNDk2MjMxMTIwZTE2YTAxZjcxNTZmIn0sInJvdXRlIjoiUE9TVCAvbmFtZXNwYWNlcy97bmFtZXNwYWNlfS9jb2xsZWN0aW9ucy97Y29sbGVjdGlvbn06c2VhcmNoIn0.kk7mMQcvG20ZgCySskMPDA",
+        "execution": {
+          "mode": "hybrid"
+        },
+        "indexGeneration": "gen_6Y82B7CZJ3MBWQCASA98H0J1C6",
+        "timingMs": {
+          "retrieval": 1158,
+          "total": 1426
+        },
+        "warnings": []
+      },
+      "search_elapsed_ms": 1640,
+      "read": {
+        "results": [
+          {
+            "span": {
+              "key": "docs/TEXT_EVALUATION_TRIAL.md.txt",
+              "versionId": "ver_6220e89f169343ffbca98231bd53708e",
+              "unit": "chars",
+              "start": 3133,
+              "end": 5267
+            },
+            "contentType": "text/plain",
+            "text": "In the final paid dribble check, both arms completed with **“Goal!” at source 6.0s**.\nThat establishes a feasible call under the supplied evidence timing; it omits the\ndribble and shot sequence and supplies no analysis. It is a timing fix, not a\ncommentary-quality pass. No complete suite was rerun after these targeted changes.\n\n## The important perception failure\n\nThe new cross/header observation invented a confirmed goal, complete with\n`goal_line_crossing` and `ball_in_net` tags. Both writers followed that false\nevidence. Structurally valid tags and citations therefore failed to protect\nspoken factual accuracy.\n\nSource frames at clip-relative 6, 7, 8 and 9 seconds show the goalkeeper continuing\nplay rather than a scored-goal outcome. The evaluator reference describes a headed\nchance, not a goal. This was coding-agent source review, not human approval of the\nreference or an independent blinded study.\n\nA deliberate one-call check with the larger existing model used the identical\nsystem prompt, source hash/window, sampler and output cap. **It also invented a\ngoal.** The check cost $0.016085 and did not justify changing production defaults.\nThe original baseline frame hashes were not independently saved; identical frame\nbytes are inferred from the same source and sampler, rather than directly proven.\n\n## Next work\n\nPrioritize the observer's handling of this false goal using the existing bounded\ninspection tools and explicit ball/goalmouth sequence evidence. Do not add a cue\ntag in Python or feed the expected outcome to the observer to make the case pass.\nReview the minimal necessary supporting frames too: unnecessarily late support\ncan leave a writer room for only one word even when an event was visible earlier.\n\nThen resolve the three failed perception cases and repeat targeted text checks\nunder the corrected common contract. A controlled quality comparison needs usable\noutputs, reviewed must-call meanings and consistent permissions before any\narchitecture or prompt-improvement claim. Keep all 15 development cases and every\nfailed attempt in the record; no broader dataset or new framework is needed."
+          },
+          {
+            "span": {
+              "key": "docs/FALSE_GOAL_INVESTIGATION.md.txt",
+              "versionId": "ver_91d252642f1f4084b258a3959c25e36f",
+              "unit": "chars",
+              "start": 0,
+              "end": 3159
+            },
+            "contentType": "text/plain",
+            "text": "# False-goal investigation — 9 November 2026\n\nThe confirmed failure is **overconfident visual classification followed by a\nself-reported evidence check**. The observer invents a goal and the supporting\n`ball_in_net` / `goal_line_crossing` tags together. The contract checks that these\nfields are consistent; it does not independently verify the pixels. The caller\nand joint writer then receive the same false confirmed event and narrate it.\n\nThis explains how the error reaches commentary. It does not fully explain the\nmodel's internal visual mistake or establish a reliable runtime fix.\n\n## Evidence before experiments\n\nThe original raw provider responses already contained the false goal, so Python\nnormalization, identity resolution and speaker phrasing did not create it.\nReconstructed JPEGs matched all ten saved larger-model input hashes exactly.\nThe underlying clip is 640×360 at approximately 29.97fps; the recorded observer\nreceived one sampled frame per second. No stale input or source-window shift was\nfound. The disputed ball/goal configuration is small and visually ambiguous.\n\nThe relevant code path is `sample_clip` in `src/commentary/recorded_demo.py`,\n`observe_recorded` in `src/commentary/replay/recorded.py`, and `supported_claim`\nin `src/commentary/football.py`. The last function checks membership in a set\nof cue names and requires support timestamps. It has no images to inspect.\nThis is a structural contract, not an independent visual verifier.\n\n## Controlled checks\n\nThe [complete record](../examples/evaluation-results/false-goal-investigation-20261109.json)\ncontains source/frame hashes, actual prompt/block hashes, outputs, errors and\nprovider usage. The existing small model, output schema, output allowance and\nreasoning setting stayed fixed. Each condition had two planned samples, with\nno provider retries or schema-repair retries.\n\n| Condition | Structurally accepted responses | Raw responses claiming a goal |\n| --- | --- | --- |\n| Original framing, 1fps | 1/2 | 2/2 |\n| Replace only “highlights” with “football” | 1/2 | 1/2 |\n| Original framing, 2fps | 2/2 | 2/2 |\n| Original framing plus goalmouth magnifications | 2/2 | 2/2 |\n\nThe two rejected responses still explicitly asserted a goal; their error was a\nscene/action schema inconsistency. They must not count as correct abstentions.\nThe neutral-word response without a goal instead asserted a save; that alternative\nwas not independently verified and is not a recognition-quality pass.\n\nThe magnifications were manually specified diagnostic regions of frames 5, 6 and\n7 seconds, taken from the old observer's claimed support times. Original full\nframes remained available. No expected outcome, labels, transcript or previous\nmodel claim was supplied. This tested attention to the disputed region, not an\nautonomous crop-selection improvement. Upscaling adds no original source detail.\n\nNeither denser sampling nor magnification removed this failure in these samples.\nThe wording result shows output sensitivity, but two samples cannot establish that\nthe word “highlights” is the cause. There is no supported one-parameter fix here.\n\n## A more revealing inconsistency"
+          },
+          {
+            "span": {
+              "key": "docs/FALSE_GOAL_INVESTIGATION.md.txt",
+              "versionId": "ver_91d252642f1f4084b258a3959c25e36f",
+              "unit": "chars",
+              "start": 3161,
+              "end": 4985
+            },
+            "contentType": "text/plain",
+            "text": "A final neutral task asked the model only to locate the match ball in those same\nthree frames, without requesting an event or providing the earlier goal claim.\nIt marked the ball **ambiguous in all three frames**. Its coordinates were also\ninconsistent with the earlier claim that the ball was clearly inside the left\nside of the net. The localization output is another model prediction, not ground\ntruth or a trace of the model's internal reasoning.\n\nThis supports a diagnosis of poorly calibrated visual interpretation: event\nnarration commits to a familiar scoring story even when an object-level task\ncannot establish clear ball positions. Raw responses then describe the keeper's\nlater recovery as happening “after the goal,” rather than reconsidering the\ninitial interpretation. Narrative completion is an inference from these outputs;\nwe cannot prove a particular internal neural mechanism.\n\n## Fix direction and limits\n\nAdding another cue tag or asking the same goal question again does not make the\nevidence independent. A correction needs a more reliable ball/goal-plane check or\nconservative abstention when that evidence cannot be established. It must also\nretain real-goal detection: blocking every goal would game the test.\n\nNo runtime change was made or advertised as a fix in this investigation. A future\nguard needs false-goal and real-goal controls before promotion. The diagnostic\nharness is `scripts/investigate_false_goals.py`; its default is a free audit and\npaid conditions require `--spend`. Regression tests use synthetic images only.\n\nThe investigation used nine call attempts, with a combined maximum budget of\n$0.27. Reported token cost was **$0.0348588**, with no unsettled reservations.\nNo larger-model call, audio generation, new footage, training or deployment was\npart of this investigation."
+          }
+        ],
+        "next": null
+      },
+      "read_elapsed_ms": 1276
+    },
+    {
+      "id": "memory-transfer",
+      "query": "Did saved lessons improve recognition on a different later penalty?",
+      "expected_source": "examples/lesson-memory/transfer/README.md",
+      "search": {
+        "results": [
+          {
+            "key": "examples/lesson-memory/README.md.txt",
+            "versionId": "ver_ace770ef750241f6b2f0f55081a119e1",
+            "contentType": "text/plain",
+            "rank": 1,
+            "score": 0.014754098360655738,
+            "spans": [
+              {
+                "key": "examples/lesson-memory/README.md.txt",
+                "versionId": "ver_ace770ef750241f6b2f0f55081a119e1",
+                "unit": "chars",
+                "start": 0,
+                "end": 3169
+              }
+            ]
+          },
+          {
+            "key": "examples/lesson-memory/session/README.md.txt",
+            "versionId": "ver_36f73217da3a407da9646763205f89cf",
+            "contentType": "text/plain",
+            "rank": 2,
+            "score": 0.014289314516129033,
+            "spans": [
+              {
+                "key": "examples/lesson-memory/session/README.md.txt",
+                "versionId": "ver_36f73217da3a407da9646763205f89cf",
+                "unit": "chars",
+                "start": 0,
+                "end": 3145
+              }
+            ]
+          },
+          {
+            "key": "examples/lesson-memory/README.md.txt",
+            "versionId": "ver_ace770ef750241f6b2f0f55081a119e1",
+            "contentType": "text/plain",
+            "rank": 3,
+            "score": 0.013954326923076923,
+            "spans": [
+              {
+                "key": "examples/lesson-memory/README.md.txt",
+                "versionId": "ver_ace770ef750241f6b2f0f55081a119e1",
+                "unit": "chars",
+                "start": 3170,
+                "end": 5629
+              }
+            ]
+          }
+        ],
+        "nextCursor": "eyJhZnRlciI6eyJjb3JlX2N1cnNvciI6eyJlbmQiOjMsImdyb3VwcyI6IkFhSVJaTDZXY2x1a21kWUZMOWZlR2dBRUFRQUV3VmNBQUFBQlA0d2tZSWN5VnpnQm9oRmt2MEYwOUphblFQWlVHSEwzQUFVQkFBVEJXQUFBQUFJX2k3Z0hPWmRnZndHaUVXUy1VWE1kaGNoTC1rdUZMblFBQmdFQUJNRmJBQUFBQVQtTG05M01TT19VQWFJUlpNR0tjYWEtampIVXROLVdYUUFIQVFBRXdWVUFBQUFCUDRzY20xeG1NMTRCb2hGa3ZwWnlXNlNaMWdVdjE5NGFBQWdCQUFUQlZ3QUFBQUlfaWxUWWdMcy01d0dpRVdUQTFuUmZxMGdsTXhfanN1WUFDUUVBQk1GY0FBQUFBVC1KMTBmcndzMEtBYUlSWkw1UmN4MkZ5RXY2UzRVdWRBQUtBUUFFd1ZzQUFBQUNQNG5Id0lwMDBwSUJvaEZrd05aMFg2dElKVE1mNDdMbUFBc0JBQVRCWEFBQUFBSV9pWHViUFlLaTNBR2lFV1NfUVhUMGxxZEE5bFFZY3ZjQURBRUFCTUZZQUFBQUFEOTl1cUhicWgyN0FhSVJaTF8tYzRDQTNaQjRFSjluUHdBTkFRQUV3VllBQUFBQVAzMUIxQjFCMUIwQm9oRmt2cFp5VzZTWjFnVXYxOTRhQUE0QkFBVEJWd0FBQUFBX2V4c2JHeHNiR3dHaUVXUy1VWE1kaGNoTC1rdUZMblFBRHdFQUJNRmJBQUFBQUQ5NDZIbkY0WTZJQWFJUlpNRFdkRi1yU0NVekgtT3k1Z0FRQVFBRXdWd0FBQUFBUDNmd0NxT1M4MTQ9In0sImludGVycHJldGVkIjpudWxsLCJwaW4iOnsiY29ycHVzX2lkIjoiMDFhMjExNjQtYmQ4My03MGFjLWEyNjEtOTQ2YTc1ZDNjOTAxIiwid2F0ZXJtYXJrIjo2fX0sImV4cGlyZXMiOjE3OTU1OTEwMzcsImZpbHRlcnMiOnsiY29sbGVjdGlvbiI6IjAxYTIxMTY0LWJkODMtNzBhYy1hMjYxLTk0NmE3NWQzYzkwMSIsInJlcXVlc3QiOiJjYTFlYzgzNGUwZTgzMTdmMTlmNTI2MGVhMjNlZTg0NTQ3ZDcyZTMwZDUwNDczNDFiOTBiMDA2ZDIwNDNiOWY1In0sInJvdXRlIjoiUE9TVCAvbmFtZXNwYWNlcy97bmFtZXNwYWNlfS9jb2xsZWN0aW9ucy97Y29sbGVjdGlvbn06c2VhcmNoIn0.QN_ILIBUGoXiMnLqN4xvLA",
+        "execution": {
+          "mode": "hybrid"
+        },
+        "indexGeneration": "gen_6Y82B7CZJ3MBWQCASA98H0J1C6",
+        "timingMs": {
+          "retrieval": 1067,
+          "total": 1410
+        },
+        "warnings": []
+      },
+      "search_elapsed_ms": 1912,
+      "read": {
+        "results": [
+          {
+            "span": {
+              "key": "examples/lesson-memory/README.md.txt",
+              "versionId": "ver_ace770ef750241f6b2f0f55081a119e1",
+              "unit": "chars",
+              "start": 0,
+              "end": 3169
+            },
+            "contentType": "text/plain",
+            "text": "# Learning from the last call\n\nPublic demo: https://www.aarshroongta.com/demo/noeri\n\n**Latest finding:** the [later-incident transfer test](transfer/README.md) did\nnot establish improved recognition from memory. The current public view is an\nillustration of saved lessons and later calls on a familiar incident, not proof\nthat lessons improve new events. No learning-success redesign was published.\n\nThe main UI now shows [a cumulative call history](session/README.md): multiple\nearlier calls save lessons that later calls reference, over the same penalty\nfootage. The three-clip comparison below remains available as an earlier experiment.\n\nOne reviewed past failure becomes a model-written, persistent instruction for\nthree different clips. This is a small application-level memory experiment using\nexisting models, inspired by Noeri's work on agents that improve from experience.\nNo Noeri API, weight updates, fine-tuning, RL, search, fresh vision, or TTS ran.\n\n## Source and protocol\n\nThe lesson comes from the rejected England–France analyst call in\n`examples/evaluation-results/researched-handoff-20261107.json`. The analyst\nclaimed a keeper touch from a weak audit tag. A retained coding-agent correction\nidentifies that unsupported detail. This is not independent human feedback.\n\nGPT-5.4 Mini distilled `lesson.json` from that failure and correction. It contains\nno match names or transfer answers. The file was saved before transfer calls.\nThe same lesson, unchanged after the initial pilot, was used for all later calls.\n\nThe three transfer cases were preselected as `goal`, `dribble`, and `save`, from\nthe existing 15-clip development suite. They use different source files from the\nlesson source. The writer receives only their saved observations; reference\nlabels, expected commentary, research and earlier calls are excluded. These are\nfull-context offline text reactions, not causal live playback or a vision test.\n\nThe comparison uses a compact experimental writer, not the current production\nrole prompts. The same model, base instructions, evidence, output schema, and\noutput allowance are used in both arms. Only the memory instructions differ.\nThere is one sample per arm, counterbalanced call order, and no automatic retries.\nEvery planned case and output is retained, including the regression.\n\n## Results\n\n| Case | Without memory | With memory | Review |\n| --- | --- | --- | --- |\n| Save | Adds “at the near post,” absent from the supplied observations; 38 words | Retains the save, removes the unsupported location, qualifies the follow-up; 31 words | Favorable single example |\n| Crowded goalmouth | Narrates uncertain delivery/contact as established; 32 words | Qualifies the final touch, but still cites uncertainty and exceeds the word target; 37 words | Mixed |\n| Dribble and finish | Compact supported outcome; 23 words | Adds unnecessary uncertainty and repetitive analysis; 50 words | Regression |\n\nReview was performed by a coding agent against the supplied observations, not\nindependent pixels. Saved perception can itself be false. Existing citation IDs\nare not proof of factual support. The save example is not a repeatable accuracy"
+          },
+          {
+            "span": {
+              "key": "examples/lesson-memory/session/README.md.txt",
+              "versionId": "ver_36f73217da3a407da9646763205f89cf",
+              "unit": "chars",
+              "start": 0,
+              "end": 3145
+            },
+            "contentType": "text/plain",
+            "text": "# A growing memory across calls\n\nPublic replay: https://www.aarshroongta.com/demo/noeri\n\nThe UI shows three exact bad calls, each directly paired with its saved lesson,\nand three later calls or decisions. Everything is visible immediately; a single\npenalty video is independently playable. Later calls received cumulative memory\nplus their own preceding dialogue. Green highlights show the lesson IDs returned\nby the model.\nThis replaces the clip comparison as the main experience; the earlier three-clip\nexperiment, including its regression, is retained in the parent directory.\n\n## What is real\n\n- Earlier calls are exact retained lines from three takes of the England–France\n  penalty in `examples/evaluation-results/researched-handoff-20261107.json`.\n- The contact and score corrections come from that retained investigation.\n  The repetition correction is a new coding-agent editorial review, not human\n  feedback. The three takes are arranged in review order, not original run order.\n- A model distilled each correction separately, then the script persisted the\n  growing list after each lesson. The three principles are unedited model output.\n- Three new calls actually received all three saved lessons, the same saved\n  observations and preceding new dialogue. The final call chose to abstain.\n- Raw outputs, exact prompts/inputs, source hashes and costs are retained here.\n  Model-selected lesson references are inspectable but not proof that a lesson\n  caused a particular phrase. All three lessons were supplied; this is not a\n  retrieval-system benchmark. The score lesson was not referenced by the model.\n\nThis is a reconstructed review history and a later pass over a **familiar event**.\nIt demonstrates memory persistence and reuse, not generalization to new events,\nautonomous discovery of errors, live model timing, or flawless improvement. The\nlater analyst still partly repeats the goal. No new visual recognition ran.\n\nAn input-recording bug kept a shared dialogue list, so later dialogue appeared\nin earlier records when the final report was serialized. The actual requests\nhad already been serialized before later calls existed. The saved inputs were\nrestored from the preceding outputs and verified against their original pre-call\nhashes. `original-capture.json` preserves the uncorrected record, and the recorder\nnow snapshots the list. No model calls or generated words were replaced.\n\nThe single source window gives visual context for all the earlier takes and\nlater calls. There is no staged walkthrough or playback gate. This is not one\ncausal run through a match, and video timing does not represent API timings.\nNo speech was synthesized. The seven-second source window starts at 50.5 seconds\nin `clips/action-sources/england-france-penalties.mp4`. The source-file hash is in\n`session.json`. The footage is muted and has no added commentary captions.\n\n## Cost and checks\n\nSix GPT-5.4 Mini calls: three lesson extractions and three subsequent role calls.\nReported token cost: **$0.00531675**, under a $0.10 hard cap, with no unsettled\nreservations. No retries, larger models, search, fresh vision, TTS, training, RL,"
+          },
+          {
+            "span": {
+              "key": "examples/lesson-memory/README.md.txt",
+              "versionId": "ver_ace770ef750241f6b2f0f55081a119e1",
+              "unit": "chars",
+              "start": 3170,
+              "end": 5629
+            },
+            "contentType": "text/plain",
+            "text": "claim; the broad lesson also causes harm. Two memory scripts meet the 35-word\ntarget; one does not. Words are counted with Python `str.split()`, including any\ninline citation strings actually emitted by the model. Text is not rewritten.\n\nThe first pilot reused a legacy long-script prompt with conflicting short-output\ninstructions. Three of six writer responses failed parsing. `pilot.json` and\n`pilot-responses/` retain that attempt. After fixing the base prompt for both\narms, the comparison reused the original lesson and made six fresh writer calls.\nThis was a protocol correction, not a reroll of one unfavorable arm.\n\nTotal reported model token cost: **$0.01583775 across 13 calls**, including lesson\nextraction and the failed pilot. The pilot's $0.01025775 settled spend plus the\nsecond run's $0.18 hard cap remained below the overall $0.20 ceiling. No unsettled\nreservations remain. All calls used GPT-5.4 Mini, reasoning none, no retries,\nwith at most 400 lesson tokens or 600 writer output tokens.\n\n## Reproduce\n\nFree audit:\n\n```sh\n.venv/bin/python scripts/lesson_experiment.py\n.venv/bin/python -m pytest tests/test_lesson_memory.py -q\n```\n\nA new paid comparison with the frozen lesson (use a new output directory):\n\n```sh\n.venv/bin/python scripts/lesson_experiment.py --spend --max-usd 0.10 \\\n  --lesson \"$PWD/examples/lesson-memory/lesson.json\" \\\n  --out runs/lesson-memory/new-comparison\n```\n\nOmit `--lesson` to distill a fresh lesson first. New results require review; the\nscript never overwrites or automatically promotes them to the published demo.\n`result.json` contains the reviewed comparison, source/input/prompt/lesson hashes,\nactual outputs, and usage. `response-*.json` retains the six raw provider results.\n\n## Website\n\nThe canonical buildless UI lives in `web/public/learning-calls/`. Mirror that\ndirectory into `../personal-website/public/learning-calls/`; `/demo/noeri` is a\nVercel rewrite. The static page shows saved results without API calls. Its\nmain view shows the earlier mistake, the exact saved lesson, and the next caller\nline with and without it. Full caller/analyst outputs and the other two cases\nare under one disclosure. The experiment persisted the lesson to disk and\nactually supplied it to the model before generating calls.\n\nThe cumulative replay adds a muted window of the existing penalty footage.\nAll generated words, the full lesson, and the failed pilot remain inspectable.\nNo outreach message has been sent."
+          }
+        ],
+        "next": null
+      },
+      "read_elapsed_ms": 1049
+    },
+    {
+      "id": "reviewer",
+      "query": "Why was the optional reviewer turned off for the penalty commentary?",
+      "expected_source": "examples/portfolio-demo/README.md",
+      "search": {
+        "results": [
+          {
+            "key": "examples/portfolio-demo/README.md.txt",
+            "versionId": "ver_24888776ce35497ca7761baa578590df",
+            "contentType": "text/plain",
+            "rank": 1,
+            "score": 0.0146351136964569,
+            "spans": [
+              {
+                "key": "examples/portfolio-demo/README.md.txt",
+                "versionId": "ver_24888776ce35497ca7761baa578590df",
+                "unit": "chars",
+                "start": 0,
+                "end": 2265
+              }
+            ]
+          },
+          {
+            "key": "docs/TEXT_EVALUATION_TRIAL.md.txt",
+            "versionId": "ver_6220e89f169343ffbca98231bd53708e",
+            "contentType": "text/plain",
+            "rank": 2,
+            "score": 0.0146351136964569,
+            "spans": [
+              {
+                "key": "docs/TEXT_EVALUATION_TRIAL.md.txt",
+                "versionId": "ver_6220e89f169343ffbca98231bd53708e",
+                "unit": "chars",
+                "start": 0,
+                "end": 3131
+              }
+            ]
+          },
+          {
+            "key": "examples/lesson-memory/session/README.md.txt",
+            "versionId": "ver_36f73217da3a407da9646763205f89cf",
+            "contentType": "text/plain",
+            "rank": 3,
+            "score": 0.013444816053511707,
+            "spans": [
+              {
+                "key": "examples/lesson-memory/session/README.md.txt",
+                "versionId": "ver_36f73217da3a407da9646763205f89cf",
+                "unit": "chars",
+                "start": 3146,
+                "end": 4272
+              }
+            ]
+          }
+        ],
+        "nextCursor": "eyJhZnRlciI6eyJjb3JlX2N1cnNvciI6eyJlbmQiOjMsImdyb3VwcyI6IkFhSVJaTDVSY3gyRnlFdjZTNFV1ZEFBRUFRQUV3VnNBQUFBQ1A0dUVQbXo0bTRRQm9oRmt2cFp5VzZTWjFnVXYxOTRhQUFVQkFBVEJWd0FBQUFFX2kwRFRuUUcwRFFHaUVXU19RWFQwbHFkQTlsUVljdmNBQmdFQUJNRllBQUFBQVQtTE16TXpNek0wQWFJUlpNRFdkRi1yU0NVekgtT3k1Z0FIQVFBRXdWd0FBQUFCUDRzY20xeG1NMTRCb2hGa3ZfNXpnSURka0hnUW4yY19BQWdCQUFUQlZnQUFBQUlfaXJ4S0Y5UllUUUdpRVdTX19uT0FnTjJRZUJDZlp6OEFDUUVBQk1GV0FBQUFBVC1LYXUzQ1c5VTdBYUlSWkw2V2NsdWttZFlGTDlmZUdnQUtBUUFFd1ZjQUFBQUNQNHBVMklDN1B1Y0JvaEZrdmxGekhZWElTX3BMaFM1MEFBc0JBQVRCV3dBQUFBQV9mVUhVSFVIVUhRR2lFV1NfUVhUMGxxZEE5bFFZY3ZjQURBRUFCTUZZQUFBQUFEOTh6TXpNek16TkFhSVJaTF8tYzRDQTNaQjRFSjluUHdBTkFRQUV3VllBQUFBQVAzeGJYMC1Pa29NQm9oRmt2cFp5VzZTWjFnVXYxOTRhQUE0QkFBVEJWd0FBQUFBX2V4c2JHeHNiR3dHaUVXVEExblJmcTBnbE14X2pzdVlBRHdFQUJNRmNBQUFBQUQ5NGszUzhhbjc2QWFJUlpNRFdkRi1yU0NVekgtT3k1Z0FRQVFBRXdWd0FBQUFDUDNmd0NxT1M4MTQ9In0sImludGVycHJldGVkIjpudWxsLCJwaW4iOnsiY29ycHVzX2lkIjoiMDFhMjExNjQtYmQ4My03MGFjLWEyNjEtOTQ2YTc1ZDNjOTAxIiwid2F0ZXJtYXJrIjo2fX0sImV4cGlyZXMiOjE3OTU1OTEwMzcsImZpbHRlcnMiOnsiY29sbGVjdGlvbiI6IjAxYTIxMTY0LWJkODMtNzBhYy1hMjYxLTk0NmE3NWQzYzkwMSIsInJlcXVlc3QiOiJmYjU4NmRjOWE3ZmI1YzMxNWFkZGU1MThlMDc1OGRmYzRiNWE4NzJjMjJlYTllM2I1ZjE4MTZkYjRlYmMyMTMwIn0sInJvdXRlIjoiUE9TVCAvbmFtZXNwYWNlcy97bmFtZXNwYWNlfS9jb2xsZWN0aW9ucy97Y29sbGVjdGlvbn06c2VhcmNoIn0.QEZvvvdXonrXDbYC7_uYIg",
+        "execution": {
+          "mode": "hybrid"
+        },
+        "indexGeneration": "gen_6Y82B7CZJ3MBWQCASA98H0J1C6",
+        "timingMs": {
+          "retrieval": 1127,
+          "total": 1386
+        },
+        "warnings": []
+      },
+      "search_elapsed_ms": 1756,
+      "read": {
+        "results": [
+          {
+            "span": {
+              "key": "examples/portfolio-demo/README.md.txt",
+              "versionId": "ver_24888776ce35497ca7761baa578590df",
+              "unit": "chars",
+              "start": 0,
+              "end": 2265
+            },
+            "contentType": "text/plain",
+            "text": "# Selected automatic portfolio demo\n\n`penalty-plan.json` contains exact generated words and source cues for the\n20-second England–France sequence. `penalty-trace.json` retains source metadata,\nresearch, identity lookup decisions, role actions, rejected turns and budget.\nThe web summary is `web/data/portfolio-demo.json`.\n\n`selection.json` preserves both bounded attempts and the choice of attempt two.\nThe first optional reviewer rejected a valid short goal call; the second attempt\nran without that reviewer. An early oversized line was rejected in the second\nattempt, leaving a caller penalty/run-up/goal sequence and an analyst response.\nNo model-written words were manually edited. These are selected development\noutputs on reused perception, not an automatic baseline quality benchmark.\n\nSaved vision came from the prior continuity candidate, with its script excluded\nfrom runtime input. The original full-context vision preparation saw a longer\nwindow; only saved observations inside the selected 20 seconds are used here. Resolved names were cleared and re-proposed using the saved,\ncited England squad. No new vision, research or voice generation was performed.\nTotal reported token cost for both attempts: $0.02666745, under a $0.24 cap.\n\nRender a silent captioned clip with scripts/render_text_demo.py. Local MP4s are\nignored; plans, transcripts, traces and render tooling are retained. See\n[the portfolio guide](../../docs/PORTFOLIO.md) and\n[the case study](../../docs/PORTFOLIO_CASE_STUDY.md).\n\n## Matched before/after iteration\n\n`before-plan.json` and `before-trace.json` retain attempt one. `iteration.json`\nrecords matched-input hashes, the reviewer intervention, observed role/cost changes\nand limitations. The local player can switch both source-timed captioned versions.\nThis is a focused development case following the 15-clip pilot, not the earliest\nsystem baseline or a claim that every output dimension improved. No additional\nmodel calls were made to package the comparison.\n\n## Fresh vision and light edits\n\nThe additional featured clips are in [release](release/README.md), with fresh\nperception, raw outputs, every attempted run, exact edit records and no added\nfootball facts. These replace the heavily rewritten showcases in the player."
+          },
+          {
+            "span": {
+              "key": "docs/TEXT_EVALUATION_TRIAL.md.txt",
+              "versionId": "ver_6220e89f169343ffbca98231bd53708e",
+              "unit": "chars",
+              "start": 0,
+              "end": 3131
+            },
+            "contentType": "text/plain",
+            "text": "# Text evaluation trial — 9 November 2026\n\nThe pilot found execution and perception failures. **It does not demonstrate that\nthe multi-agent writer improves commentary.** No candidate was promoted.\n\nThe [saved record](../examples/evaluation-results/text-comparison-20261109.json)\ncontains per-case outputs, rejected drafts, errors, hashes, call summaries, budgets\nand limited agent review. The combined experiment had a maximum budget of **$1**.\nReported token cost was **$0.17030795**, with no unsettled reservations: 77 call\nattempts using `gpt-5.4-mini` and one deliberate perception-only check using\n`gpt-5.4-2026-03-05`. No TTS, fresh research, training or deployment occurred.\nRegression tests used scripted backends.\n\n## Completion is different from quality\n\nThe suite pilot used identical saved perception within each pair, a $0.02 cap per\nwriter arm, reasoning effort `none`, 1,024 output tokens per call, zero provider\nretries, and at most one validation repair. The optional agent reviewer was off.\nPerception preparation had a separate shared $0.24/eight-call cap. It reused seven\nhistorical bundles and attempted the other eight once each.\n\n| Stage | Result |\n| --- | --- |\n| Perception inputs | 12/15 usable: seven reused, five generated. |\n| Perception failures | Corner: inconsistent goal/scene output; foul-decision: invalid frame timestamps; offside: confirmed action without required supporting cue. |\n| Writer execution | 5/24 attempted arms completed structural validation; 19 failed. Six additional arms were missing because their perception failed. |\n| Complete pairs | Cross/header and penalty. Card had one complete arm. |\n| Source review | Both cross/header candidates falsely announce a goal. The penalty candidates correctly call the named low finish; this is one short development example. |\n| Whole-suite acceptance | None. References remain unreviewed and major failures remain. |\n\nThe original suite pilot, `short-clips-v2`, also exposed a validation asymmetry:\nthe role loop rejected caller references to uncertain/replay actions, whereas the\njoint adapter did not apply that same gate. This was corrected in v3. **Do not use\nthe v2 completion counts to rank architectures.** They are integration diagnostics.\nAll original results remain recorded rather than replaced with later successes.\n\n## What changed after the failures\n\nThe first $0.0083 penalty smoke showed that the historical writer's long-clip turn\nquotas conflicted with short windows. The adapter removed those quotas and supplied\nexplicit timing information. The subsequent suite still exposed drafts that could\nnot fit after their latest supporting frame. Repair feedback that merely said a\nline ended too late was ineffective.\n\nTargeted development checks on dribble and goal then added per-evidence remaining\nword allowances. The final `short-clips-v4` adapter reports the exact number of\nwords that fit in validation feedback, applies the same uncertainty/replay gate\nto both writers, and stops asking the caller again after an analyst abstention\nwhen no newer eligible evidence exists. The original demo/live paths are unchanged."
+          },
+          {
+            "span": {
+              "key": "examples/lesson-memory/session/README.md.txt",
+              "versionId": "ver_36f73217da3a407da9646763205f89cf",
+              "unit": "chars",
+              "start": 3146,
+              "end": 4272
+            },
+            "contentType": "text/plain",
+            "text": "or Noeri API calls were used. Including the earlier experiment, this session's\ntotal reported model-token spend is $0.0211545.\n\nFree audit and regression checks:\n\n```sh\n.venv/bin/python scripts/memory_session.py\n.venv/bin/python -m pytest tests/test_memory_session.py tests/test_lesson_memory.py -q\n```\n\nTo regenerate, choose a new output directory and explicitly enable spending:\n\n```sh\n.venv/bin/python scripts/memory_session.py --spend --out runs/lesson-memory/new-session\n```\n\nNew output needs review before publication. Nothing automatically overwrites the\nsaved demonstration. Each call input receives observations, not reference labels\nor expected commentary. Corrections are supplied only in lesson extraction.\n\nRender the footage locally without model calls:\n\n```sh\nffmpeg -ss 50.5 -i clips/action-sources/england-france-penalties.mp4 \\\n  -t 7 -an -vf 'scale=640:-2' -c:v libx264 -preset fast -crf 23 \\\n  -movflags +faststart web/public/learning-calls/penalty.mp4\n```\n\nThe commentary repo ignores video assets. The public portfolio serves this small\nderived clip alongside the buildless UI. No outreach has been sent."
+          }
+        ],
+        "next": null
+      },
+      "read_elapsed_ms": 718
+    }
+  ],
+  "captured_at": "2026-11-25T06:37:42.521Z"
+}
