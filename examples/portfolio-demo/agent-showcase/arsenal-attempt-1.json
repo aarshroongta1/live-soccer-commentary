@@ -1,0 +1,770 @@
+{
+  "source": {
+    "path": "clips/demo-sources/arsenal-team-goals.mp4",
+    "start_s": 89.0,
+    "duration_s": 18.0,
+    "sha256": "b555373ae88ad325f0b1a6f7508531ff3bda92f04c9b34fce1bbb0d78a779867"
+  },
+  "research": {
+    "fixture": "Arsenal v Norwich City",
+    "as_of": "2013-10-18",
+    "facts": [],
+    "squads": []
+  },
+  "budget": {
+    "max_usd": 0.08,
+    "max_calls": 12,
+    "attempts": 5,
+    "reported_usd": 0.00717375,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "mode": "recorded_preparation",
+  "reviewer_enabled": false,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "Arsenal's left-sided attacker carries the ball along the ground toward the outside of the penalty area with Norwich defenders retreating.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "An Arsenal attacker in the left channel nudges a short grounded pass inside toward a teammate at the top-left edge of the box.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Arsenal number 7 receives and dribbles diagonally between converging Norwich defenders just outside the penalty area.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          4.0,
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "Arsenal number 7 shoots low from inside the box after breaking through the defensive line, sending the ball past the diving goalkeeper.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 8.0,
+      "kind": "goal",
+      "description": "The shot from Arsenal number 7 finishes in the net at the far side of goal.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 10.0,
+      "kind": "replay",
+      "description": "Replay from a closer angle shows Arsenal number 7 driving at a Norwich defender down the left edge of the area.",
+      "actor": null,
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          10.0,
+          11.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 15.0,
+      "kind": "replay",
+      "description": "Replay from behind the goal shows the grounded shot rolling beyond the goalkeeper toward the open net.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          15.0,
+          16.0,
+          17.0
+        ]
+      }
+    }
+  ],
+  "raw_observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 1.0,
+      "kind": "play",
+      "description": "Arsenal's left-sided attacker carries the ball along the ground toward the outside of the penalty area with Norwich defenders retreating.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 4.0,
+      "kind": "play",
+      "description": "An Arsenal attacker in the left channel nudges a short grounded pass inside toward a teammate at the top-left edge of the box.",
+      "actor": null,
+      "action": {
+        "type": "pass",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          3.0,
+          4.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Arsenal number 7 receives and dribbles diagonally between converging Norwich defenders just outside the penalty area.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "ball_carrier",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          4.0,
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 7.0,
+      "kind": "play",
+      "description": "Arsenal number 7 shoots low from inside the box after breaking through the defensive line, sending the ball past the diving goalkeeper.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "shooter",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          6.0,
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 8.0,
+      "kind": "goal",
+      "description": "The shot from Arsenal number 7 finishes in the net at the far side of goal.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "scorer",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing"
+        ],
+        "support_at_s": [
+          7.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 10.0,
+      "kind": "replay",
+      "description": "Replay from a closer angle shows Arsenal number 7 driving at a Norwich defender down the left edge of the area.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 7,
+        "shirt_name": null,
+        "identity_source": "shirt_number",
+        "action_role": "ball_carrier",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "dribble",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "player_challenge",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          10.0,
+          11.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 15.0,
+      "kind": "replay",
+      "description": "Replay from behind the goal shows the grounded shot rolling beyond the goalkeeper toward the open net.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          15.0,
+          16.0,
+          17.0
+        ]
+      }
+    }
+  ],
+  "identity_steps": [],
+  "identity_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0,
+    "latency_s": 0.0
+  },
+  "vision_reuse": "runs/portfolio-release/arsenal-2/observations.json",
+  "dialogue": {
+    "lines": [
+      {
+        "id": "line-1",
+        "at_s": 2.0,
+        "voice": "caller",
+        "text": "Arsenal's left-sided attacker drives at the box, Norwich backing off",
+        "evidence_ids": [
+          "recorded-1"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-2",
+        "at_s": 8.0,
+        "voice": "caller",
+        "text": "Bukayo Saka has scored for Arsenal!",
+        "evidence_ids": [
+          "recorded-4",
+          "recorded-5"
+        ],
+        "research_ids": []
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "source_at_s": 2.0,
+        "word_budget": 14,
+        "visible_evidence": [
+          "recorded-1"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 1,
+          "cutoff_s": 2.0,
+          "line": {
+            "voice": "caller",
+            "text": "Arsenal's left-sided attacker drives at the box, Norwich backing off",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported action with visual evidence only; no need for a tool.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 2.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Arsenal's left-sided attacker drives at the box, Norwich backing off",
+                    "evidence_ids": [
+                      "recorded-1"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported action with visual evidence only; no need for a tool."
+                },
+                "usage": {
+                  "input_tokens": 1216,
+                  "output_tokens": 73,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0012405,
+                  "latency_s": 2.329055000001972
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 2.3332796249997045
+      },
+      {
+        "role": "caller",
+        "source_at_s": 6.1961538461538455,
+        "word_budget": 3,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3"
+        ],
+        "rejected": "agent line exceeds recorded speech budget",
+        "generation_elapsed_s": 7.246268625000084
+      },
+      {
+        "role": "caller",
+        "source_at_s": 8.0,
+        "word_budget": 18,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 5,
+          "cutoff_s": 8.0,
+          "line": {
+            "voice": "caller",
+            "text": "Bukayo Saka has scored for Arsenal!",
+            "evidence_ids": [
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction using the only resolved player identity from the observations.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 8.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Bukayo Saka has scored for Arsenal!",
+                    "evidence_ids": [
+                      "recorded-4",
+                      "recorded-5"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported scoring reaction using the only resolved player identity from the observations."
+                },
+                "usage": {
+                  "input_tokens": 1478,
+                  "output_tokens": 73,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.001437,
+                  "latency_s": 1.3498570419978932
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 8.657495082999958
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 11.507692307692308,
+        "word_budget": 15,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "rejected": "agent line exceeds recorded speech budget",
+        "generation_elapsed_s": 10.72159300000203
+      },
+      {
+        "role": "caller",
+        "source_at_s": 11.507692307692308,
+        "word_budget": 15,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 6,
+          "cutoff_s": 11.507692307692308,
+          "line": {
+            "voice": "caller",
+            "text": "Saka’s burst was too much, and he slots it low beyond the keeper",
+            "evidence_ids": [
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported goal description without repeating the prior announcement.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 11.507692307692308,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Saka’s burst was too much, and he slots it low beyond the keeper",
+                    "evidence_ids": [
+                      "recorded-4",
+                      "recorded-5"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate supported goal description without repeating the prior announcement."
+                },
+                "usage": {
+                  "input_tokens": 1459,
+                  "output_tokens": 76,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00143625,
+                  "latency_s": 1.3481020420003915
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "rejected": "speaker already covered this evidence",
+        "generation_elapsed_s": 12.074256874999264
+      }
+    ],
+    "preparation_duration_s": 12.07431116600128,
+    "source_duration_s": 18.0,
+    "words": 16,
+    "timing": "Source-video seconds; word-count estimates until audio is measured."
+  },
+  "role_audit": [
+    {
+      "event": "agent_action",
+      "at_s": 2.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Arsenal's left-sided attacker drives at the box, Norwich backing off",
+            "evidence_ids": [
+              "recorded-1"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported action with visual evidence only; no need for a tool."
+        },
+        "usage": {
+          "input_tokens": 1216,
+          "output_tokens": 73,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0012405,
+          "latency_s": 2.329055000001972
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 6.1961538461538455,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Arsenal number 7 driving on",
+            "evidence_ids": [
+              "recorded-3"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported action is the confirmed dribble by Arsenal number 7; keep it brief and avoid repeating the earlier carry."
+        },
+        "usage": {
+          "input_tokens": 1440,
+          "output_tokens": 76,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.001422,
+          "latency_s": 4.910447333000775
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 8.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Bukayo Saka has scored for Arsenal!",
+            "evidence_ids": [
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported scoring reaction using the only resolved player identity from the observations."
+        },
+        "usage": {
+          "input_tokens": 1478,
+          "output_tokens": 73,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.001437,
+          "latency_s": 1.3498570419978932
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 11.507692307692308,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "The replay shows Saka jinking past the defender before the finish, that burst opened the shooting lane",
+            "evidence_ids": [
+              "recorded-6",
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported replay explanation of how the chance opened; avoids echoing the caller and stays within the word limit."
+        },
+        "usage": {
+          "input_tokens": 1602,
+          "output_tokens": 97,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.001638,
+          "latency_s": 2.061439375000191
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 11.507692307692308,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Saka’s burst was too much, and he slots it low beyond the keeper",
+            "evidence_ids": [
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate supported goal description without repeating the prior announcement."
+        },
+        "usage": {
+          "input_tokens": 1459,
+          "output_tokens": 76,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00143625,
+          "latency_s": 1.3481020420003915
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    }
+  ],
+  "generation_elapsed_s": 12.080000374997326
+}

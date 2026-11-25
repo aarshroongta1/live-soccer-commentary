@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import editedShowcase from "@/data/edited-showcase.json";
+import agentShowcase from "@/data/agent-showcase.json";
 import savedRuns from "@/data/agent-runs.json";
 import featured from "@/data/featured-demos.json";
 import prepared from "@/data/portfolio-demo.json";
@@ -13,14 +13,14 @@ export function getDemoData(showcase = false) {
   const clips: DemoClip[] = [{
     ...prepared,
     kind: "automatic",
-    src: process.env.PORTFOLIO_PENALTY_VIDEO_URL || localMedia(showcase ? "/soccer-commentary/showcase-penalty-voiced.mp4" : prepared.videoPath),
+    src: process.env.PORTFOLIO_PENALTY_VIDEO_URL || localMedia(prepared.videoPath),
     poster: localMedia(prepared.posterPath),
   }];
   for (const clip of featured) {
     clips.push({
       ...clip,
       kind: "lightly-edited",
-      src: process.env[`PORTFOLIO_${clip.id === "generated-arsenal" ? "ARSENAL" : "ARGENTINA"}_VIDEO_URL`] || localMedia(showcase ? `/soccer-commentary/showcase-${clip.id === "generated-arsenal" ? "arsenal" : "argentina"}-voiced.mp4` : clip.videoPath),
+      src: process.env[`PORTFOLIO_${clip.id === "generated-arsenal" ? "ARSENAL" : "ARGENTINA"}_VIDEO_URL`] || localMedia(clip.videoPath),
       poster: localMedia(clip.posterPath),
     });
   }
@@ -38,11 +38,11 @@ export function getDemoData(showcase = false) {
       },
     },
   };
-  const showcaseClips: DemoClip[] = editedShowcase.map((clip) => ({
+  const showcaseClips: DemoClip[] = agentShowcase.map((clip) => ({
     ...clip,
-    kind: "curated",
-    subtitle: "Edited caller and analyst commentary",
-    note: "Editorial rewrite for the showcase; original agent outputs retained separately.",
+    kind: "automatic",
+    subtitle: "Agent-generated caller and analyst commentary",
+    note: "Selected agent output on saved perception. Generated words unchanged; recorded voices and source excerpts.",
     src: localMedia(clip.videoPath),
     poster: localMedia(clip.posterPath),
   }));

@@ -1,0 +1,93 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/agent-showcase/arsenal-plan.json",
+  "plan_sha256": "6ad99376ef66be79b75fc2610982c625d1e8de0d26c9318ad75746219a47965b",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/authentic-v3/arsenal/measured.mp4",
+  "captioned_video_sha256": "8f7965066811b5cf7a786fe71751638d52e37e2013c6ae7346fa2b7a8c771f38",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/authentic-v3/arsenal/audio/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/agent-arsenal-balanced-v1.mp4",
+  "output_sha256": "cd2631f2d87cfcb3d1af844e96c9bed257068173d2415479c3edbc79c48bca17",
+  "duration_s": 18.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Arsenal driving left side",
+      "at_s": 2.0,
+      "end_s": 3.532517,
+      "input_duration_s": 1.532517,
+      "speed": 1.0,
+      "audio_sha256": "5758f02258ee9148d663499adb12f077edc5ea0477182b3e771bbfb532ac97f7",
+      "provider_character_cost": "12",
+      "exported_rms_dbfs": -16.1
+    },
+    {
+      "id": "line-2",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "Norwich are backing off",
+      "at_s": 3.888,
+      "end_s": 4.909678,
+      "input_duration_s": 1.021678,
+      "speed": 1.0,
+      "audio_sha256": "0cdb6e42c68d240bb6d5ff75c042ec9856896cb773c76f3e81727c51f4b11969",
+      "provider_character_cost": "12",
+      "exported_rms_dbfs": -13.7
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Inside pass now",
+      "at_s": 5.777,
+      "end_s": 6.845118,
+      "input_duration_s": 1.068118,
+      "speed": 1.0,
+      "audio_sha256": "aa52a257a8aa5da0d992069ac1718478352cf2a28db5b8f4299198c52e734971",
+      "provider_character_cost": "8",
+      "exported_rms_dbfs": -18.73
+    },
+    {
+      "id": "line-4",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "And Arsenal score!",
+      "at_s": 8.0,
+      "end_s": 9.021678,
+      "input_duration_s": 1.021678,
+      "speed": 1.0,
+      "audio_sha256": "132b56c83e5713b4631026b1eac5f03b27a646d6aac3ad2c5e5aae9fa4da82ae",
+      "provider_character_cost": "9",
+      "exported_rms_dbfs": -18.76
+    },
+    {
+      "id": "line-5",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "A low finish across the keeper",
+      "at_s": 10.354,
+      "end_s": 11.886517,
+      "input_duration_s": 1.532517,
+      "speed": 1.0,
+      "audio_sha256": "d79d557667188253413ea19ecb002474521bb40517461e01f4c11853f5df2c89",
+      "provider_character_cost": "15",
+      "exported_rms_dbfs": -16.87
+    }
+  ],
+  "speaker_seconds": {
+    "caller": 3.6223129999999997,
+    "analyst": 2.554195000000001
+  },
+  "speaker_shares": {
+    "caller": 0.5865,
+    "analyst": 0.4135
+  },
+  "words_edited": false,
+  "note": "Selected agent output on reused perception; saved speech; not live latency. Shares include TTS phrase pauses."
+}

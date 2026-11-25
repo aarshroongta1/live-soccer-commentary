@@ -1,0 +1,62 @@
+{
+  "attempts": [
+    {
+      "clip": "penalty",
+      "attempt": 1,
+      "selected": false,
+      "reported_usd": 0.011004000000000002
+    },
+    {
+      "clip": "penalty",
+      "attempt": 2,
+      "selected": false,
+      "reported_usd": 0.014594250000000001
+    },
+    {
+      "clip": "penalty",
+      "attempt": 3,
+      "selected": true,
+      "reported_usd": 0.012967049999999999
+    },
+    {
+      "clip": "arsenal",
+      "attempt": 1,
+      "selected": false,
+      "reported_usd": 0.00717375
+    },
+    {
+      "clip": "arsenal",
+      "attempt": 2,
+      "selected": false,
+      "reported_usd": 0.00852375
+    },
+    {
+      "clip": "arsenal",
+      "attempt": 3,
+      "selected": true,
+      "reported_usd": 0.0075933
+    },
+    {
+      "clip": "argentina",
+      "attempt": 1,
+      "selected": false,
+      "reported_usd": 0.0041797499999999994
+    },
+    {
+      "clip": "argentina",
+      "attempt": 2,
+      "selected": true,
+      "reported_usd": 0.0069854999999999995
+    },
+    {
+      "clip": "argentina",
+      "attempt": 3,
+      "selected": false,
+      "reported_usd": 0.00641565
+    }
+  ],
+  "reported_model_usd": 0.07943700000000001,
+  "total_experiment_cap_usd": 0.915,
+  "models": "gpt-5.4-mini dialogue and identity; reused vision; eleven_flash_v2_5 speech",
+  "words_edited": false
+}

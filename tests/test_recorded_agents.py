@@ -151,6 +151,31 @@ async def test_short_slot_can_go_to_caller_when_analyst_cannot_fit() -> None:
     assert ("caller", 9) in seen
 
 
+async def test_balanced_turns_leave_room_for_analysis_before_and_after_goal() -> None:
+    observations = [
+        event("approach", 0, [0]),
+        Observation(id="goal", at_s=10, kind="goal", description="The ball enters the net."),
+    ]
+    limits = []
+
+    async def run(role, view):
+        limits.append((role, view.speech_budget_words))
+        text = "Forward, into the box." if role == "caller" else "The space opens on the left."
+        return TurnResult(
+            role=role,
+            snapshot_version=view.version,
+            cutoff_s=view.cutoff_s,
+            line=SpeechLine(voice=role, text=text, evidence_ids=[view.observations[-1].id]),
+        )
+
+    result = await prepare_dialogue(run, observations, duration_s=20, balanced_speakers=True)
+    lines = result["lines"]
+    assert [line["voice"] for line in lines] == ["caller", "analyst", "caller", "analyst"]
+    assert lines[1]["at_s"] < 10
+    assert lines[2]["at_s"] == 10
+    assert all(limit <= 6 for _, limit in limits)
+
+
 def test_unknown_celebration_tag_is_weakened_without_promoting_a_goal() -> None:
     from commentary.replay.recorded import RecordedObservation
 

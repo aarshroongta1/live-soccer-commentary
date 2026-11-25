@@ -42,6 +42,11 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--spend", action="store_true")
     parser.add_argument(
+        "--balanced-speakers",
+        action="store_true",
+        help="short calls with room for analyst responses",
+    )
+    parser.add_argument(
         "--no-review", action="store_true", help="disable the optional draft reviewer"
     )
     return parser.parse_args()
@@ -144,6 +149,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             duration_s=args.duration,
             research=research,
             teams=team_names(teams, research),
+            balanced_speakers=args.balanced_speakers,
         )
         report["role_audit"] = [row.model_dump(mode="json") for row in agents.audit]
         plan = dict(

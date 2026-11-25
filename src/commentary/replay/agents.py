@@ -262,6 +262,8 @@ class RoleAgents:
                 + "\n"
                 + duty
                 + f"\nRecorded broadcast: at most {limit} words; this is a ceiling, not a target. "
+                "Count the words before submitting. Aim below that ceiling so the other "
+                "commentator has room to answer. A short observation is enough; don't pad it. "
                 "Speak to a viewer watching alongside you. The observations are private notes, "
                 "not a script to paraphrase. Use spoken English, contractions, and varied rhythm. "
                 "Short connected phrases or two sentences are welcome. Keep grammatical articles. "

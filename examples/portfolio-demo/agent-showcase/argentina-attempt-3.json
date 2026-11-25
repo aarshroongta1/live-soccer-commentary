@@ -1,0 +1,763 @@
+{
+  "source": {
+    "path": "clips/demo-sources/argentina-france-dimaria.mp4",
+    "start_s": 12.0,
+    "duration_s": 28.0,
+    "sha256": "5ee52be809d60caf3655bcd95d4a9ce2fb0e8ac0bb808924e5a6e25df4553f24"
+  },
+  "research": {
+    "fixture": "Argentina v France",
+    "as_of": "2022-12-17",
+    "facts": [],
+    "squads": []
+  },
+  "budget": {
+    "max_usd": 0.04,
+    "max_calls": 12,
+    "attempts": 5,
+    "reported_usd": 0.00641565,
+    "unsettled_reservations_usd": 0,
+    "unsettled_requests": 0,
+    "basis": "counted input + maximum output at standard token rates, 25% margin",
+    "hosted_tools_allowed": false
+  },
+  "mode": "recorded_preparation",
+  "reviewer_enabled": false,
+  "observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Argentina regain control near the left side of midfield as a white-and-blue player closes down and pokes the ball forward under pressure.",
+      "actor": null,
+      "action": {
+        "type": "interception",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 12.0,
+      "kind": "play",
+      "description": "Argentina’s number 9 accelerates onto the loose ball and carries it upfield through the center-right channel with France retreating.",
+      "actor": null,
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          12.0,
+          13.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 16.0,
+      "kind": "play",
+      "description": "The ball is played low into the French penalty area from the right, with the goalkeeper moving across his goal and several defenders converging.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          16.0,
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 17.0,
+      "kind": "play",
+      "description": "An Argentina attacker reaches the delivery at the far side of the six-yard area and redirects it first time toward goal.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          17.0,
+          18.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 18.0,
+      "kind": "goal",
+      "description": "The ball goes into the net at the far post as the French goalkeeper is beaten and ends up on the ground.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing",
+          "keeper_contact"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 21.0,
+      "kind": "celebration",
+      "description": "Argentina’s number 11 runs away in celebration after the goal, arms spread and mouth open.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          21.0,
+          22.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 25.0,
+      "kind": "celebration",
+      "description": "A wide crowd shot shows Argentina supporters jumping and hugging in celebration.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          25.0,
+          26.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-8",
+      "at_s": 27.0,
+      "kind": "play",
+      "description": "The French goalkeeper appears in close-up after the goal, looking frustrated as play has stopped.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          27.0
+        ]
+      }
+    }
+  ],
+  "raw_observations": [
+    {
+      "id": "recorded-1",
+      "at_s": 5.0,
+      "kind": "play",
+      "description": "Argentina regain control near the left side of midfield as a white-and-blue player closes down and pokes the ball forward under pressure.",
+      "actor": null,
+      "action": {
+        "type": "interception",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground",
+          "player_challenge"
+        ],
+        "support_at_s": [
+          5.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-2",
+      "at_s": 12.0,
+      "kind": "play",
+      "description": "Argentina’s number 9 accelerates onto the loose ball and carries it upfield through the center-right channel with France retreating.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 9,
+        "shirt_name": "ALVAREZ",
+        "identity_source": "shirt_name",
+        "action_role": "ball_carrier",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "carry",
+        "certainty": "confirmed",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          12.0,
+          13.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-3",
+      "at_s": 16.0,
+      "kind": "play",
+      "description": "The ball is played low into the French penalty area from the right, with the goalkeeper moving across his goal and several defenders converging.",
+      "actor": null,
+      "action": {
+        "type": "cross",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          16.0,
+          17.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-4",
+      "at_s": 17.0,
+      "kind": "play",
+      "description": "An Argentina attacker reaches the delivery at the far side of the six-yard area and redirects it first time toward goal.",
+      "actor": null,
+      "action": {
+        "type": "shot",
+        "certainty": "uncertain",
+        "ball_path": "ground",
+        "cues": [
+          "ball_contact",
+          "ball_motion",
+          "ball_on_ground"
+        ],
+        "support_at_s": [
+          17.0,
+          18.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-5",
+      "at_s": 18.0,
+      "kind": "goal",
+      "description": "The ball goes into the net at the far post as the French goalkeeper is beaten and ends up on the ground.",
+      "actor": null,
+      "action": {
+        "type": "goal",
+        "certainty": "confirmed",
+        "ball_path": "unknown",
+        "cues": [
+          "ball_in_net",
+          "goal_line_crossing",
+          "keeper_contact"
+        ],
+        "support_at_s": [
+          18.0,
+          19.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-6",
+      "at_s": 21.0,
+      "kind": "celebration",
+      "description": "Argentina’s number 11 runs away in celebration after the goal, arms spread and mouth open.",
+      "actor": {
+        "side": "home",
+        "shirt_number": 11,
+        "shirt_name": "DI MARIA",
+        "identity_source": "shirt_name",
+        "action_role": "visible_player",
+        "resolved_name": null
+      },
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          21.0,
+          22.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-7",
+      "at_s": 25.0,
+      "kind": "celebration",
+      "description": "A wide crowd shot shows Argentina supporters jumping and hugging in celebration.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          25.0,
+          26.0
+        ]
+      }
+    },
+    {
+      "id": "recorded-8",
+      "at_s": 27.0,
+      "kind": "play",
+      "description": "The French goalkeeper appears in close-up after the goal, looking frustrated as play has stopped.",
+      "actor": null,
+      "action": {
+        "type": "unknown",
+        "certainty": "uncertain",
+        "ball_path": "unknown",
+        "cues": [],
+        "support_at_s": [
+          27.0
+        ]
+      }
+    }
+  ],
+  "identity_steps": [],
+  "identity_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0.0,
+    "latency_s": 0.0
+  },
+  "vision_reuse": "runs/portfolio-release/argentina-1/observations.json",
+  "dialogue": {
+    "lines": [
+      {
+        "id": "line-1",
+        "at_s": 13.0,
+        "voice": "caller",
+        "text": "Argentina's number 9 drives forward",
+        "evidence_ids": [
+          "recorded-2"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-2",
+        "at_s": 15.273,
+        "voice": "analyst",
+        "text": "France are backpedalling fast.",
+        "evidence_ids": [
+          "recorded-2"
+        ],
+        "research_ids": []
+      },
+      {
+        "id": "line-3",
+        "at_s": 19.0,
+        "voice": "caller",
+        "text": "It's in!",
+        "evidence_ids": [
+          "recorded-5"
+        ],
+        "research_ids": []
+      }
+    ],
+    "turns": [
+      {
+        "role": "caller",
+        "source_at_s": 13.0,
+        "word_budget": 6,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 2,
+          "cutoff_s": 13.0,
+          "line": {
+            "voice": "caller",
+            "text": "Argentina's number 9 drives forward",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported immediate action, under the word limit, without overclaiming identity.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 13.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "Argentina's number 9 drives forward",
+                    "evidence_ids": [
+                      "recorded-2"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Supported immediate action, under the word limit, without overclaiming identity."
+                },
+                "usage": {
+                  "input_tokens": 178,
+                  "output_tokens": 67,
+                  "cache_read_tokens": 1152,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.0005214,
+                  "latency_s": 2.2979471250000643
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 2.305076500000723
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 15.273076923076923,
+        "word_budget": 6,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2"
+        ],
+        "result": {
+          "role": "analyst",
+          "snapshot_version": 2,
+          "cutoff_s": 15.273076923076923,
+          "line": {
+            "voice": "analyst",
+            "text": "France are backpedalling fast.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds a supported consequence of the confirmed carry without inventing outcome or identity beyond the observed action.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 15.273076923076923,
+              "role": "analyst",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "analyst",
+                    "text": "France are backpedalling fast.",
+                    "evidence_ids": [
+                      "recorded-2"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Adds a supported consequence of the confirmed carry without inventing outcome or identity beyond the observed action."
+                },
+                "usage": {
+                  "input_tokens": 1415,
+                  "output_tokens": 71,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00138075,
+                  "latency_s": 1.427743542000826
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 3.7400192499990226
+      },
+      {
+        "role": "caller",
+        "source_at_s": 19.0,
+        "word_budget": 6,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "result": {
+          "role": "caller",
+          "snapshot_version": 5,
+          "cutoff_s": 19.0,
+          "line": {
+            "voice": "caller",
+            "text": "It's in!",
+            "evidence_ids": [
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate confirmed goal reaction within the word limit; no need to identify scorer from current evidence.",
+          "trace": [
+            {
+              "event": "agent_action",
+              "at_s": 19.0,
+              "role": "caller",
+              "data": {
+                "step": 1,
+                "action": {
+                  "kind": "speak",
+                  "tool": null,
+                  "line": {
+                    "voice": "caller",
+                    "text": "It's in!",
+                    "evidence_ids": [
+                      "recorded-5"
+                    ],
+                    "research_ids": []
+                  },
+                  "reason": "Immediate confirmed goal reaction within the word limit; no need to identify scorer from current evidence."
+                },
+                "usage": {
+                  "input_tokens": 1523,
+                  "output_tokens": 66,
+                  "cache_read_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "cost_usd": 0.00143925,
+                  "latency_s": 1.6548951670010865
+                },
+                "model": "gpt-5.4-mini",
+                "timestamp_basis": "snapshot_cutoff"
+              }
+            }
+          ]
+        },
+        "generation_elapsed_s": 5.399032375000388
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 20.96923076923077,
+        "word_budget": 6,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5"
+        ],
+        "rejected": "agent line exceeds recorded speech budget",
+        "generation_elapsed_s": 6.879869332999078
+      },
+      {
+        "role": "analyst",
+        "source_at_s": 22.0,
+        "word_budget": 6,
+        "visible_evidence": [
+          "recorded-1",
+          "recorded-2",
+          "recorded-3",
+          "recorded-4",
+          "recorded-5",
+          "recorded-6"
+        ],
+        "rejected": "agent line exceeds recorded speech budget",
+        "generation_elapsed_s": 8.53960087499945
+      }
+    ],
+    "preparation_duration_s": 8.540654707998328,
+    "source_duration_s": 28.0,
+    "words": 11,
+    "timing": "Source-video seconds; word-count estimates until audio is measured."
+  },
+  "role_audit": [
+    {
+      "event": "agent_action",
+      "at_s": 13.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "Argentina's number 9 drives forward",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported immediate action, under the word limit, without overclaiming identity."
+        },
+        "usage": {
+          "input_tokens": 178,
+          "output_tokens": 67,
+          "cache_read_tokens": 1152,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.0005214,
+          "latency_s": 2.2979471250000643
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 15.273076923076923,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "France are backpedalling fast.",
+            "evidence_ids": [
+              "recorded-2"
+            ],
+            "research_ids": []
+          },
+          "reason": "Adds a supported consequence of the confirmed carry without inventing outcome or identity beyond the observed action."
+        },
+        "usage": {
+          "input_tokens": 1415,
+          "output_tokens": 71,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00138075,
+          "latency_s": 1.427743542000826
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 19.0,
+      "role": "caller",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "caller",
+            "text": "It's in!",
+            "evidence_ids": [
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Immediate confirmed goal reaction within the word limit; no need to identify scorer from current evidence."
+        },
+        "usage": {
+          "input_tokens": 1523,
+          "output_tokens": 66,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00143925,
+          "latency_s": 1.6548951670010865
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 20.96923076923077,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "France are beaten at the far post.",
+            "evidence_ids": [
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported by the confirmed goal at the far post; concise analyst reaction with no unsupported scorer or score claim."
+        },
+        "usage": {
+          "input_tokens": 1548,
+          "output_tokens": 74,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.001494,
+          "latency_s": 1.475602667000203
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    },
+    {
+      "event": "agent_action",
+      "at_s": 22.0,
+      "role": "analyst",
+      "data": {
+        "step": 1,
+        "action": {
+          "kind": "speak",
+          "tool": null,
+          "line": {
+            "voice": "analyst",
+            "text": "Low cross, first-time touch, then the finish",
+            "evidence_ids": [
+              "recorded-3",
+              "recorded-4",
+              "recorded-5"
+            ],
+            "research_ids": []
+          },
+          "reason": "Supported concise explanation of the goal sequence without inventing identity or score state."
+        },
+        "usage": {
+          "input_tokens": 1621,
+          "output_tokens": 81,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "cost_usd": 0.00158025,
+          "latency_s": 1.6554129159994773
+        },
+        "model": "gpt-5.4-mini",
+        "timestamp_basis": "snapshot_cutoff"
+      }
+    }
+  ],
+  "generation_elapsed_s": 8.54841654199845
+}

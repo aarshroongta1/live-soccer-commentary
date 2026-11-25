@@ -14,6 +14,7 @@ export type DemoClip = {
   duration_s: number;
   kind: "automatic" | "lightly-edited" | "curated";
   note: string;
+  speaker_shares?: { caller: number; analyst: number };
   lines: { at_s: number; voice: string; text: string }[];
 };
 

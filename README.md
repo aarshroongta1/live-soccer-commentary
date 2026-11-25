@@ -27,15 +27,18 @@ three clips with two voices and captions:
 
 | Clip | Length |
 | --- | ---: |
-| England–France penalty | 19s |
+| England–France penalty | 20s |
 | Arsenal–Norwich finish | 18s |
 | Argentina–France attack | 20s |
 
-These scripts were edited against the footage after the initial narration proved
-too sparse. They are prepared demos, not unedited agent output or measurements
-of live speech latency. The penalty clip keeps the original generated goal call.
-[Original runs and failures](examples/portfolio-demo/README.md) and
-[edited scripts](examples/portfolio-demo/edited-showcase/README.md) are kept separately.
+The featured dialogue keeps the exact generated words, including awkward or
+imperfect observations. Shorter turn budgets leave room for both commentators;
+measured caller/analyst speech shares are 39/61, 59/41 and 47/53 respectively.
+These are selected outputs on saved perception, voiced before playback, with an
+opening source cut for Argentina. They do not measure live speech latency.
+[All attempts and selection notes](examples/portfolio-demo/agent-showcase/README.md)
+are retained. The earlier [editorial rewrites](examples/portfolio-demo/edited-showcase/README.md)
+remain archived and are no longer the featured clips.
 
 ## Architecture
 

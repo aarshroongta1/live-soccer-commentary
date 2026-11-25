@@ -28,4 +28,7 @@ public/**/*.mp4
 
 # Keenable outreach replay: match footage and generated analyst audio only.
 !public/soccer-commentary/ballard-live-replay.mp4
+!public/soccer-commentary/agent-penalty-balanced-v1.mp4
+!public/soccer-commentary/agent-arsenal-balanced-v1.mp4
+!public/soccer-commentary/agent-argentina-balanced-v1.mp4
 !public/editor-review/messi.mp4

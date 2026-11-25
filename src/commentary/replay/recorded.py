@@ -178,6 +178,7 @@ async def prepare_dialogue(
     teams: dict[str, str] | None = None,
     max_turns: int = 12,
     max_lines: int = 7,
+    balanced_speakers: bool = False,
 ) -> dict[str, Any]:
     """Bounded turns and timing checks; no model-written words are edited."""
     if not math.isfinite(duration_s) or duration_s <= 0 or max_turns < 1 or max_lines < 1:
@@ -235,7 +236,8 @@ async def prepare_dialogue(
                 for r in alternatives
                 if (r, version) not in requested
                 and (r != "caller" or caller_has_new)
-                and available_words >= (1 if r == "caller" else 8)
+                and (not balanced_speakers or r != "analyst" or last_role != "analyst")
+                and available_words >= (1 if r == "caller" else (5 if balanced_speakers else 8))
             ),
             None,
         )
@@ -246,6 +248,10 @@ async def prepare_dialogue(
         # Reserve the next visible goal's slot during recorded preparation. Its
         # contents are never exposed in an earlier speaking agent's snapshot.
         limit = min(18 if role == "caller" else 28, available_words)
+        if balanced_speakers:
+            # Brief calls leave a response slot before the next major action.
+            # Never change generated words to manufacture the desired split.
+            limit = min(limit, 6)
         view = RuntimeSnapshot(
             version=len(visible),
             cutoff_s=cursor,
@@ -296,7 +302,11 @@ async def prepare_dialogue(
                 recent.append(result.line)
                 # Let a major call land before asking the analyst to respond.
                 # This is a preparation estimate; the renderer still measures audio.
-                pause_s = 1.2 if role == "caller" and urgent else 0.35
+                major_call = urgent and (
+                    not balanced_speakers
+                    or any(item.kind == "goal" and item.id not in covered for item in visible)
+                )
+                pause_s = 1.2 if role == "caller" and major_call else 0.35
                 cursor += len(line.text.split()) / 2.6 + pause_s
                 last_role = role
         except BudgetExceeded:

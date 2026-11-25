@@ -1,0 +1,80 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/agent-showcase/argentina-plan.json",
+  "plan_sha256": "8636ffcb3f21fa624fa649fd85a13b0ebd3fbfe2cc60e8c70f7d8103d0820110",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/authentic-v2/argentina/measured.mp4",
+  "captioned_video_sha256": "2872ec86b4b61d8c3d57dfd12c7152d5c115e555fa350833ea2ded47f757c044",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/authentic-v2/argentina/audio/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/agent-argentina-balanced-v1.mp4",
+  "output_sha256": "3297111d7dc1e3c99e4f7cfea0d2d34798ed431399cfd9dd7da855535abeef00",
+  "duration_s": 20.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Argentina\u2019s number 9 driving forward",
+      "at_s": 5.0,
+      "end_s": 7.193,
+      "input_duration_s": 2.461315,
+      "speed": 1.122351,
+      "audio_sha256": "1f06bf04536a45ddd6ff1cc9192375895662301f7e8c3a7451616de1734ab953",
+      "provider_character_cost": "18",
+      "exported_rms_dbfs": -13.49
+    },
+    {
+      "id": "line-2",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "France are backpedalling in numbers",
+      "at_s": 7.273,
+      "end_s": 9.594995,
+      "input_duration_s": 2.321995,
+      "speed": 1.0,
+      "audio_sha256": "3e9907cd85c21686898f39c05c2d2da603017e08173bbe1de1570c22b6b79a84",
+      "provider_character_cost": "18",
+      "exported_rms_dbfs": -16.08
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Argentina scores at the far post!",
+      "at_s": 11.0,
+      "end_s": 13.182676,
+      "input_duration_s": 2.182676,
+      "speed": 1.0,
+      "audio_sha256": "0e1581efc37cd8bff2e9f2b59a17fad7fc8cf5d964402ce75f97a5e4f6af43de",
+      "provider_character_cost": "16",
+      "exported_rms_dbfs": -17.21
+    },
+    {
+      "id": "line-4",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "A simple far-post finish, and the keeper\u2019s stranded.",
+      "at_s": 14.508,
+      "end_s": 17.201515,
+      "input_duration_s": 2.693515,
+      "speed": 1.0,
+      "audio_sha256": "dfcac38b97bb3301e76bd1c142ae1352b99bcfb571e02a6615596e55913a4b42",
+      "provider_character_cost": "26",
+      "exported_rms_dbfs": -20.99
+    }
+  ],
+  "speaker_seconds": {
+    "caller": 4.375676,
+    "analyst": 5.015510000000003
+  },
+  "speaker_shares": {
+    "caller": 0.4659,
+    "analyst": 0.5341
+  },
+  "words_edited": false,
+  "note": "Selected agent output on reused perception; saved speech; not live latency. Shares include TTS phrase pauses."
+}

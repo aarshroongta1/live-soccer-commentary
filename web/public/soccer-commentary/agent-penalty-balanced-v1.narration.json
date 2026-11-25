@@ -1,0 +1,93 @@
+{
+  "plan": "/Users/Aarsh/Developer/commentary/examples/portfolio-demo/agent-showcase/penalty-plan.json",
+  "plan_sha256": "935fa516623a67a9ab0ef1fbab3682fbada21642370092ba9216b1b098dfc7a5",
+  "captioned_video": "/Users/Aarsh/Developer/commentary/runs/demo/authentic-v3/penalty/measured.mp4",
+  "captioned_video_sha256": "37d6678441f0c194c19e07b09938316a1e5d6386d961127a531b4a1ec69f686b",
+  "manifest": "/Users/Aarsh/Developer/commentary/runs/demo/authentic-v3/penalty/audio/manifest.json",
+  "synthesis_model": "eleven_flash_v2_5",
+  "output": "/Users/Aarsh/Developer/commentary/web/public/soccer-commentary/agent-penalty-balanced-v1.mp4",
+  "output_sha256": "927e15e6a7aaf64744128dbcd305e6f7f9a703fede0919eea1b4fb1c273b2aaf",
+  "duration_s": 20.0,
+  "audio": true,
+  "tts_calls_during_mux": 0,
+  "video_stream": "copied unchanged; existing captions and footage retained",
+  "caption_timing": "Original display intervals; speech starts at each caption cue",
+  "speech_words_edited": false,
+  "lines": [
+    {
+      "id": "line-1",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Penalty for England!",
+      "at_s": 3.0,
+      "end_s": 3.928798,
+      "input_duration_s": 0.928798,
+      "speed": 1.0,
+      "audio_sha256": "8db5018874479dc145c33621d263046c09f570c1a98acde08fe57a61fe092935",
+      "provider_character_cost": "10",
+      "exported_rms_dbfs": -15.08
+    },
+    {
+      "id": "line-2",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "That came from the box challenge.",
+      "at_s": 4.504,
+      "end_s": 6.640236,
+      "input_duration_s": 2.136236,
+      "speed": 1.0,
+      "audio_sha256": "b224d19def7106aa6e7311ffa7ef408626a1ed611600db29a814d5172cf5305b",
+      "provider_character_cost": "16",
+      "exported_rms_dbfs": -17.15
+    },
+    {
+      "id": "line-3",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Kane...",
+      "at_s": 9.0,
+      "end_s": 9.557279,
+      "input_duration_s": 0.557279,
+      "speed": 1.0,
+      "audio_sha256": "3b31b94bb5f04ec132efd1327f7fc8e81c3be7f7e263a3dc69eb84555b7f0898",
+      "provider_character_cost": "4",
+      "exported_rms_dbfs": -15.87
+    },
+    {
+      "id": "line-4",
+      "voice": "caller",
+      "voice_id": "7kZjjorO6NZ82NBwcvgV",
+      "text": "Kane scores!",
+      "at_s": 10.0,
+      "end_s": 10.789478,
+      "input_duration_s": 0.789478,
+      "speed": 1.0,
+      "audio_sha256": "2ae0ab7c418732613b72ef12ca4419c08f0424b3e8d612f900a6aca8e96f4eb3",
+      "provider_character_cost": "6",
+      "exported_rms_dbfs": -15.05
+    },
+    {
+      "id": "line-5",
+      "voice": "analyst",
+      "voice_id": "8aumr1JnqELHfstCHQOk",
+      "text": "Low and left, past the dive",
+      "at_s": 11.969,
+      "end_s": 13.455077,
+      "input_duration_s": 1.486077,
+      "speed": 1.0,
+      "audio_sha256": "0b7bb4eae4dc9ded1813f0d886a5a4fbbcab97c8cd877d0e71873409155ed4a6",
+      "provider_character_cost": "14",
+      "exported_rms_dbfs": -14.87
+    }
+  ],
+  "speaker_seconds": {
+    "caller": 2.275555,
+    "analyst": 3.622313
+  },
+  "speaker_shares": {
+    "caller": 0.3858,
+    "analyst": 0.6142
+  },
+  "words_edited": false,
+  "note": "Selected agent output on reused perception; saved speech; not live latency. Shares include TTS phrase pauses."
+}

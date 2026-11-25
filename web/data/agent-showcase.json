@@ -1,0 +1,117 @@
+[
+  {
+    "id": "portfolio-penalty",
+    "title": "England vs France",
+    "duration_s": 20.0,
+    "kind": "automatic",
+    "lines": [
+      {
+        "at_s": 3.0,
+        "voice": "caller",
+        "text": "Penalty for England!"
+      },
+      {
+        "at_s": 4.504,
+        "voice": "analyst",
+        "text": "That came from the box challenge."
+      },
+      {
+        "at_s": 9.0,
+        "voice": "caller",
+        "text": "Kane..."
+      },
+      {
+        "at_s": 10.0,
+        "voice": "caller",
+        "text": "Kane scores!"
+      },
+      {
+        "at_s": 11.969,
+        "voice": "analyst",
+        "text": "Low and left, past the dive"
+      }
+    ],
+    "videoPath": "/soccer-commentary/agent-penalty-balanced-v1.mp4",
+    "posterPath": "/soccer-commentary/agent-penalty-balanced-v1.jpg",
+    "planPath": "examples/portfolio-demo/agent-showcase/penalty-plan.json",
+    "speaker_shares": {
+      "caller": 0.3858,
+      "analyst": 0.6142
+    }
+  },
+  {
+    "id": "generated-arsenal",
+    "title": "Arsenal vs Norwich",
+    "duration_s": 18.0,
+    "kind": "automatic",
+    "lines": [
+      {
+        "at_s": 2.0,
+        "voice": "caller",
+        "text": "Arsenal driving left side"
+      },
+      {
+        "at_s": 3.888,
+        "voice": "analyst",
+        "text": "Norwich are backing off"
+      },
+      {
+        "at_s": 5.777,
+        "voice": "caller",
+        "text": "Inside pass now"
+      },
+      {
+        "at_s": 8.0,
+        "voice": "caller",
+        "text": "And Arsenal score!"
+      },
+      {
+        "at_s": 10.354,
+        "voice": "analyst",
+        "text": "A low finish across the keeper"
+      }
+    ],
+    "videoPath": "/soccer-commentary/agent-arsenal-balanced-v1.mp4",
+    "posterPath": "/soccer-commentary/agent-arsenal-balanced-v1.jpg",
+    "planPath": "examples/portfolio-demo/agent-showcase/arsenal-plan.json",
+    "speaker_shares": {
+      "caller": 0.5865,
+      "analyst": 0.4135
+    }
+  },
+  {
+    "id": "generated-argentina",
+    "title": "Argentina vs France",
+    "duration_s": 20.0,
+    "kind": "automatic",
+    "lines": [
+      {
+        "at_s": 5.0,
+        "voice": "caller",
+        "text": "Argentina’s number 9 driving forward"
+      },
+      {
+        "at_s": 7.273,
+        "voice": "analyst",
+        "text": "France are backpedalling in numbers"
+      },
+      {
+        "at_s": 11.0,
+        "voice": "caller",
+        "text": "Argentina scores at the far post!"
+      },
+      {
+        "at_s": 14.508,
+        "voice": "analyst",
+        "text": "A simple far-post finish, and the keeper’s stranded."
+      }
+    ],
+    "videoPath": "/soccer-commentary/agent-argentina-balanced-v1.mp4",
+    "posterPath": "/soccer-commentary/agent-argentina-balanced-v1.jpg",
+    "planPath": "examples/portfolio-demo/agent-showcase/argentina-plan.json",
+    "speaker_shares": {
+      "caller": 0.4659,
+      "analyst": 0.5341
+    }
+  }
+]
