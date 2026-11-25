@@ -1,5 +1,5 @@
 'use client';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 type Clip = {id:string; split:string; title:string; video_url:string; options:string[]; normal_line:string; decision_at_s:number; context?:string; role?:string};
 type Saved = {choice:number; reason:string; request_id:string; trajectory_url:string};
@@ -14,14 +14,18 @@ export default function Review() {
   const [error,setError] = useState('');
   const requestId = useRef('');
   const player = useRef<HTMLVideoElement>(null);
+  const selectClip = useCallback((nextIndex:number, saved?:Saved) => {
+    setIndex(nextIndex);setChoice(saved?.choice??null);setReason(saved?.reason||'');
+    requestId.current=saved?.request_id||'';setError('');
+  }, []);
   useEffect(()=>{
     Promise.all([fetch('/commentary-learning/catalog.json').then(r=>r.json()),fetch('/api/commentary-learning').then(r=>r.json())])
       .then(([catalog,state])=>{setClips(catalog.cases);setConnected(!!state.connected);setReviews(state.reviews||{});
-        const first=catalog.cases.findIndex((c:Clip)=>!state.reviews?.[c.id]);setIndex(first<0?0:first);})
+        const first=catalog.cases.findIndex((c:Clip)=>!state.reviews?.[c.id]);const next=first<0?0:first;
+        selectClip(next,state.reviews?.[catalog.cases[next]?.id]);})
       .catch(()=>setError('The review set is not ready yet. Refresh shortly.'));
-  },[]);
+  },[selectClip]);
   const clip=clips[index]; const saved=clip?reviews[clip.id]:undefined;
-  useEffect(()=>{setChoice(saved?.choice??null);setReason(saved?.reason||'');requestId.current=saved?.request_id||'';setError('');},[index,saved]);
   function listen(text:string) {
     player.current?.pause();
     speechSynthesis.cancel();
@@ -35,7 +39,7 @@ export default function Review() {
       const response=await fetch('/api/commentary-learning',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'review',case_id:clip.id,choice,reason,request_id:requestId.current})});
       const result=await response.json();if(!response.ok||result.error)throw Error(result.error||'Could not save.');
-      setReviews(result.reviews);if(index<clips.length-1)setIndex(index+1);
+      setReviews(result.reviews);const next=Math.min(index+1,clips.length-1);selectClip(next,result.reviews[clips[next].id]);
     }catch(e){setError(e instanceof Error?e.message:'Could not save.');}finally{setBusy(false);}
   }
   return <main className="editor-shell">
@@ -65,8 +69,8 @@ export default function Review() {
       </section>
     </div>}
     <footer className="editor-footer"><div style={{display:'flex',gap:16}}>
-      <button className="editor-text-button" disabled={busy||index===0} onClick={()=>setIndex(index-1)}>Previous</button>
-      <button className="editor-text-button" disabled={busy||index>=clips.length-1} onClick={()=>setIndex(index+1)}>Next</button>
+      <button className="editor-text-button" disabled={busy||index===0} onClick={()=>selectClip(index-1,reviews[clips[index-1].id])}>Previous</button>
+      <button className="editor-text-button" disabled={busy||index>=clips.length-1} onClick={()=>selectClip(index+1,reviews[clips[index+1].id])}>Next</button>
       </div><span>{clips.length>0&&Object.keys(reviews).length===clips.length?'Examples reviewed. No training has started.':'Saved to Trajectory when you choose a line.'}</span>
     </footer>
   </main>;

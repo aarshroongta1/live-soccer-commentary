@@ -54,7 +54,7 @@ def main() -> None:
             json.loads(RECEIPT.read_text())
             if RECEIPT.exists()
             else {
-            "organization_key": organization_key,
+                "organization_key": organization_key,
                 "cases": {},
             }
         )

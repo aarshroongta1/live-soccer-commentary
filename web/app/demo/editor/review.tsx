@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+const subscribeToVoiceSupport = () => () => {};
+const getVoiceSupport = () => "speechSynthesis" in window;
+const getServerVoiceSupport = () => false;
 
 type Decision = "keep" | "rewrite" | "reject";
 type Review = { decision: Decision; reason: string; rewrite: string | null; trajectory_url: string };
@@ -28,11 +32,10 @@ export default function Editor({ data }: { data: Data }) {
   const [vote, setVote] = useState("");
   const [voteReason, setVoteReason] = useState("");
   const [speaking, setSpeaking] = useState("");
-  const [voiceAvailable, setVoiceAvailable] = useState(false);
+  const voiceAvailable = useSyncExternalStore(subscribeToVoiceSupport, getVoiceSupport, getServerVoiceSupport);
 
   useEffect(() => {
     let live = true;
-    setVoiceAvailable("speechSynthesis" in window);
     fetch("/api/commentary-editor").then(r => r.json()).then(async s => {
       if (!s.connected && !s.error) {
         const replay = await fetch("/editor-review/session.json").then(r => r.json());
