@@ -1,0 +1,23 @@
+web/app/demo/trajectory-training/review.tsx
+  s_64de1f200aeca5::t_d1f192278128c3 2,17-20,24-25,27,42,72-73
+web/app/demo/editor/review.tsx
+  s_64de1f200aeca5::t_d1f192278128c3 3-7,35
+scripts/trajectory_preferences.py
+  s_64de1f200aeca5::t_3d946bc193a6a4 57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c6cefb565b20fff4514b741a976ceb9fb9e81ea2",
+  "prompts": {},
+  "sessions": {
+    "s_64de1f200aeca5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a211c0-148e-74f1-8a47-043c3101a4bd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
