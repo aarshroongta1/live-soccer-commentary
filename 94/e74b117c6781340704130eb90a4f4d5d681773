@@ -1,0 +1,80 @@
+web/public/soccer-commentary/agent-argentina-grounded-v1.narration.json
+  s_64de1f200aeca5::t_54bc92b195ce93 1-80
+web/public/soccer-commentary/agent-arsenal-grounded-v1.narration.json
+  s_64de1f200aeca5::t_54bc92b195ce93 1-80
+examples/portfolio-demo/grounded-showcase/penalty-raw-plan.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-366
+web/data/agent-showcase.json
+  s_3c21306a01bf51::t_a35588b495ee1f 9,11,14-16,19-21,26,29,31,34-36,38-39,51,54,56,61,64,66,69-71,73-74,80,84,86,89,91,94,96,99,101,104-106,108-109
+README.md
+  s_64de1f200aeca5::t_7df28ce45e738e 25-27,33,37,40,42-43
+examples/portfolio-demo/grounded-showcase/arsenal-plan.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-223
+examples/portfolio-demo/agent-showcase/README.md
+  s_64de1f200aeca5::t_d3759232d1a091 3-6
+examples/portfolio-demo/grounded-showcase/arsenal-attempt-1.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-857
+scripts/render_agent_showcase.py
+  s_3c21306a01bf51::t_ef158cb09282ff 137-140
+  s_64de1f200aeca5::t_122cc7999e9b34 10,29-33,35,39,134-136,141-143
+tests/test_replay_agents.py
+  s_64de1f200aeca5::t_1b492b464acbab 17,27-33
+  s_64de1f200aeca5::t_ff1fc674752220 34-35
+examples/portfolio-demo/grounded-showcase/argentina-attempt-1.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-775
+examples/portfolio-demo/grounded-showcase/argentina-attempt-3.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-776
+examples/portfolio-demo/grounded-showcase/penalty-attempt-1.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-1420
+examples/portfolio-demo/grounded-showcase/selection.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-46
+web/public/soccer-commentary/agent-penalty-grounded-v1.narration.json
+  s_64de1f200aeca5::t_54bc92b195ce93 1-93
+web/.vercelignore
+  s_64de1f200aeca5::t_7df28ce45e738e 34-36
+examples/portfolio-demo/grounded-showcase/argentina-plan.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-205
+src/commentary/replay/recorded.py
+  s_64de1f200aeca5::t_8d770e56afdcad 252-254
+examples/portfolio-demo/grounded-showcase/arsenal-raw-plan.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-223
+tests/test_recorded_agents.py
+  s_64de1f200aeca5::t_8d770e56afdcad 176-177
+examples/portfolio-demo/grounded-showcase/README.md
+  s_64de1f200aeca5::t_7df28ce45e738e 1-60
+src/commentary/replay/agents.py
+  s_64de1f200aeca5::t_47e28c1a963cef 275-289
+  s_64de1f200aeca5::t_70a3b764f8ad90 11,120-128
+examples/portfolio-demo/grounded-showcase/argentina-raw-plan.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-225
+examples/portfolio-demo/grounded-showcase/argentina-attempt-2.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-775
+examples/portfolio-demo/grounded-showcase/arsenal-attempt-2.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-924
+examples/portfolio-demo/grounded-showcase/penalty-plan.json
+  s_3c21306a01bf51::t_ef158cb09282ff 1-366
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "94e74b117c6781340704130eb90a4f4d5d681773",
+  "prompts": {},
+  "sessions": {
+    "s_3c21306a01bf51": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a211c0-148e-74f1-8a47-043c3101a4bd",
+        "model": "unknown"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    },
+    "s_64de1f200aeca5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a211c0-148e-74f1-8a47-043c3101a4bd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Aarsh Roongta <aarshroongta1@gmail.com>"
+    }
+  }
+}
